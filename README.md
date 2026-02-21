@@ -74,6 +74,10 @@ Flux commands also check for updates automatically and notify you when a new ver
 
 Full documentation: [docs.nairon.ai/flux](https://docs.nairon.ai/flux) *(coming soon)*
 
+## Community
+
+Join our Discord to share workflows, get help, and suggest features: [discord.gg/nairon](https://discord.gg/nairon) *(coming soon)*
+
 ## License
 
 MIT
