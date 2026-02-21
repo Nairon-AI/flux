@@ -76,7 +76,9 @@ Full documentation: [docs.nairon.ai/flux](https://docs.nairon.ai/flux) *(coming 
 
 ## Community
 
-Join our Discord to share workflows, get help, and suggest features: [discord.gg/nairon](https://discord.gg/nairon) *(coming soon)*
+Join the most AI-native developer community on the planet. No hype. No AI slop. Just practical discussions on becoming the strongest developers alive.
+
+[discord.gg/nairon](https://discord.gg/nairon) *(coming soon)*
 
 ## License
 
