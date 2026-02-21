@@ -189,6 +189,8 @@ def detect_sdlc_gaps(context: dict) -> dict:
         gaps["requirements"].append("no_web_search")
     if not any(m in installed_mcps for m in ["figma", "pencil"]):
         gaps["requirements"].append("no_design_tools")
+    # Meeting capture is always a potential gap (can't easily detect)
+    gaps["requirements"].append("no_meeting_capture")
 
     # Planning phase gaps
     if not any(m in installed_mcps for m in ["linear", "github"]):
@@ -266,8 +268,11 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "exa": ("requirements", "no_web_search", "Research and fact-checking"),
         "figma": ("requirements", "no_design_tools", "Design-to-code workflow"),
         "pencil": ("requirements", "no_design_tools", "Design-to-code workflow"),
-        "granola": ("requirements", "no_transcription", "Capture meeting context"),
-        "wispr-flow": ("requirements", "no_transcription", "Faster documentation"),
+        "granola": (
+            "requirements",
+            "no_meeting_capture",
+            "Capture stakeholder context",
+        ),
         # Planning
         "linear": ("planning", "no_issue_tracking", "Track work in Claude"),
         "excalidraw": ("planning", "no_diagramming", "Visualize architecture"),
