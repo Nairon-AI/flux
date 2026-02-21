@@ -214,20 +214,38 @@ cp package.json "$SNAPSHOT_DIR/" 2>/dev/null
 
 ### 8b: Install
 
-Read the recommendation's `install` section and execute:
+Based on category, use the appropriate installer:
 
+**For MCPs:**
+```bash
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+
+# Extract MCP config from recommendation's config_snippet
+# The config_snippet contains the full mcpServers entry
+MCP_CONFIG='{"command":"npx","args":["-y","@context7/mcp"]}'
+
+"$PLUGIN_ROOT/scripts/install-mcp.sh" "<name>" "$MCP_CONFIG"
+```
+
+**For CLI tools:**
+```bash
+# Run the install command from recommendation
+# e.g., "brew install jq" or "npm install -g @biomejs/biome"
+```
+
+**For other categories:**
+Follow the install.command from the recommendation.
+
+Display progress:
 ```
 Installing: <name>
 
-Researching installation method...
 • Type: <install.type>
-• Command: <install.command>
+• Running: <command>
 
-Installing...
-$ <command output>
+<command output>
 
-Configuring...
-<if config_snippet, apply it>
+✓ Configuration updated
 ```
 
 ### 8c: Verify
