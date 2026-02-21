@@ -271,6 +271,108 @@ describe('Integration', () => {
   }, SCRIPT_TIMEOUT * 3)
 })
 
+describe('analyze-sessions.sh (Session Parser)', () => {
+  
+  test('outputs valid JSON', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    expect(parsed).toBeDefined()
+    expect(typeof parsed.enabled).toBe('boolean')
+  }, SCRIPT_TIMEOUT)
+
+  test('returns enabled=true when sessions exist', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    
+    // If sessions dir exists and has files, should be enabled
+    if (parsed.enabled) {
+      expect(parsed.sessions_analyzed).toBeGreaterThan(0)
+    } else {
+      expect(parsed.reason).toBeTruthy()
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('includes error patterns when enabled', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    
+    if (parsed.enabled) {
+      expect(parsed.error_patterns).toBeDefined()
+      expect(parsed.error_patterns.by_type).toBeDefined()
+      expect(parsed.error_patterns.samples).toBeInstanceOf(Array)
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('includes tool usage stats', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    
+    if (parsed.enabled) {
+      expect(parsed.tool_usage).toBeDefined()
+      expect(typeof parsed.tool_usage).toBe('object')
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('includes tool errors', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    
+    if (parsed.enabled) {
+      expect(parsed.tool_errors).toBeDefined()
+      expect(typeof parsed.tool_errors.total).toBe('number')
+      expect(parsed.tool_errors.samples).toBeInstanceOf(Array)
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('includes knowledge gaps analysis', async () => {
+    const output = await runScript('analyze-sessions.sh')
+    const parsed = JSON.parse(output)
+    
+    if (parsed.enabled) {
+      expect(parsed.knowledge_gaps).toBeDefined()
+      expect(parsed.knowledge_gaps.by_type).toBeDefined()
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('respects FLUX_SESSION_DAYS env var', async () => {
+    const scriptPath = join(FLUX_ROOT, 'scripts', 'analyze-sessions.sh')
+    const result = await $`bash ${scriptPath}`.env({
+      ...process.env,
+      FLUX_SESSION_DAYS: '1',
+      FLUX_SESSION_MAX: '5',
+    }).text()
+    
+    const parsed = JSON.parse(result)
+    if (parsed.enabled) {
+      expect(parsed.sessions_analyzed).toBeLessThanOrEqual(5)
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('Python parser handles --raw flag', async () => {
+    const scriptPath = join(FLUX_ROOT, 'scripts', 'parse-sessions.py')
+    const result = await $`python3 ${scriptPath} --max-sessions 3 --raw`.text()
+    const parsed = JSON.parse(result)
+    
+    if (parsed.enabled) {
+      expect(parsed.sessions).toBeInstanceOf(Array)
+      expect(parsed.sessions.length).toBeLessThanOrEqual(3)
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('Python parser handles --project filter', async () => {
+    const scriptPath = join(FLUX_ROOT, 'scripts', 'parse-sessions.py')
+    const result = await $`python3 ${scriptPath} --project flux --max-sessions 10`.text()
+    const parsed = JSON.parse(result)
+    
+    if (parsed.enabled && parsed.projects_analyzed) {
+      // All projects should contain 'flux' if filter worked
+      for (const project of parsed.projects_analyzed) {
+        expect(project.toLowerCase()).toContain('flux')
+      }
+    }
+  }, SCRIPT_TIMEOUT)
+})
+
 describe('Edge Cases', () => {
   
   test('detect-installed handles missing mcp.json gracefully', async () => {

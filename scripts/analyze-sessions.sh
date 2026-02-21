@@ -1,42 +1,21 @@
 #!/bin/bash
 # Flux Improve - Session Analysis Script
 # Analyzes recent Claude Code sessions for pain points and patterns
-# NOTE: This is a Phase 2 stub - full implementation in Phase 3
+# Delegates to parse-sessions.py for full analysis
 
 set -e
 
-# Configuration
-SESSIONS_DIR="${HOME}/.claude/projects"
-MAX_SESSIONS=10
-DAYS_BACK=7
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check if sessions directory exists
-if [ ! -d "$SESSIONS_DIR" ]; then
-    echo '{"enabled":false,"reason":"No sessions directory found"}'
+# Configuration (can be overridden via environment)
+DAYS_BACK="${FLUX_SESSION_DAYS:-7}"
+MAX_SESSIONS="${FLUX_SESSION_MAX:-50}"
+
+# Check for Python
+if ! command -v python3 &> /dev/null; then
+    echo '{"enabled":false,"reason":"Python3 not available"}'
     exit 0
 fi
 
-# Find recent session files
-SESSION_FILES=$(find "$SESSIONS_DIR" -name "*.jsonl" -mtime -$DAYS_BACK 2>/dev/null | head -$MAX_SESSIONS)
-
-if [ -z "$SESSION_FILES" ]; then
-    echo '{"enabled":false,"reason":"No recent sessions found"}'
-    exit 0
-fi
-
-SESSION_COUNT=$(echo "$SESSION_FILES" | wc -l | tr -d ' ')
-
-# Phase 3 will implement full pattern detection
-# For now, return basic structure indicating sessions were found
-cat <<EOF
-{
-  "enabled": true,
-  "sessions_analyzed": $SESSION_COUNT,
-  "patterns": {
-    "errors": [],
-    "knowledge_gaps": [],
-    "repeated_queries": []
-  },
-  "note": "Full pattern detection available in Phase 3"
-}
-EOF
+# Run the Python parser
+exec python3 "${SCRIPT_DIR}/parse-sessions.py" --days "$DAYS_BACK" --max-sessions "$MAX_SESSIONS" "$@"

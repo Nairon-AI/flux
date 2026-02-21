@@ -2,6 +2,29 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [flux 0.5.0] - 2026-02-21
+
+### Added
+
+- **Session analysis** — `parse-sessions.py` analyzes Claude Code sessions to detect pain points:
+  - API errors and retry patterns
+  - Tool failures (is_error, exit codes, file not found)
+  - Knowledge gaps ("I don't know how to...", repeated lookups)
+  - Tool usage statistics across sessions
+
+- **Pattern-to-recommendation mapping** — Session insights now drive recommendations:
+  - `unknown_skill` errors → plugin management suggestions
+  - `file_not_found` patterns → file navigation tools (fzf)
+  - `timeout` issues → performance optimizations
+  - Knowledge gaps → documentation tools (context7, supermemory)
+
+- **9 new tests** for session analysis in `tests/scripts.test.ts`
+
+### Changed
+
+- `analyze-sessions.sh` now delegates to Python parser for full analysis
+- `match-recommendations.py` integrates session insights into gap detection
+
 ## [flux 0.4.0] - 2026-02-21
 
 ### Added

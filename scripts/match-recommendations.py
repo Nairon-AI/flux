@@ -224,13 +224,47 @@ def detect_sdlc_gaps(context: dict) -> dict:
     if "supermemory" not in installed_mcps:
         gaps["documentation"].append("no_memory")
 
-    # Session-based gaps (if available)
+    # Session-based gaps (from parse-sessions.py output)
     if session_insights.get("enabled"):
-        patterns = session_insights.get("patterns", {})
-        if patterns.get("errors"):
-            gaps["testing"].append("recurring_errors")
-        if patterns.get("knowledge_gaps"):
+        # Error pattern analysis
+        error_patterns = session_insights.get("error_patterns", {})
+        error_by_type = error_patterns.get("by_type", {})
+
+        # Specific error type mappings
+        if error_by_type.get("unknown_skill", 0) > 0:
+            gaps["implementation"].append("plugin_issues")
+        if error_by_type.get("file_not_found", 0) > 2:
+            gaps["implementation"].append("missing_files")
+        if error_by_type.get("command_not_found", 0) > 0:
+            gaps["implementation"].append("missing_cli_tools")
+        if error_by_type.get("timeout", 0) > 0:
+            gaps["implementation"].append("slow_operations")
+        if error_by_type.get("permission_denied", 0) > 0:
+            gaps["implementation"].append("permission_issues")
+
+        # Tool errors indicate need for better testing/validation
+        tool_errors = session_insights.get("tool_errors", {})
+        if tool_errors.get("total", 0) > 3:
+            gaps["testing"].append("recurring_tool_errors")
+
+        # Knowledge gap analysis
+        knowledge_gaps = session_insights.get("knowledge_gaps", {})
+        gap_by_type = knowledge_gaps.get("by_type", {})
+
+        if gap_by_type.get("dont_know", 0) > 0 or gap_by_type.get("not_sure", 0) > 0:
             gaps["implementation"].append("knowledge_gaps")
+        if (
+            gap_by_type.get("cant_find", 0) > 0
+            or gap_by_type.get("couldnt_find", 0) > 0
+        ):
+            gaps["implementation"].append("search_difficulties")
+        if gap_by_type.get("how_to", 0) > 2:
+            gaps["documentation"].append("frequent_lookups")
+
+        # API errors indicate connectivity/reliability issues
+        api_errors = session_insights.get("api_errors", {})
+        if api_errors.get("total", 0) > 5:
+            gaps["implementation"].append("api_reliability")
 
     return gaps
 
@@ -318,8 +352,31 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "biome": ("implementation", "no_linter", "Linting + formatting"),
         "jq": ("implementation", "knowledge_gaps", "JSON processing"),
         "fzf": ("implementation", "knowledge_gaps", "Fast navigation"),
+        "fzf": ("implementation", "search_difficulties", "Fuzzy file search"),
         "raycast": ("implementation", "knowledge_gaps", "Quick access"),
         "remotion": ("implementation", "knowledge_gaps", "Video generation"),
+        # Session-based recommendations
+        "context7": (
+            "implementation",
+            "frequent_lookups",
+            "Stop searching docs repeatedly",
+        ),
+        "nia": (
+            "implementation",
+            "search_difficulties",
+            "Index and search external repos",
+        ),
+        "supermemory": (
+            "documentation",
+            "frequent_lookups",
+            "Remember what you learned",
+        ),
+        # Error pattern recommendations (from session analysis)
+        "stagehand-e2e": (
+            "testing",
+            "recurring_tool_errors",
+            "Catch UI errors before they repeat",
+        ),
         # Review
         "lefthook": ("review", "no_git_hooks", "Catch errors before CI"),
         "github": ("review", "no_github_mcp", "PR/issue management"),
