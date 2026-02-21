@@ -1,0 +1,31 @@
+# OPTIONAL: GitHub Actions workflow for validating .flux/
+# All multi-user features work locally without this - CI is just an extra gate.
+# Copy to .github/workflows/flux-validate.yml if you want automated PR checks.
+
+name: Validate .flux
+
+on:
+  pull_request:
+    paths:
+      - '.flux/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate .flux structure
+        run: |
+          # Download fluxctl (adjust path/method for your setup)
+          # Option 1: If fluxctl is in repo
+          # python3 ./scripts/fluxctl.py validate --all --json
+
+          # Option 2: Download from plugin (example)
+          curl -sL https://raw.githubusercontent.com/Nairon-AI/flux/main/scripts/fluxctl.py -o fluxctl.py
+          python3 fluxctl.py validate --all --json
