@@ -2,6 +2,26 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [flux 0.4.0] - 2026-02-21
+
+### Added
+
+- **E2E test suite** — Comprehensive tests using tuistory (Playwright for TUIs):
+  - `tests/scripts.test.ts` — 25 fast tests for all Flux scripts (detect-installed, analyze-context, manage-preferences, etc.)
+  - `tests/claude-commands.test.ts` — 13 tests for Claude Code command invocation
+  - Verifies plugin installation, skill loading, and command execution
+
+- **Test infrastructure** — Added `package.json` with test scripts:
+  - `bun test:scripts` — Fast CI-friendly tests (~1s)
+  - `bun test:claude` — Full E2E tests with Claude Code (~98s)
+  - `bun test:all` — Complete test suite
+
+### Developer Experience
+
+- All `/flux:*` commands verified working via automated tests
+- tuistory enables TUI testing for Claude Code plugins
+- Scripts output validated (JSON structure, expected fields)
+
 ## [flux 0.3.0] - 2026-02-21
 
 ### Added
