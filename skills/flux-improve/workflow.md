@@ -141,23 +141,27 @@ If `--score` mode, stop here.
 
 ## Step 6: Match & Rank Recommendations
 
-For each recommendation, determine relevance:
+Run the matching script with context:
+
+```bash
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py")
+```
+
+The script automatically:
+- Skips already-installed tools
+- Boosts recommendations that fill gaps (no linter, no hooks, etc.)
+- Boosts recommendations matching repo type/frameworks
+- Ranks by score: high (75+), medium (50-74), low (<50)
 
 **High relevance if:**
-- Fills an identified gap
-- Matches session pain point
-- Complements existing tools
-- Matches repo type/frameworks
+- Fills an identified gap (no linter → oxlint/biome)
+- Matches repo type (JS project → JS tools)
+- Essential tool (jq, fzf, beads, context7)
+- Few MCPs installed → boost MCP recommendations
 
 **Skip if:**
-- Already installed
-- Prerequisites not met
-- Conflicts with existing tool
-
-Rank by:
-1. High impact (fills gap + easy setup)
-2. Medium impact (nice to have)
-3. Low impact (optional enhancement)
+- Already installed (in context.installed.mcps/plugins)
 
 If `--list` mode, just show all recommendations without ranking.
 
