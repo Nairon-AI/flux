@@ -23,7 +23,7 @@ set_sessions() {
     
     local updated=$(jq --argjson val "$value" '
         .always_allow_sessions = $val |
-        .last_updated = now | todate
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     ' "$PREFS_FILE")
     
     echo "$updated" > "$PREFS_FILE"
@@ -41,7 +41,7 @@ dismiss() {
     
     local updated=$(jq --arg name "$name" '
         .dismissed = (.dismissed + [$name] | unique) |
-        .last_updated = now | todate
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     ' "$PREFS_FILE")
     
     echo "$updated" > "$PREFS_FILE"
@@ -57,7 +57,7 @@ add_alternative() {
     local updated=$(jq --arg rec "$recommendation" --arg alt "$alternative" '
         .alternatives[$rec] = $alt |
         .dismissed = (.dismissed + [$rec] | unique) |
-        .last_updated = now | todate
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     ' "$PREFS_FILE")
     
     echo "$updated" > "$PREFS_FILE"
@@ -84,7 +84,7 @@ undismiss() {
     local updated=$(jq --arg name "$name" '
         .dismissed = (.dismissed | map(select(. != $name))) |
         del(.alternatives[$name]) |
-        .last_updated = now | todate
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
     ' "$PREFS_FILE")
     
     echo "$updated" > "$PREFS_FILE"
