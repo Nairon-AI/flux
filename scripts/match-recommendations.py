@@ -140,7 +140,11 @@ def load_recommendations(recs_dir: str) -> list:
                 rec = simple_yaml_parse(content)
                 if rec and isinstance(rec, dict) and "name" in rec:
                     rec["_file"] = str(yaml_file)
-                    rec["_category_folder"] = yaml_file.parent.name
+                    # Handle nested structure: mcps/design/pencil.yaml
+                    rel_path = yaml_file.relative_to(recs_path)
+                    parts = rel_path.parts
+                    rec["_category_folder"] = parts[0] if parts else ""
+                    rec["_subcategory"] = parts[1] if len(parts) > 2 else ""
                     recs.append(rec)
         except Exception as e:
             print(f"Warning: Failed to parse {yaml_file}: {e}", file=sys.stderr)
