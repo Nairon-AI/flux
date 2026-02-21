@@ -219,22 +219,30 @@ Based on category, use the appropriate installer:
 **For MCPs:**
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
-
-# Extract MCP config from recommendation's config_snippet
-# The config_snippet contains the full mcpServers entry
 MCP_CONFIG='{"command":"npx","args":["-y","@context7/mcp"]}'
-
 "$PLUGIN_ROOT/scripts/install-mcp.sh" "<name>" "$MCP_CONFIG"
 ```
 
 **For CLI tools:**
 ```bash
-# Run the install command from recommendation
-# e.g., "brew install jq" or "npm install -g @biomejs/biome"
+"$PLUGIN_ROOT/scripts/install-cli.sh" "<name>" "<install_command>" "<type>"
+# e.g., install-cli.sh jq "brew install jq" brew
 ```
 
-**For other categories:**
-Follow the install.command from the recommendation.
+**For Plugins:**
+```bash
+"$PLUGIN_ROOT/scripts/install-plugin.sh" "<name>" "<repo>"
+# Returns instructions for user to run in Claude Code
+```
+
+**For Skills:**
+```bash
+"$PLUGIN_ROOT/scripts/install-skill.sh" "<name>" "<source>" "<scope>"
+# scope: user (default) or project
+```
+
+**For Workflow Patterns:**
+Patterns are documentation-only. Display the install instructions for user to follow manually.
 
 Display progress:
 ```
