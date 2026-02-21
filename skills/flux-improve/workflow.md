@@ -258,16 +258,20 @@ Installing: <name>
 
 ### 8c: Verify
 
-Based on `verification.type`:
+Use the verification script:
 
-- `mcp_connect`: Restart MCP and test connection
-- `command_exists`: Check `which <command>`
-- `config_exists`: Check config file has expected content
-- `manual`: Ask user to verify
+```bash
+"$PLUGIN_ROOT/scripts/verify-install.sh" "<name>" "<type>" "<arg>"
+```
+
+Types:
+- `command_exists` - Check command is in PATH (arg: command name)
+- `config_exists` - Check config file exists (arg: file path)
+- `mcp_connect` - Check MCP is in ~/.mcp.json
+- `manual` - Prompt user to verify (arg: instructions)
 
 ```
 Verifying...
-<verification steps>
 ✓ <name> installed and verified
 ```
 
@@ -284,8 +288,12 @@ Error: <error message>
 
 If rollback requested:
 ```bash
-cp "${SNAPSHOT_DIR}/settings.json" ~/.claude/settings.json 2>/dev/null
-cp "${SNAPSHOT_DIR}/.mcp.json" .mcp.json 2>/dev/null
+"$PLUGIN_ROOT/scripts/rollback.sh" "<snapshot_id>"
+```
+
+To list available snapshots:
+```bash
+ls ~/.flux/snapshots/
 ```
 
 ## Step 9: Summary
