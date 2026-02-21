@@ -192,6 +192,8 @@ has_agent_docs() {
 
 # Main analysis
 main() {
+    local include_sessions="${1:-false}"
+    
     repo_name=$(basename "$(pwd)")
     repo_type=$(detect_repo_type)
     
@@ -201,6 +203,15 @@ main() {
         frameworks=$(detect_python_frameworks)
     else
         frameworks="[]"
+    fi
+    
+    # Get session insights if requested
+    local session_insights='{"enabled":false,"reason":"Not requested"}'
+    if [ "$include_sessions" = "true" ]; then
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        if [ -x "$SCRIPT_DIR/analyze-sessions.sh" ]; then
+            session_insights=$("$SCRIPT_DIR/analyze-sessions.sh" 2>/dev/null || echo '{"enabled":false,"reason":"Analysis failed"}')
+        fi
     fi
     
     cat <<EOF
@@ -219,9 +230,18 @@ main() {
   "installed": {
     "mcps": $(get_mcps),
     "plugins": $(get_plugins)
-  }
+  },
+  "session_insights": $session_insights
 }
 EOF
 }
 
-main
+# Parse arguments
+INCLUDE_SESSIONS="false"
+for arg in "$@"; do
+    case "$arg" in
+        --include-sessions) INCLUDE_SESSIONS="true" ;;
+    esac
+done
+
+main "$INCLUDE_SESSIONS"

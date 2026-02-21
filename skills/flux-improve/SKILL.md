@@ -36,10 +36,20 @@ Follow [workflow.md](workflow.md) exactly.
 ## Key Principles
 
 1. **Privacy first** - Everything happens locally. Nothing sent externally.
-2. **Consent required** - Always ask before analyzing session history.
+2. **Consent required** - Use `mcp_question` to get explicit consent before analyzing session history.
 3. **Non-blocking** - User can skip any step or recommendation.
 4. **Verification** - Every installation is verified before marking complete.
 5. **Rollback ready** - Snapshot configs before any changes.
+
+## Session Analysis Consent
+
+Before reading any session files from `~/.claude/projects/`, you MUST:
+
+1. Display the privacy notice (what data is analyzed)
+2. Use `mcp_question` tool to ask for consent
+3. Only proceed with session analysis if user explicitly consents
+
+If user passes `--skip-sessions`, skip the consent question entirely.
 
 ## Recommendations Database
 

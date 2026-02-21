@@ -12,13 +12,14 @@ Check `$ARGUMENTS` for:
 
 ## Step 2: Privacy Notice & Consent
 
-Display:
+**Always display this privacy notice first:**
 
 ```
 ┌─ Flux Improve ──────────────────────────────────────────────┐
 │                                                             │
 │ This analyzes your local environment to find workflow       │
-│ improvements. Everything happens locally.                   │
+│ improvements. Everything happens locally - no data leaves   │
+│ your machine.                                               │
 │                                                             │
 │ What I'll check:                                            │
 │ • Repo structure (package.json, configs, directory layout)  │
@@ -28,47 +29,80 @@ Display:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-If NOT `--skip-sessions`, ask:
+### Session Analysis Consent
+
+If `SKIP_SESSIONS` is NOT true, you MUST ask for explicit consent using the `mcp_question` tool:
 
 ```
-Can I also analyze recent sessions to find pain points?
-(This checks ~/.claude/projects/ for error patterns)
-
-[Yes, include sessions] [No, skip that]
+mcp_question({
+  questions: [{
+    header: "Session Analysis",
+    question: "Can I also analyze recent Claude Code sessions to find pain points? This checks ~/.claude/projects/ for error patterns, repeated failures, and knowledge gaps - all processed locally.",
+    options: [
+      { label: "Yes, include sessions", description: "Analyze recent sessions for patterns (recommended for best results)" },
+      { label: "No, skip that", description: "Only analyze repo structure and installed tools" }
+    ]
+  }]
+})
 ```
 
-Store response as `ANALYZE_SESSIONS`.
+- If user selects "Yes, include sessions" → set `ANALYZE_SESSIONS=true`
+- If user selects "No, skip that" → set `ANALYZE_SESSIONS=false`
+- If `--skip-sessions` flag was passed → set `ANALYZE_SESSIONS=false` (skip the question)
+
+**Important**: Session analysis is opt-in. Never read session files without explicit consent.
 
 ## Step 3: Context Analysis
 
-Run the context analysis script:
+Run the context analysis script, passing the session consent flag:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
-CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
+
+# Include --include-sessions if user consented
+if [ "$ANALYZE_SESSIONS" = "true" ]; then
+    CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" --include-sessions 2>/dev/null)
+else
+    CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
+fi
 ```
 
 This returns JSON with:
 - `repo.name`, `repo.type`, `repo.frameworks`
 - `repo.has_tests`, `repo.has_ci`, `repo.has_linter`, `repo.has_formatter`, `repo.has_hooks`
 - `installed.mcps`, `installed.plugins`
+- `session_insights` (if consented)
 
-### Session Analysis (if consented)
+### Session Insights (if consented)
 
-Only if `ANALYZE_SESSIONS=true`:
+When `ANALYZE_SESSIONS=true`, the context script automatically runs session analysis and includes `session_insights` in the output.
 
-```bash
-# Find recent session files (last 7 days)
-find ~/.claude/projects -name "*.jsonl" -mtime -7 2>/dev/null | head -10
+The session analysis looks for:
+- Error messages and stack traces
+- "I don't know" or "I'm not sure" patterns
+- Repeated queries about the same topic
+- Tool failures or retries
+- Knowledge gaps (questions without good answers)
+
+Example `session_insights` when enabled:
+```json
+{
+  "enabled": true,
+  "sessions_analyzed": 5,
+  "patterns": {
+    "errors": ["TypeScript errors in api/", "Test failures in auth module"],
+    "knowledge_gaps": ["convex schema syntax", "drizzle migrations"],
+    "repeated_queries": ["how to fix type error X"]
+  }
+}
 ```
 
-For each session file, look for patterns:
-- Error messages
-- "I don't know" or "I'm not sure"
-- Repeated queries about same topic
-- Tool failures or retries
+When disabled or failed:
+```json
+{"enabled": false, "reason": "User declined or no sessions found"}
+```
 
-Add findings to context as `session_insights`.
+Use session insights to boost recommendations that address identified pain points.
 
 ### Display Summary
 
