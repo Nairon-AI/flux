@@ -41,40 +41,19 @@ Store response as `ANALYZE_SESSIONS`.
 
 ## Step 3: Context Analysis
 
-### 3a: Repo Structure
+Run the context analysis script:
 
 ```bash
-# Check for common files
-ls package.json tsconfig.json .eslintrc* biome.json pyproject.toml Cargo.toml go.mod 2>/dev/null
-
-# Get package.json deps if exists
-if [ -f package.json ]; then
-  cat package.json | jq -r '.dependencies // {} | keys[]' 2>/dev/null
-  cat package.json | jq -r '.devDependencies // {} | keys[]' 2>/dev/null
-fi
-
-# Check directory structure
-ls -d */ 2>/dev/null | head -20
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
 ```
 
-### 3b: Installed MCPs
+This returns JSON with:
+- `repo.name`, `repo.type`, `repo.frameworks`
+- `repo.has_tests`, `repo.has_ci`, `repo.has_linter`, `repo.has_formatter`, `repo.has_hooks`
+- `installed.mcps`, `installed.plugins`
 
-```bash
-# Check Claude settings for MCPs
-cat ~/.claude/settings.json 2>/dev/null | jq '.mcpServers // {}' 
-
-# Check local .mcp.json
-cat .mcp.json 2>/dev/null
-```
-
-### 3c: Installed Plugins
-
-```bash
-# Check plugin cache
-ls ~/.claude/plugins/cache/ 2>/dev/null
-```
-
-### 3d: Session Analysis (if consented)
+### Session Analysis (if consented)
 
 Only if `ANALYZE_SESSIONS=true`:
 
@@ -89,32 +68,9 @@ For each session file, look for patterns:
 - Repeated queries about same topic
 - Tool failures or retries
 
-Summarize findings as `SESSION_INSIGHTS`.
+Add findings to context as `session_insights`.
 
-### 3e: Generate Context Summary
-
-Create a summary object:
-
-```yaml
-repo:
-  name: <directory name>
-  type: <typescript|python|rust|go|unknown>
-  frameworks: [<detected frameworks>]
-  has_tests: <true|false>
-  has_ci: <true|false>
-  
-installed:
-  mcps: [<list of MCP names>]
-  plugins: [<list of plugin names>]
-  
-gaps:
-  - <identified gaps based on analysis>
-  
-session_insights:
-  - <pain points from session analysis, if done>
-```
-
-Display summary to user:
+### Display Summary
 
 ```
 Environment Analysis
@@ -123,9 +79,15 @@ Repo: <name> (<type>, <frameworks>)
 MCPs: <count> installed (<names>)
 Plugins: <count> installed (<names>)
 
-Detected patterns:
-• <insight 1>
-• <insight 2>
+Setup:
+• Tests: <yes/no>
+• CI: <yes/no>
+• Linter: <yes/no>
+• Hooks: <yes/no>
+
+Detected gaps:
+• <gap 1 based on missing setup>
+• <gap 2>
 ```
 
 ## Step 4: Fetch Recommendations
