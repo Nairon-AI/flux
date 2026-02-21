@@ -2,6 +2,39 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [flux 0.3.0] - 2026-02-21
+
+### Added
+
+- **SDLC-aware recommendation engine** — Analyzes gaps across requirements, planning, implementation, review, testing, and documentation phases. Only recommends tools that fill actual workflow gaps.
+
+- **Installed tools detection** — `detect-installed.sh` auto-detects CLI tools, macOS/Linux applications, MCPs, and plugins. Skips recommendations for tools you already have.
+
+- **Equivalent tool detection** — Recognizes alternatives (e.g., if you have ESLint, won't recommend OxLint/Biome). Prevents redundant suggestions.
+
+- **User preferences system** — `manage-preferences.sh` for persistent settings:
+  - Dismiss recommendations you don't want
+  - Record alternatives ("I use Otter instead of Granola")
+  - "Always allow" session analysis (skip consent prompt)
+  - Stored in `~/.flux/preferences.json`
+
+- **New command flags**:
+  - `--detect` — Show detected installed tools
+  - `--preferences` — Show/manage user preferences  
+  - `--dismiss <name>` — Dismiss a recommendation
+  - `--alternative <rec> <alt>` — Record that you use an alternative
+  - `--sessions always|ask` — Control session consent behavior
+
+- **Pricing information** — Each recommendation includes pricing model (free, freemium, paid, open-source) and cost details.
+
+- **"Solves" field** — Each recommendation explains what specific workflow problem it addresses.
+
+### Changed
+
+- **Recommendations reorganized** — MCPs split into design/, search/, productivity/, dev/. Applications split into individual/ vs collaboration/. CLI tools grouped by function.
+
+- **Smarter matching** — Reduced from spray-and-pray to targeted recommendations based on detected SDLC gaps.
+
 ## [flux 0.2.0] - 2026-02-21
 
 ### Added

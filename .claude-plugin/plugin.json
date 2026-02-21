@@ -1,6 +1,6 @@
 {
   "name": "flux",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AI-augmented SDLC workflow with planning, execution, and review. Worker subagent per task for context isolation. Prime assesses codebase health. Includes subagents, commands, and skills.",
   "author": {
     "name": "NaironAI",

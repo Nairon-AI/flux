@@ -235,22 +235,57 @@ def detect_sdlc_gaps(context: dict) -> dict:
     return gaps
 
 
-def is_installed(rec: dict, context: dict) -> bool:
-    """Check if recommendation is already installed."""
+def is_installed_or_dismissed(rec: dict, context: dict) -> tuple[bool, str]:
+    """Check if recommendation is installed, dismissed, or has alternative.
+    Returns (skip, reason)."""
     name = rec.get("name", "").lower()
     category = rec.get("category", "")
 
-    installed_mcps = [m.lower() for m in context.get("installed", {}).get("mcps", [])]
-    installed_plugins = [
-        p.lower() for p in context.get("installed", {}).get("plugins", [])
-    ]
+    installed = context.get("installed", {})
+    preferences = context.get("preferences", {})
 
+    # Check dismissed list
+    dismissed = [d.lower() for d in preferences.get("dismissed", [])]
+    if name in dismissed:
+        alt = preferences.get("alternatives", {}).get(name)
+        if alt:
+            return True, f"Using alternative: {alt}"
+        return True, "Dismissed by user"
+
+    # Check installed MCPs
+    installed_mcps = [m.lower() for m in installed.get("mcps", [])]
     if category == "mcp" and name in installed_mcps:
-        return True
-    if category == "plugin" and name in installed_plugins:
-        return True
+        return True, "Already installed"
 
-    return False
+    # Check installed plugins
+    installed_plugins = [p.lower() for p in installed.get("plugins", [])]
+    if category == "plugin" and name in installed_plugins:
+        return True, "Already installed"
+
+    # Check installed CLI tools
+    installed_cli = [c.lower() for c in installed.get("cli_tools", [])]
+    if category == "cli-tool" and name in installed_cli:
+        return True, "Already installed"
+
+    # Check installed applications
+    installed_apps = [a.lower() for a in installed.get("applications", [])]
+    if category == "application" and name in installed_apps:
+        return True, "Already installed"
+
+    # Check for equivalent tools (e.g., has otter = skip granola)
+    equivalents = {
+        "granola": ["otter", "fireflies", "fathom"],
+        "wispr-flow": ["superwhisper", "mac-dictation"],
+        "raycast": ["alfred"],
+        "oxlint": ["eslint", "biome"],
+        "biome": ["eslint", "prettier"],
+    }
+
+    for equiv in equivalents.get(name, []):
+        if equiv in installed_apps or equiv in installed_cli:
+            return True, f"Has equivalent: {equiv}"
+
+    return False, ""
 
 
 def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
@@ -374,11 +409,10 @@ def match_recommendations(
         if filter_category and category != filter_category:
             continue
 
-        # Check if already installed
-        if is_installed(rec, context):
-            skipped.append(
-                {"name": name, "category": category, "reason": "Already installed"}
-            )
+        # Check if already installed, dismissed, or has equivalent
+        skip, reason = is_installed_or_dismissed(rec, context)
+        if skip:
+            skipped.append({"name": name, "category": category, "reason": reason})
             continue
 
         # Calculate relevance - only include if it fills a gap

@@ -9,6 +9,40 @@ Check `$ARGUMENTS` for:
 - `--category=<cat>` → set `FILTER_CATEGORY=<cat>`
 - `--list` → skip to Step 6 (list mode)
 - `--score` → skip to Step 5 (score only mode)
+- `--detect` → run detection only, show installed tools, exit
+- `--preferences` → show user preferences (dismissed, alternatives), exit
+- `--dismiss <name>` → dismiss a recommendation, exit
+- `--alternative <rec> <alt>` → record that user has alternative, exit
+- `--clear-preferences` → clear all preferences, exit
+- `--sessions always` → enable always allow sessions, exit
+- `--sessions ask` → disable always allow (ask each time), exit
+
+### Handle Utility Commands
+
+For `--detect`:
+```bash
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+"$PLUGIN_ROOT/scripts/detect-installed.sh" | jq .
+# Display formatted output and exit
+```
+
+For `--preferences`:
+```bash
+"$PLUGIN_ROOT/scripts/manage-preferences.sh" list
+# Display and exit
+```
+
+For `--dismiss <name>`:
+```bash
+"$PLUGIN_ROOT/scripts/manage-preferences.sh" dismiss "$NAME"
+# Confirm and exit
+```
+
+For `--alternative <rec> <alt>`:
+```bash
+"$PLUGIN_ROOT/scripts/manage-preferences.sh" alternative "$REC" "$ALT"
+# Confirm and exit
+```
 
 ## Step 2: Privacy Notice & Consent
 
@@ -31,7 +65,17 @@ Check `$ARGUMENTS` for:
 
 ### Session Analysis Consent
 
-If `SKIP_SESSIONS` is NOT true, you MUST ask for explicit consent using the `mcp_question` tool:
+First, check if user has "always allow" enabled in preferences:
+
+```bash
+ALWAYS_ALLOW=$(jq -r '.always_allow_sessions // false' ~/.flux/preferences.json 2>/dev/null || echo "false")
+```
+
+**If `ALWAYS_ALLOW=true`**: Set `ANALYZE_SESSIONS=true` and skip the question.
+
+**If `SKIP_SESSIONS=true`**: Set `ANALYZE_SESSIONS=false` and skip the question.
+
+**Otherwise**, ask for consent using `mcp_question`:
 
 ```
 mcp_question({
@@ -40,38 +84,47 @@ mcp_question({
     question: "Can I also analyze recent Claude Code sessions to find pain points? This checks ~/.claude/projects/ for error patterns, repeated failures, and knowledge gaps - all processed locally.",
     options: [
       { label: "Yes, include sessions", description: "Analyze recent sessions for patterns (recommended for best results)" },
+      { label: "Yes, always allow", description: "Allow and don't ask again" },
       { label: "No, skip that", description: "Only analyze repo structure and installed tools" }
     ]
   }]
 })
 ```
 
-- If user selects "Yes, include sessions" → set `ANALYZE_SESSIONS=true`
-- If user selects "No, skip that" → set `ANALYZE_SESSIONS=false`
-- If `--skip-sessions` flag was passed → set `ANALYZE_SESSIONS=false` (skip the question)
+- "Yes, include sessions" → set `ANALYZE_SESSIONS=true`
+- "Yes, always allow" → set `ANALYZE_SESSIONS=true` AND run: `$PLUGIN_ROOT/scripts/manage-preferences.sh sessions always`
+- "No, skip that" → set `ANALYZE_SESSIONS=false`
 
 **Important**: Session analysis is opt-in. Never read session files without explicit consent.
 
 ## Step 3: Context Analysis
 
-Run the context analysis script, passing the session consent flag:
+Run both context analysis and installed tools detection:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
 
-# Include --include-sessions if user consented
+# 1. Analyze repo context
 if [ "$ANALYZE_SESSIONS" = "true" ]; then
-    CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" --include-sessions 2>/dev/null)
+    REPO_CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" --include-sessions 2>/dev/null)
 else
-    CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
+    REPO_CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
 fi
+
+# 2. Detect installed tools, apps, and user preferences
+INSTALLED=$("$PLUGIN_ROOT/scripts/detect-installed.sh" 2>/dev/null)
+
+# 3. Merge into single context object
+CONTEXT=$(echo "$REPO_CONTEXT" "$INSTALLED" | jq -s '.[0] * .[1]')
 ```
 
 This returns JSON with:
 - `repo.name`, `repo.type`, `repo.frameworks`
 - `repo.has_tests`, `repo.has_ci`, `repo.has_linter`, `repo.has_formatter`, `repo.has_hooks`
-- `installed.mcps`, `installed.plugins`
+- `installed.mcps`, `installed.plugins`, `installed.cli_tools`, `installed.applications`
+- `preferences.dismissed`, `preferences.alternatives`
 - `session_insights` (if consented)
+- `os` (macos, linux, windows)
 
 ### Session Insights (if consented)
 
