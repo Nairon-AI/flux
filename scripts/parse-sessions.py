@@ -301,23 +301,50 @@ def aggregate_results(sessions: list[dict]) -> dict:
     return aggregated
 
 
+def path_to_claude_project_dir(path: Path) -> str:
+    """Convert a path to Claude's project directory name format.
+
+    Claude Code stores sessions in directories like:
+    ~/.claude/projects/-Users-obaid-Desktop-myproject/
+
+    The path /Users/obaid/Desktop/myproject becomes -Users-obaid-Desktop-myproject
+    """
+    # Replace / with - and keep leading dash (from the leading /)
+    return str(path).replace("/", "-")
+
+
 def find_session_files(
-    days_back: int = DEFAULT_DAYS_BACK, max_sessions: int = DEFAULT_MAX_SESSIONS
+    days_back: int = DEFAULT_DAYS_BACK,
+    max_sessions: int = DEFAULT_MAX_SESSIONS,
+    project_path: Path | None = None,
 ) -> list[Path]:
-    """Find recent session files."""
+    """Find recent session files, optionally filtered to a specific project."""
     if not SESSIONS_DIR.exists():
         return []
 
     cutoff = datetime.now() - timedelta(days=days_back)
     session_files = []
 
-    for session_file in SESSIONS_DIR.rglob("*.jsonl"):
-        try:
-            mtime = datetime.fromtimestamp(session_file.stat().st_mtime)
-            if mtime >= cutoff:
-                session_files.append((session_file, mtime))
-        except (OSError, IOError):
-            continue
+    # If project_path specified, look only in that project's session dir
+    if project_path:
+        project_dir_name = path_to_claude_project_dir(project_path)
+        project_session_dir = SESSIONS_DIR / project_dir_name
+
+        if not project_session_dir.exists():
+            return []
+
+        search_dirs = [project_session_dir]
+    else:
+        search_dirs = [SESSIONS_DIR]
+
+    for search_dir in search_dirs:
+        for session_file in search_dir.rglob("*.jsonl"):
+            try:
+                mtime = datetime.fromtimestamp(session_file.stat().st_mtime)
+                if mtime >= cutoff:
+                    session_files.append((session_file, mtime))
+            except (OSError, IOError):
+                continue
 
     # Sort by modification time, most recent first
     session_files.sort(key=lambda x: x[1], reverse=True)
@@ -346,13 +373,23 @@ def main():
         action="store_true",
         help="Output raw per-session data instead of aggregated",
     )
-    parser.add_argument("--project", help="Filter to specific project path pattern")
+    parser.add_argument(
+        "--all-projects",
+        action="store_true",
+        help="Analyze all projects instead of just current directory",
+    )
+    parser.add_argument(
+        "--cwd",
+        type=str,
+        default=os.getcwd(),
+        help="Project directory to analyze (defaults to current working directory)",
+    )
     args = parser.parse_args()
 
-    session_files = find_session_files(args.days, args.max_sessions)
+    # Default to current project unless --all-projects specified
+    project_path = None if args.all_projects else Path(args.cwd)
 
-    if args.project:
-        session_files = [f for f in session_files if args.project in str(f)]
+    session_files = find_session_files(args.days, args.max_sessions, project_path)
 
     if not session_files:
         print(

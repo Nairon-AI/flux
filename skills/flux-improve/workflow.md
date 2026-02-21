@@ -97,87 +97,113 @@ mcp_question({
 
 **Important**: Session analysis is opt-in. Never read session files without explicit consent.
 
-## Step 3: Context Analysis
+## Step 3: Environment Detection
 
-Run both context analysis and installed tools detection:
+Run installed tools detection first:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
 
-# 1. Analyze repo context
-if [ "$ANALYZE_SESSIONS" = "true" ]; then
-    REPO_CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" --include-sessions 2>/dev/null)
-else
-    REPO_CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
-fi
-
-# 2. Detect installed tools, apps, and user preferences
+# 1. Detect installed tools, apps, and user preferences
 INSTALLED=$("$PLUGIN_ROOT/scripts/detect-installed.sh" 2>/dev/null)
 
-# 3. Merge into single context object
-CONTEXT=$(echo "$REPO_CONTEXT" "$INSTALLED" | jq -s '.[0] * .[1]')
+# 2. Analyze repo context
+REPO_CONTEXT=$("$PLUGIN_ROOT/scripts/analyze-context.sh" 2>/dev/null)
 ```
 
-This returns JSON with:
+**Display Step 1 results:**
+
+```
+Step 1: Environment Detection
+
+Repo: <name> (<type>, <frameworks>)
+MCPs: <count> installed (<list first 5>)
+Plugins: <count> installed (<list>)
+CLI Tools: <count> found (<notable ones like jq, fzf, git>)
+
+Current setup:
+  Tests: <yes/no>     CI: <yes/no>
+  Linter: <yes/no>    Hooks: <yes/no>
+```
+
+## Step 4: Session Analysis (if consented)
+
+**Only run this step if `ANALYZE_SESSIONS=true`.**
+
+```bash
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+
+# Run session parser for CURRENT PROJECT ONLY (uses cwd by default)
+SESSION_INSIGHTS=$("$PLUGIN_ROOT/scripts/parse-sessions.py" --max-sessions 50 2>/dev/null)
+```
+
+**Display Step 2 results - ALWAYS show what was found before matching:**
+
+```
+Step 2: Session Analysis
+
+Analyzed <N> recent sessions in this project.
+
+Frustrations detected:
+```
+
+**If error patterns found:**
+```
+  Errors & Failures:
+  • <error_type>: <count> occurrences
+    Example: "<sample context from error_patterns.samples>"
+  • <error_type>: <count> occurrences
+    ...
+```
+
+**If tool errors found:**
+```
+  Tool Failures:
+  • <total> tool errors detected
+    Example: "<first sample from tool_errors.samples>"
+```
+
+**If knowledge gaps found:**
+```
+  Knowledge Gaps:
+  • <gap_type>: <count> times
+    Example: "<sample context>"
+```
+
+**If no issues found:**
+```
+  No significant pain points detected in recent sessions.
+```
+
+**Show tool usage stats:**
+```
+  Most used tools: <top 5 tools from tool_usage>
+```
+
+This gives users visibility into what session data revealed before seeing recommendations.
+
+## Step 5: Merge Context
+
+Combine all analysis into single context for matching:
+
+```bash
+# Merge all context (repo + installed + sessions)
+if [ "$ANALYZE_SESSIONS" = "true" ]; then
+    CONTEXT=$(echo "$REPO_CONTEXT" "$INSTALLED" | jq -s --argjson sessions "$SESSION_INSIGHTS" '.[0] * .[1] * {session_insights: $sessions}')
+else
+    CONTEXT=$(echo "$REPO_CONTEXT" "$INSTALLED" | jq -s '.[0] * .[1] * {session_insights: {enabled: false}}')
+fi
+```
+
+Context now contains:
 - `repo.name`, `repo.type`, `repo.frameworks`
 - `repo.has_tests`, `repo.has_ci`, `repo.has_linter`, `repo.has_formatter`, `repo.has_hooks`
 - `installed.mcps`, `installed.plugins`, `installed.cli_tools`, `installed.applications`
 - `preferences.dismissed`, `preferences.alternatives`
-- `session_insights` (if consented)
+- `session_insights` (with error_patterns, tool_errors, knowledge_gaps, tool_usage)
 - `os` (macos, linux, windows)
 
-### Session Insights (if consented)
-
-When `ANALYZE_SESSIONS=true`, the context script automatically runs session analysis and includes `session_insights` in the output.
-
-The session analysis looks for:
-- Error messages and stack traces
-- "I don't know" or "I'm not sure" patterns
-- Repeated queries about the same topic
-- Tool failures or retries
-- Knowledge gaps (questions without good answers)
-
-Example `session_insights` when enabled:
-```json
-{
-  "enabled": true,
-  "sessions_analyzed": 5,
-  "patterns": {
-    "errors": ["TypeScript errors in api/", "Test failures in auth module"],
-    "knowledge_gaps": ["convex schema syntax", "drizzle migrations"],
-    "repeated_queries": ["how to fix type error X"]
-  }
-}
-```
-
-When disabled or failed:
-```json
-{"enabled": false, "reason": "User declined or no sessions found"}
-```
-
-Use session insights to boost recommendations that address identified pain points.
-
-### Display Summary
-
-```
-Environment Analysis
-
-Repo: <name> (<type>, <frameworks>)
-MCPs: <count> installed (<names>)
-Plugins: <count> installed (<names>)
-
-Setup:
-• Tests: <yes/no>
-• CI: <yes/no>
-• Linter: <yes/no>
-• Hooks: <yes/no>
-
-Detected gaps:
-• <gap 1 based on missing setup>
-• <gap 2>
-```
-
-## Step 4: Fetch Recommendations
+## Step 6: Fetch Recommendations
 
 Fetch all recommendation files from the database:
 
@@ -198,7 +224,7 @@ Parse each YAML file and build recommendations list.
 
 If `FILTER_CATEGORY` is set, filter to only that category.
 
-## Step 5: Calculate Workflow Score
+## Step 7: Calculate Workflow Score
 
 Calculate score based on:
 
@@ -226,7 +252,7 @@ Category breakdown:
 
 If `--score` mode, stop here.
 
-## Step 6: Match & Rank Recommendations
+## Step 8: Match & Rank Recommendations
 
 Run the matching script with context:
 
@@ -252,28 +278,65 @@ The script automatically:
 
 If `--list` mode, just show all recommendations without ranking.
 
-## Step 7: Present Recommendations
+## Step 9: Present Recommendations
 
-Display ranked recommendations:
+**Display Step 3 header:**
 
 ```
-Recommended Improvements (<N> found)
+Step 3: Recommendations
 
+Based on your environment and session analysis, here's what would help:
+```
+
+**Group recommendations by WHY they're recommended:**
+
+### Session-Driven Recommendations (if any)
+
+If recommendations came from session analysis, show them first with clear attribution:
+
+```
+Based on your session frustrations:
+
+1. [MCP] context7
+   Current library docs - always up-to-date
+   Addresses: "how to" queries detected 5 times in recent sessions
+   
+2. [MCP] nia  
+   Index and search external repos
+   Addresses: "can't find" errors detected 3 times
+```
+
+### Gap-Driven Recommendations
+
+For recommendations based on missing setup:
+
+```
+Based on missing workflow components:
+
+3. [CLI] oxlint
+   Fast linting - 50-100x faster than ESLint
+   Addresses: No linter detected in project
+   
+4. [CLI] lefthook
+   Git hooks manager - catch errors before CI
+   Addresses: No pre-commit hooks configured
+```
+
+### Full Recommendation Display
+
+```
 ┌─ High Impact ───────────────────────────────────────────────┐
 │                                                             │
 │ 1. [<category>] <name>                                      │
 │    <tagline>                                                │
-│    Why: <specific reason based on your context>             │
-│    Setup: ~<X> min | Difficulty: <1-5>                      │
-│                                                             │
-│ 2. [<category>] <name>                                      │
-│    ...                                                      │
+│    Why: <specific reason - link to session data OR gap>     │
+│    Setup: ~<X> min | Pricing: <free/freemium/paid>          │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─ Nice to Have ──────────────────────────────────────────────┐
 │                                                             │
-│ 3. [<category>] <name>                                      │
+│ 2. [<category>] <name>                                      │
 │    ...                                                      │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -281,7 +344,7 @@ Recommended Improvements (<N> found)
 Select to install: [1,2,3] or 'all' or 'none'
 ```
 
-## Step 8: Installation
+## Step 10: Installation
 
 For each selected recommendation:
 
@@ -383,7 +446,7 @@ To list available snapshots:
 ls ~/.flux/snapshots/
 ```
 
-## Step 9: Summary
+## Step 11: Summary
 
 Display final summary:
 
@@ -408,7 +471,7 @@ To rollback: /flux:improve --rollback <id>
 Run /flux:improve again anytime for new recommendations.
 ```
 
-## Step 10: Update Timestamp
+## Step 12: Update Timestamp
 
 ```bash
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > ~/.flux/last_improve

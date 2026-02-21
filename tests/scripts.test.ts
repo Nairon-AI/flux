@@ -359,16 +359,29 @@ describe('analyze-sessions.sh (Session Parser)', () => {
     }
   }, SCRIPT_TIMEOUT)
 
-  test('Python parser handles --project filter', async () => {
+  test('Python parser filters to current project by default', async () => {
     const scriptPath = join(FLUX_ROOT, 'scripts', 'parse-sessions.py')
-    const result = await $`python3 ${scriptPath} --project flux --max-sessions 10`.text()
+    // Run from flux directory - should only show flux sessions
+    const result = await $`python3 ${scriptPath} --cwd ${FLUX_ROOT} --max-sessions 10`.text()
     const parsed = JSON.parse(result)
     
     if (parsed.enabled && parsed.projects_analyzed) {
-      // All projects should contain 'flux' if filter worked
+      // All projects should be the flux project
       for (const project of parsed.projects_analyzed) {
         expect(project.toLowerCase()).toContain('flux')
       }
+    }
+  }, SCRIPT_TIMEOUT)
+
+  test('Python parser --all-projects shows multiple projects', async () => {
+    const scriptPath = join(FLUX_ROOT, 'scripts', 'parse-sessions.py')
+    const result = await $`python3 ${scriptPath} --all-projects --max-sessions 50`.text()
+    const parsed = JSON.parse(result)
+    
+    // Should have sessions from potentially multiple projects
+    expect(parsed.enabled).toBe(true)
+    if (parsed.sessions_analyzed > 0) {
+      expect(parsed.projects_analyzed).toBeInstanceOf(Array)
     }
   }, SCRIPT_TIMEOUT)
 })
