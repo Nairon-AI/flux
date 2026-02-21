@@ -268,7 +268,6 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "pencil": ("requirements", "no_design_tools", "Design-to-code workflow"),
         "granola": ("requirements", "no_transcription", "Capture meeting context"),
         "wispr-flow": ("requirements", "no_transcription", "Faster documentation"),
-        "dia": ("requirements", "no_web_search", "Research synthesis"),
         # Planning
         "linear": ("planning", "no_issue_tracking", "Track work in Claude"),
         "excalidraw": ("planning", "no_diagramming", "Visualize architecture"),
