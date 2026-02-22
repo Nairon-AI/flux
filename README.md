@@ -5,16 +5,34 @@
 
 > The AI workflow optimizer that knows what you're missing.
 
+> [!TIP]
+> **🤖 Works on [Factory Droid](https://factory.ai) too!** Claude Code plugins are fully compatible:
+> ```bash
+> droid plugin marketplace add https://github.com/Nairon-AI/flux
+> ```
+> Then `/plugins` → Marketplace → install flux. Commands don't autocomplete yet but work when typed (e.g. `/flux:improve`). Skills load automatically.
+
+> [!TIP]
+> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Full multi-agent support:
+> ```bash
+> git clone https://github.com/Nairon-AI/flux.git
+> cd flux && ./scripts/install-codex.sh flux
+> ```
+> Requires Codex 0.102.0+. Commands use `/prompts:` prefix (e.g. `/prompts:improve`). See [Codex install guide](#openai-codex-experimental).
+
+> [!TIP]
+> **🧪 OpenCode user?** Native support built-in. Just install and run `/flux:improve`.
+
 ## Compatibility
 
 | Agent | Status | Session Analysis |
 |-------|--------|------------------|
-| **OpenCode** | Full support | SQLite database |
-| **Claude Code** | Full support | JSONL files |
-| **Cursor** | Planned | — |
-| **Codex** | Planned | — |
+| **Claude Code** | Full support | ✅ JSONL files |
+| **OpenCode** | Full support | ✅ SQLite database |
+| **Factory Droid** | Full support | — |
+| **OpenAI Codex** | Full support | — |
 
-Works with both global (`~/.config/opencode/`) and local (`.opencode/`, `.claude/`) configurations.
+Works with both global (`~/.config/`) and local (`.opencode/`, `.claude/`) configurations.
 
 ## The Problem
 
@@ -95,6 +113,90 @@ Documentation
 4. **Matches** from 26+ curated recommendations with pricing
 5. **Skips** tools you already have or dismissed
 6. **Remembers** your preferences in `~/.flux/preferences.json`
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        /flux:improve                            │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    SESSION EXTRACTION                           │
+│  ┌──────────────────┐    ┌──────────────────┐                  │
+│  │ OpenCode         │    │ Claude Code      │                  │
+│  │ ~/.local/share/  │    │ ~/.claude/       │                  │
+│  │ opencode.db      │    │ projects/*/      │                  │
+│  │ (SQLite)         │    │ *.jsonl          │                  │
+│  └────────┬─────────┘    └────────┬─────────┘                  │
+│           └──────────┬───────────┘                             │
+│                      ▼                                          │
+│           session-analysis.py                                   │
+│           (extracts user messages)                              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   FRICTION DETECTION                            │
+│                                                                 │
+│  Keywords: "bruh", "again", "still", "why", "fail", "error"    │
+│  Patterns: repeated attempts, confusion, rework                 │
+│                      │                                          │
+│                      ▼                                          │
+│           friction_signals[]                                    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                RECOMMENDATIONS DATABASE                         │
+│                ~/.flux/recommendations/                         │
+│                                                                 │
+│  ┌─────────┐ ┌───────────┐ ┌──────────────┐ ┌────────────────┐ │
+│  │  MCPs   │ │ CLI Tools │ │ Applications │ │ Skills/Patterns│ │
+│  │ (7)     │ │ (6)       │ │ (4)          │ │ (10)           │ │
+│  └─────────┘ └───────────┘ └──────────────┘ └────────────────┘ │
+│                                                                 │
+│  Each .yaml includes:                                           │
+│  - sdlc_phase (requirements/planning/impl/review/test/docs)    │
+│  - problem_solved                                               │
+│  - pricing (free/freemium/paid/open-source)                    │
+│  - install commands                                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      MATCHING ENGINE                            │
+│                                                                 │
+│  friction_signals[] ──┬──▶ Match by keywords/patterns          │
+│  detected_tools[]  ───┤                                        │
+│  sdlc_gaps[]       ───┘   ▼                                    │
+│                      recommendations[]                          │
+│                      (filtered, ranked)                         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   INTERACTIVE FLOW                              │
+│                                                                 │
+│  mcp_question() ──▶ "Which improvements to apply?"             │
+│                                                                 │
+│  User selects ──▶ Auto-implement:                              │
+│                   • AGENTS.md rules                             │
+│                   • MCP installs                                │
+│                   • CLI tool installs                           │
+│                   • Git hook setup                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key files:**
+
+| File | Purpose |
+|------|---------|
+| `~/.config/opencode/command/flux-improve.md` | Command definition (7-step workflow) |
+| `~/.flux/recommendations/*.yaml` | Curated tool database (27 entries) |
+| `~/.flux/recommendations/scripts/session-analysis.py` | Multi-agent session extractor |
+| `~/.flux/preferences.json` | User dismissals & alternatives |
 
 ## Recommendation Database
 
