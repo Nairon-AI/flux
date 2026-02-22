@@ -125,8 +125,9 @@ detect_plugins() {
 }
 
 # Load user preferences (dismissed recommendations, alternatives)
+# Uses project-local .flux/preferences.json (like flow-next uses .flow/)
 load_preferences() {
-    local prefs_file="$HOME/.flux/preferences.json"
+    local prefs_file=".flux/preferences.json"
     
     if [ -f "$prefs_file" ]; then
         cat "$prefs_file"

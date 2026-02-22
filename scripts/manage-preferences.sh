@@ -4,7 +4,8 @@
 
 set -e
 
-PREFS_FILE="$HOME/.flux/preferences.json"
+# Use project-local .flux/ directory (like flow-next uses .flow/)
+PREFS_FILE=".flux/preferences.json"
 
 # Ensure directory exists
 mkdir -p "$(dirname "$PREFS_FILE")"
