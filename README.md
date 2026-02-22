@@ -19,6 +19,7 @@ You're using AI agents, but something's off:
 - The agent tries the same broken approach 5 times
 - You discover a tool that would've saved hours—after the fact
 - Requirements drift mid-session and nobody notices
+- Best practices change weekly and you can't keep up
 
 These aren't model failures. They're **process failures**.
 
