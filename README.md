@@ -224,23 +224,20 @@ Here's how to use Flux from install to daily usage:
 
 | Command | What it does |
 |---------|--------------|
-| **Setup** | |
-| `/flux:setup` | Initialize `.flux/` in project (run once per project) |
-| **Workflow** | |
-| `/flux:interview <idea>` | Interview yourself to flesh out requirements |
-| `/flux:plan <idea>` | Break feature into dependency-aware tasks |
-| `/flux:work <task-id>` | Execute a task with automatic context reload |
-| `/flux:prime` | Re-anchor to project context mid-session |
-| **Tool Discovery** | |
-| `/flux:improve` | Analyze sessions, detect friction, recommend tools |
-| `/flux:improve --detect` | Show what's installed (no recommendations) |
-| `/flux:improve --skip-sessions` | Skip session analysis |
-| `/flux:improve --discover` | Add optional live community discovery from X/Twitter |
-| `/flux:improve --dismiss <name>` | Never recommend this tool again |
-| `/flux:improve --category <cat>` | Filter: mcp, cli, plugin, skill, pattern |
-| **Utilities** | |
-| `/flux:sync` | Sync tasks with git |
-| `/flux:deps` | Show task dependencies |
+| `/flux:setup` | Optional local install of `fluxctl` and project docs |
+| `/flux:improve` | Analyze sessions, detect friction, and recommend improvements |
+| `/flux:plan <idea|epic>` | Build structured execution plan |
+| `/flux:work <task|epic>` | Execute tasks with context reload + checks |
+| `/flux:interview <id|file>` | Deep requirements interview for epic/task/spec |
+| `/flux:prime` | Agent readiness assessment + guided fixes |
+| `/flux:sync <id>` | Sync downstream task specs after drift |
+| `/flux:plan-review <epic>` | Carmack-level plan quality review |
+| `/flux:impl-review` | Carmack-level implementation review |
+| `/flux:epic-review <epic>` | Verify epic completion against spec |
+| `/flux:ralph-init` | Scaffold Ralph autonomous harness |
+| `/flux:uninstall` | Remove Flux files from project |
+
+For full options and examples, see `docs/commands-reference.md`.
 
 ---
 
