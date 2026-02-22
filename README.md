@@ -38,15 +38,21 @@ Flux gives you a **structured workflow** based on how software is actually built
 
 Instead of jumping straight into code and watching the agent go off the rails:
 
-1. **Interview** — Flesh out the feature first. What are the edge cases? What decisions need to be made? Even without a transcript, thinking through requirements upfront prevents chaos later.
+1. **Interview** — Flesh out the feature first. What are the edge cases? What decisions need to be made? Thinking through requirements upfront prevents chaos later.
 
 2. **Plan** — Break down into dependency-aware tasks. Flux creates tasks in `.flux/` with clear scope, so you always know what's next.
 
-3. **Implement** — Execute tasks one at a time with automatic context reload. No drift. No forgotten requirements.
+3. **Implement** — Execute tasks one at a time with automatic context reload. No forgotten requirements.
 
 4. **Review** — Built-in review step catches issues before they compound.
 
-This isn't just organization—it's how you maintain sanity when building with AI agents.
+### Drift Protection
+
+Documentation drift is your worst enemy on large projects with AI agents. Code changes but specs don't. Future tasks reference outdated assumptions.
+
+Flux runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed. Another pass runs at epic completion to catch anything that slipped through.
+
+Your documentation stays aligned. Always.
 
 ### Tool Discovery
 
