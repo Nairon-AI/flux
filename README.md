@@ -5,29 +5,33 @@
 
 > The AI workflow optimizer that knows what you're missing.
 
-> [!TIP]
-> **🤖 Works on [Factory Droid](https://factory.ai) too!** Claude Code plugins are fully compatible:
-> ```bash
-> droid plugin marketplace add https://github.com/Nairon-AI/flux
-> ```
-> Then `/plugins` → Marketplace → install flux. Commands don't autocomplete yet but work when typed (e.g. `/flux:improve`). Skills load automatically.
+## Install
 
-> [!TIP]
-> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Support coming soon. See [Codex install guide](#openai-codex-experimental).
+### Claude Code
 
-> [!TIP]
-> **🧪 OpenCode user?** Native support built-in. Just install and run `/flux:improve`.
+```bash
+/plugin marketplace add Nairon-AI/flux
+/plugin install flux@nairon-flux
+```
 
-## Compatibility
+### OpenCode
 
-| Agent | Status | Session Analysis |
-|-------|--------|------------------|
-| **Claude Code** | Full support | ✅ JSONL files |
-| **OpenCode** | Full support | ✅ SQLite database |
-| **Factory Droid** | Full support | — |
-| **OpenAI Codex** | Coming soon | — |
+```bash
+/plugin marketplace add Nairon-AI/flux
+/plugin install flux@nairon-flux
+```
 
-Works with both global (`~/.config/`) and local (`.opencode/`, `.claude/`) configurations.
+### Factory Droid
+
+```bash
+droid plugin marketplace add https://github.com/Nairon-AI/flux
+```
+
+Then `/plugins` → Marketplace → install flux.
+
+> Commands don't autocomplete yet but work when typed (e.g. `/flux:improve`). Skills load automatically.
+
+---
 
 ## The Problem
 
@@ -48,17 +52,6 @@ Flux analyzes your **actual sessions**, finds these patterns, and recommends spe
 - The SDLC phase each gap affects (requirements → planning → implementation → review → testing → documentation)
 
 Then recommends **only what fills actual gaps**, with pricing upfront.
-
-## Quick Start
-
-```bash
-# Install the plugin
-/plugin marketplace add Nairon-AI/flux
-/plugin install flux@nairon-flux
-
-# See what you're missing
-/flux:improve
-```
 
 ## What `/flux:improve` Shows You
 
@@ -223,33 +216,6 @@ Flux also enforces **plan before you code**:
 ```
 
 Every feature gets broken into trackable tasks stored in `.flux/`. Every task re-anchors to the plan before execution. Nothing slips through the cracks.
-
-## Installation
-
-```bash
-/plugin marketplace add Nairon-AI/flux
-/plugin install flux@nairon-flux
-```
-
-**Auto-update (recommended):**
-```
-/plugin → Marketplaces tab → nairon-flux → Enable auto-update
-```
-
-## OpenAI Codex (Experimental)
-
-> **Coming soon.** Codex support is planned but not yet implemented.
-
-When available, Flux will support Codex CLI 0.102.0+ with:
-- Commands via `/prompts:` prefix (`/prompts:improve`, `/prompts:plan`, `/prompts:work`)
-- Skill definitions patched for Codex paths
-- Multi-agent role configs
-
-**Known limitations (when implemented):**
-- Hooks not supported
-- Session analysis TBD (Codex session format differs)
-
----
 
 ## Community
 
