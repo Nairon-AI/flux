@@ -24,6 +24,8 @@ These aren't model failures. They're **process failures**.
 
 Not to mention best practices and new tools are released weekly and you can't keep up 🤯
 
+All you want is to be as productive as possible with your budget, and be able to sleep well at night.
+
 ---
 
 ## What Flux Does
