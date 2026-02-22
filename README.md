@@ -346,6 +346,26 @@ Each pattern maps to specific tool recommendations.
 
 ---
 
+## Vision: Engineering Observability
+
+Today, Flux helps individual engineers work more effectively. Tomorrow, it becomes observability for your entire engineering organization.
+
+**What's coming:**
+
+- **Team Dashboard** — See where every engineer is in the SDLC at any moment. Interview, planning, implementing, reviewing—all visible.
+- **Cycle Time Analytics** — Track how long features take from idea to shipped. Identify bottlenecks before they become problems.
+- **Token Usage Monitoring** — Understand AI costs across your engineering department.
+- **Org-Wide Recommendations** — When one engineer discovers a tool that works, roll it out to everyone. No more knowledge silos.
+- **Shared SDLC Evolution** — As the community discovers better workflows, everyone evolves together.
+
+The goal: **every engineer as effective as your best engineer**. No bottlenecks. No one left behind.
+
+Flux will grow with the industry. The SDLC framework evolves as we collectively learn better ways to build software with AI.
+
+*Interested in early access for your team? [Get in touch](https://github.com/Nairon-AI/flux/issues).*
+
+---
+
 ## License
 
 MIT
