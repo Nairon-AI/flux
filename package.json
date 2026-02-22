@@ -1,6 +1,6 @@
 {
   "name": "flux",
-  "version": "0.4.0",
+  "version": "0.6.0",
   "description": "AI-augmented SDLC workflow plugin for Claude Code",
   "type": "module",
   "private": true,
