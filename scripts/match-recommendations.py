@@ -4,13 +4,93 @@ Flux Improve - SDLC-Aware Recommendation Engine
 
 Analyzes workflow gaps across the SDLC and recommends tools that solve
 specific problems. Not spray-and-pray - only recommends what fills real gaps.
+
+Supports user-provided context to boost friction signal detection.
 """
 
 import json
 import sys
 import os
 import re
+import argparse
 from pathlib import Path
+
+
+# =============================================================================
+# USER CONTEXT MAPPING
+# Maps user-provided pain point descriptions to friction signals
+# =============================================================================
+
+USER_CONTEXT_PATTERNS = {
+    # CSS/UI issues
+    r"\b(css|styling|style|responsive|layout|flexbox|grid|tailwind)\b": [
+        "css_issues",
+        "ui_issues",
+    ],
+    r"\b(ui|frontend|visual|looks? wrong|design)\b": ["ui_issues"],
+    # Memory/context issues
+    r"\b(forget|forgetting|forgets|forgot|remember|repeating|told you|already said)\b": [
+        "context_forgotten",
+        "re_explaining",
+    ],
+    r"\b(context|memory|re-?explain|keeps asking)\b": [
+        "context_forgotten",
+        "re_explaining",
+    ],
+    # Documentation/API issues
+    r"\b(wrong docs?|outdated|doesn'?t exist|hallucin|made up|incorrect api)\b": [
+        "api_hallucination",
+        "outdated_docs",
+    ],
+    r"\b(api changed|deprecated|old version|wrong method|wrong api)\b": [
+        "api_hallucination",
+        "outdated_docs",
+    ],
+    r"\b(method|function|property).*(not exist|doesn'?t exist|missing)\b": [
+        "api_hallucination",
+    ],
+    # Slow/build issues
+    r"\b(slow|waiting|takes? forever|build time|long builds?)\b": ["slow_builds"],
+    # Reasoning issues
+    r"\b(edge case|missed|shallow|think harder|wrong answer|obvious mistake)\b": [
+        "shallow_answers",
+        "edge_case_misses",
+    ],
+    r"\b(complex|reasoning|logic|algorithm)\b": ["shallow_answers"],
+    # Lint/format issues
+    r"\b(lint|linting|eslint|format|prettier|biome)\b": ["lint_errors"],
+    # CI/pipeline issues
+    r"\b(ci|pipeline|github actions?|build failed|deploy)\b": ["ci_failures"],
+    r"\b(forgot to lint|push failed|pre-?commit)\b": ["ci_failures", "forgot_to_lint"],
+    # Testing issues
+    r"\b(test|regression|broke again|flaky|keeps? breaking)\b": [
+        "regressions",
+        "flaky_tests",
+    ],
+    # Search/navigation issues
+    r"\b(can'?t find|where is|searching|lost|navigation)\b": ["search_needed"],
+    # Git issues
+    r"\b(git|commit|merge|rebase|history)\b": ["git_history_issues"],
+    # GitHub/PR issues
+    r"\b(pr|pull request|issue|github)\b": ["github_friction"],
+}
+
+
+def parse_user_context(user_context: str) -> dict[str, int]:
+    """Parse user-provided context into friction signals."""
+    if not user_context:
+        return {}
+
+    signals = {}
+    text = user_context.lower()
+
+    for pattern, signal_list in USER_CONTEXT_PATTERNS.items():
+        if re.search(pattern, text, re.IGNORECASE):
+            for signal in signal_list:
+                # User-provided context gets strong weight (3)
+                signals[signal] = signals.get(signal, 0) + 3
+
+    return signals
 
 
 def simple_yaml_parse(content: str) -> dict:
@@ -168,17 +248,32 @@ def load_recommendations(recs_dir: str) -> list:
     return recs
 
 
-def detect_sdlc_gaps(context: dict) -> dict:
+def detect_sdlc_gaps(context: dict, user_context: str = "") -> dict:
     """
     Analyze context to identify gaps - FRICTION-FIRST approach.
 
     Only recommends tools when there's evidence of actual friction,
     not just because a tool is missing.
+
+    Args:
+        context: Environment and session analysis context
+        user_context: Optional user-provided pain point description
     """
     repo = context.get("repo", {})
     installed = context.get("installed", {})
     session_insights = context.get("session_insights", {})
     friction = session_insights.get("friction_signals", {})
+
+    # Merge user-provided context signals (these get priority)
+    user_signals = parse_user_context(user_context)
+    if user_signals:
+        # User context boosts existing signals or adds new ones
+        for signal, weight in user_signals.items():
+            friction[signal] = friction.get(signal, 0) + weight
+        # Enable session insights if user provided context
+        if not session_insights.get("enabled"):
+            session_insights["enabled"] = True
+            context["session_insights"] = session_insights
 
     gaps = {
         "requirements": [],
@@ -504,11 +599,21 @@ def calculate_relevance(rec: dict, context: dict, gaps: dict) -> dict | None:
 
 
 def match_recommendations(
-    context: dict, recs_dir: str, filter_category: str | None = None
+    context: dict,
+    recs_dir: str,
+    filter_category: str | None = None,
+    user_context: str = "",
 ) -> dict:
-    """Match recommendations based on SDLC gaps."""
+    """Match recommendations based on SDLC gaps.
+
+    Args:
+        context: Environment and session analysis context
+        recs_dir: Path to recommendations directory
+        filter_category: Optional category filter
+        user_context: Optional user-provided pain point description
+    """
     recommendations = load_recommendations(recs_dir)
-    gaps = detect_sdlc_gaps(context)
+    gaps = detect_sdlc_gaps(context, user_context)
 
     # Group by phase
     by_phase = {
@@ -558,10 +663,25 @@ def match_recommendations(
 
 
 def main():
-    # Read context from stdin or file
-    if len(sys.argv) > 1:
-        context_file = sys.argv[1]
-        with open(context_file) as f:
+    parser = argparse.ArgumentParser(
+        description="Match recommendations based on SDLC gaps"
+    )
+    parser.add_argument(
+        "context_file",
+        nargs="?",
+        help="Path to context JSON file (reads stdin if not provided)",
+    )
+    parser.add_argument(
+        "--user-context",
+        "-u",
+        default="",
+        help="User-provided pain point description to boost matching",
+    )
+    args = parser.parse_args()
+
+    # Read context from file or stdin
+    if args.context_file:
+        with open(args.context_file) as f:
             context = json.load(f)
     else:
         context = json.load(sys.stdin)
@@ -574,8 +694,10 @@ def main():
     # Get optional category filter
     filter_category = os.environ.get("FLUX_FILTER_CATEGORY")
 
-    # Match recommendations
-    results = match_recommendations(context, recs_dir, filter_category)
+    # Match recommendations with user context
+    results = match_recommendations(
+        context, recs_dir, filter_category, args.user_context
+    )
 
     # Output JSON
     print(json.dumps(results, indent=2))

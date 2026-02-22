@@ -12,12 +12,26 @@ Analyze user's environment and recommend workflow optimizations from a curated d
 
 This skill:
 1. Shows privacy notice and gets consent
-2. Analyzes local environment (repo structure, MCPs, plugins, configs)
-3. Optionally analyzes session history for pain points (with consent)
-4. Fetches recommendations from `nairon-ai/flux-recommendations`
-5. Uses AI to match relevant recommendations to user's context
-6. Presents recommendations with impact ranking
-7. Handles installation and verification
+2. **Asks for optional pain point description** (dramatically improves accuracy)
+3. Analyzes local environment (repo structure, MCPs, plugins, configs)
+4. Optionally analyzes session history for pain points (with consent)
+5. Fetches recommendations from `nairon-ai/flux-recommendations`
+6. Uses AI to match relevant recommendations to user's context
+7. Presents recommendations with impact ranking
+8. Handles installation and verification
+
+## User Context (Optional but Powerful)
+
+After consent, ask users to describe frustrations in a few words. Even brief context like "fighting CSS" or "keeps forgetting things" **dramatically improves** recommendation accuracy.
+
+The matching engine maps common phrases to friction signals:
+- "CSS battles" → css_issues, ui_issues
+- "keeps forgetting" → context_forgotten
+- "wrong API docs" → api_hallucination, outdated_docs
+- "slow builds" → slow_builds
+- "missed edge cases" → shallow_answers
+
+This is optional - automated session analysis works alone, but user context makes it much better.
 
 ## Input
 

@@ -97,6 +97,45 @@ mcp_question({
 
 **Important**: Session analysis is opt-in. Never read session files without explicit consent.
 
+## Step 2b: Optional User Context
+
+**After consent, ask for optional context to improve recommendations:**
+
+```
+mcp_question({
+  questions: [{
+    header: "Pain Points",
+    question: "Optional but powerful: Describe your frustrations in a few words.\n\nEven brief context like 'fighting CSS' or 'keeps forgetting things' dramatically improves recommendation accuracy.\n\nLeave blank to rely on automated analysis only.",
+    options: [
+      { label: "Skip", description: "Rely on session analysis only" }
+    ]
+  }]
+})
+```
+
+If user types custom text (not "Skip"), save as `USER_CONTEXT`.
+
+**Map user context to friction signals:**
+
+Pass the user context to the matching script:
+```bash
+# Later in Step 8, pass context:
+echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --user-context "$USER_CONTEXT"
+```
+
+The script maps common phrases to friction signals:
+- "CSS", "styling", "responsive", "layout" → `css_issues`, `ui_issues`
+- "forgets", "forgetting", "repeating", "told you" → `context_forgotten`, `re_explaining`
+- "wrong docs", "outdated", "doesn't exist", "hallucinating" → `api_hallucination`, `outdated_docs`
+- "slow", "build time", "waiting" → `slow_builds`
+- "edge cases", "missed", "shallow" → `shallow_answers`, `edge_case_misses`
+- "lint", "linting", "formatting" → `lint_errors`
+- "CI", "pipeline", "broke" → `ci_failures`
+- "test", "regression" → `regressions`
+- "can't find", "searching" → `search_needed`
+
+This dramatically improves match quality when user provides context.
+
 ## Step 3: Environment Detection
 
 Run installed tools detection first:
@@ -254,14 +293,21 @@ If `--score` mode, stop here.
 
 ## Step 8: Match & Rank Recommendations
 
-Run the matching script with context:
+Run the matching script with context and optional user input:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
-MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py")
+
+# Include user context if provided (dramatically improves accuracy)
+if [ -n "$USER_CONTEXT" ]; then
+    MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --user-context "$USER_CONTEXT")
+else
+    MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py")
+fi
 ```
 
 The script automatically:
+- **Parses user context** into friction signals (e.g., "CSS battles" → css_issues)
 - Skips already-installed tools
 - Boosts recommendations that fill gaps (no linter, no hooks, etc.)
 - Boosts recommendations matching repo type/frameworks

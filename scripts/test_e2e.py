@@ -468,6 +468,101 @@ def test_agent_tool_friction_pipeline():
         temp_path.unlink()
 
 
+def test_user_context_parsing():
+    """Test that user-provided context is correctly parsed into friction signals."""
+    test_cases = [
+        # (user_context, expected_signals)
+        ("fighting CSS and styling issues", ["css_issues", "ui_issues"]),
+        ("keeps forgetting what I told it", ["context_forgotten", "re_explaining"]),
+        ("wrong API docs, methods don't exist", ["api_hallucination", "outdated_docs"]),
+        ("slow builds taking forever", ["slow_builds"]),
+        ("missed edge cases, shallow answers", ["shallow_answers", "edge_case_misses"]),
+        ("lint errors everywhere", ["lint_errors"]),
+        ("CI keeps failing", ["ci_failures"]),
+        ("tests are flaky, regressions", ["regressions", "flaky_tests"]),
+        ("can't find anything", ["search_needed"]),
+        ("", {}),  # Empty context should return empty
+    ]
+
+    passed = 0
+    failed = 0
+
+    print()
+    print("=" * 70)
+    print("USER CONTEXT PARSING TESTS")
+    print("=" * 70)
+    print()
+
+    for user_context, expected in test_cases:
+        signals = match_recs.parse_user_context(user_context)
+
+        if isinstance(expected, dict):
+            # Empty case
+            if signals == expected:
+                print(f"✓ Empty context returns empty signals")
+                passed += 1
+            else:
+                print(f"✗ Empty context should return empty, got: {signals}")
+                failed += 1
+        else:
+            all_found = all(s in signals for s in expected)
+            if all_found:
+                print(f"✓ '{user_context[:40]}...'")
+                print(f"  Found signals: {list(signals.keys())}")
+                passed += 1
+            else:
+                print(f"✗ '{user_context[:40]}...'")
+                print(f"  Expected: {expected}")
+                print(f"  Found: {list(signals.keys())}")
+                failed += 1
+
+    return passed, failed
+
+
+def test_user_context_integration():
+    """Test that user context boosts recommendations correctly."""
+    print()
+    print("=" * 70)
+    print("USER CONTEXT INTEGRATION TEST")
+    print("=" * 70)
+    print()
+
+    # Minimal context - no session insights
+    context = {
+        "installed": {"mcps": [], "plugins": [], "cli_tools": [], "applications": []},
+        "repo": {},
+        "preferences": {"dismissed": [], "alternatives": {}},
+        "session_insights": {"enabled": False},
+    }
+
+    # Without user context - should get no recommendations (friction-first)
+    results_without = match_recs.match_recommendations(context, RECS_DIR, None, "")
+    print(f"Without user context: {results_without['total']} recommendations")
+
+    # With user context - should get recommendations matching the context
+    results_with = match_recs.match_recommendations(
+        context.copy(), RECS_DIR, None, "CSS is killing me and keeps forgetting things"
+    )
+    print(f"With user context: {results_with['total']} recommendations")
+
+    all_recs = []
+    for phase_recs in results_with["recommendations_by_phase"].values():
+        all_recs.extend([r["name"] for r in phase_recs])
+
+    print(f"Recommendations: {all_recs}")
+
+    # Should recommend frontend-models for CSS and supermemory for forgetting
+    expected = ["frontend-models", "supermemory"]
+    found = [r for r in expected if r in all_recs]
+
+    if len(found) >= 1:  # At least one expected recommendation
+        print(f"✓ User context triggered relevant recommendations: {found}")
+        return True
+    else:
+        print(f"✗ Expected at least one of {expected}, got: {all_recs}")
+        return False
+
+
 def main():
     total_passed = 0
     total_failed = 0
@@ -487,11 +582,19 @@ def main():
     total_passed += p
     total_failed += f
 
+    # User context parsing tests
+    p, f = test_user_context_parsing()
+    total_passed += p
+    total_failed += f
+
     # Pipeline tests (return bool)
     pipeline_results = []
     pipeline_results.append(("Full Pipeline (user friction)", test_full_pipeline()))
     pipeline_results.append(
         ("Agent Tool Errors Pipeline", test_agent_tool_friction_pipeline())
+    )
+    pipeline_results.append(
+        ("User Context Integration", test_user_context_integration())
     )
 
     print()
