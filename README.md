@@ -238,6 +238,42 @@ Every feature gets broken into trackable tasks stored in `.flux/`. Every task re
 /plugin → Marketplaces tab → nairon-flux → Enable auto-update
 ```
 
+## OpenAI Codex (Experimental)
+
+Install Flux to OpenAI Codex (requires Codex CLI 0.102.0+):
+
+```bash
+# Clone the repo (one-time)
+git clone https://github.com/Nairon-AI/flux.git
+cd flux
+
+# Install
+./scripts/install-codex.sh flux
+```
+
+> Codex has no plugin marketplace — clone this repo to install. Everything copies to `~/.codex/`, so the clone can be deleted after (re-clone to update).
+
+**What gets installed:**
+- `~/.codex/prompts/` — Command prompts (`/prompts:improve`, `/prompts:plan`, `/prompts:work`)
+- `~/.codex/skills/` — Skill definitions (patched for Codex paths)
+- `~/.codex/agents/*.toml` — Multi-agent role configs
+
+**Path patching:** All `${CLAUDE_PLUGIN_ROOT}` references are automatically replaced with `~/.codex` paths during install.
+
+**Usage in Codex:**
+```bash
+# Commands use /prompts: prefix
+/prompts:improve    # Analyze workflow gaps
+/prompts:plan       # Break feature into tasks
+/prompts:work       # Execute a task
+```
+
+**Limitations:**
+- Hooks not supported
+- Session analysis not yet available (Codex session format TBD)
+
+---
+
 ## Community
 
 Join the most AI-native developer community on the planet.
