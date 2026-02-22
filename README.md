@@ -5,9 +5,29 @@
 
 > The AI workflow optimizer that knows what you're missing.
 
-## Why Flux?
+## Compatibility
 
-Most developers waste hours discovering tools that could 10x their workflow. Flux analyzes your **specific project** and tells you exactly what's missing across your entire software development lifecycle.
+| Agent | Status | Session Analysis |
+|-------|--------|------------------|
+| **OpenCode** | Full support | SQLite database |
+| **Claude Code** | Full support | JSONL files |
+| **Cursor** | Planned | — |
+| **Codex** | Planned | — |
+
+Works with both global (`~/.config/opencode/`) and local (`.opencode/`, `.claude/`) configurations.
+
+## The Problem
+
+Process failures, not model failures:
+
+- **Repeating the same debugging cycle** — trying the same broken approach 5 times before pivoting
+- **Losing context mid-session** — agent forgets what was decided, you re-explain
+- **Drip-feeding requirements** — "also add X" after implementation, causing rework
+- **Missing obvious tools** — not using MCPs/skills that would save hours
+
+Flux analyzes your **actual sessions**, finds these patterns, and recommends specific fixes.
+
+## Why Flux?
 
 **Not spray-and-pray recommendations.** Flux detects:
 - What you already have installed (MCPs, CLI tools, apps)
