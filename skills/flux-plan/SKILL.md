@@ -33,6 +33,25 @@ fi
 ```
 Continue regardless (non-blocking).
 
+## Pre-check: Improvement nudge
+
+Check if `/flux:improve` was run recently:
+```bash
+LAST_IMPROVE="$HOME/.flux/last_improve"
+if [[ -f "$LAST_IMPROVE" ]]; then
+  LAST_DATE=$(cat "$LAST_IMPROVE")
+  LAST_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_DATE" +%s 2>/dev/null || date -d "$LAST_DATE" +%s 2>/dev/null || echo 0)
+  NOW_TS=$(date +%s)
+  DAYS_AGO=$(( (NOW_TS - LAST_TS) / 86400 ))
+  if [[ $DAYS_AGO -ge 7 ]]; then
+    echo "Tip: It's been ${DAYS_AGO} days since you ran /flux:improve. New tools may help."
+  fi
+else
+  echo "Tip: Run /flux:improve to discover tools that match your workflow."
+fi
+```
+Continue regardless (non-blocking).
+
 **Role**: product-minded planner with strong repo awareness.
 **Goal**: produce an epic with tasks that match existing conventions and reuse points.
 **Task size**: every task must fit one `/flux:work` iteration (~100k tokens max). If it won't, split it.

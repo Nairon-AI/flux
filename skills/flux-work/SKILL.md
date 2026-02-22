@@ -27,6 +27,25 @@ $FLOWCTL <command>
 **Role**: execution lead, plan fidelity first.
 **Goal**: complete every task in order with tests.
 
+## Pre-check: Improvement nudge
+
+Check if `/flux:improve` was run recently (non-blocking):
+```bash
+LAST_IMPROVE="$HOME/.flux/last_improve"
+if [[ -f "$LAST_IMPROVE" ]]; then
+  LAST_DATE=$(cat "$LAST_IMPROVE")
+  LAST_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_DATE" +%s 2>/dev/null || date -d "$LAST_DATE" +%s 2>/dev/null || echo 0)
+  NOW_TS=$(date +%s)
+  DAYS_AGO=$(( (NOW_TS - LAST_TS) / 86400 ))
+  if [[ $DAYS_AGO -ge 7 ]]; then
+    echo "Tip: It's been ${DAYS_AGO} days since you ran /flux:improve. New tools may help."
+  fi
+else
+  echo "Tip: Run /flux:improve to discover tools that match your workflow."
+fi
+```
+Continue regardless.
+
 ## Ralph Mode Rules (always follow)
 
 If `REVIEW_RECEIPT_PATH` is set or `FLOW_RALPH=1`:
