@@ -13,12 +13,7 @@
 > Then `/plugins` → Marketplace → install flux. Commands don't autocomplete yet but work when typed (e.g. `/flux:improve`). Skills load automatically.
 
 > [!TIP]
-> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Full multi-agent support:
-> ```bash
-> git clone https://github.com/Nairon-AI/flux.git
-> cd flux && ./scripts/install-codex.sh flux
-> ```
-> Requires Codex 0.102.0+. Commands use `/prompts:` prefix (e.g. `/prompts:improve`). See [Codex install guide](#openai-codex-experimental).
+> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Support coming soon. See [Codex install guide](#openai-codex-experimental).
 
 > [!TIP]
 > **🧪 OpenCode user?** Native support built-in. Just install and run `/flux:improve`.
@@ -30,7 +25,7 @@
 | **Claude Code** | Full support | ✅ JSONL files |
 | **OpenCode** | Full support | ✅ SQLite database |
 | **Factory Droid** | Full support | — |
-| **OpenAI Codex** | Full support | — |
+| **OpenAI Codex** | Coming soon | — |
 
 Works with both global (`~/.config/`) and local (`.opencode/`, `.claude/`) configurations.
 
@@ -243,37 +238,16 @@ Every feature gets broken into trackable tasks stored in `.flux/`. Every task re
 
 ## OpenAI Codex (Experimental)
 
-Install Flux to OpenAI Codex (requires Codex CLI 0.102.0+):
+> **Coming soon.** Codex support is planned but not yet implemented.
 
-```bash
-# Clone the repo (one-time)
-git clone https://github.com/Nairon-AI/flux.git
-cd flux
+When available, Flux will support Codex CLI 0.102.0+ with:
+- Commands via `/prompts:` prefix (`/prompts:improve`, `/prompts:plan`, `/prompts:work`)
+- Skill definitions patched for Codex paths
+- Multi-agent role configs
 
-# Install
-./scripts/install-codex.sh flux
-```
-
-> Codex has no plugin marketplace — clone this repo to install. Everything copies to `~/.codex/`, so the clone can be deleted after (re-clone to update).
-
-**What gets installed:**
-- `~/.codex/prompts/` — Command prompts (`/prompts:improve`, `/prompts:plan`, `/prompts:work`)
-- `~/.codex/skills/` — Skill definitions (patched for Codex paths)
-- `~/.codex/agents/*.toml` — Multi-agent role configs
-
-**Path patching:** All `${CLAUDE_PLUGIN_ROOT}` references are automatically replaced with `~/.codex` paths during install.
-
-**Usage in Codex:**
-```bash
-# Commands use /prompts: prefix
-/prompts:improve    # Analyze workflow gaps
-/prompts:plan       # Break feature into tasks
-/prompts:work       # Execute a task
-```
-
-**Limitations:**
+**Known limitations (when implemented):**
 - Hooks not supported
-- Session analysis not yet available (Codex session format TBD)
+- Session analysis TBD (Codex session format differs)
 
 ---
 
