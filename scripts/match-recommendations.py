@@ -169,10 +169,16 @@ def load_recommendations(recs_dir: str) -> list:
 
 
 def detect_sdlc_gaps(context: dict) -> dict:
-    """Analyze context to identify gaps in each SDLC phase."""
+    """
+    Analyze context to identify gaps - FRICTION-FIRST approach.
+
+    Only recommends tools when there's evidence of actual friction,
+    not just because a tool is missing.
+    """
     repo = context.get("repo", {})
     installed = context.get("installed", {})
     session_insights = context.get("session_insights", {})
+    friction = session_insights.get("friction_signals", {})
 
     gaps = {
         "requirements": [],
@@ -183,88 +189,141 @@ def detect_sdlc_gaps(context: dict) -> dict:
         "documentation": [],
     }
 
-    # Requirements phase gaps
-    installed_mcps = [m.lower() for m in installed.get("mcps", [])]
-    if not any(m in installed_mcps for m in ["exa", "google-search"]):
-        gaps["requirements"].append("no_web_search")
-    if not any(m in installed_mcps for m in ["figma", "pencil"]):
-        gaps["requirements"].append("no_design_tools")
-    # Meeting capture is always a potential gap (can't easily detect)
-    gaps["requirements"].append("no_meeting_capture")
+    installed_mcps = [m.lower() for m in installed.get("mcps", []) or []]
 
-    # Planning phase gaps
-    if not any(m in installed_mcps for m in ["linear", "github"]):
-        gaps["planning"].append("no_issue_tracking")
-    if not any(m in installed_mcps for m in ["excalidraw"]):
-        gaps["planning"].append("no_diagramming")
+    # ==========================================================================
+    # FRICTION-DRIVEN GAPS (only trigger when user has actual problems)
+    # ==========================================================================
 
-    # Implementation phase gaps
-    if not repo.get("has_linter"):
-        gaps["implementation"].append("no_linter")
-    if not repo.get("has_formatter"):
-        gaps["implementation"].append("no_formatter")
-    if "context7" not in installed_mcps:
-        gaps["implementation"].append("no_doc_lookup")
-
-    # Review phase gaps
-    if not repo.get("has_hooks"):
-        gaps["review"].append("no_git_hooks")
-    if not repo.get("has_ci"):
-        gaps["review"].append("no_ci")
-    if "github" not in installed_mcps:
-        gaps["review"].append("no_github_mcp")
-
-    # Testing phase gaps
-    if not repo.get("has_tests"):
-        gaps["testing"].append("no_tests")
-
-    # Documentation phase gaps
-    if not repo.get("has_agent_docs"):
-        gaps["documentation"].append("no_agents_md")
-    if "supermemory" not in installed_mcps:
-        gaps["documentation"].append("no_memory")
-
-    # Session-based gaps (from parse-sessions.py output)
     if session_insights.get("enabled"):
-        # Error pattern analysis
-        error_patterns = session_insights.get("error_patterns", {})
-        error_by_type = error_patterns.get("by_type", {})
+        # --- Research/Search Friction ---
+        # "can't find solution", "is there a way to", needs web search
+        if friction.get("search_needed", 0) > 0:
+            if not any(m in installed_mcps for m in ["exa", "google-search"]):
+                gaps["requirements"].append("no_web_search")
 
-        # Specific error type mappings
-        if error_by_type.get("unknown_skill", 0) > 0:
-            gaps["implementation"].append("plugin_issues")
-        if error_by_type.get("file_not_found", 0) > 2:
-            gaps["implementation"].append("missing_files")
-        if error_by_type.get("command_not_found", 0) > 0:
-            gaps["implementation"].append("missing_cli_tools")
-        if error_by_type.get("timeout", 0) > 0:
-            gaps["implementation"].append("slow_operations")
-        if error_by_type.get("permission_denied", 0) > 0:
-            gaps["implementation"].append("permission_issues")
+        # --- Design/UI Friction ---
+        # "design doesn't match", "what should it look like", "mockup"
+        if friction.get("design_friction", 0) > 0:
+            if not any(m in installed_mcps for m in ["figma", "pencil"]):
+                gaps["requirements"].append("no_design_tools")
 
-        # Tool errors indicate need for better testing/validation
-        tool_errors = session_insights.get("tool_errors", {})
-        if tool_errors.get("total", 0) > 3:
-            gaps["testing"].append("recurring_tool_errors")
+        # --- Meeting/Stakeholder Friction ---
+        # "in the meeting we said", "stakeholder wanted"
+        if friction.get("meeting_context_lost", 0) > 0:
+            gaps["requirements"].append("no_meeting_capture")
 
-        # Knowledge gap analysis
+        # --- Task Tracking Friction ---
+        # "what was I doing", "forgot to", "we said we'd"
+        if friction.get("task_tracking_issues", 0) > 0:
+            if not any(m in installed_mcps for m in ["linear", "github"]):
+                gaps["planning"].append("no_issue_tracking")
+
+        # --- Architecture/Diagram Friction ---
+        # "draw a diagram", "how does X connect to Y"
+        if friction.get("needs_diagrams", 0) > 0:
+            if "excalidraw" not in installed_mcps:
+                gaps["planning"].append("no_diagramming")
+
+        # --- Complex Reasoning Friction ---
+        # "think harder", "missed edge case", "shallow answer"
+        if (
+            friction.get("shallow_answers", 0) > 0
+            or friction.get("edge_case_misses", 0) > 0
+        ):
+            gaps["planning"].append("needs_reasoning_model")
+
+        # --- Documentation/API Friction ---
+        # "that method doesn't exist", "API changed", hallucinated APIs
+        if (
+            friction.get("api_hallucination", 0) > 0
+            or friction.get("outdated_docs", 0) > 0
+        ):
+            if "context7" not in installed_mcps:
+                gaps["implementation"].append("no_doc_lookup")
+
+        # --- Frequent Doc Lookups ---
+        # "how do I use X" repeatedly
         knowledge_gaps = session_insights.get("knowledge_gaps", {})
         gap_by_type = knowledge_gaps.get("by_type", {})
+        if gap_by_type.get("how_to", 0) > 2:
+            gaps["implementation"].append("frequent_lookups")
+            gaps["documentation"].append("frequent_lookups")
 
-        if gap_by_type.get("dont_know", 0) > 0 or gap_by_type.get("not_sure", 0) > 0:
-            gaps["implementation"].append("knowledge_gaps")
+        # --- Linting/Formatting Friction ---
+        # "lint error", "formatting issue" showing up repeatedly
+        if friction.get("lint_errors", 0) > 2:
+            if not repo.get("has_linter"):
+                gaps["implementation"].append("no_linter")
+
+        # --- Frontend/UI Model Friction ---
+        # "styling is off", "CSS isn't working", "UI looks wrong"
+        if friction.get("ui_issues", 0) > 0 or friction.get("css_issues", 0) > 0:
+            gaps["implementation"].append("frontend_model_mismatch")
+
+        # --- Search/Navigation Friction ---
+        # "can't find the file", "where is"
         if (
             gap_by_type.get("cant_find", 0) > 0
             or gap_by_type.get("couldnt_find", 0) > 0
         ):
             gaps["implementation"].append("search_difficulties")
-        if gap_by_type.get("how_to", 0) > 2:
-            gaps["documentation"].append("frequent_lookups")
 
-        # API errors indicate connectivity/reliability issues
-        api_errors = session_insights.get("api_errors", {})
-        if api_errors.get("total", 0) > 5:
-            gaps["implementation"].append("api_reliability")
+        # --- Git Hooks Friction ---
+        # "CI failed", "forgot to lint", errors caught in CI not locally
+        if friction.get("ci_failures", 0) > 2 or friction.get("forgot_to_lint", 0) > 0:
+            if not repo.get("has_hooks"):
+                gaps["review"].append("no_git_hooks")
+
+        # --- PR/GitHub Friction ---
+        # "create a PR", "link this to issue"
+        if friction.get("github_friction", 0) > 0:
+            if "github" not in installed_mcps:
+                gaps["review"].append("no_github_mcp")
+
+        # --- Git History Friction ---
+        # "hard to review", "can't revert", messy commits
+        if friction.get("git_history_issues", 0) > 0:
+            gaps["review"].append("no_ci")
+
+        # --- Testing Friction ---
+        # "this broke again", "regression", flaky tests
+        if friction.get("regressions", 0) > 0 or friction.get("flaky_tests", 0) > 0:
+            if not repo.get("has_tests"):
+                gaps["testing"].append("no_tests")
+
+        # --- Repeated Tool Errors ---
+        tool_errors = session_insights.get("tool_errors", {})
+        if tool_errors.get("total", 0) > 3:
+            gaps["testing"].append("recurring_tool_errors")
+
+        # --- Memory/Context Friction ---
+        # "I already told you", "remember when", re-explaining
+        if (
+            friction.get("context_forgotten", 0) > 0
+            or friction.get("re_explaining", 0) > 0
+        ):
+            if "supermemory" not in installed_mcps:
+                gaps["documentation"].append("no_memory")
+
+        # --- AGENTS.md Friction ---
+        # "that's not how we do it", "wrong directory", model doesn't know project
+        if friction.get("project_conventions_unknown", 0) > 0:
+            if not repo.get("has_agent_docs"):
+                gaps["documentation"].append("no_agents_md")
+
+    # ==========================================================================
+    # CRITICAL GAPS (always check - these are foundational)
+    # Only flag if there's ANY session friction detected at all
+    # ==========================================================================
+
+    total_friction = sum(friction.get(k, 0) for k in friction.keys()) if friction else 0
+
+    if total_friction > 0:
+        # If user has friction but no AGENTS.md, that's likely contributing
+        if not repo.get("has_agent_docs"):
+            if "no_agents_md" not in gaps["documentation"]:
+                gaps["documentation"].append("no_agents_md")
 
     return gaps
 
@@ -378,6 +437,21 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         # Documentation
         "agents-md-structure": [
             ("documentation", "no_agents_md", "AI knows your project")
+        ],
+        # Model recommendations
+        "frontend-models": [
+            (
+                "implementation",
+                "frontend_model_mismatch",
+                "Use opus-4.5/4.6 or gemini-3.1-pro for UI work",
+            ),
+        ],
+        "reasoning-models": [
+            (
+                "planning",
+                "needs_reasoning_model",
+                "Use extended thinking for complex problems",
+            ),
         ],
         "supermemory": [
             ("documentation", "no_memory", "Persistent memory"),
