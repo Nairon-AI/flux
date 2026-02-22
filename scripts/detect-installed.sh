@@ -4,6 +4,27 @@
 
 set -e
 
+WARNINGS_FILE="${TMPDIR:-/tmp}/flux-detect-installed-warnings-$$.txt"
+: > "$WARNINGS_FILE"
+
+cleanup() {
+    rm -f "$WARNINGS_FILE"
+}
+
+trap cleanup EXIT
+
+add_warning() {
+    printf '%s\n' "$1" >> "$WARNINGS_FILE"
+}
+
+warnings_json() {
+    if [ ! -s "$WARNINGS_FILE" ]; then
+        echo "[]"
+        return
+    fi
+    jq -R . < "$WARNINGS_FILE" | jq -s .
+}
+
 # Detect OS
 detect_os() {
     case "$(uname -s)" in
@@ -30,6 +51,7 @@ detect_cli_tools() {
     cmd_exists fd && tools+=("fd")
     
     # Git tools
+    cmd_exists gh && tools+=("gh")
     cmd_exists lefthook && tools+=("lefthook")
     cmd_exists husky && tools+=("husky")
     
@@ -104,13 +126,46 @@ detect_linux_apps() {
 
 # Detect MCPs from ~/.mcp.json
 detect_mcps() {
-    local mcp_file="$HOME/.mcp.json"
-    
-    if [ -f "$mcp_file" ]; then
-        jq -r '.mcpServers // {} | keys[]' "$mcp_file" 2>/dev/null | jq -R . | jq -s .
-    else
-        echo "[]"
+    local global_file="$HOME/.mcp.json"
+    local local_file=".mcp.json"
+    local claude_file="$HOME/.claude/settings.json"
+    local global_mcps="[]"
+    local local_mcps="[]"
+    local claude_mcps="[]"
+    local parsed_mcp_keys="[]"
+
+    parse_mcp_keys() {
+        local file="$1"
+        local label="$2"
+        parsed_mcp_keys="[]"
+        if jq -e . "$file" >/dev/null 2>&1; then
+            parsed_mcp_keys=$(jq -c '.mcpServers // {} | if type == "object" then keys else [] end' "$file" 2>/dev/null)
+        else
+            add_warning "Malformed MCP config: $label ($file)"
+            parsed_mcp_keys="[]"
+        fi
+    }
+
+    if [ -f "$global_file" ]; then
+        parse_mcp_keys "$global_file" "global"
+        global_mcps="$parsed_mcp_keys"
     fi
+
+    if [ -f "$local_file" ]; then
+        parse_mcp_keys "$local_file" "project"
+        local_mcps="$parsed_mcp_keys"
+    fi
+
+    if [ -f "$claude_file" ]; then
+        parse_mcp_keys "$claude_file" "claude-settings"
+        claude_mcps="$parsed_mcp_keys"
+    fi
+
+    jq -n \
+        --argjson global "$global_mcps" \
+        --argjson local "$local_mcps" \
+        --argjson claude "$claude_mcps" \
+        '$global + $local + $claude | unique'
 }
 
 # Detect Claude Code plugins
@@ -118,7 +173,12 @@ detect_plugins() {
     local settings_file="$HOME/.claude/settings.json"
     
     if [ -f "$settings_file" ]; then
-        jq -r '.plugins // [] | .[].name // empty' "$settings_file" 2>/dev/null | jq -R . | jq -s .
+        if jq -e . "$settings_file" >/dev/null 2>&1; then
+            jq -r '.plugins // [] | .[].name // empty' "$settings_file" 2>/dev/null | jq -R . | jq -s .
+        else
+            add_warning "Malformed Claude settings: $settings_file"
+            echo "[]"
+        fi
     else
         echo "[]"
     fi
@@ -130,7 +190,21 @@ load_preferences() {
     local prefs_file=".flux/preferences.json"
     
     if [ -f "$prefs_file" ]; then
-        cat "$prefs_file"
+        if jq -e . "$prefs_file" >/dev/null 2>&1; then
+            jq -c '
+                if type == "object" then
+                    . + {
+                        dismissed: (.dismissed // [] | if type == "array" then . else [] end),
+                        alternatives: (.alternatives // {} | if type == "object" then . else {} end)
+                    }
+                else
+                    { dismissed: [], alternatives: {} }
+                end
+            ' "$prefs_file"
+        else
+            add_warning "Malformed preferences file: $prefs_file"
+            echo '{"dismissed":[],"alternatives":{}}'
+        fi
     else
         echo '{"dismissed":[],"alternatives":{}}'
     fi
@@ -143,6 +217,7 @@ main() {
     local mcps=$(detect_mcps)
     local plugins=$(detect_plugins)
     local preferences=$(load_preferences)
+    local warnings=$(warnings_json)
     
     # OS-specific app detection
     local apps="[]"
@@ -160,6 +235,7 @@ main() {
         --argjson mcps "$mcps" \
         --argjson plugins "$plugins" \
         --argjson preferences "$preferences" \
+        --argjson warnings "$warnings" \
         '{
             os: $os,
             installed: {
@@ -168,7 +244,8 @@ main() {
                 mcps: $mcps,
                 plugins: $plugins
             },
-            preferences: $preferences
+            preferences: $preferences,
+            warnings: $warnings
         }'
 }
 

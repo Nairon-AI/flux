@@ -180,6 +180,23 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
+  test('/flux:profile starts executing', async () => {
+    const session = `flux-test-profile-${Date.now()}`
+
+    await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
+    await Bun.sleep(5000)
+
+    await $`${TUISTORY} -s ${session} type "/flux:profile"`.quiet()
+    await $`${TUISTORY} -s ${session} press enter`.quiet()
+    await Bun.sleep(8000)
+
+    const snapshot = await $`${TUISTORY} -s ${session} snapshot --trim`.text().catch(() => '')
+    await $`${TUISTORY} -s ${session} close`.quiet().catch(() => {})
+
+    expect(snapshot).not.toContain('Unknown skill')
+    expect(snapshot.length).toBeGreaterThan(500)
+  }, 30000)
+
   test('/flux:setup starts executing', async () => {
     const session = `flux-test-setup-${Date.now()}`
     

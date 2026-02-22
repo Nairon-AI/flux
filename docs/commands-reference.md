@@ -30,6 +30,16 @@ Complete reference for all available `/flux:*` commands.
 | `/flux:improve --sessions always` | `/flux:improve --sessions always` | Always allow session analysis |
 | `/flux:improve --sessions ask` | `/flux:improve --sessions ask` | Ask each run for session analysis |
 
+## Profiles
+
+| Command | Usage | Purpose |
+|---------|-------|---------|
+| `/flux:profile` | `/flux:profile` | Export current SDLC setup and publish immutable share link |
+| `/flux:profile export` | `/flux:profile export [--skills=global\|project\|both]` | Export snapshot with skill-scope selection and app curation memory |
+| `/flux:profile view` | `/flux:profile view <url\|id>` | View a published profile snapshot |
+| `/flux:profile import` | `/flux:profile import <url\|id>` | Import profile with compatible-only filtering and per-item consent |
+| `/flux:profile tombstone` | `/flux:profile tombstone <url\|id>` | Tombstone a previously published immutable link |
+
 ## Reviews and Quality Gates
 
 | Command | Usage | Purpose |

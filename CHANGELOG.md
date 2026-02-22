@@ -2,9 +2,44 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [flux 0.9.0] - 2026-02-23
+
+### Added
+
+- **Community Discord** — Join at [discord.gg/CEQMd6fmXk](https://discord.gg/CEQMd6fmXk)
+- README polish: "I'm tired, boss" gif and Community section
+
+### Changed
+
+- Edge-case hardening in `detect-installed.sh`:
+  - Graceful handling of malformed `~/.mcp.json`, `~/.claude.json`, `~/.claude/preferences.json`
+  - Warnings output in JSON diagnostics instead of crash
+- AUDIT.md updated with completion status emojis
+
+### Fixed
+
+- Malformed JSON no longer crashes detection scripts
+
 ## [flux 0.8.0] - 2026-02-22
 
 ### Added
+
+- **Profile workflows** via `/flux:profile`:
+  - export machine setup as immutable public-anonymous snapshots
+  - import teammate profiles with compatible-only filtering + per-item consent
+  - view snapshots and owner tombstone support
+  - app curation memory (`~/.flux/profile-state.json`) and skills scope selection (`global|project|both`)
+
+- **New script**: `scripts/profile-manager.py`
+  - setup detection for MCP/CLI/skills/apps/patterns/model preferences
+  - auto-redaction of sensitive values before publish
+  - link service integration: publish, fetch, tombstone
+  - import planning + install orchestration helpers
+
+- **New tests/docs**:
+  - `scripts/test_profile_manager.py`
+  - profile coverage in `tests/scripts.test.ts`
+  - `docs/profile-command-spec.md`, `docs/profile-schema.md`, `docs/profile-launch-checklist.md`
 
 - **Community discovery mode** for `/flux:improve`:
   - `--discover` enables optional live search for novel optimizations from X/Twitter sources

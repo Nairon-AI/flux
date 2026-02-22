@@ -39,6 +39,7 @@ Important scripts:
 - `parse-sessions.py` - session friction extraction
 - `match-recommendations.py` - friction-first recommendation matching
 - `discover-community.py` - optional live discovery from X/Twitter sources
+- `profile-manager.py` - profile export/import/view/tombstone orchestration
 
 ### Recommendations Database
 
@@ -58,12 +59,14 @@ Important scripts:
 - `~/.flux/recommendations` - cloned recommendations database
 - `~/.flux/last_improve` - timestamp used by periodic nudge
 - `~/.flux/config.json` - optional BYOK keys (`exa_api_key`, `twitter_api_key`)
+- `~/.flux/profile-state.json` - saved application curation + published profile tokens
 
 ## Privacy Model
 
 - Default behavior is local analysis.
 - Session analysis requires explicit consent unless user enabled always-allow.
 - Optional `/flux:improve --discover` sends search queries to external providers.
+- `/flux:profile` publishes public-anonymous snapshots with automatic secret redaction and minimal metadata.
 
 ## Reliability Model
 

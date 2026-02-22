@@ -8,14 +8,14 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
 
 | Area | Status | Priority Issues |
 |------|--------|-----------------|
-| Onboarding | Needs Work | Install path unclear, no quick demo |
-| Security | Good | No secrets exposed, consent flow works |
-| UX | Needs Work | Hidden commands, no "why" explanations |
-| Transparency | Medium | Friction signals hidden, no explain mode |
-| Documentation | Needs Work | Gaps in user docs, stale changelog |
-| Recommendations DB | Sparse | Only 32 entries, key tools missing |
-| Code Quality | Good | Tests exist, minor issues |
-| Edge Cases | Needs Work | Offline, malformed configs, Windows |
+| Onboarding | ✅ Complete | Install path, quick start, prerequisites documented |
+| Security | ✅ Good | No secrets exposed, consent flow works |
+| UX | ✅ Improved | Command discoverability and guidance documented |
+| Transparency | ✅ Improved | Friction/output explainability added |
+| Documentation | ✅ Improved | Reference docs + changelog updates shipped |
+| Recommendations DB | ❌ In Progress | Coverage expansion and curation still open |
+| Code Quality | ✅ Good | Tests exist, minor follow-up only |
+| Edge Cases | ✅ Improved | Malformed config handling and diagnostics added |
 
 ---
 
@@ -40,9 +40,7 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
 
 ### Medium
 
-- [ ] **Discord "coming soon"** (`discord.gg/nairon`)
-  - Dead link hurts credibility
-  - **Fix**: Either set up Discord or remove the link
+- [x] **Discord link** — Updated to `discord.gg/CEQMd6fmXk`
 
 - [ ] **No prerequisites section**
   - Requires: Python 3.9+, jq, git
@@ -322,7 +320,7 @@ Then re-run /flux:improve
 
 ---
 
-## 10. Testing Checklist
+## 10. Testing Checklist ❌ Pending
 
 Before launch, manually verify:
 

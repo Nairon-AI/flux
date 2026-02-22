@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Concept 3: Stylized F made of flowing paths -->
+  <defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Vertical stroke of F with flow curve -->
+  <path d="M35 20 Q35 60 35 100" stroke="url(#grad3)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  
+  <!-- Top horizontal with flow -->
+  <path d="M35 25 Q55 20 85 25" stroke="url(#grad3)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  
+  <!-- Middle horizontal with flow - shorter -->
+  <path d="M35 55 Q50 50 70 55" stroke="url(#grad3)" stroke-width="8" stroke-linecap="round" fill="none"/>
+  
+  <!-- Small accent dot -->
+  <circle cx="90" cy="25" r="5" fill="url(#grad3)"/>
+</svg>

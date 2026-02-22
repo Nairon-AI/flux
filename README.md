@@ -13,18 +13,23 @@
 
 ## The Problem
 
-You're using AI agents, but something's off:
+You're using Claude Code, but something's off:
 
+- There's no structure to your development process
 - You keep re-explaining the same context
 - The agent tries the same broken approach 5 times
 - You discover a tool that would've saved hours—after the fact
-- Requirements drift mid-session and nobody notices
+- Requirements drift mid-session - you don't notice
 
 These aren't model failures. They're **process failures**.
 
-Not to mention best practices and new tools are released weekly and you can't keep up.
+Not to mention best practices and new tools are released weekly on X, and you can't keep up.
 
-All you want is to be as productive as possible with your budget, and be able to sleep well at night.
+All you want is to be as productive as possible without going homeless and finally get a good night's rest.
+
+<p align="center">
+  <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
+</p>
 
 **This is where Flux comes in.**
 
@@ -232,6 +237,7 @@ Here's how to use Flux from install to daily usage:
 |---------|--------------|
 | `/flux:setup` | Optional local install of `fluxctl` and project docs |
 | `/flux:improve` | Analyze sessions, detect friction, and recommend improvements |
+| `/flux:profile` | Export/share/import SDLC profile snapshots |
 | `/flux:plan <idea|epic>` | Build structured execution plan |
 | `/flux:work <task|epic>` | Execute tasks with context reload + checks |
 | `/flux:interview <id|file>` | Deep requirements interview for epic/task/spec |
@@ -269,6 +275,8 @@ Each task has clear scope, dependencies, and acceptance criteria. `/flux:work` r
 
 Preferences saved to `.flux/preferences.json`.
 
+Profile curation state saved to `~/.flux/profile-state.json`.
+
 ---
 
 ## FAQ
@@ -286,6 +294,8 @@ Preferences saved to `.flux/preferences.json`.
 By default, analysis runs locally. Network access is used to fetch the recommendations repo.
 
 If you run `/flux:improve --discover`, Flux also sends search queries to Exa/Twitter APIs (using your keys) to find optional community discoveries.
+
+If you run `/flux:profile`, Flux can publish a public-anonymous immutable profile snapshot link. Secrets are auto-redacted before publish.
 
 **How does session analysis work?**
 
@@ -340,6 +350,33 @@ Open an issue on the [recommendations repo](https://github.com/Nairon-AI/flux-re
 
 ---
 
+### Profiles
+
+**What is `/flux:profile` for?**
+
+It exports your SDLC setup (MCPs, CLI tools, skills, apps, patterns, model prefs) into an immutable share link teammates can import.
+
+**How are skills handled?**
+
+Each export asks for scope: global, project, or both. When using both, skills are de-duped by `name + content hash`.
+
+**How are applications handled over time?**
+
+Flux remembers saved apps. Future exports primarily surface newly detected apps, with an option to re-include previously saved-but-missing apps.
+
+**How does import safety work?**
+
+- Per-item confirmation before install
+- Already installed items skipped by default
+- Cross-OS incompatible items filtered into an unsupported list
+- Manual-only items kept as instructions (not blindly auto-installed)
+
+**Can immutable links be removed?**
+
+They can be tombstoned by owner action, which preserves the link but hides profile contents.
+
+---
+
 ## Vision: Engineering Observability
 
 Today, Flux helps individual engineers work more effectively. Tomorrow, it becomes observability for your entire engineering organization.
@@ -366,6 +403,14 @@ Flux will grow with the industry. The SDLC framework evolves as we collectively 
 - `docs/architecture.md` - command -> skill -> script architecture
 - `docs/recommendation-format.md` - recommendation YAML format guide
 - `docs/troubleshooting.md` - common issues and fixes
+
+---
+
+## Community
+
+Join the most AI-native developer community. No hype. No AI slop. Just practical discussions on becoming the strongest developers alive.
+
+[discord.gg/CEQMd6fmXk](https://discord.gg/CEQMd6fmXk)
 
 ---
 

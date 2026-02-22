@@ -40,6 +40,30 @@ Check:
 - `~/.flux/config.json` has valid `exa_api_key` or `twitter_api_key`
 - query context is specific enough (`--explain` can help)
 
+## `/flux:profile` publish fails
+
+Check profile link service config:
+
+- set env `FLUX_PROFILE_SERVICE_URL`, or
+- set `profile_service_url` in `~/.flux/config.json`
+
+Then retry `/flux:profile`.
+
+## `/flux:profile` import skipped many items
+
+This is expected when:
+
+- items are already installed (default behavior is skip)
+- items are OS-incompatible (compatible-only import policy)
+- items are manual-only (shown as instructions, not auto-installed)
+
+Use `/flux:profile view <url>` first to inspect the snapshot contents.
+
+## `/flux:profile` tombstone fails
+
+- Tombstone requires owner manage token (stored in `~/.flux/profile-state.json` after publish)
+- If the snapshot was published elsewhere, provide a valid token explicitly
+
 ## Undo a failed install
 
 Flux snapshots config before changes in `~/.flux/snapshots/`.

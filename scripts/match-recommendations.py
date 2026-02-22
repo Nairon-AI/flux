@@ -536,6 +536,7 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         ],
         # Review
         "lefthook": [("review", "no_git_hooks", "Catch errors before CI")],
+        "gh": [("review", "no_github_mcp", "Terminal GitHub workflows")],
         "github": [("review", "no_github_mcp", "PR/issue management")],
         "repoprompt": [("review", "no_github_mcp", "Code context for reviews")],
         "pre-commit-hooks": [("review", "no_git_hooks", "Catch errors locally")],

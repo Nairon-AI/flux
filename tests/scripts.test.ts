@@ -33,6 +33,28 @@ async function runScript(script: string, args: string[] = [], cwd?: string): Pro
   }
 }
 
+async function runScriptWithEnv(
+  script: string,
+  args: string[] = [],
+  cwd?: string,
+  extraEnv: Record<string, string> = {}
+): Promise<string> {
+  const scriptPath = join(FLUX_ROOT, 'scripts', script)
+  const env = {
+    ...process.env,
+    CLAUDE_PLUGIN_ROOT: FLUX_ROOT,
+    DROID_PLUGIN_ROOT: FLUX_ROOT,
+    ...extraEnv,
+  }
+
+  try {
+    const result = await $`bash ${scriptPath} ${args}`.env(env).cwd(cwd || FLUX_ROOT).text()
+    return result.trim()
+  } catch (e: any) {
+    return e.stdout?.toString() || e.stderr?.toString() || e.message
+  }
+}
+
 describe('Flux Scripts', () => {
   
   beforeAll(() => {
@@ -201,6 +223,32 @@ describe('Flux Scripts', () => {
       
       expect(result).toBeTruthy()
     }, SCRIPT_TIMEOUT)
+  })
+
+  describe('profile-manager.py', () => {
+
+    test('detect outputs valid profile catalog JSON', async () => {
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'profile-manager.py')
+      const result = await $`python3 ${scriptPath} detect --skills-scope both`.env({
+        ...process.env,
+        CLAUDE_PLUGIN_ROOT: FLUX_ROOT,
+      }).text()
+
+      const parsed = JSON.parse(result)
+      expect(parsed.os).toBeDefined()
+      expect(parsed.catalog).toBeDefined()
+      expect(parsed.application_selection).toBeDefined()
+    }, SCRIPT_TIMEOUT)
+
+    test('profile-manager unit test script passes', async () => {
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'test_profile_manager.py')
+      const result = await $`python3 ${scriptPath}`.env({
+        ...process.env,
+        CLAUDE_PLUGIN_ROOT: FLUX_ROOT,
+      }).text()
+
+      expect(result).toContain('All profile-manager tests passed')
+    }, SCRIPT_TIMEOUT * 4)
   })
 })
 
@@ -436,5 +484,30 @@ describe('Edge Cases', () => {
     
     expect(parsed.dismissed).toHaveLength(0)
     expect(Object.keys(parsed.alternatives)).toHaveLength(0)
+  }, SCRIPT_TIMEOUT)
+
+  test('detect-installed handles malformed MCP and preferences files', async () => {
+    const tmpRoot = `/tmp/flux-detect-edge-${Date.now()}`
+    const homeDir = `${tmpRoot}/home`
+    const workDir = `${tmpRoot}/work`
+
+    await $`mkdir -p ${homeDir}/.claude ${workDir}/.flux`.quiet()
+
+    await $`printf '%s' '{not-json' > ${homeDir}/.mcp.json`.quiet()
+    await $`printf '%s' '{still-bad' > ${homeDir}/.claude/settings.json`.quiet()
+    await $`printf '%s' '{bad-local' > ${workDir}/.mcp.json`.quiet()
+    await $`printf '%s' '{bad-prefs' > ${workDir}/.flux/preferences.json`.quiet()
+
+    const output = await runScriptWithEnv('detect-installed.sh', [], workDir, { HOME: homeDir })
+    const parsed = JSON.parse(output)
+
+    expect(parsed.installed.mcps).toEqual([])
+    expect(parsed.installed.plugins).toEqual([])
+    expect(parsed.preferences.dismissed).toEqual([])
+    expect(parsed.preferences.alternatives).toEqual({})
+    expect(parsed.warnings).toBeInstanceOf(Array)
+    expect(parsed.warnings.some((w: string) => w.includes('Malformed MCP config'))).toBe(true)
+    expect(parsed.warnings.some((w: string) => w.includes('Malformed Claude settings'))).toBe(true)
+    expect(parsed.warnings.some((w: string) => w.includes('Malformed preferences file'))).toBe(true)
   }, SCRIPT_TIMEOUT)
 })

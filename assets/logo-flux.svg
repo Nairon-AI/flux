@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" fill="none">
+  <!-- FLUX wordmark with flowing style -->
+  <defs>
+    <linearGradient id="fluxGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10B981" />
+      <stop offset="100%" style="stop-color:#34D399" />
+    </linearGradient>
+  </defs>
+  
+  <!-- F -->
+  <path d="M10 70 L10 10 L45 10 M10 38 L38 38" stroke="url(#fluxGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- L -->
+  <path d="M55 10 L55 70 L85 70" stroke="url(#fluxGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- U -->
+  <path d="M95 10 L95 55 Q95 70 110 70 Q125 70 125 55 L125 10" stroke="url(#fluxGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- X -->
+  <path d="M140 10 L175 70 M175 10 L140 70" stroke="url(#fluxGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Subtle flow accent under the word -->
+  <path d="M10 78 Q60 72 110 78 Q160 84 190 78" stroke="#10B981" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>
