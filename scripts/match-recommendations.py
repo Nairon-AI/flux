@@ -332,74 +332,64 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
     phase_gaps = gaps.get(phase, [])
 
     # Map recommendations to gaps they fill
+    # Map tools to gaps they fill. Tools can fill multiple gaps.
+    # Format: tool_name -> [(phase, gap_type, reason), ...]
     gap_mappings = {
         # Requirements
-        "exa": ("requirements", "no_web_search", "Research and fact-checking"),
-        "figma": ("requirements", "no_design_tools", "Design-to-code workflow"),
-        "pencil": ("requirements", "no_design_tools", "Design-to-code workflow"),
-        "granola": (
-            "requirements",
-            "no_meeting_capture",
-            "Capture stakeholder context",
-        ),
+        "exa": [("requirements", "no_web_search", "Research and fact-checking")],
+        "figma": [("requirements", "no_design_tools", "Design-to-code workflow")],
+        "pencil": [("requirements", "no_design_tools", "Design-to-code workflow")],
+        "granola": [
+            ("requirements", "no_meeting_capture", "Capture stakeholder context")
+        ],
         # Planning
-        "linear": ("planning", "no_issue_tracking", "Track work in Claude"),
-        "excalidraw": ("planning", "no_diagramming", "Visualize architecture"),
-        "beads": ("planning", "no_issue_tracking", "AI-native task tracking"),
+        "linear": [("planning", "no_issue_tracking", "Track work in Claude")],
+        "excalidraw": [("planning", "no_diagramming", "Visualize architecture")],
+        "beads": [("planning", "no_issue_tracking", "AI-native task tracking")],
         # Implementation
-        "context7": ("implementation", "no_doc_lookup", "Current library docs"),
-        "oxlint": ("implementation", "no_linter", "Fast linting"),
-        "biome": ("implementation", "no_linter", "Linting + formatting"),
-        "jq": ("implementation", "knowledge_gaps", "JSON processing"),
-        "fzf": ("implementation", "knowledge_gaps", "Fast navigation"),
-        "fzf": ("implementation", "search_difficulties", "Fuzzy file search"),
-        "raycast": ("implementation", "knowledge_gaps", "Quick access"),
-        "remotion": ("implementation", "knowledge_gaps", "Video generation"),
-        # Session-based recommendations
-        "context7": (
-            "implementation",
-            "frequent_lookups",
-            "Stop searching docs repeatedly",
-        ),
-        "nia": (
-            "implementation",
-            "search_difficulties",
-            "Index and search external repos",
-        ),
-        "supermemory": (
-            "documentation",
-            "frequent_lookups",
-            "Remember what you learned",
-        ),
-        # Error pattern recommendations (from session analysis)
-        "stagehand-e2e": (
-            "testing",
-            "recurring_tool_errors",
-            "Catch UI errors before they repeat",
-        ),
+        "context7": [
+            ("implementation", "no_doc_lookup", "Current library docs"),
+            ("implementation", "frequent_lookups", "Stop searching docs repeatedly"),
+        ],
+        "oxlint": [("implementation", "no_linter", "Fast linting")],
+        "biome": [("implementation", "no_linter", "Linting + formatting")],
+        "jq": [("implementation", "knowledge_gaps", "JSON processing")],
+        "fzf": [
+            ("implementation", "knowledge_gaps", "Fast navigation"),
+            ("implementation", "search_difficulties", "Fuzzy file search"),
+        ],
+        "raycast": [("implementation", "knowledge_gaps", "Quick access")],
+        "remotion": [("implementation", "knowledge_gaps", "Video generation")],
+        "nia": [
+            ("implementation", "search_difficulties", "Index and search external repos")
+        ],
         # Review
-        "lefthook": ("review", "no_git_hooks", "Catch errors before CI"),
-        "github": ("review", "no_github_mcp", "PR/issue management"),
-        "repoprompt": ("review", "no_github_mcp", "Code context for reviews"),
-        "pre-commit-hooks": ("review", "no_git_hooks", "Catch errors locally"),
-        "atomic-commits": ("review", "no_ci", "Better git history"),
+        "lefthook": [("review", "no_git_hooks", "Catch errors before CI")],
+        "github": [("review", "no_github_mcp", "PR/issue management")],
+        "repoprompt": [("review", "no_github_mcp", "Code context for reviews")],
+        "pre-commit-hooks": [("review", "no_git_hooks", "Catch errors locally")],
+        "atomic-commits": [("review", "no_ci", "Better git history")],
         # Testing
-        "stagehand-e2e": ("testing", "no_tests", "Self-healing E2E tests"),
-        "test-first-debugging": ("testing", "no_tests", "Regression protection"),
+        "stagehand-e2e": [
+            ("testing", "no_tests", "Self-healing E2E tests"),
+            ("testing", "recurring_tool_errors", "Catch UI errors before they repeat"),
+        ],
+        "test-first-debugging": [("testing", "no_tests", "Regression protection")],
         # Documentation
-        "agents-md-structure": (
-            "documentation",
-            "no_agents_md",
-            "AI knows your project",
-        ),
-        "supermemory": ("documentation", "no_memory", "Persistent memory"),
-        "context-management": ("documentation", "no_memory", "Session continuity"),
+        "agents-md-structure": [
+            ("documentation", "no_agents_md", "AI knows your project")
+        ],
+        "supermemory": [
+            ("documentation", "no_memory", "Persistent memory"),
+            ("documentation", "frequent_lookups", "Remember what you learned"),
+        ],
+        "context-management": [("documentation", "no_memory", "Session continuity")],
     }
 
     if name in gap_mappings:
-        mapped_phase, gap_type, reason = gap_mappings[name]
-        if gap_type in gaps.get(mapped_phase, []):
-            return True, mapped_phase, reason
+        for mapped_phase, gap_type, reason in gap_mappings[name]:
+            if gap_type in gaps.get(mapped_phase, []):
+                return True, mapped_phase, reason
 
     return False, phase, ""
 
