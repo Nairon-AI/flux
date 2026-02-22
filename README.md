@@ -129,6 +129,12 @@ If you want live community discoveries too:
 /flux:improve --discover
 ```
 
+If you want full matching rationale (signals + gaps):
+
+```bash
+/flux:improve --explain
+```
+
 ---
 
 ## Install

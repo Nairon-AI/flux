@@ -1,7 +1,7 @@
 ---
 name: flux:improve
 description: Analyze your environment and recommend workflow optimizations
-argument-hint: "[--skip-sessions] [--discover] [--category=mcp|cli|plugin|skill|pattern]"
+argument-hint: "[--skip-sessions] [--discover] [--explain] [--category=mcp|cli|plugin|skill|pattern]"
 ---
 
 ## Step 0: Version Check (silent, non-blocking)

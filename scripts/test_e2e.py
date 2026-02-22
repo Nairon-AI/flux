@@ -563,6 +563,56 @@ def test_user_context_integration():
         return False
 
 
+def test_explain_and_source_output():
+    """Test explain mode exposes signal summary and recommendation source."""
+    print()
+    print("=" * 70)
+    print("EXPLAIN MODE OUTPUT TEST")
+    print("=" * 70)
+    print()
+
+    context = {
+        "installed": {"mcps": [], "plugins": [], "cli_tools": [], "applications": []},
+        "repo": {},
+        "preferences": {"dismissed": [], "alternatives": {}},
+        "session_insights": {
+            "enabled": True,
+            "friction_signals": {"api_hallucination": 5, "lint_errors": 2},
+            "knowledge_gaps": {"by_type": {}},
+            "tool_errors": {"total": 0},
+        },
+    }
+
+    results = match_recs.match_recommendations(context, RECS_DIR, None, "", True)
+
+    explain = results.get("explain", {})
+    top_signals = explain.get("top_friction_signals", [])
+
+    if not top_signals:
+        print("✗ Missing explain.top_friction_signals")
+        return False
+
+    if top_signals[0].get("signal") != "api_hallucination":
+        print(f"✗ Expected top signal api_hallucination, got: {top_signals[0]}")
+        return False
+
+    found_source = False
+    for phase_recs in results.get("recommendations_by_phase", {}).values():
+        for rec in phase_recs:
+            if "source" in rec:
+                found_source = True
+                break
+        if found_source:
+            break
+
+    if not found_source:
+        print("✗ No recommendation included source metadata")
+        return False
+
+    print("✓ Explain output includes signal summary and recommendation source")
+    return True
+
+
 def main():
     total_passed = 0
     total_failed = 0
@@ -596,6 +646,7 @@ def main():
     pipeline_results.append(
         ("User Context Integration", test_user_context_integration())
     )
+    pipeline_results.append(("Explain Mode Output", test_explain_and_source_output()))
 
     print()
     print("=" * 70)

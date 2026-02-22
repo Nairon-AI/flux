@@ -43,6 +43,7 @@ Options:
 - `--list` - Just list all available recommendations without analysis
 - `--score` - Just show workflow score without recommendations
 - `--discover` - Optional live discovery from X/Twitter (Exa-first, BYOK fallback)
+- `--explain` - Include detailed explainability (signals, gaps, and matching rationale)
 
 ## Workflow
 

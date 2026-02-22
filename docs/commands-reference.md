@@ -21,6 +21,7 @@ Complete reference for all available `/flux:*` commands.
 | `/flux:improve --list` | `/flux:improve --list` | List available recommendations |
 | `/flux:improve --skip-sessions` | `/flux:improve --skip-sessions` | Skip session analysis (repo/setup only) |
 | `/flux:improve --discover` | `/flux:improve --discover` | Optional live community discovery (Exa/Twitter) |
+| `/flux:improve --explain` | `/flux:improve --explain` | Include detailed explainability output |
 | `/flux:improve --category` | `/flux:improve --category=<mcp\|cli\|plugin\|skill\|pattern>` | Filter recommendation category |
 | `/flux:improve --dismiss` | `/flux:improve --dismiss <name>` | Dismiss recommendation |
 | `/flux:improve --alternative` | `/flux:improve --alternative <rec> <alt>` | Store alternative tool |

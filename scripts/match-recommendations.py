@@ -75,6 +75,23 @@ USER_CONTEXT_PATTERNS = {
     r"\b(pr|pull request|issue|github)\b": ["github_friction"],
 }
 
+FRICTION_LABELS = {
+    "api_hallucination": "Model used APIs that do not exist",
+    "outdated_docs": "Documentation/version mismatch issues",
+    "search_needed": "Research or external lookup needed",
+    "context_forgotten": "Model forgot previously stated context",
+    "re_explaining": "User had to repeat requirements",
+    "css_issues": "Styling/CSS issues",
+    "ui_issues": "UI quality/layout issues",
+    "lint_errors": "Lint/format errors recurring",
+    "ci_failures": "CI/pipeline failures",
+    "forgot_to_lint": "Pre-commit checks missed locally",
+    "shallow_answers": "Insufficient depth/quality in responses",
+    "edge_case_misses": "Edge cases were missed",
+    "regressions": "Bugs reappeared",
+    "flaky_tests": "Intermittent test failures",
+}
+
 
 def parse_user_context(user_context: str) -> dict[str, int]:
     """Parse user-provided context into friction signals."""
@@ -591,10 +608,37 @@ def calculate_relevance(rec: dict, context: dict, gaps: dict) -> dict | None:
         "phase": gap_phase,
         "solves": solves,
         "reason": gap_reason,
+        "source": rec.get("source", "manual"),
+        "source_url": rec.get("source_url", ""),
         "pricing": {
             "model": pricing_model,
             "details": pricing_details,
         },
+    }
+
+
+def build_explain_summary(context: dict, gaps: dict) -> dict:
+    """Build explainability summary for recommendations output."""
+    session_insights = context.get("session_insights", {}) or {}
+    friction = session_insights.get("friction_signals", {}) or {}
+
+    top_signals = []
+    if isinstance(friction, dict):
+        ordered = sorted(friction.items(), key=lambda x: x[1], reverse=True)
+        for name, count in ordered:
+            if not isinstance(count, (int, float)) or count <= 0:
+                continue
+            top_signals.append(
+                {
+                    "signal": str(name),
+                    "count": int(count),
+                    "description": FRICTION_LABELS.get(str(name), "Detected friction"),
+                }
+            )
+
+    return {
+        "top_friction_signals": top_signals[:10],
+        "gaps_detected": {k: v for k, v in gaps.items() if v},
     }
 
 
@@ -603,6 +647,7 @@ def match_recommendations(
     recs_dir: str,
     filter_category: str | None = None,
     user_context: str = "",
+    explain: bool = False,
 ) -> dict:
     """Match recommendations based on SDLC gaps.
 
@@ -654,12 +699,17 @@ def match_recommendations(
     # Filter out empty phases
     by_phase = {k: v for k, v in by_phase.items() if v}
 
-    return {
+    result = {
         "total": total,
         "gaps_detected": {k: v for k, v in gaps.items() if v},
         "recommendations_by_phase": by_phase,
         "skipped": skipped,
     }
+
+    if explain:
+        result["explain"] = build_explain_summary(context, gaps)
+
+    return result
 
 
 def main():
@@ -676,6 +726,11 @@ def main():
         "-u",
         default="",
         help="User-provided pain point description to boost matching",
+    )
+    parser.add_argument(
+        "--explain",
+        action="store_true",
+        help="Include explainability data (signals, gaps) in output",
     )
     args = parser.parse_args()
 
@@ -696,7 +751,11 @@ def main():
 
     # Match recommendations with user context
     results = match_recommendations(
-        context, recs_dir, filter_category, args.user_context
+        context,
+        recs_dir,
+        filter_category,
+        args.user_context,
+        args.explain,
     )
 
     # Output JSON

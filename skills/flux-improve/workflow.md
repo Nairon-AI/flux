@@ -17,10 +17,13 @@ Check `$ARGUMENTS` for:
 - `--sessions always` → enable always allow sessions, exit
 - `--sessions ask` → disable always allow (ask each time), exit
 - `--discover` → include optional community discovery from X/Twitter
+- `--explain` → include detailed explainability output
 
 Set defaults before parsing:
 - `DISCOVER=false`
 - If `--discover` present, set `DISCOVER=true`
+- `EXPLAIN=false`
+- If `--explain` present, set `EXPLAIN=true`
 
 ### Handle Utility Commands
 
@@ -217,6 +220,14 @@ Frustrations detected:
     Example: "<sample context>"
 ```
 
+**Always show friction signals (name + count):**
+```
+  Friction Signals:
+  • api_hallucination: <count>
+  • lint_errors: <count>
+  • context_forgotten: <count>
+```
+
 **If no issues found:**
 ```
   No significant pain points detected in recent sessions.
@@ -308,9 +319,17 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
 
 # Include user context if provided (dramatically improves accuracy)
 if [ -n "$USER_CONTEXT" ]; then
-    MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --user-context "$USER_CONTEXT")
+    if [ "$EXPLAIN" = "true" ]; then
+        MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --user-context "$USER_CONTEXT" --explain)
+    else
+        MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --user-context "$USER_CONTEXT")
+    fi
 else
-    MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py")
+    if [ "$EXPLAIN" = "true" ]; then
+        MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py" --explain)
+    else
+        MATCHES=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/match-recommendations.py")
+    fi
 fi
 ```
 
@@ -354,6 +373,7 @@ Based on your session frustrations:
 1. [MCP] context7
    Current library docs - always up-to-date
    Addresses: "how to" queries detected 5 times in recent sessions
+   Source: manual curation
    
 2. [MCP] nia  
    Index and search external repos
@@ -370,6 +390,7 @@ Based on missing workflow components:
 3. [CLI] oxlint
    Fast linting - 50-100x faster than ESLint
    Addresses: No linter detected in project
+   Source: manual curation
    
 4. [CLI] lefthook
    Git hooks manager - catch errors before CI
