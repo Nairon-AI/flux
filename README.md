@@ -76,14 +76,6 @@ Step 4/4: Install
 
 ---
 
-## Prerequisites
-
-- **Python 3.9+** — for session analysis
-- **jq** — for JSON processing (`brew install jq` / `apt install jq`)
-- **git** — for fetching recommendations
-
----
-
 ## Install
 
 ### Claude Code (Marketplace)
