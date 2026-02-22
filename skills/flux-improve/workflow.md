@@ -16,6 +16,11 @@ Check `$ARGUMENTS` for:
 - `--clear-preferences` → clear all preferences, exit
 - `--sessions always` → enable always allow sessions, exit
 - `--sessions ask` → disable always allow (ask each time), exit
+- `--discover` → include optional community discovery from X/Twitter
+
+Set defaults before parsing:
+- `DISCOVER=false`
+- If `--discover` present, set `DISCOVER=true`
 
 ### Handle Utility Commands
 
@@ -52,8 +57,9 @@ For `--alternative <rec> <alt>`:
 ┌─ Flux Improve ──────────────────────────────────────────────┐
 │                                                             │
 │ This analyzes your local environment to find workflow       │
-│ improvements. Everything happens locally - no data leaves   │
-│ your machine.                                               │
+│ improvements. By default this stays local.                  │
+│ If you pass --discover, search queries are sent to          │
+│ Exa/Twitter APIs (optional).                                │
 │                                                             │
 │ What I'll check:                                            │
 │ • Repo structure (package.json, configs, directory layout)  │
@@ -68,8 +74,10 @@ For `--alternative <rec> <alt>`:
 First, check if user has "always allow" enabled in preferences:
 
 ```bash
-ALWAYS_ALLOW=$(jq -r '.always_allow_sessions // false' ~/.flux/preferences.json 2>/dev/null || echo "false")
+ALWAYS_ALLOW=$(jq -r '.always_allow_sessions // false' .flux/preferences.json 2>/dev/null || echo "false")
 ```
+
+Note: preferences live in project-local `.flux/preferences.json`.
 
 **If `ALWAYS_ALLOW=true`**: Set `ANALYZE_SESSIONS=true` and skip the question.
 
@@ -389,6 +397,41 @@ Based on missing workflow components:
 
 Select to install: [1,2,3] or 'all' or 'none'
 ```
+
+## Step 9b: Optional Community Discovery (`--discover`)
+
+If `DISCOVER=true`, run an optional live search for novel optimizations:
+
+```bash
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+
+if [ -n "$USER_CONTEXT" ]; then
+  DISCOVERY=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/discover-community.py" --user-context "$USER_CONTEXT" || echo '{"enabled":false,"source":"none","discoveries":[],"queries":[],"reason":"discovery script failed"}')
+else
+  DISCOVERY=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/discover-community.py" || echo '{"enabled":false,"source":"none","discoveries":[],"queries":[],"reason":"discovery script failed"}')
+fi
+```
+
+Behavior:
+- **Exa first**: uses `exa_api_key` (env or `~/.flux/config.json`) to search X/Twitter domains
+- **Fallback**: uses `twitter_api_key` with Twitter advanced search
+- **No keys**: returns query suggestions for manual search and does not block normal recommendations
+
+Display as:
+
+```
+Community Discoveries (Experimental)
+
+1. <title>
+   Source: <exa|twitter-api>
+   Why relevant: <mapped friction signals>
+   Link: <url>
+   Signals: <likes/retweets if available>
+
+2. ...
+```
+
+This step is optional and additive. Curated recommendations remain the primary output.
 
 ## Step 10: Installation
 

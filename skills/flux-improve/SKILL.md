@@ -42,6 +42,7 @@ Options:
 - `--category=<cat>` - Filter to specific category (mcp, cli, plugin, skill, vscode, pattern)
 - `--list` - Just list all available recommendations without analysis
 - `--score` - Just show workflow score without recommendations
+- `--discover` - Optional live discovery from X/Twitter (Exa-first, BYOK fallback)
 
 ## Workflow
 
@@ -49,7 +50,7 @@ Follow [workflow.md](workflow.md) exactly.
 
 ## Key Principles
 
-1. **Privacy first** - Everything happens locally. Nothing sent externally.
+1. **Privacy first** - Local by default. `--discover` is optional and sends search queries to Exa/Twitter APIs.
 2. **Consent required** - Use `mcp_question` to get explicit consent before analyzing session history.
 3. **Non-blocking** - User can skip any step or recommendation.
 4. **Verification** - Every installation is verified before marking complete.

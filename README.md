@@ -191,6 +191,7 @@ Here's how to use Flux from install to daily usage:
 | `/flux:improve` | Analyze sessions, detect friction, recommend tools |
 | `/flux:improve --detect` | Show what's installed (no recommendations) |
 | `/flux:improve --skip-sessions` | Skip session analysis |
+| `/flux:improve --discover` | Add optional live community discovery from X/Twitter |
 | `/flux:improve --dismiss <name>` | Never recommend this tool again |
 | `/flux:improve --category <cat>` | Filter: mcp, cli, plugin, skill, pattern |
 | **Utilities** | |
@@ -235,7 +236,9 @@ Preferences saved to `.flux/preferences.json`.
 
 **Is any data sent externally?**
 
-No. Everything runs locally. The only network request is `git clone` to fetch the recommendations database on first run.
+By default, analysis runs locally. Network access is used to fetch the recommendations repo.
+
+If you run `/flux:improve --discover`, Flux also sends search queries to Exa/Twitter APIs (using your keys) to find optional community discoveries.
 
 **How does session analysis work?**
 
