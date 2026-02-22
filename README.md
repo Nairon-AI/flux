@@ -22,21 +22,45 @@ You're using AI agents, but something's off:
 
 These aren't model failures. They're **process failures**.
 
-Not to mention best practices and new tools are released weekly and you can't keep up 🤯
+Not to mention best practices and new tools are released weekly and you can't keep up.
 
 All you want is to be as productive as possible with your budget, and be able to sleep well at night.
+
+**This is where Flux comes in.**
 
 ---
 
 ## What Flux Does
 
-Flux analyzes your **actual coding sessions** to find friction—then recommends specific tools that would have helped.
+Flux gives you a **structured workflow** based on how software is actually built—so you stop pulling your hair out.
+
+### The Workflow
+
+Instead of jumping straight into code and watching the agent go off the rails:
+
+1. **Interview** — Flesh out the feature first. What are the edge cases? What decisions need to be made? Even without a transcript, thinking through requirements upfront prevents chaos later.
+
+2. **Plan** — Break down into dependency-aware tasks. Flux creates tasks in `.flux/` with clear scope, so you always know what's next.
+
+3. **Implement** — Execute tasks one at a time with automatic context reload. No drift. No forgotten requirements.
+
+4. **Review** — Built-in review step catches issues before they compound.
+
+This isn't just organization—it's how you maintain sanity when building with AI agents.
+
+### Tool Discovery
+
+Flux also analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
+
+- MCPs, CLI tools, skills, workflow patterns
+- Matched to your project type and detected pain points
+- Only recommends when there's actual friction (not tool spam)
 
 ```
 /flux:improve
 ```
 
-That's it. Flux reads your session history, detects patterns of frustration, checks what you already have installed, and shows you exactly what's missing.
+Reads your session history, detects frustration patterns, checks what you already have, shows what's missing.
 
 ---
 
@@ -82,21 +106,15 @@ Step 4/4: Install
 
 ## Install
 
-### Claude Code (Marketplace)
+### Claude Code
 
 ```bash
+# From marketplace
 /plugin marketplace add Nairon-AI/flux
 /plugin install flux@nairon-flux
-```
 
-### Claude Code (Manual)
-
-```bash
-# Clone to plugins directory
+# Or manual
 git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
-
-# Restart Claude Code, then verify
-/flux:improve --detect
 ```
 
 ### OpenCode
@@ -106,21 +124,87 @@ git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 /plugin install flux@nairon-flux
 ```
 
+### First-Time Setup
+
+After installing, initialize Flux in your project:
+
+```bash
+/flux:setup
+```
+
+This creates `.flux/` in your project and sets up the task tracking system. Run once per project.
+
+---
+
+## Quick Start
+
+Here's how to use Flux from install to daily usage:
+
+### 1. Install & Setup (once)
+
+```bash
+/plugin install flux@nairon-flux   # Install plugin
+/flux:setup                         # Initialize in your project
+```
+
+### 2. Start a Feature
+
+```bash
+/flux:interview Add user notifications   # Optional: flesh out requirements
+/flux:plan Add user notifications         # Break into tasks
+```
+
+### 3. Build It
+
+```bash
+/flux:work fn-1.1                         # Execute first task
+/flux:work fn-1.2                         # Next task (auto-reloads context)
+# ... continue until done
+```
+
+### 4. Find Better Tools (anytime)
+
+```bash
+/flux:improve                             # Analyze sessions, get recommendations
+```
+
 ---
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/flux:improve` | Analyze sessions, find gaps, get recommendations |
-| `/flux:improve --detect` | Just show what's installed (no recommendations) |
-| `/flux:improve --dismiss X` | Never recommend X again |
-| `/flux:plan` | Break a feature into dependency-aware tasks |
-| `/flux:work` | Execute a task with automatic context reload |
+| Command | What it does |
+|---------|--------------|
+| **Setup** | |
+| `/flux:setup` | Initialize `.flux/` in project (run once per project) |
+| **Workflow** | |
+| `/flux:interview <idea>` | Interview yourself to flesh out requirements |
+| `/flux:plan <idea>` | Break feature into dependency-aware tasks |
+| `/flux:work <task-id>` | Execute a task with automatic context reload |
+| `/flux:prime` | Re-anchor to project context mid-session |
+| **Tool Discovery** | |
+| `/flux:improve` | Analyze sessions, detect friction, recommend tools |
+| `/flux:improve --detect` | Show what's installed (no recommendations) |
+| `/flux:improve --skip-sessions` | Skip session analysis |
+| `/flux:improve --dismiss <name>` | Never recommend this tool again |
+| `/flux:improve --category <cat>` | Filter: mcp, cli, plugin, skill, pattern |
+| **Utilities** | |
+| `/flux:sync` | Sync tasks with git |
+| `/flux:deps` | Show task dependencies |
 
 ---
 
 ## How It Works
+
+### Task Tracking
+
+Flux maintains tasks in `.flux/`:
+- Epics: `.flux/epics/fn-N-slug.json`
+- Tasks: `.flux/tasks/fn-N-slug.M.json`
+- Specs: `.flux/specs/fn-N-slug.md`
+
+Each task has clear scope, dependencies, and acceptance criteria. `/flux:work` reloads this context before each task—nothing drifts.
+
+### Tool Discovery
 
 1. **Extracts** your session history (OpenCode SQLite or Claude Code JSONL)
 2. **Detects friction** — 70+ patterns: user frustration, tool errors, agent confusion
@@ -129,55 +213,7 @@ git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 5. **Asks** which improvements to apply
 6. **Implements** — installs tools, adds AGENTS.md rules, configures hooks
 
-Preferences saved to `.flux/preferences.json` so dismissed items stay dismissed.
-
----
-
-## Daily Usage
-
-**Weekly check-in** — Run after a few coding sessions:
-```
-/flux:improve
-```
-Review what friction patterns emerged. Apply fixes that make sense.
-
-**Before starting a feature** — Plan first:
-```
-/flux:plan Add dark mode toggle to settings
-```
-Creates tasks in `.flux/` with dependencies mapped out.
-
-**Execute tasks** — One at a time with context reload:
-```
-/flux:work fx-1.1
-```
-Re-anchors to the plan before each task. Nothing drifts.
-
-**Dismiss noise** — Tool not relevant to you?
-```
-/flux:improve --dismiss figma
-```
-Won't suggest it again.
-
----
-
-## All Commands
-
-| Command | Description |
-|---------|-------------|
-| **Core** | |
-| `/flux:improve` | Analyze sessions and get recommendations |
-| `/flux:plan <idea>` | Break a feature into tasks |
-| `/flux:work <task-id>` | Execute a task with context reload |
-| **Options** | |
-| `/flux:improve --detect` | Show installed tools only |
-| `/flux:improve --skip-sessions` | Skip session analysis |
-| `/flux:improve --dismiss <name>` | Never recommend this tool |
-| `/flux:improve --category <cat>` | Filter by: mcp, cli, plugin, skill, pattern |
-| **Advanced** | |
-| `/flux:setup` | Install fluxctl CLI locally |
-| `/flux:prime` | Re-anchor to project context |
-| `/flux:sync` | Sync tasks with git |
+Preferences saved to `.flux/preferences.json`.
 
 ---
 
