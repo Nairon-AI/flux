@@ -149,8 +149,8 @@ Documentation
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                RECOMMENDATIONS DATABASE                         │
-│                ${PLUGIN_ROOT}/recommendations/                  │
+│                RECOMMENDATIONS DATABASE (external)              │
+│                ~/.flux/recommendations/ (git clone)             │
 │                                                                 │
 │  ┌─────────┐ ┌───────────┐ ┌──────────────┐ ┌────────────────┐ │
 │  │  MCPs   │ │ CLI Tools │ │ Applications │ │ Skills/Patterns│ │
@@ -191,7 +191,17 @@ Documentation
 
 ## Recommendation Database
 
-Recommendations live in [Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations):
+Recommendations are maintained separately in [Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
+
+**Install recommendations:**
+```bash
+git clone https://github.com/Nairon-AI/flux-recommendations ~/.flux/recommendations
+```
+
+**Update recommendations:**
+```bash
+cd ~/.flux/recommendations && git pull
+```
 
 | Category | Examples |
 |----------|----------|
@@ -205,6 +215,8 @@ Each recommendation includes:
 - **SDLC phase** it addresses
 - **What problem it solves**
 - **Pricing** (free, freemium, paid, open-source)
+
+> **Note:** `/flux:improve` works without recommendations installed—it just won't suggest tools. Session analysis and gap detection still run.
 
 ## Workflow Engine
 
