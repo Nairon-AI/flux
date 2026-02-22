@@ -2,6 +2,68 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [flux 0.8.0] - 2026-02-22
+
+### Added
+
+- **Community discovery mode** for `/flux:improve`:
+  - `--discover` enables optional live search for novel optimizations from X/Twitter sources
+  - Exa-first search with Twitter API fallback
+  - BYOK support via `~/.flux/config.json` (`exa_api_key`, `twitter_api_key`)
+
+- **Explainability mode** for recommendation transparency:
+  - `--explain` includes top friction signals and detected gap summary
+  - recommendation output now includes source metadata (`source`, `source_url`)
+
+- **New script**: `scripts/discover-community.py`
+  - friction-aware query generation
+  - URL canonical dedupe + ranking
+  - non-blocking failure behavior
+
+- **New tests**:
+  - `scripts/test_discover_community.py`
+  - explain/source assertions in `scripts/test_e2e.py`
+
+### Changed
+
+- README onboarding and quick demo flow clarified
+- full command reference added in `docs/commands-reference.md`
+- privacy copy updated to reflect optional external search behavior
+
+## [flux 0.7.0] - 2026-02-22
+
+### Added
+
+- **Optional user context boost** for `/flux:improve`:
+  - asks user for short pain-point description
+  - maps plain-language frustrations into friction signals
+  - significantly improves recommendation precision when provided
+
+- `--user-context` support in `match-recommendations.py`
+
+- Extended end-to-end tests for user-context parsing and integration
+
+### Changed
+
+- README restructured around interview -> plan -> implement -> review workflow
+- Added product vision section for engineering observability
+
+## [flux 0.6.0] - 2026-02-21
+
+### Added
+
+- **Friction-first recommendation engine**
+  - recommendations are triggered by detected friction, not just missing tools
+  - expanded friction signal mapping for docs, linting, CI, memory, UI, and reasoning gaps
+
+- **Session analysis enhancements**
+  - broader pattern detection for user frustration, tool output errors, and agent confusion
+  - stronger end-to-end coverage and friction coverage tests
+
+### Changed
+
+- `/flux:improve` output and docs improved for clarity and FAQ coverage
+
 ## [flux 0.5.0] - 2026-02-21
 
 ### Added

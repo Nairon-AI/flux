@@ -360,6 +360,15 @@ Flux will grow with the industry. The SDLC framework evolves as we collectively 
 
 ---
 
+## Docs
+
+- `docs/commands-reference.md` - full command reference
+- `docs/architecture.md` - command -> skill -> script architecture
+- `docs/recommendation-format.md` - recommendation YAML format guide
+- `docs/troubleshooting.md` - common issues and fixes
+
+---
+
 ## License
 
 MIT
