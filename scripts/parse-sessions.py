@@ -47,6 +47,144 @@ KNOWLEDGE_GAP_PATTERNS = [
     (r"how do I", "how_to"),
 ]
 
+# Patterns that appear in TOOL OUTPUTS indicating agent made a mistake
+# These are errors from compilers, linters, bash, etc.
+TOOL_OUTPUT_FRICTION = [
+    # TypeScript/JavaScript errors -> api_hallucination (agent used wrong API)
+    (r"Property '[\w]+' does not exist on type", "api_hallucination"),
+    (r"has no exported member '[\w]+'", "api_hallucination"),
+    (r"Cannot find module '[\w/\-@.]+'", "api_hallucination"),
+    (r"is not assignable to type", "api_hallucination"),
+    (r"'[\w]+' is not a function", "api_hallucination"),
+    (r"Cannot read propert(y|ies) of (undefined|null)", "api_hallucination"),
+    (r"TypeError:", "api_hallucination"),
+    (r"ReferenceError:", "api_hallucination"),
+    (r"error TS\d+:", "api_hallucination"),  # TypeScript error codes
+    # Python errors
+    (r"AttributeError:", "api_hallucination"),
+    (r"ImportError:", "api_hallucination"),
+    (r"ModuleNotFoundError:", "api_hallucination"),
+    (r"NameError:", "api_hallucination"),
+    # Lint/format errors in output
+    (r"eslint.*error", "lint_errors"),
+    (r"prettier.*error", "lint_errors"),
+    (r"\d+ error(s)? and \d+ warning", "lint_errors"),
+    (r"Parsing error:", "lint_errors"),
+    # CSS/styling errors in build output
+    (r"(postcss|tailwind|css).*error", "css_issues"),
+    (r"Unknown at rule @", "css_issues"),
+    (r"Invalid property", "css_issues"),
+    # Test failures
+    (r"FAIL\s+.*\.test\.", "regressions"),
+    (r"AssertionError:", "regressions"),
+    (r"Expected .* but (got|received)", "regressions"),
+    (r"\d+ (test|spec)s? failed", "regressions"),
+    # CI/build failures
+    (r"npm ERR!", "ci_failures"),
+    (r"Build failed", "ci_failures"),
+    (r"exit code 1", "ci_failures"),
+    (r"Command failed", "ci_failures"),
+]
+
+# Patterns indicating AGENT UNCERTAINTY/CONFUSION
+AGENT_CONFUSION_PATTERNS = [
+    # Agent admitting mistakes
+    (r"I apologize", "shallow_answers"),
+    (r"my mistake", "shallow_answers"),
+    (r"I was wrong", "shallow_answers"),
+    (r"let me (try|correct|fix)", "shallow_answers"),
+    (r"that (didn't|did not) work", "shallow_answers"),
+    # Agent uncertainty
+    (r"I('m| am) not (sure|certain)", "shallow_answers"),
+    (r"I don't (know|have|see)", "shallow_answers"),
+    (r"I can't (find|determine|figure)", "shallow_answers"),
+    # Agent retrying / different approach
+    (r"(try|trying) (a |another )?different", "shallow_answers"),
+    (r"let me try (again|another|a different)", "shallow_answers"),
+    # Agent searching/exploring excessively
+    (r"let me (search|look|check|explore)", "search_needed"),
+]
+
+# Friction signals from USER messages (frustration, complaints)
+# These are the keys expected by the matching engine
+FRICTION_PATTERNS = [
+    # API/Docs friction -> context7
+    (r"method does not exist", "api_hallucination"),
+    (r"property .+ does not exist", "api_hallucination"),
+    (r"is not a function", "api_hallucination"),
+    (r"has no exported member", "api_hallucination"),
+    (r"cannot find module", "api_hallucination"),
+    (r"that api.+changed", "outdated_docs"),
+    (r"deprecated.+use .+ instead", "outdated_docs"),
+    (r"docs (are|seem) (outdated|old|wrong)", "outdated_docs"),
+    # Search/Research friction -> exa
+    (r"is there a (way|tool|library) to", "search_needed"),
+    (r"how do (other|people|teams)", "search_needed"),
+    (r"what's the best (way|practice|approach)", "search_needed"),
+    (r"any (alternatives|options) for", "search_needed"),
+    # Memory/Context friction -> supermemory
+    (r"I (already|just) told you", "context_forgotten"),
+    (r"remember (when|that|earlier)", "context_forgotten"),
+    (r"as I (said|mentioned)", "re_explaining"),
+    (r"like I said before", "re_explaining"),
+    (r"we already discussed", "re_explaining"),
+    # UI/Frontend friction -> frontend-models
+    (r"(css|style|styling) (isn't|not|doesn't) (work|look)", "css_issues"),
+    (r"(ui|layout|design) (looks|is) (wrong|off|broken)", "ui_issues"),
+    (r"responsive.+(broken|not working)", "ui_issues"),
+    (r"flexbox.+(not|isn't)", "css_issues"),
+    (r"grid.+(not|isn't)", "css_issues"),
+    (r"tailwind.+(not|isn't|wrong)", "css_issues"),
+    # Reasoning friction -> reasoning-models
+    (r"think (harder|deeper|more carefully)", "shallow_answers"),
+    (r"you missed.+(edge case|scenario)", "edge_case_misses"),
+    (r"that's (too simple|shallow|naive)", "shallow_answers"),
+    (r"what about (when|if|the case)", "edge_case_misses"),
+    (r"you didn't consider", "edge_case_misses"),
+    # Lint/Format friction -> oxlint, biome
+    (r"lint(ing)? error", "lint_errors"),
+    (r"eslint.+error", "lint_errors"),
+    (r"prettier.+error", "lint_errors"),
+    (r"formatting (error|issue)", "lint_errors"),
+    # CI/Hooks friction -> lefthook
+    (r"ci (failed|failure|broke)", "ci_failures"),
+    (r"pipeline (failed|failure)", "ci_failures"),
+    (r"github actions.+fail", "ci_failures"),
+    (r"forgot to (lint|format|test)", "forgot_to_lint"),
+    (r"should have (run|ran) .+ before", "forgot_to_lint"),
+    # Task/Project friction -> linear, beads
+    (r"what was I (doing|working on)", "task_tracking_issues"),
+    (r"forgot (to|about) .+ (task|issue|ticket)", "task_tracking_issues"),
+    (r"we said we('d| would)", "task_tracking_issues"),
+    # Testing friction -> stagehand-e2e
+    (r"(this|it) (broke|breaks) again", "regressions"),
+    (r"regression", "regressions"),
+    (r"(test|tests) (are|is|keep) flak", "flaky_tests"),
+    (r"intermittent (failure|test)", "flaky_tests"),
+    # Git friction
+    (r"(hard to|can't) review", "git_history_issues"),
+    (r"messy (commit|history)", "git_history_issues"),
+    (r"(squash|rebase|amend).+mess", "git_history_issues"),
+    # GitHub friction -> github MCP
+    (r"create (a |the )?(pr|pull request)", "github_friction"),
+    (r"link.+to (issue|ticket)", "github_friction"),
+    # Design friction -> figma, pencil
+    (r"(design|mockup) doesn't match", "design_friction"),
+    (r"what should (it|this) look like", "design_friction"),
+    (r"(need|want) a (mockup|design|wireframe)", "design_friction"),
+    # Meeting friction -> granola
+    (r"in the meeting.+(said|decided|agreed)", "meeting_context_lost"),
+    (r"stakeholder (wanted|asked|said)", "meeting_context_lost"),
+    # Project conventions -> agents.md
+    (r"that's not how we do (it|things)", "project_conventions_unknown"),
+    (r"wrong (directory|folder|location)", "project_conventions_unknown"),
+    (r"we (use|prefer|have) .+ (here|in this project)", "project_conventions_unknown"),
+    # Diagramming friction -> excalidraw
+    (r"(draw|create|make) (a |the )?diagram", "needs_diagrams"),
+    (r"how does .+ connect to", "needs_diagrams"),
+    (r"(visualize|show me) (the )?architecture", "needs_diagrams"),
+]
+
 
 def parse_timestamp(ts_str: str) -> datetime | None:
     """Parse ISO timestamp from session file."""
@@ -107,6 +245,7 @@ def analyze_session(session_path: Path) -> dict:
         "tool_errors": [],
         "error_patterns": [],
         "knowledge_gaps": [],
+        "friction_signals": defaultdict(int),  # NEW: friction signal counts
         "tools_used": defaultdict(int),
         "start_time": None,
         "end_time": None,
@@ -161,17 +300,23 @@ def analyze_session(session_path: Path) -> dict:
                                 isinstance(item, dict)
                                 and item.get("type") == "tool_result"
                             ):
+                                tool_content = str(item.get("content", ""))
+
                                 if item.get("is_error"):
                                     result["tool_errors"].append(
                                         {
                                             "tool_use_id": item.get(
                                                 "tool_use_id", "unknown"
                                             ),
-                                            "content": str(item.get("content", ""))[
-                                                :200
-                                            ],
+                                            "content": tool_content[:200],
                                         }
                                     )
+
+                                # Scan tool output for friction (agent mistakes)
+                                for pattern_type, _ in check_patterns(
+                                    tool_content, TOOL_OUTPUT_FRICTION
+                                ):
+                                    result["friction_signals"][pattern_type] += 1
 
                     # Check for error patterns in content
                     text = extract_text_content(message)
@@ -194,6 +339,10 @@ def analyze_session(session_path: Path) -> dict:
                             }
                         )
 
+                    # Check for friction signals (user expressing frustration/issues)
+                    for pattern_type, _ in check_patterns(text, FRICTION_PATTERNS):
+                        result["friction_signals"][pattern_type] += 1
+
                 # Track tool usage from assistant messages
                 elif entry_type == "assistant":
                     message = entry.get("message", {})
@@ -206,12 +355,26 @@ def analyze_session(session_path: Path) -> dict:
                             ):
                                 tool_name = item.get("name", "unknown")
                                 result["tools_used"][tool_name] += 1
+                            # Check text blocks for agent confusion/uncertainty
+                            if isinstance(item, dict) and item.get("type") == "text":
+                                text = item.get("text", "")
+                                # Agent confusion patterns (apologizing, uncertain, etc.)
+                                for pattern_type, _ in check_patterns(
+                                    text, AGENT_CONFUSION_PATTERNS
+                                ):
+                                    result["friction_signals"][pattern_type] += 1
+                                # Also check for friction patterns agent might mention
+                                for pattern_type, _ in check_patterns(
+                                    text, FRICTION_PATTERNS
+                                ):
+                                    result["friction_signals"][pattern_type] += 1
 
     except (IOError, OSError) as e:
         result["error"] = str(e)
 
     # Convert defaultdict to regular dict for JSON serialization
     result["tools_used"] = dict(result["tools_used"])
+    result["friction_signals"] = dict(result["friction_signals"])
 
     # Convert datetimes to strings
     if result["start_time"]:
@@ -245,6 +408,7 @@ def aggregate_results(sessions: list[dict]) -> dict:
             "by_type": defaultdict(int),
             "samples": [],
         },
+        "friction_signals": defaultdict(int),  # NEW: aggregated friction signals
         "tool_usage": defaultdict(int),
         "projects_analyzed": set(),
     }
@@ -287,6 +451,10 @@ def aggregate_results(sessions: list[dict]) -> dict:
         for tool, count in session.get("tools_used", {}).items():
             aggregated["tool_usage"][tool] += count
 
+        # Friction signals
+        for signal, count in session.get("friction_signals", {}).items():
+            aggregated["friction_signals"][signal] += count
+
     # Convert to JSON-serializable format
     aggregated["api_errors"]["by_code"] = dict(aggregated["api_errors"]["by_code"])
     aggregated["error_patterns"]["by_type"] = dict(
@@ -295,6 +463,7 @@ def aggregate_results(sessions: list[dict]) -> dict:
     aggregated["knowledge_gaps"]["by_type"] = dict(
         aggregated["knowledge_gaps"]["by_type"]
     )
+    aggregated["friction_signals"] = dict(aggregated["friction_signals"])
     aggregated["tool_usage"] = dict(aggregated["tool_usage"])
     aggregated["projects_analyzed"] = list(aggregated["projects_analyzed"])
 
