@@ -112,7 +112,7 @@ Documentation
 3. **Identifies gaps** across 6 SDLC phases
 4. **Matches** from 26+ curated recommendations with pricing
 5. **Skips** tools you already have or dismissed
-6. **Remembers** your preferences in `~/.flux/preferences.json`
+6. **Remembers** your preferences in `.flux/preferences.json`
 
 ## Architecture
 
@@ -132,7 +132,7 @@ Documentation
 │  └────────┬─────────┘    └────────┬─────────┘                  │
 │           └──────────┬───────────┘                             │
 │                      ▼                                          │
-│           session-analysis.py                                   │
+│           ${PLUGIN_ROOT}/scripts/parse-sessions.py              │
 │           (extracts user messages)                              │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -150,7 +150,7 @@ Documentation
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                RECOMMENDATIONS DATABASE                         │
-│                ~/.flux/recommendations/                         │
+│                ${PLUGIN_ROOT}/recommendations/                  │
 │                                                                 │
 │  ┌─────────┐ ┌───────────┐ ┌──────────────┐ ┌────────────────┐ │
 │  │  MCPs   │ │ CLI Tools │ │ Applications │ │ Skills/Patterns│ │
@@ -188,15 +188,6 @@ Documentation
 │                   • Git hook setup                              │
 └─────────────────────────────────────────────────────────────────┘
 ```
-
-**Key files:**
-
-| File | Purpose |
-|------|---------|
-| `~/.config/opencode/command/flux-improve.md` | Command definition (7-step workflow) |
-| `~/.flux/recommendations/*.yaml` | Curated tool database (27 entries) |
-| `~/.flux/recommendations/scripts/session-analysis.py` | Multi-agent session extractor |
-| `~/.flux/preferences.json` | User dismissals & alternatives |
 
 ## Recommendation Database
 
