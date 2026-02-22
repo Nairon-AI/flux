@@ -73,6 +73,10 @@ USER_CONTEXT_PATTERNS = {
     r"\b(git|commit|merge|rebase|history)\b": ["git_history_issues"],
     # GitHub/PR issues
     r"\b(pr|pull request|issue|github)\b": ["github_friction"],
+    r"\b(ai slop|low quality pr|spam pr|drive-by pr)\b": ["pr_quality_issues"],
+    r"\b(parallel|concurrent|multi-agent|worktree|context switch|switching tools|productivity)\b": [
+        "parallelization_needed"
+    ],
 }
 
 FRICTION_LABELS = {
@@ -90,6 +94,8 @@ FRICTION_LABELS = {
     "edge_case_misses": "Edge cases were missed",
     "regressions": "Bugs reappeared",
     "flaky_tests": "Intermittent test failures",
+    "pr_quality_issues": "Low-quality PR noise",
+    "parallelization_needed": "Parallel execution and handoff friction",
 }
 
 
@@ -393,6 +399,16 @@ def detect_sdlc_gaps(context: dict, user_context: str = "") -> dict:
             if "github" not in installed_mcps:
                 gaps["review"].append("no_github_mcp")
 
+        # --- PR Quality Friction ---
+        # "AI slop PRs", "spam pull requests"
+        if friction.get("pr_quality_issues", 0) > 0:
+            gaps["review"].append("needs_pr_gatekeeping")
+
+        # --- Parallelization Friction ---
+        # "run in parallel", "worktrees", "switching tools"
+        if friction.get("parallelization_needed", 0) > 0:
+            gaps["implementation"].append("needs_parallel_workflows")
+
         # --- Git History Friction ---
         # "hard to review", "can't revert", messy commits
         if friction.get("git_history_issues", 0) > 0:
@@ -534,6 +550,34 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "nia": [
             ("implementation", "search_difficulties", "Index and search external repos")
         ],
+        "worktree-isolation": [
+            (
+                "implementation",
+                "needs_parallel_workflows",
+                "Parallel task isolation with git worktrees",
+            )
+        ],
+        "cli-continues": [
+            (
+                "implementation",
+                "needs_parallel_workflows",
+                "Cross-agent context handoff between tools",
+            )
+        ],
+        "nightshift": [
+            (
+                "implementation",
+                "needs_parallel_workflows",
+                "Parallel background execution for maintenance",
+            )
+        ],
+        "sandbox-agent": [
+            (
+                "implementation",
+                "needs_parallel_workflows",
+                "Sandboxed parallel coding agent runtime",
+            )
+        ],
         # Review
         "lefthook": [("review", "no_git_hooks", "Catch errors before CI")],
         "gh": [("review", "no_github_mcp", "Terminal GitHub workflows")],
@@ -541,15 +585,29 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "repoprompt": [("review", "no_github_mcp", "Code context for reviews")],
         "pre-commit-hooks": [("review", "no_git_hooks", "Catch errors locally")],
         "atomic-commits": [("review", "no_ci", "Better git history")],
+        "anti-slop": [
+            (
+                "review",
+                "needs_pr_gatekeeping",
+                "Auto-close low-quality AI-generated pull requests",
+            )
+        ],
         # Testing
         "stagehand-e2e": [
             ("testing", "no_tests", "Self-healing E2E tests"),
             ("testing", "recurring_tool_errors", "Catch UI errors before they repeat"),
         ],
+        "agent-browser": [("testing", "no_tests", "Browser automation test coverage")],
+        "playwriter": [
+            ("testing", "recurring_tool_errors", "Stateful browser debugging")
+        ],
         "test-first-debugging": [("testing", "no_tests", "Regression protection")],
         # Documentation
         "agents-md-structure": [
             ("documentation", "no_agents_md", "AI knows your project")
+        ],
+        "claudeception": [
+            ("documentation", "no_memory", "Extract and retain session learnings")
         ],
         # Model recommendations
         "frontend-models": [

@@ -43,13 +43,16 @@ Flux gives you a **structured workflow** based on how software is actually built
 
 Instead of jumping straight into code and watching the agent go off the rails:
 
-1. **Interview** — Flesh out the feature first. What are the edge cases? What decisions need to be made? Thinking through requirements upfront prevents chaos later.
+1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? You'll learn more as you build. Use `--deep` only for high-risk features.
 
-2. **Plan** — Break down into dependency-aware tasks. Flux creates tasks in `.flux/` with clear scope, so you always know what's next.
+2. **Plan** — Break down into small, atomic tasks. Flux creates tasks in `.flux/` with clear scope. Each task should be 30-90 min of work.
 
-3. **Implement** — Execute tasks one at a time with automatic context reload. No forgotten requirements.
+3. **Build → Feel → Adapt** — Execute one task, then:
+   - **Feel check**: Does it work? Does it feel right?
+   - **Adapt**: Update the plan based on what you learned
+   - Repeat
 
-4. **Review** — Built-in review step catches issues before they compound.
+4. **Review** — Built-in review after each task catches issues before they compound.
 
 ### Drift Protection
 
@@ -57,7 +60,7 @@ Documentation drift is your worst enemy on large projects with AI agents. Code c
 
 Flux runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed. Another pass runs at epic completion to catch anything that slipped through.
 
-Your documentation stays aligned. Always.
+You should not be manually updating Documentation. Delegate to Agents. Always.
 
 ### Tool Discovery
 
@@ -172,7 +175,7 @@ After installing, initialize Flux in your project:
 /flux:setup
 ```
 
-This creates `.flux/` in your project and sets up the task tracking system. Run once per project.
+This creates `.flux/` in your project, sets up task tracking, and bootstraps `claudeception` into `~/.claude/skills/claudeception` if missing. Run once per project.
 
 Then run:
 
@@ -240,7 +243,7 @@ Here's how to use Flux from install to daily usage:
 | `/flux:profile` | Export/share/import SDLC profile snapshots |
 | `/flux:plan <idea|epic>` | Build structured execution plan |
 | `/flux:work <task|epic>` | Execute tasks with context reload + checks |
-| `/flux:interview <id|file>` | Deep requirements interview for epic/task/spec |
+| `/flux:interview <id|file>` | Quick (default) or deep (`--deep`) requirements interview |
 | `/flux:prime` | Agent readiness assessment + guided fixes |
 | `/flux:sync <id>` | Sync downstream task specs after drift |
 | `/flux:plan-review <epic>` | Carmack-level plan quality review |
@@ -409,6 +412,8 @@ Flux will grow with the industry. The SDLC framework evolves as we collectively 
 ## Community
 
 Join the most AI-native developer community. No hype. No AI slop. Just practical discussions on becoming the strongest developers alive.
+
+AI-slop pull requests are automatically triaged and closed.
 
 [discord.gg/CEQMd6fmXk](https://discord.gg/CEQMd6fmXk)
 

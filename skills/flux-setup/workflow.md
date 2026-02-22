@@ -57,6 +57,24 @@ chmod +x .flux/bin/fluxctl
 
 Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
 
+## Step 4b: Install default skill (Claudeception)
+
+Install Claudeception by default if not already present:
+
+```bash
+mkdir -p "${HOME}/.claude/skills"
+
+if [ ! -d "${HOME}/.claude/skills/claudeception" ]; then
+  git clone --depth 1 https://github.com/blader/Claudeception.git "${HOME}/.claude/skills/claudeception" 2>/dev/null || true
+fi
+```
+
+If clone fails, continue setup and print this manual fallback command:
+
+```bash
+git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudeception
+```
+
 ## Step 5: Update meta.json
 
 Read current `.flux/meta.json`, add/update these fields (preserve all others):
@@ -317,6 +335,7 @@ Documentation updated:
 Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
+- Default skill bootstrap: claudeception (installed if missing)
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```

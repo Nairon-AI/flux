@@ -1,12 +1,18 @@
 ---
 name: flux-interview
-description: Interview user in-depth about an epic, task, or spec file to extract complete implementation details. Use when user wants to flesh out a spec, refine requirements, or clarify a feature before building. Triggers on /flux:interview with Flow IDs (fn-1-add-oauth, fn-1-add-oauth.2, or legacy fn-1, fn-1.2, fn-1-xxx, fn-1-xxx.2) or file paths.
+description: Interview user about an epic, task, or spec file. Default is quick mode (5 min, MVP-focused). Use --deep for thorough 40+ question interview. Triggers on /flux:interview with Flow IDs or file paths.
 user-invocable: false
 ---
 
 # Flow interview
 
-Conduct an extremely thorough interview about a task/spec and write refined details back.
+Interview about a task/spec and write refined details back.
+
+**Modes**:
+- **Quick (default)**: 5 minutes, MVP-focused, 5-10 questions. Get just enough to start building.
+- **Deep (`--deep`)**: Thorough 40+ question interview. Use for high-risk or ambiguous features.
+
+> "You can't know everything upfront. Get enough to start, then iterate."
 
 **IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `fluxctl`.
 
@@ -32,11 +38,15 @@ fi
 Continue regardless (non-blocking).
 
 **Role**: technical interviewer, spec refiner
-**Goal**: extract complete implementation details through deep questioning (40+ questions typical)
+**Goal**: extract enough detail to start building (quick) or complete details (deep)
 
 ## Input
 
 Full request: $ARGUMENTS
+
+**Options**:
+- `--quick` (default): MVP-focused, 5-10 questions, ~5 minutes
+- `--deep`: Thorough interview, 40+ questions, ~20-30 minutes
 
 Accepts:
 - **Flow epic ID** `fn-N-slug` (e.g., `fn-1-add-oauth`) or legacy `fn-N`/`fn-N-xxx`: Fetch with `fluxctl show`, write back with `fluxctl epic set-plan`
@@ -45,12 +55,20 @@ Accepts:
 - **Empty**: Prompt for target
 
 Examples:
-- `/flux:interview fn-1-add-oauth`
+- `/flux:interview fn-1-add-oauth` (quick mode)
+- `/flux:interview fn-1-add-oauth --deep` (thorough mode)
 - `/flux:interview fn-1-add-oauth.3`
-- `/flux:interview fn-1` (legacy formats fn-1, fn-1-xxx still supported)
 - `/flux:interview docs/oauth-spec.md`
 
 If empty, ask: "What should I interview you about? Give me a Flow ID (e.g., fn-1-add-oauth) or file path (e.g., docs/spec.md)"
+
+## Detect Mode
+
+Parse arguments for `--deep` flag. Default is quick mode.
+
+```
+INTERVIEW_MODE = "--deep" in arguments ? "deep" : "quick"
+```
 
 ## Setup
 
@@ -81,7 +99,37 @@ FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 - DO NOT list questions in your response
 - ONLY ask questions via AskUserQuestion tool calls
 - Group 2-4 related questions per tool call
-- Expect 40+ questions total for complex specs
+
+### Quick Mode (default)
+
+**Goal**: Get just enough to start building. You'll learn more as you build.
+
+**Time limit**: ~5 minutes
+**Question count**: 5-10 questions max
+
+Focus on:
+1. **What's the smallest shippable version?** (MVP scope)
+2. **What's the riskiest unknown?** (biggest assumption to validate)
+3. **What does "done" look like?** (1-3 acceptance criteria)
+4. **Any hard constraints?** (tech, timeline, compatibility)
+5. **What can we defer?** (explicitly cut scope)
+
+**Philosophy**: Don't try to answer every question upfront. Get enough to build something, ship it, feel it, then iterate.
+
+### Deep Mode (`--deep`)
+
+**Goal**: Extract complete implementation details for high-risk or ambiguous features.
+
+**Time**: ~20-30 minutes
+**Question count**: 40+ questions typical
+
+Read [questions.md](questions.md) for all question categories.
+
+Use deep mode when:
+- Feature is high-risk or security-sensitive
+- Requirements are genuinely ambiguous
+- Failure cost is high (payments, data migration, etc.)
+- User explicitly requests thorough planning
 
 **Anti-pattern (WRONG)**:
 ```
@@ -90,10 +138,6 @@ Options: a) PostgreSQL b) SQLite c) MongoDB
 ```
 
 **Correct pattern**: Call AskUserQuestion tool with question and options.
-
-## Question Categories
-
-Read [questions.md](questions.md) for all question categories and interview guidelines.
 
 ## NOT in scope (defer to /flux:plan)
 
@@ -216,6 +260,7 @@ This is typically a pre-epic doc. After interview, suggest `/flux:plan <file>` t
 ## Completion
 
 Show summary:
+- Mode used (quick/deep)
 - Number of questions asked
 - Key decisions captured
 - What was written (Flow ID updated / file rewritten)
@@ -226,7 +271,21 @@ Suggest next step based on input type:
 - Task → `/flux:work fn-N.M`
 - File → `/flux:plan <file>`
 
-## Notes
+### Quick Mode Reminder
 
-- This process should feel thorough - user should feel they've thought through everything
-- Quality over speed - don't rush to finish
+After quick interview, remind user:
+
+> "This is enough to start. Build something small, feel it, then we'll refine. Run `/flux:interview fn-N --deep` later if you need thorough requirements."
+
+## Philosophy
+
+**Don't fall for the trap of waterfall development.**
+
+You can't know everything upfront—neither can agents. The goal is:
+1. Get enough context to not be stupid
+2. Build something small
+3. Feel it (does it work? does it feel right?)
+4. Adapt based on what you learned
+5. Repeat
+
+Quick mode embodies this. Deep mode is for when you genuinely need thorough upfront planning (high-risk, ambiguous, expensive-to-fix).

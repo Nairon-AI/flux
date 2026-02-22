@@ -6,7 +6,15 @@ user-invocable: false
 
 # Flow work
 
-Execute a plan systematically. Focus on finishing.
+Execute a plan with tight feedback loops. Ship small, feel it, adapt.
+
+> "I still output 30x the code, but changes are small enough to still let me keep the whole system in my head and adapt as things change." — @dillon_mulroy
+
+**Core loop**:
+1. Implement one task (small, atomic)
+2. Feel check (human tests it, gut check)
+3. Adapt plan (update based on learnings)
+4. Repeat
 
 Follow this skill and linked workflows exactly. Deviations cause drift, bad gates, retries, and user frustration.
 

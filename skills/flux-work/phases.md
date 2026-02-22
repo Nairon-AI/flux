@@ -125,9 +125,60 @@ $FLOWCTL show <task-id> --json
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
 
-### 3e. Plan Sync (if enabled) — BOTH MODES
+### 3e. Feel Check (human-in-the-loop)
 
-**Runs in SINGLE_TASK_MODE and EPIC_MODE.** Only the loop-back in 3f differs by mode.
+**Purpose**: Catch issues early. Small feedback loops beat big batch reviews.
+
+After each task completes, prompt the user:
+
+```
+Task complete: <task-title>
+
+**Quick feel check** (reply or skip):
+1. Does it work? (quick manual test)
+2. Does it feel right? (UX, behavior, output)
+3. Anything feel off?
+
+(Press Enter to continue, or tell me what needs tweaking)
+```
+
+**If user provides feedback**:
+- Minor tweak → fix inline, amend commit
+- Significant change → create follow-up task or update current task spec, re-implement
+- Scope creep detected → note it, defer to later task
+
+**If user skips**: Continue to next step.
+
+**Why this matters**: "I still output 30x the code, but changes are small enough to keep the whole system in my head and adapt as things change." — @dillon_mulroy
+
+### 3f. Adapt Plan Prompt
+
+After feel check, ask:
+
+```
+**Adapt plan?**
+Now that you've seen this working, does the plan still make sense?
+
+a) Continue as planned
+b) Update next task(s) based on what we learned
+c) Add a new task
+d) Remove/skip a planned task
+
+(Reply or press Enter to continue)
+```
+
+**If user wants changes**:
+- `b` → Show next task spec, ask what to change, update via `$FLOWCTL task set-spec`
+- `c` → Ask for new task details, create via `$FLOWCTL task create`
+- `d` → Ask which task, mark skipped via `$FLOWCTL skip <task-id>`
+
+**If user continues**: Proceed to next task.
+
+**Philosophy**: The plan is a living document. You learn by building. Adapt.
+
+### 3g. Plan Sync (if enabled) — BOTH MODES
+
+**Runs in SINGLE_TASK_MODE and EPIC_MODE.** Only the loop-back in 3h differs by mode.
 
 Only run plan-sync if the task status is `done` (from step 3d). If not `done`, skip plan-sync and investigate/retry.
 
@@ -170,15 +221,15 @@ Follow your phases in plan-sync.md exactly.
 
 Plan-sync returns summary. Log it but don't block - task updates are best-effort.
 
-### 3f. Loop or Finish
+### 3h. Loop or Finish
 
-**IMPORTANT**: Steps 3d and 3e ALWAYS run after worker returns, regardless of mode. Only the loop-back behavior differs:
+**IMPORTANT**: Steps 3d→3e→3f→3g ALWAYS run after worker returns, regardless of mode. Only the loop-back behavior differs:
 
-**SINGLE_TASK_MODE**: After 3d→3e, go to Phase 4 (Quality). No loop.
+**SINGLE_TASK_MODE**: After 3d→3g, go to Phase 4 (Quality). No loop.
 
-**EPIC_MODE**: After 3d→3e, return to 3a for next task.
+**EPIC_MODE**: After 3d→3g, return to 3a for next task.
 
-### 3g. Completion Review Gate (EPIC_MODE only)
+### 3i. Completion Review Gate (EPIC_MODE only)
 
 When 3a finds no ready tasks, check if completion review is required.
 
@@ -274,10 +325,24 @@ Confirm before ship:
 Phase 1 (resolve) → Phase 2 (branch) → Phase 3:
   ├─ 3a-c: find task → start → spawn worker
   ├─ 3d: verify done
-  ├─ 3e: plan-sync (if enabled + downstream tasks exist)
-  ├─ 3f: EPIC_MODE? → loop to 3a | SINGLE_TASK_MODE? → Phase 4
-  ├─ no more tasks → 3g: check completion_review_status
+  ├─ 3e: FEEL CHECK (human tests, gut check)
+  ├─ 3f: ADAPT PLAN (update tasks based on learnings)
+  ├─ 3g: plan-sync (if enabled + downstream tasks exist)
+  ├─ 3h: EPIC_MODE? → loop to 3a | SINGLE_TASK_MODE? → Phase 4
+  ├─ no more tasks → 3i: check completion_review_status
   │   ├─ status != ship → invoke /flux:epic-review → fix loop until SHIP → set status=ship
   │   └─ status = ship → Phase 4
   └─ Phase 4 (quality) → Phase 5 (ship)
 ```
+
+## Philosophy: Tight Loops, Not Waterfall
+
+> "Don't fall for the trap of waterfall development - our industry learned this lesson two decades ago. You can't know and plan everything upfront - neither can agents." — @dillon_mulroy
+
+The feel-check and adapt-plan steps exist because:
+1. **Small changes** keep the system in your head
+2. **Frequent feedback** catches issues before they compound
+3. **Living plans** adapt to reality as you learn
+4. **Human judgment** on "feel" can't be automated
+
+This is NOT about slowing down. It's about **staying fast by staying small**.
