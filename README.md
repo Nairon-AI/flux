@@ -110,6 +110,27 @@ Step 4/4: Install
 
 ---
 
+## Quick Demo
+
+Try this in any active project:
+
+```bash
+/flux:improve
+```
+
+In one run you'll see:
+- what Flux detected in your environment
+- what friction showed up in recent sessions
+- exactly which fixes/tools map to those issues
+
+If you want live community discoveries too:
+
+```bash
+/flux:improve --discover
+```
+
+---
+
 ## Install
 
 ### Claude Code
@@ -122,6 +143,8 @@ Step 4/4: Install
 # Or manual
 git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 ```
+
+If marketplace isn't available in your CLI version, use the manual install path.
 
 ### OpenCode
 
@@ -139,6 +162,27 @@ After installing, initialize Flux in your project:
 ```
 
 This creates `.flux/` in your project and sets up the task tracking system. Run once per project.
+
+Then run:
+
+```bash
+/flux:improve
+```
+
+Note: first run may take a few seconds while Flux clones the recommendations database into `~/.flux/recommendations`.
+
+### Support
+
+- macOS: supported
+- Linux: supported
+- Windows: use WSL (best-effort)
+
+Flux is local-first. It also provides optional discovery mode (`--discover`) for live external search.
+
+### Dependency Setup
+
+Flux checks for required tools during execution and tells you what to install when something is missing.
+You can start with `/flux:setup` and `/flux:improve` directly.
 
 ---
 
