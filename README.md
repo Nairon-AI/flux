@@ -127,39 +127,31 @@ Preferences saved to `.flux/preferences.json` so dismissed items stay dismissed.
 
 ---
 
-## Recommendations
+## Daily Usage
 
-Recommendations live in a [separate repo](https://github.com/Nairon-AI/flux-recommendations) so they can update independently.
-
-**Setup:**
-```bash
-git clone https://github.com/Nairon-AI/flux-recommendations ~/.flux/recommendations
+**Weekly check-in** — Run after a few coding sessions:
 ```
-
-| Category | Examples |
-|----------|----------|
-| **MCPs** | Context7, Exa, Linear, Figma, Excalidraw, Supermemory |
-| **CLI Tools** | Lefthook, OxLint, Biome, Beads, jq, fzf |
-| **Applications** | Granola, Wispr Flow, Raycast, Dia |
-| **Skills** | Stagehand E2E, Remotion, RepoPrompt |
-| **Patterns** | AGENTS.md structure, pre-commit hooks, atomic commits |
-
-Each recommendation includes the SDLC phase it addresses, what problem it solves, and pricing.
-
-> `/flux:improve` works without recommendations—session analysis and gap detection still run. You just won't get tool suggestions.
-
----
-
-## Workflow Engine
-
-Flux also enforces **plan-first development**:
-
-```bash
-/flux:plan Add user authentication with OAuth
-/flux:work fx-1
+/flux:improve
 ```
+Review what friction patterns emerged. Apply fixes that make sense.
 
-Tasks stored in `.flux/`. Each task re-anchors to the plan before execution. Nothing slips through the cracks.
+**Before starting a feature** — Plan first:
+```
+/flux:plan Add dark mode toggle to settings
+```
+Creates tasks in `.flux/` with dependencies mapped out.
+
+**Execute tasks** — One at a time with context reload:
+```
+/flux:work fx-1.1
+```
+Re-anchors to the plan before each task. Nothing drifts.
+
+**Dismiss noise** — Tool not relevant to you?
+```
+/flux:improve --dismiss figma
+```
+Won't suggest it again.
 
 ---
 
