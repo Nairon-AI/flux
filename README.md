@@ -1,9 +1,80 @@
+<div align="center">
+
 # Flux
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-> The AI workflow optimizer that knows what you're missing.
+**Your AI workflow has gaps. Flux finds them.**
+
+</div>
+
+---
+
+## The Problem
+
+You're using AI agents, but something's off:
+
+- You keep re-explaining the same context
+- The agent tries the same broken approach 5 times
+- You discover a tool that would've saved hours—after the fact
+- Requirements drift mid-session and nobody notices
+
+These aren't model failures. They're **process failures**.
+
+---
+
+## What Flux Does
+
+Flux analyzes your **actual coding sessions** to find friction—then recommends specific tools that would have helped.
+
+```
+/flux:improve
+```
+
+That's it. Flux reads your session history, detects patterns of frustration, checks what you already have installed, and shows you exactly what's missing.
+
+---
+
+## Example Output
+
+```
+Step 1/4 ✓ Extracted 847 messages from 12 sessions
+
+Step 2/4 ✓ Detected friction signals:
+  - "still not working" (3 occurrences)
+  - "why is this" (2 occurrences)  
+  - repeated test failures in same file
+
+Step 3/4 ✓ Analyzed your setup:
+  OS: macOS
+  CLI: jq, fzf, eslint
+  MCPs: playwright
+  Missing: git hooks, design tools, issue tracking
+
+Step 4/4 ✓ Matched recommendations:
+
+┌─────────────────────────────────────────────────────────────┐
+│ REVIEW                                                      │
+├─────────────────────────────────────────────────────────────┤
+│ Lefthook (free)                                             │
+│ → Pre-commit hooks catch errors in 5 sec, not 5 min         │
+│ → You had 3 "lint error" messages that hooks would prevent  │
+├─────────────────────────────────────────────────────────────┤
+│ PLANNING                                                    │
+├─────────────────────────────────────────────────────────────┤
+│ Linear ($8/user) or Beads (free)                            │
+│ → Issue tracking keeps requirements from drifting           │
+│ → You re-explained context 4 times across sessions          │
+└─────────────────────────────────────────────────────────────┘
+
+Which improvements would you like to apply?
+☐ Lefthook - Add pre-commit hooks
+☐ Beads - Install task tracking
+☐ AGENTS.md - Create project context file
+```
+
+---
 
 ## Install
 
@@ -29,199 +100,68 @@ droid plugin marketplace add https://github.com/Nairon-AI/flux
 
 Then `/plugins` → Marketplace → install flux.
 
-> Commands don't autocomplete yet but work when typed (e.g. `/flux:improve`). Skills load automatically.
-
 ---
-
-## The Problem
-
-Process failures, not model failures:
-
-- **Repeating the same debugging cycle** — trying the same broken approach 5 times before pivoting
-- **Losing context mid-session** — agent forgets what was decided, you re-explain
-- **Drip-feeding requirements** — "also add X" after implementation, causing rework
-- **Missing obvious tools** — not using MCPs/skills that would save hours
-
-Flux analyzes your **actual sessions**, finds these patterns, and recommends specific fixes.
-
-## Why Flux?
-
-**Not spray-and-pray recommendations.** Flux detects:
-- What you already have installed (MCPs, CLI tools, apps)
-- Gaps in your workflow (no tests? no git hooks? no design tools?)
-- The SDLC phase each gap affects (requirements → planning → implementation → review → testing → documentation)
-
-Then recommends **only what fills actual gaps**, with pricing upfront.
-
-## What `/flux:improve` Shows You
-
-```
-Detected:
-  OS: macos
-  CLI: jq, fzf, eslint, beads
-  Apps: granola, wispr-flow
-  MCPs: playwriter
-
-Gaps by SDLC Phase:
-
-Requirements
-  - No design tools → Pencil (free) or Figma ($15/mo)
-  - No web search → Exa (free tier: 1000/mo)
-
-Planning  
-  - No diagramming → Excalidraw (free, open-source)
-  - No issue tracking → Linear ($8/user) or Beads (free)
-
-Review
-  - No git hooks → Lefthook (free) catches errors in 5s not 5min
-  
-Testing
-  - No tests → Stagehand E2E (self-healing tests)
-
-Documentation
-  - No AGENTS.md → AI guesses wrong about your project
-```
 
 ## Commands
 
-| Command | What it does |
-|---------|--------------|
-| `/flux:improve` | Analyze workflow gaps, get smart recommendations |
-| `/flux:improve --detect` | Just show what's installed |
+| Command | Description |
+|---------|-------------|
+| `/flux:improve` | Analyze sessions, find gaps, get recommendations |
+| `/flux:improve --detect` | Just show what's installed (no recommendations) |
 | `/flux:improve --dismiss X` | Never recommend X again |
-| `/flux:improve --alternative X Y` | "I use Y instead of X" |
 | `/flux:plan` | Break a feature into dependency-aware tasks |
 | `/flux:work` | Execute a task with automatic context reload |
 
+---
+
 ## How It Works
 
-1. **Detects** your OS, installed CLI tools, apps, MCPs, and plugins
-2. **Analyzes** your repo (package.json, configs, test setup, CI, hooks)
-3. **Identifies gaps** across 6 SDLC phases
-4. **Matches** from 26+ curated recommendations with pricing
-5. **Skips** tools you already have or dismissed
-6. **Remembers** your preferences in `.flux/preferences.json`
+1. **Extracts** your session history (OpenCode SQLite or Claude Code JSONL)
+2. **Detects friction** — keywords like "again", "still", "why", repeated failures
+3. **Scans your setup** — OS, CLI tools, MCPs, apps, repo configs
+4. **Matches gaps** to 26+ curated recommendations with pricing
+5. **Asks** which improvements to apply
+6. **Implements** — installs tools, adds AGENTS.md rules, configures hooks
 
-## Architecture
+Preferences saved to `.flux/preferences.json` so dismissed items stay dismissed.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        /flux:improve                            │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    SESSION EXTRACTION                           │
-│  ┌──────────────────┐    ┌──────────────────┐                  │
-│  │ OpenCode         │    │ Claude Code      │                  │
-│  │ ~/.local/share/  │    │ ~/.claude/       │                  │
-│  │ opencode.db      │    │ projects/*/      │                  │
-│  │ (SQLite)         │    │ *.jsonl          │                  │
-│  └────────┬─────────┘    └────────┬─────────┘                  │
-│           └──────────┬───────────┘                             │
-│                      ▼                                          │
-│           ${PLUGIN_ROOT}/scripts/parse-sessions.py              │
-│           (extracts user messages)                              │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   FRICTION DETECTION                            │
-│                                                                 │
-│  Keywords: "bruh", "again", "still", "why", "fail", "error"    │
-│  Patterns: repeated attempts, confusion, rework                 │
-│                      │                                          │
-│                      ▼                                          │
-│           friction_signals[]                                    │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                RECOMMENDATIONS DATABASE (external)              │
-│                ~/.flux/recommendations/ (git clone)             │
-│                                                                 │
-│  ┌─────────┐ ┌───────────┐ ┌──────────────┐ ┌────────────────┐ │
-│  │  MCPs   │ │ CLI Tools │ │ Applications │ │ Skills/Patterns│ │
-│  │ (7)     │ │ (6)       │ │ (4)          │ │ (10)           │ │
-│  └─────────┘ └───────────┘ └──────────────┘ └────────────────┘ │
-│                                                                 │
-│  Each .yaml includes:                                           │
-│  - sdlc_phase (requirements/planning/impl/review/test/docs)    │
-│  - problem_solved                                               │
-│  - pricing (free/freemium/paid/open-source)                    │
-│  - install commands                                             │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      MATCHING ENGINE                            │
-│                                                                 │
-│  friction_signals[] ──┬──▶ Match by keywords/patterns          │
-│  detected_tools[]  ───┤                                        │
-│  sdlc_gaps[]       ───┘   ▼                                    │
-│                      recommendations[]                          │
-│                      (filtered, ranked)                         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   INTERACTIVE FLOW                              │
-│                                                                 │
-│  mcp_question() ──▶ "Which improvements to apply?"             │
-│                                                                 │
-│  User selects ──▶ Auto-implement:                              │
-│                   • AGENTS.md rules                             │
-│                   • MCP installs                                │
-│                   • CLI tool installs                           │
-│                   • Git hook setup                              │
-└─────────────────────────────────────────────────────────────────┘
-```
+---
 
-## Recommendation Database
+## Recommendations
 
-Recommendations are maintained separately in [Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
+Recommendations live in a [separate repo](https://github.com/Nairon-AI/flux-recommendations) so they can update independently.
 
-**Install recommendations:**
+**Setup:**
 ```bash
 git clone https://github.com/Nairon-AI/flux-recommendations ~/.flux/recommendations
 ```
 
-**Update recommendations:**
-```bash
-cd ~/.flux/recommendations && git pull
-```
-
 | Category | Examples |
 |----------|----------|
-| **MCPs** | Context7, Exa, Linear, GitHub, Figma, Pencil, Excalidraw, Supermemory |
+| **MCPs** | Context7, Exa, Linear, Figma, Excalidraw, Supermemory |
 | **CLI Tools** | Lefthook, OxLint, Biome, Beads, jq, fzf |
 | **Applications** | Granola, Wispr Flow, Raycast, Dia |
 | **Skills** | Stagehand E2E, Remotion, RepoPrompt |
 | **Patterns** | AGENTS.md structure, pre-commit hooks, atomic commits |
 
-Each recommendation includes:
-- **SDLC phase** it addresses
-- **What problem it solves**
-- **Pricing** (free, freemium, paid, open-source)
+Each recommendation includes the SDLC phase it addresses, what problem it solves, and pricing.
 
-> **Note:** `/flux:improve` works without recommendations installed—it just won't suggest tools. Session analysis and gap detection still run.
+> `/flux:improve` works without recommendations—session analysis and gap detection still run. You just won't get tool suggestions.
+
+---
 
 ## Workflow Engine
 
-Flux also enforces **plan before you code**:
+Flux also enforces **plan-first development**:
 
 ```bash
 /flux:plan Add user authentication with OAuth
 /flux:work fx-1
 ```
 
-Every feature gets broken into trackable tasks stored in `.flux/`. Every task re-anchors to the plan before execution. Nothing slips through the cracks.
+Tasks stored in `.flux/`. Each task re-anchors to the plan before execution. Nothing slips through the cracks.
 
-## Community
-
-Join the most AI-native developer community on the planet.
-
-[discord.gg/nairon](https://discord.gg/nairon) *(coming soon)*
+---
 
 ## License
 
