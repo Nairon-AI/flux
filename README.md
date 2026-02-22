@@ -102,13 +102,6 @@ git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 /plugin install flux@nairon-flux
 ```
 
-### Manual (Any Platform)
-
-```bash
-git clone https://github.com/Nairon-AI/flux.git ~/.flux/plugin
-# Add to your AI tool's plugin path
-```
-
 ---
 
 ## Commands
