@@ -44,6 +44,7 @@ You're using Claude Code, but something's off:
 - **Tool FOMO** → You discover a tool that would've saved hours... after the fact
 - **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
 - **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
+- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
 
 These aren't model failures. They're **process failures**.
 
