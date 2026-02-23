@@ -30,6 +30,17 @@
 > ```
 > Then `/plugins` → Marketplace → install n-bench. Commands work when typed (e.g. `/nbench:plan`).
 
+> [!TIP]
+> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Full multi-agent support:
+> ```bash
+> git clone https://github.com/Nairon-AI/n-bench.git
+> cd n-bench && ./scripts/install-codex.sh flow-next
+> ```
+> Requires Codex 0.102.0+. See [Codex install guide](docs/codex-install.md).
+
+> [!NOTE]
+> **[OpenCode](https://github.com/opencode-ai/opencode) support coming soon.**
+
 ---
 
 ## The Problem
