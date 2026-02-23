@@ -46,11 +46,12 @@ You're using Claude Code, but something's off:
 - **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
 - **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
 
-These aren't model failures. They're **process failures**.
-
 <p align="center">
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
 </p>
+
+
+These aren't model failures. They're **process failures**.
 
 **This is where N-bench comes in.**
 
