@@ -16,7 +16,7 @@
 | | |
 |---|---|
 | **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers using Claude Code, OpenCode, Factory Droid, or Cursor |
+| **Who** | Engineers (CTOs soon) using Claude Code, OpenCode, Factory Droid, or Cursor |
 | **When** | You think you're productive with AI but know you could be better |
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
