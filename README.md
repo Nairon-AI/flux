@@ -52,7 +52,9 @@ All you want is to be as productive as possible, ship quality code, and finally 
 
 ## What N-bench Does
 
-N-bench gives you a **structured workflow** based on how software is actually built—so you stop pulling your hair out.
+N-bench is the accumulation of our learnings building startups for clients and watching the SDLC evolve in real-time.
+
+The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
 ### The Workflow
 
