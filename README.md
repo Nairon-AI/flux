@@ -16,7 +16,7 @@
 | | |
 |---|---|
 | **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers (CTOs soon) using Claude Code, OpenCode, Factory Droid, or Cursor |
+| **Who** | Engineers (CTOs soon) using Claude Code, OpenCode, or Factory Droid |
 | **When** | You think you're productive with AI but know you could be better |
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
@@ -27,7 +27,7 @@
 
 ## The Problem
 
-You're using Claude Code (or Cursor, or Copilot), but something's off:
+You're using Claude Code, but something's off:
 
 - **No structure** → You jump straight into code and watch the agent go off the rails
 - **Context amnesia** → You keep re-explaining the same thing every session
@@ -80,8 +80,6 @@ The insight: in the age of agentic development, **you still need a framework**�
 droid plugin marketplace add https://github.com/Nairon-AI/n-bench
 # Then: /plugins → Marketplace → install n-bench
 ```
-
-**Cursor:** Manual install — clone to your plugins directory.
 
 **Then initialize:**
 ```bash
