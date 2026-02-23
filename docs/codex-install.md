@@ -14,7 +14,7 @@ git clone https://github.com/Nairon-AI/n-bench.git
 cd n-bench
 
 # Run the install script
-./scripts/install-codex.sh flow-next
+./scripts/install-codex.sh nbench
 ```
 
 > Codex doesn't have a plugin marketplace yet, so installation requires cloning this repo. The script copies everything to `~/.codex/` — you can delete the clone after install (re-clone to update).
@@ -55,7 +55,7 @@ CODEX_MODEL_INTELLIGENT=gpt-5.3-codex \
 CODEX_MODEL_FAST=gpt-5.3-codex-spark \
 CODEX_REASONING_EFFORT=high \
 CODEX_MAX_THREADS=12 \
-./scripts/install-codex.sh flow-next
+./scripts/install-codex.sh nbench
 ```
 
 ## Per-Project Setup
@@ -64,16 +64,16 @@ Run in each project:
 
 ```bash
 # Initialize .nbench/ directory
-~/.codex/bin/flowctl init
+~/.codex/bin/nbenchctl init
 
-# Optional: copy flowctl locally for project portability
+# Optional: copy nbenchctl locally for project portability
 mkdir -p .nbench/bin
-cp ~/.codex/bin/flowctl .nbench/bin/
-cp ~/.codex/bin/flowctl.py .nbench/bin/
-chmod +x .nbench/bin/flowctl
+cp ~/.codex/bin/nbenchctl .nbench/bin/
+cp ~/.codex/bin/nbenchctl.py .nbench/bin/
+chmod +x .nbench/bin/nbenchctl
 
 # Optional: configure review backend
-~/.codex/bin/flowctl config set review.backend codex
+~/.codex/bin/nbenchctl config set review.backend codex
 ```
 
 ## Caveats
