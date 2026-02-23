@@ -51,7 +51,7 @@ Instead of jumping straight into code and watching the agent go off the rails:
 
 1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? You'll learn more as you build. Use `--deep` only for high-risk features.
 
-2. **Plan** — Break down into small, atomic tasks. N-bench creates tasks in `.flux/` with clear scope. Each task should be 30-90 min of work.
+2. **Plan** — Break down into small, atomic tasks. N-bench creates tasks in `.nbench/` with clear scope. Each task should be 30-90 min of work.
 
 3. **Build → Feel → Adapt** — Execute one task, then:
    - **Feel check**: Does it work? Does it feel right?
@@ -218,7 +218,7 @@ After installing, initialize N-bench in your project:
 /nbench:setup
 ```
 
-This creates `.flux/` in your project, sets up task tracking, and bootstraps `claudeception` into `~/.claude/skills/claudeception` if missing. Run once per project.
+This creates `.nbench/` in your project, sets up task tracking, and bootstraps `claudeception` into `~/.claude/skills/claudeception` if missing. Run once per project.
 
 Then run:
 
@@ -226,7 +226,7 @@ Then run:
 /nbench:improve
 ```
 
-Note: first run may take a few seconds while N-bench clones the recommendations database into `~/.flux/recommendations`.
+Note: first run may take a few seconds while N-bench clones the recommendations database into `~/.nbench/recommendations`.
 
 ### Support
 
@@ -310,10 +310,10 @@ For full options and examples, see `docs/commands-reference.md`.
 
 ### Task Tracking
 
-N-bench maintains tasks in `.flux/`:
-- Epics: `.flux/epics/fn-N-slug.json`
-- Tasks: `.flux/tasks/fn-N-slug.M.json`
-- Specs: `.flux/specs/fn-N-slug.md`
+N-bench maintains tasks in `.nbench/`:
+- Epics: `.nbench/epics/fn-N-slug.json`
+- Tasks: `.nbench/tasks/fn-N-slug.M.json`
+- Specs: `.nbench/specs/fn-N-slug.md`
 
 Each task has clear scope, dependencies, and acceptance criteria. `/nbench:work` reloads this context before each task—nothing drifts.
 
@@ -326,9 +326,9 @@ Each task has clear scope, dependencies, and acceptance criteria. `/nbench:work`
 5. **Asks** which improvements to apply
 6. **Implements** — installs tools, adds AGENTS.md rules, configures hooks
 
-Preferences saved to `.flux/preferences.json`.
+Preferences saved to `.nbench/preferences.json`.
 
-Profile curation state saved to `~/.flux/profile-state.json`.
+Profile curation state saved to `~/.nbench/profile-state.json`.
 
 ---
 

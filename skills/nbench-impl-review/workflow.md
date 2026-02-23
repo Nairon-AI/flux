@@ -153,7 +153,7 @@ for f in $CHANGED_FILES; do
 done
 
 # Add task spec if known
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flux/specs/<task-id>.md
+$FLOWCTL rp select-add --window "$W" --tab "$T" .nbench/specs/<task-id>.md
 ```
 
 **Why this matters:** Chat only sees selected files.

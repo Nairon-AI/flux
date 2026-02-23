@@ -38,9 +38,9 @@ git log -5 --oneline
 
 **If memory.enabled is true**, read relevant memory:
 ```bash
-cat .flux/memory/pitfalls.md 2>/dev/null || true
-cat .flux/memory/conventions.md 2>/dev/null || true
-cat .flux/memory/decisions.md 2>/dev/null || true
+cat .nbench/memory/pitfalls.md 2>/dev/null || true
+cat .nbench/memory/conventions.md 2>/dev/null || true
+cat .nbench/memory/decisions.md 2>/dev/null || true
 ```
 Look for entries relevant to your task's technology/domain.
 

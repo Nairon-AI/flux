@@ -43,7 +43,7 @@ Important scripts:
 
 ### Recommendations Database
 
-- Default path: `~/.flux/recommendations`
+- Default path: `~/.nbench/recommendations`
 - Source: `https://github.com/Nairon-AI/n-bench-recommendations`
 - Categories: MCPs, CLI tools, skills, applications, workflow patterns, models
 
@@ -51,15 +51,15 @@ Important scripts:
 
 ### Project-Local State
 
-- `.flux/preferences.json` - dismissed recommendations, alternatives, consent preference
-- `.flux/` task graph/specs for plan/work workflows
+- `.nbench/preferences.json` - dismissed recommendations, alternatives, consent preference
+- `.nbench/` task graph/specs for plan/work workflows
 
 ### User-Global State
 
-- `~/.flux/recommendations` - cloned recommendations database
-- `~/.flux/last_improve` - timestamp used by periodic nudge
-- `~/.flux/config.json` - optional BYOK keys (`exa_api_key`, `twitter_api_key`)
-- `~/.flux/profile-state.json` - saved application curation + published profile tokens
+- `~/.nbench/recommendations` - cloned recommendations database
+- `~/.nbench/last_improve` - timestamp used by periodic nudge
+- `~/.nbench/config.json` - optional BYOK keys (`exa_api_key`, `twitter_api_key`)
+- `~/.nbench/profile-state.json` - saved application curation + published profile tokens
 
 ## Privacy Model
 

@@ -6,11 +6,11 @@ user-invocable: false
 
 # Flow plan
 
-Turn a rough idea into an epic with tasks in `.flux/`. This skill does not write code.
+Turn a rough idea into an epic with tasks in `.nbench/`. This skill does not write code.
 
 Follow this skill and linked workflows exactly. Deviations cause drift, bad gates, retries, and user frustration.
 
-**IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
+**IMPORTANT**: This plugin uses `.nbench/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
 
 **CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 ```bash
@@ -20,9 +20,9 @@ $FLOWCTL <command>
 
 ## Pre-check: Local setup version
 
-If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
+If `.nbench/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
-SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
+SETUP_VER=$(jq -r '.setup_version // empty' .nbench/meta.json 2>/dev/null)
 # Portable: Claude Code uses .claude-plugin, Factory Droid uses .factory-plugin
 PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.claude-plugin/plugin.json"
 [[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.factory-plugin/plugin.json"
@@ -37,7 +37,7 @@ Continue regardless (non-blocking).
 
 Check if `/nbench:improve` was run recently:
 ```bash
-LAST_IMPROVE="$HOME/.flux/last_improve"
+LAST_IMPROVE="$HOME/.nbench/last_improve"
 if [[ -f "$LAST_IMPROVE" ]]; then
   LAST_DATE=$(cat "$LAST_IMPROVE")
   LAST_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_DATE" +%s 2>/dev/null || date -d "$LAST_DATE" +%s 2>/dev/null || echo 0)
@@ -175,14 +175,14 @@ If user chose review:
 
 ## Output
 
-All plans go into `.flux/`:
-- Epic: `.flux/epics/fn-N-slug.json` + `.flux/specs/fn-N-slug.md`
-- Tasks: `.flux/tasks/fn-N-slug.M.json` + `.flux/tasks/fn-N-slug.M.md`
+All plans go into `.nbench/`:
+- Epic: `.nbench/epics/fn-N-slug.json` + `.nbench/specs/fn-N-slug.md`
+- Tasks: `.nbench/tasks/fn-N-slug.M.json` + `.nbench/tasks/fn-N-slug.M.md`
 
-**Never write plan files outside `.flux/`. Never use TodoWrite for task tracking.**
+**Never write plan files outside `.nbench/`. Never use TodoWrite for task tracking.**
 
 ## Output rules
 
 - Only create/update epics and tasks via nbenchctl
 - No code changes
-- No plan files outside `.flux/`
+- No plan files outside `.nbench/`

@@ -63,7 +63,7 @@
 
 ## Local profile state
 
-`~/.flux/profile-state.json`
+`~/.nbench/profile-state.json`
 
 ```json
 {

@@ -47,7 +47,7 @@ Comprehensive review of `flux/` and `n-bench-recommendations/` repos before publ
   - **Fix**: Add prerequisites with install commands
 
 - [ ] **Recommendations repo not auto-cloned**
-  - First `/nbench:improve` run will clone `~/.flux/recommendations`
+  - First `/nbench:improve` run will clone `~/.nbench/recommendations`
   - Users might be confused by the delay
   - **Fix**: Document this in README, show progress during clone
 
@@ -146,7 +146,7 @@ Step 3: Matched Recommendations
   - Low risk but worth noting
   - **Fix**: Add comment in code that we only read
 
-- [ ] **Preferences file readable** - `.flux/preferences.json` is plaintext
+- [ ] **Preferences file readable** - `.nbench/preferences.json` is plaintext
   - Contains dismissed list, not sensitive
   - No action needed
 
@@ -282,9 +282,9 @@ Then re-run /nbench:improve
   - **Fix**: Add type hints, run mypy
 
 - [ ] **Preferences path inconsistent**
-  - `detect-installed.sh` uses `.flux/preferences.json` (project-local)
-  - `manage-preferences.sh` uses `.flux/preferences.json` (project-local)
-  - But `workflow.md` mentions `~/.flux/preferences.json` (global)
+  - `detect-installed.sh` uses `.nbench/preferences.json` (project-local)
+  - `manage-preferences.sh` uses `.nbench/preferences.json` (project-local)
+  - But `workflow.md` mentions `~/.nbench/preferences.json` (global)
   - **Fix**: Clarify: global for user prefs, local for project prefs
 
 - [ ] **Duplicate app detection**
@@ -353,7 +353,7 @@ flux/
 ├── CHANGELOG.md            # Needs update
 └── package.json            # v0.6.0
 
-~/.flux/recommendations/
+~/.nbench/recommendations/
 ├── mcps/                   # 8 MCP recommendations
 ├── cli-tools/              # 5 CLI tools
 ├── applications/           # 4 desktop apps

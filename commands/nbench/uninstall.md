@@ -13,7 +13,7 @@ Use `AskUserQuestion` to confirm:
 
 If cancel → stop.
 
-**Question 2:** "Keep your .flux/ tasks and epics?"
+**Question 2:** "Keep your .nbench/ tasks and epics?"
 - "Yes, keep tasks" → partial uninstall
 - "No, remove everything" → full uninstall
 
@@ -25,7 +25,7 @@ Based on answers, generate the appropriate commands and print them for the user 
 ```
 To complete uninstall, run these commands manually:
 
-rm -rf .flux/bin .flux/usage.md
+rm -rf .nbench/bin .nbench/usage.md
 ```
 
 **If removing everything:**

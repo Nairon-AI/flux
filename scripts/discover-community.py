@@ -26,7 +26,7 @@ from pathlib import Path
 
 EXA_SEARCH_API = "https://api.exa.ai/search"
 TWITTER_SEARCH_API = "https://api.twitterapi.io/twitter/tweet/advanced_search"
-CONFIG_PATH = Path.home() / ".flux" / "config.json"
+CONFIG_PATH = Path.home() / ".nbench" / "config.json"
 
 SIGNAL_QUERY_HINTS = {
     "api_hallucination": ["context7", "docs mcp", "api docs"],
@@ -69,7 +69,7 @@ SECRET_PATTERNS = [
 
 
 def load_config() -> dict:
-    """Load ~/.flux/config.json if present."""
+    """Load ~/.nbench/config.json if present."""
     if not CONFIG_PATH.exists():
         return {}
     try:
@@ -475,11 +475,11 @@ def discover(context: dict, user_context: str, max_results: int, days: int) -> d
             source = "exa-mcp-suggested"
             reason = (
                 "Exa MCP detected but no API key configured. "
-                "Use the queries below with Exa MCP or add exa_api_key to ~/.flux/config.json"
+                "Use the queries below with Exa MCP or add exa_api_key to ~/.nbench/config.json"
             )
         else:
             reason = (
-                "No exa_api_key or twitter_api_key found in ~/.flux/config.json. "
+                "No exa_api_key or twitter_api_key found in ~/.nbench/config.json. "
                 "Add one key to enable optional community discovery."
             )
     elif not discoveries and attempts:

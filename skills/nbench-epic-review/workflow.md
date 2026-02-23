@@ -140,11 +140,11 @@ Builder selects context automatically. Review and add must-haves:
 $FLOWCTL rp select-get --window "$W" --tab "$T"
 
 # Add epic spec
-$FLOWCTL rp select-add --window "$W" --tab "$T" ".flux/specs/$EPIC_ID.md"
+$FLOWCTL rp select-add --window "$W" --tab "$T" ".nbench/specs/$EPIC_ID.md"
 
 # Add all task specs
 for task_id in $(echo "$TASKS_JSON" | jq -r '.[].id'); do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" ".flux/tasks/$task_id.md"
+  $FLOWCTL rp select-add --window "$W" --tab "$T" ".nbench/tasks/$task_id.md"
 done
 
 # Add ALL changed files

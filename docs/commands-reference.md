@@ -40,7 +40,7 @@ git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes N-bench in your project. Creates `.flux/` directory structure and bootstraps claudeception skill.
+Initializes N-bench in your project. Creates `.nbench/` directory structure and bootstraps claudeception skill.
 
 ### /nbench:interview
 

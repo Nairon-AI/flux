@@ -423,9 +423,9 @@ When enabled, NEEDS_WORK reviews auto-capture learnings:
 nbenchctl config set memory.enabled true
 ```
 
-Builds `.flux/memory/pitfalls.md` — things reviewers catch that models miss.
+Builds `.nbench/memory/pitfalls.md` — things reviewers catch that models miss.
 
-> **Note:** Memory config is in `.flux/config.json`, separate from Ralph's `config.env`.
+> **Note:** Memory config is in `.nbench/config.json`, separate from Ralph's `config.env`.
 
 ---
 
@@ -677,7 +677,7 @@ curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/destructive_comm
 
 **Compatibility:** DCG uses fail-open design — timeouts allow commands. Flow-next uses safe git patterns and quoted heredocs that DCG handles correctly.
 
-> **Note:** DCG will block `rm -rf .flux/` and `rm -rf scripts/ralph/` — this is correct behavior. Uninstall commands should be run manually, not via AI agents. Your epics and tasks are protected.
+> **Note:** DCG will block `rm -rf .nbench/` and `rm -rf scripts/ralph/` — this is correct behavior. Uninstall commands should be run manually, not via AI agents. Your epics and tasks are protected.
 
 **Verify:**
 

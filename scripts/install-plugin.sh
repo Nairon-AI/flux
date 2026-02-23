@@ -13,7 +13,7 @@ if [ -z "$NAME" ]; then
     exit 1
 fi
 
-BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 # Backup plugin list

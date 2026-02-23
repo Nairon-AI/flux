@@ -10,7 +10,7 @@ Install nbenchctl locally and add instructions to project docs. **Fully optional
 
 ## Benefits
 
-- `nbenchctl` accessible from command line (add `.flux/bin` to PATH)
+- `nbenchctl` accessible from command line (add `.nbench/bin` to PATH)
 - Other AI agents (Codex, Cursor, etc.) can read instructions from CLAUDE.md/AGENTS.md
 - Works without Claude Code plugin installed
 - Installs `claudeception` by default (if missing) for continuous learning

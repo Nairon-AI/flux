@@ -10,7 +10,7 @@ set -e
 NAME="$1"
 CONFIG="$2"
 MCP_FILE="${HOME}/.mcp.json"
-BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
 
 if [ -z "$NAME" ] || [ -z "$CONFIG" ]; then
     echo "Usage: install-mcp.sh <name> <config_json>"

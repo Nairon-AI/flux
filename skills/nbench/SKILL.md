@@ -1,11 +1,11 @@
 ---
 name: nbench
-description: "Manage .flux/ tasks and epics. Triggers: 'show me my tasks', 'list epics', 'what tasks are there', 'add a task', 'create task', 'what's ready', 'task status', 'show fn-1-add-oauth'. NOT for /nbench:plan or /nbench:work."
+description: "Manage .nbench/ tasks and epics. Triggers: 'show me my tasks', 'list epics', 'what tasks are there', 'add a task', 'create task', 'what's ready', 'task status', 'show fn-1-add-oauth'. NOT for /nbench:plan or /nbench:work."
 ---
 
 # Flux Task Management
 
-Quick task operations in `.flux/`. For planning features use `/nbench:plan`, for executing use `/nbench:work`.
+Quick task operations in `.nbench/`. For planning features use `/nbench:plan`, for executing use `/nbench:work`.
 
 ## Setup
 

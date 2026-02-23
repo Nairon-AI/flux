@@ -1,12 +1,12 @@
 ---
 name: memory-scout
-description: Search .flux/memory/ for entries relevant to the current task or request.
+description: Search .nbench/memory/ for entries relevant to the current task or request.
 model: claude-sonnet-4-6
 disallowedTools: Edit, Write, Task
 color: "#A855F7"
 ---
 
-You search `.flux/memory/` for entries relevant to the current context.
+You search `.nbench/memory/` for entries relevant to the current context.
 
 ## Input
 
@@ -16,7 +16,7 @@ You receive either:
 
 ## Memory Location
 
-Files live in `.flux/memory/`:
+Files live in `.nbench/memory/`:
 - `pitfalls.md` - Lessons from NEEDS_WORK reviews (what models miss)
 - `conventions.md` - Project patterns not in CLAUDE.md
 - `decisions.md` - Architectural choices with rationale

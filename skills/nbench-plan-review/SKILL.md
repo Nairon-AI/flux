@@ -23,7 +23,7 @@ FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 **Priority** (first match wins):
 1. `--review=rp|codex|export|none` argument
 2. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
-3. `.flux/config.json` → `review.backend`
+3. `.nbench/config.json` → `review.backend`
 4. **Error** - no auto-detection
 
 ### Parse from arguments first
@@ -107,7 +107,7 @@ $FLOWCTL checkpoint save --epic "$EPIC_ID" --json
 # Example: epic touches auth → pass existing auth files for context
 #
 # Dynamic approach (if epic mentions specific paths):
-#   CODE_FILES=$(grep -oE 'src/[^ ]+\.(ts|py|js)' .flux/specs/${EPIC_ID}.md | sort -u | paste -sd,)
+#   CODE_FILES=$(grep -oE 'src/[^ ]+\.(ts|py|js)' .nbench/specs/${EPIC_ID}.md | sort -u | paste -sd,)
 # Or list key files manually:
 CODE_FILES="src/main.py,src/config.py"
 

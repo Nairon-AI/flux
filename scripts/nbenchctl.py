@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-nbenchctl - CLI for managing .flux/ task tracking system.
+nbenchctl - CLI for managing .nbench/ task tracking system.
 
 All task/epic state lives in JSON files. Markdown specs hold narrative content.
-Agents must use nbenchctl for all writes - never edit .flux/* directly.
+Agents must use nbenchctl for all writes - never edit .nbench/* directly.
 """
 
 import argparse
@@ -46,7 +46,7 @@ except ImportError:
 
 SCHEMA_VERSION = 2
 SUPPORTED_SCHEMA_VERSIONS = [1, 2]
-FLOW_DIR = ".flux"
+FLOW_DIR = ".nbench"
 META_FILE = "meta.json"
 EPICS_DIR = "epics"
 SPECS_DIR = "specs"
@@ -95,12 +95,12 @@ def get_repo_root() -> Path:
 
 
 def get_flow_dir() -> Path:
-    """Get .flux/ directory path."""
+    """Get .nbench/ directory path."""
     return get_repo_root() / FLOW_DIR
 
 
 def ensure_flow_exists() -> bool:
-    """Check if .flux/ exists."""
+    """Check if .nbench/ exists."""
     return get_flow_dir().exists()
 
 
@@ -110,7 +110,7 @@ def get_state_dir() -> Path:
     Resolution order:
     1. FLOW_STATE_DIR env var (explicit override for orchestrators)
     2. git common-dir (shared across all worktrees automatically)
-    3. Fallback to .flux/state for non-git repos
+    3. Fallback to .nbench/state for non-git repos
     """
     # 1. Explicit override
     if state_dir := os.environ.get("FLOW_STATE_DIR"):
@@ -306,7 +306,7 @@ def deep_merge(base: dict, override: dict) -> dict:
 
 
 def load_flow_config() -> dict:
-    """Load .flux/config.json, merging with defaults for missing keys."""
+    """Load .nbench/config.json, merging with defaults for missing keys."""
     config_path = get_flow_dir() / CONFIG_FILE
     defaults = get_default_config()
     if not config_path.exists():
@@ -1767,7 +1767,7 @@ def get_actor() -> str:
 
 
 def scan_max_epic_id(flow_dir: Path) -> int:
-    """Scan .flux/epics/ and .flux/specs/ to find max epic number. Returns 0 if none exist.
+    """Scan .nbench/epics/ and .nbench/specs/ to find max epic number. Returns 0 if none exist.
 
     Handles legacy (fn-N.json), short suffix (fn-N-xxx.json), and slug (fn-N-slug.json) formats.
     Also scans specs/*.md as safety net for orphaned specs created without nbenchctl.
@@ -1797,7 +1797,7 @@ def scan_max_epic_id(flow_dir: Path) -> int:
 
 
 def scan_max_task_id(flow_dir: Path, epic_id: str) -> int:
-    """Scan .flux/tasks/ to find max task number for an epic. Returns 0 if none exist."""
+    """Scan .nbench/tasks/ to find max task number for an epic. Returns 0 if none exist."""
     tasks_dir = flow_dir / TASKS_DIR
     if not tasks_dir.exists():
         return 0
@@ -2090,7 +2090,7 @@ def find_active_run(
 
 
 def cmd_init(args: argparse.Namespace) -> None:
-    """Initialize or upgrade .flux/ directory structure (idempotent)."""
+    """Initialize or upgrade .nbench/ directory structure (idempotent)."""
     flow_dir = get_flow_dir()
     actions = []
 
@@ -2128,9 +2128,9 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     # Output
     if actions:
-        message = f".flux/ updated: {', '.join(actions)}"
+        message = f".nbench/ updated: {', '.join(actions)}"
     else:
-        message = ".flux/ already up to date"
+        message = ".nbench/ already up to date"
 
     if args.json:
         json_output(
@@ -2141,7 +2141,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 
 
 def cmd_detect(args: argparse.Namespace) -> None:
-    """Check if .flux/ exists and is valid."""
+    """Check if .nbench/ exists and is valid."""
     flow_dir = get_flow_dir()
     exists = flow_dir.exists()
     valid = False
@@ -2179,13 +2179,13 @@ def cmd_detect(args: argparse.Namespace) -> None:
         json_output(result)
     else:
         if exists and valid:
-            print(f".flux/ exists and is valid at {flow_dir}")
+            print(f".nbench/ exists and is valid at {flow_dir}")
         elif exists:
-            print(f".flux/ exists but has issues at {flow_dir}:")
+            print(f".nbench/ exists but has issues at {flow_dir}:")
             for issue in issues:
                 print(f"  - {issue}")
         else:
-            print(".flux/ does not exist")
+            print(".nbench/ does not exist")
 
 
 def cmd_status(args: argparse.Namespace) -> None:
@@ -2250,7 +2250,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         )
     else:
         if not flow_exists:
-            print(".flux/ not initialized")
+            print(".nbench/ not initialized")
         else:
             total_epics = sum(epic_counts.values())
             total_tasks = sum(task_counts.values())
@@ -2370,7 +2370,7 @@ def cmd_config_get(args: argparse.Namespace) -> None:
     """Get a config value."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     value = get_config(args.key)
@@ -2389,7 +2389,7 @@ def cmd_config_set(args: argparse.Namespace) -> None:
     """Set a config value."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     set_config(args.key, args.value)
@@ -2452,7 +2452,7 @@ def cmd_memory_init(args: argparse.Namespace) -> None:
     """Initialize memory directory with templates."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     # Check if memory is enabled
@@ -2505,7 +2505,7 @@ def require_memory_enabled(args) -> Path:
     """Check memory is enabled and return memory dir. Exits on error."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not get_config("memory.enabled", False):
@@ -2704,7 +2704,7 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
     """Create a new epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -2770,7 +2770,7 @@ def cmd_task_create(args: argparse.Namespace) -> None:
     """Create a new task under an epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.epic):
@@ -2866,7 +2866,7 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
     """Add a dependency to a task."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_task_id(args.task):
@@ -2919,7 +2919,7 @@ def cmd_task_set_deps(args: argparse.Namespace) -> None:
     """Set dependencies for a task (convenience wrapper for dep add)."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_task_id(args.task_id):
@@ -2990,7 +2990,7 @@ def cmd_show(args: argparse.Namespace) -> None:
     """Show epic or task details."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3070,7 +3070,7 @@ def cmd_epics(args: argparse.Namespace) -> None:
     """List all epics."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3133,7 +3133,7 @@ def cmd_tasks(args: argparse.Namespace) -> None:
     """List tasks."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3195,7 +3195,7 @@ def cmd_list(args: argparse.Namespace) -> None:
     """List all epics and their tasks."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3301,7 +3301,7 @@ def cmd_list(args: argparse.Namespace) -> None:
 def cmd_cat(args: argparse.Namespace) -> None:
     """Print markdown spec for epic or task."""
     if not ensure_flow_exists():
-        error_exit(".flux/ does not exist. Run 'nbenchctl init' first.", use_json=False)
+        error_exit(".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=False)
 
     flow_dir = get_flow_dir()
 
@@ -3324,7 +3324,7 @@ def cmd_epic_set_plan(args: argparse.Namespace) -> None:
     """Set/overwrite entire epic spec from file."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -3367,7 +3367,7 @@ def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None:
     """Set plan review status for an epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -3406,7 +3406,7 @@ def cmd_epic_set_completion_review_status(args: argparse.Namespace) -> None:
     """Set completion review status for an epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -3445,7 +3445,7 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
     """Set epic branch name."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -3482,7 +3482,7 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
     """Rename epic by setting a new title (updates slug in ID, renames all files)."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     old_id = args.id
@@ -3655,7 +3655,7 @@ def cmd_epic_add_dep(args: argparse.Namespace) -> None:
     """Add epic-level dependency."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     epic_id = args.epic
@@ -3723,7 +3723,7 @@ def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
     """Remove epic-level dependency."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     epic_id = args.epic
@@ -3781,7 +3781,7 @@ def cmd_epic_set_backend(args: argparse.Namespace) -> None:
     """Set epic default backend specs for impl/review/sync."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -3840,7 +3840,7 @@ def cmd_task_set_backend(args: argparse.Namespace) -> None:
     """Set task backend specs for impl/review/sync."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     task_id = args.id
@@ -3897,7 +3897,7 @@ def cmd_task_show_backend(args: argparse.Namespace) -> None:
     """Show effective backend specs for a task (task + epic levels only)."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     task_id = args.id
@@ -3982,7 +3982,7 @@ def cmd_task_set_spec(args: argparse.Namespace) -> None:
     """
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     task_id = args.id
@@ -4072,7 +4072,7 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
     """Reset task status to todo."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     task_id = args.task_id
@@ -4184,7 +4184,7 @@ def _task_set_section(
     """Helper to set a task spec section."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=use_json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=use_json
         )
 
     if not is_task_id(task_id):
@@ -4238,7 +4238,7 @@ def cmd_ready(args: argparse.Namespace) -> None:
     """List ready tasks for an epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.epic):
@@ -4367,7 +4367,7 @@ def cmd_next(args: argparse.Namespace) -> None:
     """Select the next plan/work unit."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -4564,7 +4564,7 @@ def cmd_start(args: argparse.Namespace) -> None:
     """Start a task (set status to in_progress)."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_task_id(args.id):
@@ -4672,7 +4672,7 @@ def cmd_done(args: argparse.Namespace) -> None:
     """Complete a task with summary and evidence."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_task_id(args.id):
@@ -4795,7 +4795,7 @@ def cmd_block(args: argparse.Namespace) -> None:
     """Block a task with a reason."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_task_id(args.id):
@@ -4873,7 +4873,7 @@ def cmd_migrate_state(args: argparse.Namespace) -> None:
     """Migrate runtime state from definition files to state-dir."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -4942,7 +4942,7 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
     """Close an epic (all tasks must be done)."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     if not is_epic_id(args.id):
@@ -4992,7 +4992,7 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
 
 
 def validate_flow_root(flow_dir: Path) -> list[str]:
-    """Validate .flux/ root invariants. Returns list of errors."""
+    """Validate .nbench/ root invariants. Returns list of errors."""
     errors = []
 
     # Check meta.json exists and is valid
@@ -5636,9 +5636,9 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
     standalone = task_id is None
 
     if not standalone:
-        # Task-specific review requires .flux/
+        # Task-specific review requires .nbench/
         if not ensure_flow_exists():
-            error_exit(".flux/ does not exist", use_json=args.json)
+            error_exit(".nbench/ does not exist", use_json=args.json)
 
         # Validate task ID
         if not is_task_id(task_id):
@@ -5862,7 +5862,7 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
 def cmd_codex_plan_review(args: argparse.Namespace) -> None:
     """Run plan review via codex exec."""
     if not ensure_flow_exists():
-        error_exit(".flux/ does not exist", use_json=args.json)
+        error_exit(".nbench/ does not exist", use_json=args.json)
 
     epic_id = args.epic
 
@@ -6228,7 +6228,7 @@ def cmd_codex_completion_review(args: argparse.Namespace) -> None:
     Two-phase approach: extract requirements, then verify coverage.
     """
     if not ensure_flow_exists():
-        error_exit(".flux/ does not exist", use_json=args.json)
+        error_exit(".nbench/ does not exist", use_json=args.json)
 
     epic_id = args.epic
 
@@ -6444,13 +6444,13 @@ def cmd_codex_completion_review(args: argparse.Namespace) -> None:
 def cmd_checkpoint_save(args: argparse.Namespace) -> None:
     """Save full epic + tasks state to checkpoint file.
 
-    Creates .flux/.checkpoint-fn-N.json with complete state snapshot.
+    Creates .nbench/.checkpoint-fn-N.json with complete state snapshot.
     Use before plan-review or other long operations to enable recovery
     if context compaction occurs.
     """
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     epic_id = args.epic
@@ -6528,12 +6528,12 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
 def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
     """Restore epic + tasks state from checkpoint file.
 
-    Reads .flux/.checkpoint-fn-N.json and overwrites current state.
+    Reads .nbench/.checkpoint-fn-N.json and overwrites current state.
     Use to recover after context compaction or to rollback changes.
     """
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     epic_id = args.epic
@@ -6613,7 +6613,7 @@ def cmd_checkpoint_delete(args: argparse.Namespace) -> None:
     """Delete checkpoint file for an epic."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     epic_id = args.epic
@@ -6653,7 +6653,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
     """Validate epic structure or all epics."""
     if not ensure_flow_exists():
         error_exit(
-            ".flux/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
+            ".nbench/ does not exist. Run 'nbenchctl init' first.", use_json=args.json
         )
 
     # Require either --epic or --all
@@ -6664,7 +6664,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
 
     # MU-3: Validate all mode
     if getattr(args, "all", False):
-        # First validate .flux/ root invariants
+        # First validate .nbench/ root invariants
         root_errors = validate_flow_root(flow_dir)
 
         epics_dir = flow_dir / EPICS_DIR
@@ -6810,18 +6810,18 @@ def cmd_validate(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="nbenchctl - CLI for .flux/ task tracking",
+        description="nbenchctl - CLI for .nbench/ task tracking",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # init
-    p_init = subparsers.add_parser("init", help="Initialize .flux/ directory")
+    p_init = subparsers.add_parser("init", help="Initialize .nbench/ directory")
     p_init.add_argument("--json", action="store_true", help="JSON output")
     p_init.set_defaults(func=cmd_init)
 
     # detect
-    p_detect = subparsers.add_parser("detect", help="Check if .flux/ exists")
+    p_detect = subparsers.add_parser("detect", help="Check if .nbench/ exists")
     p_detect.add_argument("--json", action="store_true", help="JSON output")
     p_detect.set_defaults(func=cmd_detect)
 

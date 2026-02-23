@@ -423,10 +423,10 @@ PYTEST
 echo -e "\n${YELLOW}--- Artifact File Handling ---${NC}"
 
 # Create artifact files that look like tasks but aren't
-cat > ".flux/tasks/${EPIC_ID}.1-evidence.json" << 'EOF'
+cat > ".nbench/tasks/${EPIC_ID}.1-evidence.json" << 'EOF'
 {"commits":["abc123"],"tests":["npm test"],"prs":[]}
 EOF
-cat > ".flux/tasks/${EPIC_ID}.1-summary.md" << 'EOF'
+cat > ".nbench/tasks/${EPIC_ID}.1-summary.md" << 'EOF'
 Task completed successfully
 EOF
 

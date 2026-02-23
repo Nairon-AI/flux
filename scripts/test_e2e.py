@@ -32,7 +32,7 @@ spec = importlib.util.spec_from_file_location(
 match_recs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(match_recs)
 
-RECS_DIR = os.path.expanduser("~/.flux/recommendations")
+RECS_DIR = os.path.expanduser("~/.nbench/recommendations")
 
 
 def test_friction_pattern_detection():

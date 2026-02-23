@@ -10,7 +10,7 @@ Example: if this file is at `~/.claude/plugins/cache/.../flux/0.3.12/skills/flux
 
 Store this as `PLUGIN_ROOT` for use in later steps.
 
-## Step 1: Initialize .flux/
+## Step 1: Initialize .nbench/
 
 Use nbenchctl init (idempotent - safe to re-run, handles upgrades):
 
@@ -19,13 +19,13 @@ Use nbenchctl init (idempotent - safe to re-run, handles upgrades):
 ```
 
 This creates/upgrades:
-- `.flux/` directory structure (epics/, specs/, tasks/, memory/)
+- `.nbench/` directory structure (epics/, specs/, tasks/, memory/)
 - `meta.json` with schema version
 - `config.json` with defaults (merges new keys on upgrade)
 
 ## Step 2: Check existing setup
 
-Read `.flux/meta.json` and check for `setup_version` field.
+Read `.nbench/meta.json` and check for `setup_version` field.
 
 Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json` (Claude Code) or `${PLUGIN_ROOT}/.factory-plugin/plugin.json` (Factory Droid) - check whichever exists.
 
@@ -37,10 +37,10 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json` (Claud
 
 **If no `setup_version`:** continue (first-time setup)
 
-## Step 3: Create .flux/bin/
+## Step 3: Create .nbench/bin/
 
 ```bash
-mkdir -p .flux/bin
+mkdir -p .nbench/bin
 ```
 
 ## Step 4: Copy files
@@ -50,12 +50,12 @@ mkdir -p .flux/bin
 Copy using Bash `cp` with absolute paths:
 
 ```bash
-cp "${PLUGIN_ROOT}/scripts/nbenchctl" .flux/bin/nbenchctl
-cp "${PLUGIN_ROOT}/scripts/nbenchctl.py" .flux/bin/nbenchctl.py
-chmod +x .flux/bin/nbenchctl
+cp "${PLUGIN_ROOT}/scripts/nbenchctl" .nbench/bin/nbenchctl
+cp "${PLUGIN_ROOT}/scripts/nbenchctl.py" .nbench/bin/nbenchctl.py
+chmod +x .nbench/bin/nbenchctl
 ```
 
-Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
+Then read [templates/usage.md](templates/usage.md) and write it to `.nbench/usage.md`.
 
 ## Step 4b: Install default skill (Claudeception)
 
@@ -77,7 +77,7 @@ git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudecep
 
 ## Step 5: Update meta.json
 
-Read current `.flux/meta.json`, add/update these fields (preserve all others):
+Read current `.nbench/meta.json`, add/update these fields (preserve all others):
 
 ```json
 {
@@ -313,12 +313,12 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 Flux setup complete!
 
 Installed:
-- .flux/bin/nbenchctl (v<VERSION>)
-- .flux/bin/nbenchctl.py
-- .flux/usage.md
+- .nbench/bin/nbenchctl (v<VERSION>)
+- .nbench/bin/nbenchctl.py
+- .nbench/usage.md
 
 To use from command line:
-  export PATH=".flux/bin:$PATH"
+  export PATH=".nbench/bin:$PATH"
   nbenchctl --help
 
 Configuration (use nbenchctl config set to change):
@@ -336,6 +336,6 @@ Notes:
 - Re-run /nbench:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /nbench:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
-- Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
+- Uninstall (run manually): rm -rf .nbench/bin .nbench/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```

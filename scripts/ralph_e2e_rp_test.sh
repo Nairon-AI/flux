@@ -183,14 +183,14 @@ PY
 
 scripts/ralph/nbenchctl init --json >/dev/null
 
-# Mirror /nbench:setup - add .flux/bin/ + usage.md + CLAUDE.md
-mkdir -p .flux/bin
-cp "$PLUGIN_ROOT/scripts/nbenchctl" .flux/bin/nbenchctl
-cp "$PLUGIN_ROOT/scripts/nbenchctl.py" .flux/bin/nbenchctl.py
-chmod +x .flux/bin/nbenchctl
-cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .flux/usage.md
+# Mirror /nbench:setup - add .nbench/bin/ + usage.md + CLAUDE.md
+mkdir -p .nbench/bin
+cp "$PLUGIN_ROOT/scripts/nbenchctl" .nbench/bin/nbenchctl
+cp "$PLUGIN_ROOT/scripts/nbenchctl.py" .nbench/bin/nbenchctl.py
+chmod +x .nbench/bin/nbenchctl
+cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .nbench/usage.md
 cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md
-echo -e "${GREEN}✓${NC} Setup mirrored (.flux/bin/, usage.md, CLAUDE.md)"
+echo -e "${GREEN}✓${NC} Setup mirrored (.nbench/bin/, usage.md, CLAUDE.md)"
 
 scripts/ralph/nbenchctl epic create --title "Tiny lib" --json >/dev/null
 scripts/ralph/nbenchctl epic create --title "Tiny follow-up" --json >/dev/null
@@ -330,7 +330,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 for tid in ["fn-1.1", "fn-2.1"]:
-    data = json.loads(Path(f".flux/tasks/{tid}.json").read_text())
+    data = json.loads(Path(f".nbench/tasks/{tid}.json").read_text())
     assert data["status"] == "done"
 runs = [p for p in Path("scripts/ralph/runs").iterdir() if p.is_dir() and p.name != ".gitkeep"]
 runs.sort()

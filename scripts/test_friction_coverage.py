@@ -23,7 +23,7 @@ spec = importlib.util.spec_from_file_location(
 match_recs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(match_recs)
 
-RECS_DIR = os.path.expanduser("~/.flux/recommendations")
+RECS_DIR = os.path.expanduser("~/.nbench/recommendations")
 
 
 def make_context(
@@ -228,7 +228,7 @@ def run_friction_coverage_tests():
     if not os.path.exists(RECS_DIR):
         print(f"ERROR: Recommendations not installed at {RECS_DIR}")
         print(
-            "Run: git clone https://github.com/Nairon-AI/n-bench-recommendations ~/.flux/recommendations"
+            "Run: git clone https://github.com/Nairon-AI/n-bench-recommendations ~/.nbench/recommendations"
         )
         sys.exit(1)
 

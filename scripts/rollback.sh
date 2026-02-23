@@ -5,7 +5,7 @@
 set -e
 
 SNAPSHOT_ID="$1"
-SNAPSHOTS_DIR="${HOME}/.flux/snapshots"
+SNAPSHOTS_DIR="${HOME}/.nbench/snapshots"
 
 if [ -z "$SNAPSHOT_ID" ]; then
     echo "Usage: rollback.sh <snapshot_id>"

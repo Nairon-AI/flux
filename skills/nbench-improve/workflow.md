@@ -77,10 +77,10 @@ For `--alternative <rec> <alt>`:
 First, check if user has "always allow" enabled in preferences:
 
 ```bash
-ALWAYS_ALLOW=$(jq -r '.always_allow_sessions // false' .flux/preferences.json 2>/dev/null || echo "false")
+ALWAYS_ALLOW=$(jq -r '.always_allow_sessions // false' .nbench/preferences.json 2>/dev/null || echo "false")
 ```
 
-Note: preferences live in project-local `.flux/preferences.json`.
+Note: preferences live in project-local `.nbench/preferences.json`.
 
 **If `ALWAYS_ALLOW=true`**: Set `ANALYZE_SESSIONS=true` and skip the question.
 
@@ -267,7 +267,7 @@ Fetch all recommendation files from the database:
 
 ```bash
 # Clone/update recommendations repo (shallow)
-RECS_DIR="${HOME}/.flux/recommendations"
+RECS_DIR="${HOME}/.nbench/recommendations"
 if [ -d "$RECS_DIR/.git" ]; then
   git -C "$RECS_DIR" pull --ff-only 2>/dev/null
 else
@@ -434,7 +434,7 @@ fi
 ```
 
 Behavior:
-- **Exa first**: uses `exa_api_key` (env or `~/.flux/config.json`) to search X/Twitter domains
+- **Exa first**: uses `exa_api_key` (env or `~/.nbench/config.json`) to search X/Twitter domains
 - **Fallback**: uses `twitter_api_key` with Twitter advanced search
 - **No keys**: returns query suggestions for manual search and does not block normal recommendations
 
@@ -461,9 +461,9 @@ For each selected recommendation:
 ### 8a: Create Snapshot
 
 ```bash
-mkdir -p ~/.flux/snapshots
+mkdir -p ~/.nbench/snapshots
 SNAPSHOT_ID=$(date +%Y%m%d-%H%M%S)
-SNAPSHOT_DIR="${HOME}/.flux/snapshots/${SNAPSHOT_ID}"
+SNAPSHOT_DIR="${HOME}/.nbench/snapshots/${SNAPSHOT_ID}"
 mkdir -p "$SNAPSHOT_DIR"
 
 # Backup relevant configs
@@ -553,7 +553,7 @@ If rollback requested:
 
 To list available snapshots:
 ```bash
-ls ~/.flux/snapshots/
+ls ~/.nbench/snapshots/
 ```
 
 ## Step 11: Summary
@@ -575,7 +575,7 @@ Failed:
 
 Workflow Score: <old>% → <new>%
 
-Snapshot saved: ~/.flux/snapshots/<id>
+Snapshot saved: ~/.nbench/snapshots/<id>
 To rollback: /nbench:improve --rollback <id>
 
 Run /nbench:improve again anytime for new recommendations.
@@ -584,7 +584,7 @@ Run /nbench:improve again anytime for new recommendations.
 ## Step 12: Update Timestamp
 
 ```bash
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > ~/.flux/last_improve
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > ~/.nbench/last_improve
 ```
 
 This is checked by other flux commands for the daily nudge.

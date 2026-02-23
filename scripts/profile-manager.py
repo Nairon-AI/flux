@@ -32,10 +32,10 @@ PLUGIN_ROOT = Path(
     or SCRIPT_DIR.parent
 )
 HOME = Path.home()
-DEFAULT_STATE_PATH = HOME / ".flux" / "profile-state.json"
-DEFAULT_CONFIG_PATH = HOME / ".flux" / "config.json"
+DEFAULT_STATE_PATH = HOME / ".nbench" / "profile-state.json"
+DEFAULT_CONFIG_PATH = HOME / ".nbench" / "config.json"
 DEFAULT_RECS_DIR = Path(
-    os.environ.get("FLUX_RECS_DIR") or HOME / ".flux" / "recommendations"
+    os.environ.get("FLUX_RECS_DIR") or HOME / ".nbench" / "recommendations"
 )
 
 ALL_OSES = ["macos", "linux", "windows"]
@@ -1018,7 +1018,7 @@ def resolve_service_url(config: dict[str, Any], explicit: str = "") -> str:
     if conf_url:
         return conf_url.rstrip("/")
     raise RuntimeError(
-        "Profile service URL not configured. Set FLUX_PROFILE_SERVICE_URL or ~/.flux/config.json profile_service_url"
+        "Profile service URL not configured. Set FLUX_PROFILE_SERVICE_URL or ~/.nbench/config.json profile_service_url"
     )
 
 

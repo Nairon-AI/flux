@@ -11,7 +11,7 @@ Visualize epic dependencies, blocking chains, and execution phases.
 
 ```bash
 FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
-$FLOWCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .flux/ exists" || echo "ERROR: run $FLOWCTL init"
+$FLOWCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .nbench/ exists" || echo "ERROR: run $FLOWCTL init"
 command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew install jq"
 ```
 

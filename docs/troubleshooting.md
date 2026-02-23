@@ -58,7 +58,7 @@ You can still run setup-only analysis:
 
 ### Recommendation clone/update failed (offline or network issue)
 
-N-bench uses `~/.flux/recommendations` as cache.
+N-bench uses `~/.nbench/recommendations` as cache.
 
 - If cache already exists, N-bench continues with cached recommendations
 - If cache does not exist, connect to network once and run `/nbench:improve` again
@@ -68,7 +68,7 @@ N-bench uses `~/.flux/recommendations` as cache.
 `--discover` is best-effort and can legitimately return empty results.
 
 Check:
-- `~/.flux/config.json` has valid `exa_api_key` or `twitter_api_key`
+- `~/.nbench/config.json` has valid `exa_api_key` or `twitter_api_key`
 - Query context is specific enough (`--explain` can help)
 
 ---
@@ -94,7 +94,7 @@ N-bench scores based on detected patterns. Run with `--format json` to see raw m
 Check profile link service config:
 
 - Set env `NBENCH_PROFILE_SERVICE_URL`, or
-- Set `profile_service_url` in `~/.flux/config.json`
+- Set `profile_service_url` in `~/.nbench/config.json`
 
 Then retry `/nbench:profile`.
 
@@ -110,7 +110,7 @@ Use `/nbench:profile view <url>` first to inspect the snapshot contents.
 
 ### Tombstone fails
 
-- Tombstone requires owner manage token (stored in `~/.flux/profile-state.json` after publish)
+- Tombstone requires owner manage token (stored in `~/.nbench/profile-state.json` after publish)
 - If the snapshot was published elsewhere, provide a valid token explicitly
 
 ---
@@ -119,7 +119,7 @@ Use `/nbench:profile view <url>` first to inspect the snapshot contents.
 
 ### Undo a failed install
 
-N-bench snapshots config before changes in `~/.flux/snapshots/`.
+N-bench snapshots config before changes in `~/.nbench/snapshots/`.
 
 Use:
 

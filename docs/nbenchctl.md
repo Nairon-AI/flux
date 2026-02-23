@@ -1,8 +1,8 @@
 # nbenchctl CLI Reference
 
-CLI for `.flux/` task tracking. Agents must use nbenchctl for all writes.
+CLI for `.nbench/` task tracking. Agents must use nbenchctl for all writes.
 
-> **Note:** This is the full human reference. Agents should read `.flux/usage.md` (created by `/nbench:setup`).
+> **Note:** This is the full human reference. Agents should read `.nbench/usage.md` (created by `/nbench:setup`).
 
 ## Available Commands
 
@@ -24,7 +24,7 @@ Works out of the box for parallel branches. No setup required.
 ## File Structure
 
 ```
-.flux/
+.nbench/
 ├── meta.json               # {schema_version, next_epic}
 ├── epics/fn-N-slug.json    # Epic state (e.g., fn-1-add-oauth.json)
 ├── specs/fn-N-slug.md      # Epic spec (markdown)
@@ -54,7 +54,7 @@ New fields:
 
 ### init
 
-Initialize `.flux/` directory.
+Initialize `.nbench/` directory.
 
 ```bash
 nbenchctl init [--json]
@@ -62,7 +62,7 @@ nbenchctl init [--json]
 
 ### detect
 
-Check if `.flux/` exists and is valid.
+Check if `.nbench/` exists and is valid.
 
 ```bash
 nbenchctl detect [--json]
@@ -70,7 +70,7 @@ nbenchctl detect [--json]
 
 Output:
 ```json
-{"success": true, "exists": true, "valid": true, "path": "/repo/.flux"}
+{"success": true, "exists": true, "valid": true, "path": "/repo/.nbench"}
 ```
 
 ### epic create
@@ -83,7 +83,7 @@ nbenchctl epic create --title "Epic title" [--branch "fn-1-epic-title"] [--json]
 
 Output:
 ```json
-{"success": true, "id": "fn-1-epic-title", "title": "Epic title", "spec_path": ".flux/specs/fn-1-epic-title.md"}
+{"success": true, "id": "fn-1-epic-title", "title": "Epic title", "spec_path": ".nbench/specs/fn-1-epic-title.md"}
 ```
 
 ### epic set-plan
@@ -449,7 +449,7 @@ Exits with code 1 if validation fails (for CI use).
 
 ### config
 
-Manage project configuration stored in `.flux/config.json`.
+Manage project configuration stored in `.nbench/config.json`.
 
 ```bash
 # Get a config value
@@ -473,13 +473,13 @@ nbenchctl config toggle memory.enabled [--json]
 | `scouts.github` | bool | `false` | Enable github-scout during planning (requires gh CLI) |
 | `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLOW_REVIEW_BACKEND`. |
 
-Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.flux/config.json` > error.
+Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.nbench/config.json` > error.
 
 No auto-detect. Run `/nbench:setup` (or `nbenchctl config set review.backend ...`) to configure.
 
 ### memory
 
-Manage persistent learnings in `.flux/memory/`.
+Manage persistent learnings in `.nbench/memory/`.
 
 ```bash
 # Initialize memory directory
@@ -669,7 +669,7 @@ Completion review receipt:
 Save and restore epic state (used during review-fix cycles).
 
 ```bash
-# Save epic state to .flux/.checkpoint-fn-1.json
+# Save epic state to .nbench/.checkpoint-fn-1.json
 nbenchctl checkpoint save --epic fn-1 [--json]
 
 # Restore epic state from checkpoint
@@ -683,7 +683,7 @@ Checkpoints preserve full epic + task state. Useful when compaction occurs durin
 
 ### status
 
-Show `.flux/` state summary.
+Show `.nbench/` state summary.
 
 ```bash
 nbenchctl status [--json]
@@ -712,7 +712,7 @@ Output:
 Source values:
 - `env` — `FLOW_STATE_DIR` environment variable
 - `git-common-dir` — `git --git-common-dir` (shared across worktrees)
-- `fallback` — `.flux/state` (non-git or old git)
+- `fallback` — `.nbench/state` (non-git or old git)
 
 ### migrate-state
 
@@ -755,7 +755,7 @@ Exit codes: 0=success, 1=general error, 2=tool/parse error, 3=sandbox configurat
 
 ## Error Handling
 
-- Missing `.flux/`: "Run 'nbenchctl init' first"
+- Missing `.nbench/`: "Run 'nbenchctl init' first"
 - Invalid ID format: "Expected format: fn-N (epic) or fn-N.M (task)"
 - File conflicts: Refuses to overwrite existing epics/tasks
 - Dependency violations: Same-epic only, must exist, no cycles

@@ -470,7 +470,7 @@ class TestFullMatchingPipeline:
     @pytest.fixture
     def recs_dir(self):
         """Get the recommendations directory."""
-        return os.path.expanduser("~/.flux/recommendations")
+        return os.path.expanduser("~/.nbench/recommendations")
 
     def test_empty_setup_gets_recommendations(self, recs_dir):
         """User with empty setup should get multiple recommendations."""

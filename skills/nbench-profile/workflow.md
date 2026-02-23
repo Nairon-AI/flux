@@ -120,7 +120,7 @@ python3 "$PROFILE_SCRIPT" export \
   --output-file /tmp/flux-profile-export.json
 ```
 
-This updates app memory state in `~/.flux/profile-state.json` (unless dry-run).
+This updates app memory state in `~/.nbench/profile-state.json` (unless dry-run).
 
 ### 2e) Publish immutable link
 
@@ -132,7 +132,7 @@ PUBLISHED=$(python3 "$PROFILE_SCRIPT" publish --input-file /tmp/flux-profile-exp
 
 If publish fails due missing service URL, configure one of:
 - env `FLUX_PROFILE_SERVICE_URL`
-- `~/.flux/config.json` key `profile_service_url`
+- `~/.nbench/config.json` key `profile_service_url`
 
 Show:
 - shareable URL

@@ -104,8 +104,8 @@ def get_repo_root() -> Path:
 
 
 def is_memory_enabled() -> bool:
-    """Check if memory is enabled in .flux/config.json."""
-    config_path = get_repo_root() / ".flux" / "config.json"
+    """Check if memory is enabled in .nbench/config.json."""
+    config_path = get_repo_root() / ".nbench" / "config.json"
     if not config_path.exists():
         return False
     try:
@@ -371,7 +371,7 @@ def handle_post_tool_use(data: dict) -> None:
     # Track nbenchctl done calls - match various invocation patterns:
     # - nbenchctl done <task>
     # - nbenchctl.py done <task>
-    # - .flux/bin/nbenchctl done <task>
+    # - .nbench/bin/nbenchctl done <task>
     # - scripts/ralph/nbenchctl done <task>
     # - $FLOWCTL done <task>
     # - "$FLOWCTL" done <task>

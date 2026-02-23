@@ -65,7 +65,7 @@ else
 fi
 
 # Test 2: Config upgrade (old config without planSync)
-echo '{"memory":{"enabled":true}}' > .flux/config.json
+echo '{"memory":{"enabled":true}}' > .nbench/config.json
 init_upgrade="$(scripts/nbenchctl init --json)"
 upgrade_msg="$(echo "$init_upgrade" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("message", ""))')"
 if [[ "$upgrade_msg" == *"upgraded config.json"* ]]; then
@@ -144,11 +144,11 @@ PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- artifact files in tasks dir (GH-21) ---${NC}"
 # Create artifact files that match glob but aren't valid task files
-# This simulates Claude writing evidence/summary files to .flux/tasks/
-cat > ".flux/tasks/${EPIC1}.1-evidence.json" << 'EOF'
+# This simulates Claude writing evidence/summary files to .nbench/tasks/
+cat > ".nbench/tasks/${EPIC1}.1-evidence.json" << 'EOF'
 {"commits":["abc123"],"tests":["npm test"],"prs":[]}
 EOF
-cat > ".flux/tasks/${EPIC1}.1-summary.json" << 'EOF'
+cat > ".nbench/tasks/${EPIC1}.1-summary.json" << 'EOF'
 {"summary":"Task completed successfully"}
 EOF
 # Test that next still works with artifact files present
@@ -212,14 +212,14 @@ else
   FAIL=$((FAIL + 1))
 fi
 # Cleanup artifact files
-rm -f ".flux/tasks/${EPIC1}.1-evidence.json" ".flux/tasks/${EPIC1}.1-summary.json"
+rm -f ".nbench/tasks/${EPIC1}.1-evidence.json" ".nbench/tasks/${EPIC1}.1-summary.json"
 
 echo -e "${YELLOW}--- plan_review_status default ---${NC}"
 "$PYTHON_BIN" - "$EPIC1" <<'PY'
 import json, sys
 from pathlib import Path
 epic_id = sys.argv[1]
-path = Path(f".flux/epics/{epic_id}.json")
+path = Path(f".nbench/epics/{epic_id}.json")
 data = json.loads(path.read_text())
 data.pop("plan_review_status", None)
 data.pop("plan_reviewed_at", None)
@@ -263,7 +263,7 @@ rename_result="$(scripts/nbenchctl epic set-title "$RENAME_EPIC" --title "New Sh
 NEW_EPIC="$(echo "$rename_result" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["new_id"])')"
 
 # Test 1: Verify old files are gone
-if [[ ! -f ".flux/epics/${RENAME_EPIC}.json" ]] && [[ ! -f ".flux/specs/${RENAME_EPIC}.md" ]]; then
+if [[ ! -f ".nbench/epics/${RENAME_EPIC}.json" ]] && [[ ! -f ".nbench/specs/${RENAME_EPIC}.md" ]]; then
   echo -e "${GREEN}✓${NC} set-title removes old files"
   PASS=$((PASS + 1))
 else
@@ -272,7 +272,7 @@ else
 fi
 
 # Test 2: Verify new files exist
-if [[ -f ".flux/epics/${NEW_EPIC}.json" ]] && [[ -f ".flux/specs/${NEW_EPIC}.md" ]]; then
+if [[ -f ".nbench/epics/${NEW_EPIC}.json" ]] && [[ -f ".nbench/specs/${NEW_EPIC}.md" ]]; then
   echo -e "${GREEN}✓${NC} set-title creates new files"
   PASS=$((PASS + 1))
 else
@@ -285,7 +285,7 @@ fi
 import json, sys
 from pathlib import Path
 new_id = sys.argv[1]
-epic_data = json.loads(Path(f".flux/epics/{new_id}.json").read_text())
+epic_data = json.loads(Path(f".nbench/epics/{new_id}.json").read_text())
 assert epic_data["id"] == new_id, f"Epic ID not updated: {epic_data['id']}"
 assert epic_data["title"] == "New Shiny Title", f"Title not updated: {epic_data['title']}"
 assert new_id in epic_data["spec_path"], f"spec_path not updated: {epic_data['spec_path']}"
@@ -294,7 +294,7 @@ echo -e "${GREEN}✓${NC} set-title updates epic JSON"
 PASS=$((PASS + 1))
 
 # Test 4: Verify task files renamed
-if [[ -f ".flux/tasks/${NEW_EPIC}.1.json" ]] && [[ -f ".flux/tasks/${NEW_EPIC}.2.json" ]]; then
+if [[ -f ".nbench/tasks/${NEW_EPIC}.1.json" ]] && [[ -f ".nbench/tasks/${NEW_EPIC}.2.json" ]]; then
   echo -e "${GREEN}✓${NC} set-title renames task files"
   PASS=$((PASS + 1))
 else
@@ -307,8 +307,8 @@ fi
 import json, sys
 from pathlib import Path
 new_id = sys.argv[1]
-task1_data = json.loads(Path(f".flux/tasks/{new_id}.1.json").read_text())
-task2_data = json.loads(Path(f".flux/tasks/{new_id}.2.json").read_text())
+task1_data = json.loads(Path(f".nbench/tasks/{new_id}.1.json").read_text())
+task2_data = json.loads(Path(f".nbench/tasks/{new_id}.2.json").read_text())
 assert task1_data["id"] == f"{new_id}.1", f"Task 1 ID not updated: {task1_data['id']}"
 assert task1_data["epic"] == new_id, f"Task 1 epic not updated: {task1_data['epic']}"
 assert task2_data["id"] == f"{new_id}.2", f"Task 2 ID not updated: {task2_data['id']}"
@@ -344,7 +344,7 @@ import json, sys
 from pathlib import Path
 dep_epic = sys.argv[1]
 final_epic = sys.argv[2]
-dep_data = json.loads(Path(f".flux/epics/{dep_epic}.json").read_text())
+dep_data = json.loads(Path(f".nbench/epics/{dep_epic}.json").read_text())
 deps = dep_data.get("depends_on_epics", [])
 assert final_epic in deps, f"depends_on_epics not updated: {deps}, expected {final_epic}"
 PY
@@ -427,7 +427,7 @@ PASS=$((PASS + 1))
 echo -e "${YELLOW}--- memory commands ---${NC}"
 scripts/nbenchctl config set memory.enabled true --json >/dev/null
 scripts/nbenchctl memory init --json >/dev/null
-if [[ -f ".flux/memory/pitfalls.md" ]]; then
+if [[ -f ".nbench/memory/pitfalls.md" ]]; then
   echo -e "${GREEN}✓${NC} memory init creates files"
   PASS=$((PASS + 1))
 else
@@ -436,7 +436,7 @@ else
 fi
 
 scripts/nbenchctl memory add --type pitfall "Test pitfall entry" --json >/dev/null
-if grep -q "Test pitfall entry" .flux/memory/pitfalls.md; then
+if grep -q "Test pitfall entry" .nbench/memory/pitfalls.md; then
   echo -e "${GREEN}✓${NC} memory add pitfall"
   PASS=$((PASS + 1))
 else
@@ -464,7 +464,7 @@ echo -e "${YELLOW}--- schema v1 validate ---${NC}"
 "$PYTHON_BIN" - <<'PY'
 import json
 from pathlib import Path
-path = Path(".flux/meta.json")
+path = Path(".nbench/meta.json")
 data = json.loads(path.read_text())
 data["schema_version"] = 1
 path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
@@ -671,7 +671,7 @@ if [[ "$codex_available" == "True" ]]; then
   scripts/nbenchctl task create --epic "$EPIC3" --title "Test task" --json >/dev/null
 
   # Write a simple spec
-  cat > ".flux/specs/${EPIC3}.md" << 'EOF'
+  cat > ".nbench/specs/${EPIC3}.md" << 'EOF'
 # Codex Test Epic
 
 Simple test epic for smoke testing codex reviews.
@@ -681,7 +681,7 @@ Simple test epic for smoke testing codex reviews.
 - Test that codex can review an implementation
 EOF
 
-  cat > ".flux/tasks/${EPIC3}.1.md" << 'EOF'
+  cat > ".nbench/tasks/${EPIC3}.1.md" << 'EOF'
 # Test Task
 
 Add a simple hello world function.
@@ -777,7 +777,7 @@ DEP_CHILD_ID="$(echo "$DEP_CHILD_JSON" | "$PYTHON_BIN" -c 'import json,sys; prin
 import json, sys
 from pathlib import Path
 child_id, base_id = sys.argv[1], sys.argv[2]
-path = Path(f".flux/epics/{child_id}.json")
+path = Path(f".nbench/epics/{child_id}.json")
 data = json.loads(path.read_text())
 data["depends_on_epics"] = [base_id]
 path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
@@ -879,7 +879,7 @@ echo -e "${YELLOW}--- checkpoint save/restore ---${NC}"
 # Save checkpoint
 scripts/nbenchctl checkpoint save --epic "$STDIN_EPIC" --json >/dev/null
 # Verify checkpoint file exists
-[[ -f ".flux/.checkpoint-${STDIN_EPIC}.json" ]] || { echo "checkpoint file not created"; FAIL=$((FAIL + 1)); }
+[[ -f ".nbench/.checkpoint-${STDIN_EPIC}.json" ]] || { echo "checkpoint file not created"; FAIL=$((FAIL + 1)); }
 # Modify epic spec
 scripts/nbenchctl epic set-plan "$STDIN_EPIC" --file - --json <<'EOF'
 # Modified content
@@ -891,7 +891,7 @@ restored_spec="$(scripts/nbenchctl cat "$STDIN_EPIC")"
 echo "$restored_spec" | grep -q "Testing stdin support" || { echo "checkpoint restore failed"; FAIL=$((FAIL + 1)); }
 # Delete checkpoint
 scripts/nbenchctl checkpoint delete --epic "$STDIN_EPIC" --json >/dev/null
-[[ ! -f ".flux/.checkpoint-${STDIN_EPIC}.json" ]] || { echo "checkpoint delete failed"; FAIL=$((FAIL + 1)); }
+[[ ! -f ".nbench/.checkpoint-${STDIN_EPIC}.json" ]] || { echo "checkpoint delete failed"; FAIL=$((FAIL + 1)); }
 echo -e "${GREEN}✓${NC} checkpoint save/restore/delete"
 PASS=$((PASS + 1))
 

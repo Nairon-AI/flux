@@ -145,7 +145,7 @@ import json, sys
 from pathlib import Path
 root = Path(sys.argv[1])
 epics_file = sys.argv[2] if len(sys.argv) > 2 else ""
-flow_dir = root / ".flux"
+flow_dir = root / ".nbench"
 
 # Get scoped epics or all
 scoped = []
@@ -237,7 +237,7 @@ ui_config() {
 }
 
 ui_version_check() {
-  local meta_file="$ROOT_DIR/.flux/meta.json"
+  local meta_file="$ROOT_DIR/.nbench/meta.json"
   local plugin_file="$SCRIPT_DIR/../.claude-plugin/plugin.json"
   [[ -f "$meta_file" ]] || return 0
   [[ -f "$plugin_file" ]] || return 0

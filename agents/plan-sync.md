@@ -120,7 +120,7 @@ For each affected downstream task, edit only the stale references:
 
 ```bash
 # Edit task spec to reflect actual implementation
-Edit .flux/tasks/<task-id>.md
+Edit .nbench/tasks/<task-id>.md
 ```
 
 Changes should:
@@ -133,10 +133,10 @@ Changes should:
 - Change task scope or requirements
 - Remove acceptance criteria
 - Add new features
-- Edit anything outside `.flux/tasks/` or `.flux/specs/`
+- Edit anything outside `.nbench/tasks/` or `.nbench/specs/`
 
 **Cross-epic edits** (if CROSS_EPIC enabled):
-- Update affected task specs in other epics: `.flux/tasks/<other-epic-task-id>.md`
+- Update affected task specs in other epics: `.nbench/tasks/<other-epic-task-id>.md`
 - Add note linking to source: `<!-- Updated by plan-sync (cross-epic): fn-X.Y changed <thing> -->`
 
 ## Phase 6: Return Summary
@@ -172,7 +172,7 @@ Updated tasks (cross-epic):  # Only if CROSS_EPIC enabled and found
 ## Rules
 
 - **Read-only exploration** - Use Grep/Glob/Read for codebase, never edit source
-- **Task specs only** - Edit tool restricted to `.flux/tasks/*.md`
+- **Task specs only** - Edit tool restricted to `.nbench/tasks/*.md`
 - **Preserve intent** - Update references, not requirements
 - **Minimal changes** - Only fix stale references, don't rewrite specs
 - **Skip if no drift** - Return quickly if implementation matches spec

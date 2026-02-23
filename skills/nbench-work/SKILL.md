@@ -18,7 +18,7 @@ Execute a plan with tight feedback loops. Ship small, feel it, adapt.
 
 Follow this skill and linked workflows exactly. Deviations cause drift, bad gates, retries, and user frustration.
 
-**IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
+**IMPORTANT**: This plugin uses `.nbench/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
 
 **CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 ```bash
@@ -28,7 +28,7 @@ $FLOWCTL <command>
 
 **Hard requirements (non-negotiable):**
 - You MUST run `nbenchctl done` for each completed task and verify the task status is `done`.
-- You MUST stage with `git add -A` (never list files). This ensures `.flux/` and `scripts/ralph/` (if present) are included.
+- You MUST stage with `git add -A` (never list files). This ensures `.nbench/` and `scripts/ralph/` (if present) are included.
 - Do NOT claim completion until `nbenchctl show <task>` reports `status: done`.
 - Do NOT invoke `/nbench:impl-review` until tests/Quick commands are green.
 
@@ -39,7 +39,7 @@ $FLOWCTL <command>
 
 Check if `/nbench:improve` was run recently (non-blocking):
 ```bash
-LAST_IMPROVE="$HOME/.flux/last_improve"
+LAST_IMPROVE="$HOME/.nbench/last_improve"
 if [[ -f "$LAST_IMPROVE" ]]; then
   LAST_DATE=$(cat "$LAST_IMPROVE")
   LAST_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_DATE" +%s 2>/dev/null || date -d "$LAST_DATE" +%s 2>/dev/null || echo 0)
@@ -161,4 +161,4 @@ If user chose review, pass the review mode to the worker. The worker invokes `/n
 - Don't skip tests
 - Don't leave tasks half-done
 - Never use TodoWrite for task tracking
-- Never create plan files outside `.flux/`
+- Never create plan files outside `.nbench/`

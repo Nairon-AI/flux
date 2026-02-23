@@ -46,10 +46,10 @@ Detect ID type:
 ### Step 2: Validate Environment
 
 ```bash
-test -d .flow || { echo "No .flux/ found. Run nbenchctl init first."; exit 1; }
+test -d .flow || { echo "No .nbench/ found. Run nbenchctl init first."; exit 1; }
 ```
 
-If `.flux/` missing, output error and stop.
+If `.nbench/` missing, output error and stop.
 
 ### Step 3: Validate ID Exists
 
@@ -142,7 +142,7 @@ No files modified.
 | Case | Message |
 |------|---------|
 | No ID provided | "Usage: /nbench:sync <id> [--dry-run]" |
-| No `.flux/` | "No .flux/ found. Run `nbenchctl init` first." |
+| No `.nbench/` | "No .nbench/ found. Run `nbenchctl init` first." |
 | Invalid format | "Invalid ID format. Use fn-N-slug (epic) or fn-N-slug.M (task). Legacy fn-N, fn-N-xxx also work." |
 | Task not found | "Task <id> not found. Run `nbenchctl list` to see available." |
 | Epic not found | "Epic <id> not found. Run `nbenchctl list` to see available." |

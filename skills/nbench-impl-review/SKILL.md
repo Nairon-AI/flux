@@ -23,7 +23,7 @@ FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 **Priority** (first match wins):
 1. `--review=rp|codex|export|none` argument
 2. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
-3. `.flux/config.json` → `review.backend`
+3. `.nbench/config.json` → `review.backend`
 4. **Error** - no auto-detection
 
 ### Parse from arguments first

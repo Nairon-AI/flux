@@ -146,7 +146,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 for tid in ["fn-1.1", "fn-2.1"]:
-    data = json.loads(Path(f".flux/tasks/{tid}.json").read_text())
+    data = json.loads(Path(f".nbench/tasks/{tid}.json").read_text())
     assert data["status"] == "done"
 PY
 

@@ -106,7 +106,7 @@ Save output for inclusion in review prompt. Compose a 1-2 sentence `REVIEW_SUMMA
 ```bash
 $FLOWCTL checkpoint save --epic <id> --json
 ```
-This creates `.flux/.checkpoint-<id>.json` with full state. If compaction occurs during review-fix cycles, restore with `$FLOWCTL checkpoint restore --epic <id>`.
+This creates `.nbench/.checkpoint-<id>.json` with full state. If compaction occurs during review-fix cycles, restore with `$FLOWCTL checkpoint restore --epic <id>`.
 
 ---
 
@@ -141,10 +141,10 @@ Builder selects context automatically. Review and add must-haves:
 $FLOWCTL rp select-get --window "$W" --tab "$T"
 
 # Always add the epic spec
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flux/specs/<epic-id>.md
+$FLOWCTL rp select-add --window "$W" --tab "$T" .nbench/specs/<epic-id>.md
 
 # Always add ALL task specs for this epic
-for task_spec in .flux/tasks/${EPIC_ID}.*.md; do
+for task_spec in .nbench/tasks/${EPIC_ID}.*.md; do
   [[ -f "$task_spec" ]] && $FLOWCTL rp select-add --window "$W" --tab "$T" "$task_spec"
 done
 

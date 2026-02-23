@@ -1,13 +1,13 @@
-# OPTIONAL: GitHub Actions workflow for validating .flux/
+# OPTIONAL: GitHub Actions workflow for validating .nbench/
 # All multi-user features work locally without this - CI is just an extra gate.
 # Copy to .github/workflows/flux-validate.yml if you want automated PR checks.
 
-name: Validate .flux
+name: Validate .nbench
 
 on:
   pull_request:
     paths:
-      - '.flux/**'
+      - '.nbench/**'
 
 jobs:
   validate:
@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Validate .flux structure
+      - name: Validate .nbench structure
         run: |
           # Download fluxctl (adjust path/method for your setup)
           # Option 1: If fluxctl is in repo

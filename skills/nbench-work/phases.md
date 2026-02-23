@@ -4,11 +4,11 @@
 
 **CRITICAL**: If you are about to create:
 - a markdown TODO list,
-- a task list outside `.flux/`,
-- or any plan files outside `.flux/`,
+- a task list outside `.nbench/`,
+- or any plan files outside `.nbench/`,
 
 **STOP** and instead:
-- create/update tasks in `.flux/` using `nbenchctl`,
+- create/update tasks in `.nbench/` using `nbenchctl`,
 - record details in the epic/task spec markdown.
 
 ## Setup

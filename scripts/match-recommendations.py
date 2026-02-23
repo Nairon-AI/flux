@@ -802,7 +802,7 @@ def main():
 
     # Get recommendations directory
     recs_dir = os.environ.get(
-        "FLUX_RECS_DIR", os.path.expanduser("~/.flux/recommendations")
+        "FLUX_RECS_DIR", os.path.expanduser("~/.nbench/recommendations")
     )
 
     # Get optional category filter

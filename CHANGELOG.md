@@ -67,7 +67,7 @@ If upgrading from Flux:
   - export machine setup as immutable public-anonymous snapshots
   - import teammate profiles with compatible-only filtering + per-item consent
   - view snapshots and owner tombstone support
-  - app curation memory (`~/.flux/profile-state.json`) and skills scope selection (`global|project|both`)
+  - app curation memory (`~/.nbench/profile-state.json`) and skills scope selection (`global|project|both`)
 
 - **New script**: `scripts/profile-manager.py`
   - setup detection for MCP/CLI/skills/apps/patterns/model preferences
@@ -83,7 +83,7 @@ If upgrading from Flux:
 - **Community discovery mode** for `/nbench:improve`:
   - `--discover` enables optional live search for novel optimizations from X/Twitter sources
   - Exa-first search with Twitter API fallback
-  - BYOK support via `~/.flux/config.json` (`exa_api_key`, `twitter_api_key`)
+  - BYOK support via `~/.nbench/config.json` (`exa_api_key`, `twitter_api_key`)
 
 - **Explainability mode** for recommendation transparency:
   - `--explain` includes top friction signals and detected gap summary
@@ -195,7 +195,7 @@ If upgrading from Flux:
   - Dismiss recommendations you don't want
   - Record alternatives ("I use Otter instead of Granola")
   - "Always allow" session analysis (skip consent prompt)
-  - Stored in `~/.flux/preferences.json`
+  - Stored in `~/.nbench/preferences.json`
 
 - **New command flags**:
   - `--detect` — Show detected installed tools
@@ -234,7 +234,7 @@ If upgrading from Flux:
 
 - **Verification script** — `verify-install.sh` confirms installations via command existence, config checks, or MCP connectivity.
 
-- **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.flux/snapshots/`.
+- **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.nbench/snapshots/`.
 
 - **23 recommendations** in n-bench-recommendations database:
   - MCPs (7): context7, exa, linear, supermemory, github, figma, excalidraw

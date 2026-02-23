@@ -14,7 +14,7 @@ Interview about a task/spec and write refined details back.
 
 > "You can't know everything upfront. Get enough to start, then iterate."
 
-**IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
+**IMPORTANT**: This plugin uses `.nbench/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
 
 **CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 ```bash
@@ -24,9 +24,9 @@ $FLOWCTL <command>
 
 ## Pre-check: Local setup version
 
-If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
+If `.nbench/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
-SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
+SETUP_VER=$(jq -r '.setup_version // empty' .nbench/meta.json 2>/dev/null)
 # Portable: Claude Code uses .claude-plugin, Factory Droid uses .factory-plugin
 PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.claude-plugin/plugin.json"
 [[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.factory-plugin/plugin.json"

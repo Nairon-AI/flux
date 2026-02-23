@@ -185,9 +185,9 @@ detect_plugins() {
 }
 
 # Load user preferences (dismissed recommendations, alternatives)
-# Uses project-local .flux/preferences.json (like flow-next uses .flow/)
+# Uses project-local .nbench/preferences.json (like flow-next uses .flow/)
 load_preferences() {
-    local prefs_file=".flux/preferences.json"
+    local prefs_file=".nbench/preferences.json"
     
     if [ -f "$prefs_file" ]; then
         if jq -e . "$prefs_file" >/dev/null 2>&1; then

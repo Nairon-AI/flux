@@ -260,7 +260,7 @@ describe('Fluxctl CLI', () => {
     expect(result.toLowerCase()).toMatch(/usage|help|flux|command/i)
   }, SCRIPT_TIMEOUT)
 
-  test('list handles missing .flux gracefully', async () => {
+  test('list handles missing .nbench gracefully', async () => {
     const result = await $`${nbenchctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
     expect(result).toBeTruthy()
   }, SCRIPT_TIMEOUT)
@@ -491,12 +491,12 @@ describe('Edge Cases', () => {
     const homeDir = `${tmpRoot}/home`
     const workDir = `${tmpRoot}/work`
 
-    await $`mkdir -p ${homeDir}/.claude ${workDir}/.flux`.quiet()
+    await $`mkdir -p ${homeDir}/.claude ${workDir}/.nbench`.quiet()
 
     await $`printf '%s' '{not-json' > ${homeDir}/.mcp.json`.quiet()
     await $`printf '%s' '{still-bad' > ${homeDir}/.claude/settings.json`.quiet()
     await $`printf '%s' '{bad-local' > ${workDir}/.mcp.json`.quiet()
-    await $`printf '%s' '{bad-prefs' > ${workDir}/.flux/preferences.json`.quiet()
+    await $`printf '%s' '{bad-prefs' > ${workDir}/.nbench/preferences.json`.quiet()
 
     const output = await runScriptWithEnv('detect-installed.sh', [], workDir, { HOME: homeDir })
     const parsed = JSON.parse(output)
