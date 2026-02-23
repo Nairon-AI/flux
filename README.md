@@ -69,7 +69,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 1. **A structured workflow** — Interview → Plan → Build → Review
 2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
-3. **Observability** — Tap into your sessions to understand how "AI-native" you actually are
+3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
 
 ---
 
