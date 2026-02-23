@@ -2,7 +2,7 @@
 
 # N-bench
 
-[![Discord](https://img.shields.io/discord/1234567890?label=discord&color=5865F2)](https://discord.gg/CEQMd6fmXk)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
 [![Version](https://img.shields.io/badge/version-v1.0.0-green)](https://github.com/Nairon-AI/n-bench/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
