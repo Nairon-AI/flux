@@ -41,6 +41,12 @@ N-bench gives you a **structured workflow** based on how software is actually bu
 
 ### The Workflow
 
+<!-- TODO: Add video showing full interview → plan → work → review cycle -->
+<details>
+<summary>📹 Video: The N-bench workflow</summary>
+<p><em>Coming soon</em></p>
+</details>
+
 Instead of jumping straight into code and watching the agent go off the rails:
 
 1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? You'll learn more as you build. Use `--deep` only for high-risk features.
@@ -63,6 +69,12 @@ N-bench runs drift checks after every task completion—verifying specs match im
 You should not be manually updating Documentation. Delegate to Agents. Always.
 
 ### Tool Discovery
+
+<!-- TODO: Add video showing /nbench:improve detecting friction and recommending tools -->
+<details>
+<summary>📹 Video: Friction detection and recommendations</summary>
+<p><em>Coming soon</em></p>
+</details>
 
 N-bench also analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
 
@@ -120,6 +132,11 @@ Step 4/4: Install
 
 ## Quick Demo
 
+<!-- TODO: Add demo video/GIF showing /nbench:improve in action -->
+<p align="center">
+  <em>Demo video coming soon</em>
+</p>
+
 Try this in any active project:
 
 ```bash
@@ -145,20 +162,46 @@ If you want full matching rationale (signals + gaps):
 
 ---
 
+## Prerequisites
+
+| Requirement | Why | Install |
+|-------------|-----|---------|
+| Python 3.9+ | Session analysis, scoring | `brew install python` / `apt install python3` |
+| jq | MCP config management | `brew install jq` / `apt install jq` |
+| git | Recommendations sync | Usually pre-installed |
+
+N-bench checks for these during execution and tells you what's missing.
+
+---
+
 ## Install
 
-### Claude Code
+<!-- TODO: Add video showing installation process -->
+<details>
+<summary>📹 Video: Installing N-bench</summary>
+<p><em>Coming soon</em></p>
+</details>
+
+### Claude Code (Marketplace)
 
 ```bash
-# From marketplace
 /plugin marketplace add Nairon-AI/n-bench
 /plugin install flux@nairon-flux
-
-# Or manual
-git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/flux
 ```
 
-If marketplace isn't available in your CLI version, use the manual install path.
+### Claude Code (Manual)
+
+If marketplace isn't available or you prefer manual install:
+
+```bash
+# Clone to plugins directory
+git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
+
+# Verify installation
+ls ~/.claude/plugins/n-bench/commands/nbench/
+```
+
+After manual install, restart Claude Code. Commands will be available as `/nbench:*`.
 
 ### OpenCode
 
@@ -202,6 +245,12 @@ You can start with `/nbench:setup` and `/nbench:improve` directly.
 
 ## Quick Start
 
+<!-- TODO: Add video showing complete setup to first feature flow -->
+<details>
+<summary>📹 Video: From zero to first feature</summary>
+<p><em>Coming soon</em></p>
+</details>
+
 Here's how to use N-bench from install to daily usage:
 
 ### 1. Install & Setup (once)
@@ -240,6 +289,7 @@ Here's how to use N-bench from install to daily usage:
 |---------|--------------|
 | `/nbench:setup` | Optional local install of `fluxctl` and project docs |
 | `/nbench:improve` | Analyze sessions, detect friction, and recommend improvements |
+| `/nbench:score` | Compute AI-native capability score from session data |
 | `/nbench:profile` | Export/share/import SDLC profile snapshots |
 | `/nbench:plan <idea|epic>` | Build structured execution plan |
 | `/nbench:work <task|epic>` | Execute tasks with context reload + checks |

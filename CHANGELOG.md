@@ -2,7 +2,46 @@
 
 All notable changes to N-bench will be documented in this file.
 
-## [flux 0.9.0] - 2026-02-23
+## [1.0.0] - 2026-02-23
+
+### Rebrand: Flux → N-bench
+
+N-bench is the new name. Same workflow engine, now with AI-native capability scoring.
+
+### Added
+
+- **N-bench Score** (`/nbench:score`) — Compute your AI-native capability score from Claude Code session data
+  - 5 dimensions: Interview Depth, Pushback Ratio, Prompt Quality, Iteration Efficiency, Tool Breadth
+  - Weighted composite score (0-100) with letter grades (S/A/B/C/D/F)
+  - Output formats: table, JSON, YAML
+  - Date filtering: `--since`, `--until`
+  - Evidence export for recruiting: `--export evidence.yaml`
+
+- **Score Schema** (`docs/n-bench-score-schema.md`) — Full specification of scoring dimensions with SQL queries and evidence format
+
+- **Session Analysis Script** (`scripts/nbench-score.py`) — Python implementation based on ccql patterns
+  - Loads history, transcripts, todos from `~/.claude/projects/`
+  - Computes all 5 dimension scores
+  - CLI with flexible output options
+
+### Changed
+
+- All commands renamed: `/flux:*` → `/nbench:*`
+- Plugin name: `flux` → `n-bench`
+- GitHub repos renamed:
+  - `Nairon-AI/flux` → `Nairon-AI/n-bench`
+  - `Nairon-AI/flux-recommendations` → `Nairon-AI/n-bench-recommendations`
+
+### Migration
+
+If upgrading from Flux:
+1. Uninstall old plugin: `/plugin uninstall nairon-flux`
+2. Install N-bench: `/plugin marketplace add Nairon-AI/n-bench`
+3. Commands work the same, just with `/nbench:` prefix
+
+---
+
+## [0.9.0] - 2026-02-23
 
 ### Added
 
