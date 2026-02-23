@@ -66,24 +66,42 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 Instead of jumping straight into code and watching the agent go off the rails:
 
-1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? You'll learn more as you build. Use `--deep` only for high-risk features.
+1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? Use `--deep` only for high-risk features.
+   ```
+   /nbench:interview Add user notifications
+   ```
 
-2. **Plan** — Break down into small, atomic tasks. N-bench creates tasks in `.nbench/` with clear scope. Each task should be 30-90 min of work.
+2. **Plan** — Break down into small, atomic tasks. Each task should be 30-90 min of work. N-bench creates tasks in `.nbench/` with clear scope.
+   ```
+   /nbench:plan Add user notifications
+   ```
 
 3. **Build → Feel → Adapt** — Execute one task, then:
    - **Feel check**: Does it work? Does it feel right?
    - **Adapt**: Update the plan based on what you learned
    - Repeat
+   ```
+   /nbench:work fn-1.1
+   /nbench:work fn-1.2
+   ```
 
 4. **Review** — Built-in review after each task catches issues before they compound.
+   ```
+   /nbench:impl-review
+   /nbench:epic-review fn-1
+   ```
 
 ### Drift Protection
 
 Documentation drift is your worst enemy on large projects with AI agents. Code changes but specs don't. Future tasks reference outdated assumptions.
 
-N-bench runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed. Another pass runs at epic completion to catch anything that slipped through.
+N-bench runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed.
 
-You should not be manually updating Documentation. Delegate to Agents. Always.
+```
+/nbench:sync fn-1
+```
+
+You should not be manually updating documentation. Delegate to agents. Always.
 
 ### Tool Discovery
 
@@ -93,7 +111,7 @@ You should not be manually updating Documentation. Delegate to Agents. Always.
 <p><em>Coming soon</em></p>
 </details>
 
-N-bench also analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
+N-bench analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
 
 - MCPs, CLI tools, skills, workflow patterns
 - Matched to your project type and detected pain points
@@ -101,6 +119,8 @@ N-bench also analyzes your **actual coding sessions** to find friction—then re
 
 ```
 /nbench:improve
+/nbench:improve --discover   # Include community discoveries
+/nbench:improve --explain    # Show matching rationale
 ```
 
 Reads your session history, detects frustration patterns, checks what you already have, shows what's missing.
