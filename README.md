@@ -16,7 +16,7 @@
 | | |
 |---|---|
 | **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers using Claude Code, OpenCode, Cursor, or any AI coding assistant |
+| **Who** | Engineers using Claude Code, OpenCode, Factory Droid, or Cursor |
 | **When** | You're productive with AI but know you could be better |
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
@@ -69,11 +69,22 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ### Install
 
+**Claude Code / OpenCode:**
 ```bash
-# Claude Code / OpenCode
+/plugin marketplace add Nairon-AI/n-bench
 /plugin install n-bench@nairon-n-bench
+```
 
-# Initialize in your project
+**Factory Droid:**
+```bash
+droid plugin marketplace add https://github.com/Nairon-AI/n-bench
+# Then: /plugins → Marketplace → install n-bench
+```
+
+**Cursor:** Manual install — clone to your plugins directory.
+
+**Then initialize:**
+```bash
 /nbench:setup
 ```
 
