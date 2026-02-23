@@ -30,7 +30,7 @@
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin marketplace add Nairon-AI/n-bench` |
 | [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/n-bench` |
 | [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flow-next` |
-| [OpenCode](https://github.com/opencode-ai/opencode) | 🔜 Coming soon | — |
+| [OpenCode](https://github.com/anomalyco/opencode) | 🔜 Coming soon | — |
 
 ---
 
