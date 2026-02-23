@@ -16,30 +16,21 @@
 | | |
 |---|---|
 | **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers (CTOs soon) using Claude Code or Factory Droid |
+| **Who** | Engineers using AI coding agents (CTOs soon) |
 | **When** | You think you're productive with AI but know you could be better |
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
 
 > *"Are you actually good at working with AI, or are you just typing 'implement this' and hoping for the best?"*
 
-> [!TIP]
-> **🤖 Works on [Factory Droid](https://factory.ai) too!** Claude Code plugins are fully compatible:
-> ```bash
-> droid plugin marketplace add https://github.com/Nairon-AI/n-bench
-> ```
-> Then `/plugins` → Marketplace → install n-bench. Commands work when typed (e.g. `/nbench:plan`).
+### Platform Compatibility
 
-> [!TIP]
-> **🖥️ [OpenAI Codex](https://openai.com/index/introducing-codex/) user?** Full multi-agent support:
-> ```bash
-> git clone https://github.com/Nairon-AI/n-bench.git
-> cd n-bench && ./scripts/install-codex.sh flow-next
-> ```
-> Requires Codex 0.102.0+. See [Codex install guide](docs/codex-install.md).
-
-> [!NOTE]
-> **[OpenCode](https://github.com/opencode-ai/opencode) support coming soon.**
+| Platform | Status | Install |
+|----------|--------|---------|
+| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin marketplace add Nairon-AI/n-bench` |
+| [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/n-bench` |
+| [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flow-next` |
+| [OpenCode](https://github.com/opencode-ai/opencode) | 🔜 Coming soon | — |
 
 ---
 
