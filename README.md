@@ -52,7 +52,7 @@ All you want is to be as productive as possible, ship quality code, and finally 
 
 ## What N-bench Does
 
-N-bench is the accumulation of our learnings building startups for clients and watching the SDLC evolve in real-time.
+N-bench is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
