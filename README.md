@@ -189,6 +189,7 @@ Get better at AI collaboration through data, not vibes.
 - Who's actually leveraging AI effectively
 - Where the team needs skill development
 - Which workflows produce the highest quality output
+- Share your entire setup with new engineers for instant 10x onboarding
 
 ### For Engineering Leaders
 
