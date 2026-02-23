@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Flux Improve - Community discovery for novel workflow optimizations.
+N-bench Improve - Community discovery for novel workflow optimizations.
 
 Searches X/Twitter for recent high-signal discussions based on detected friction.
 Priority order:
@@ -271,7 +271,7 @@ def search_twitter(
     url = f"{TWITTER_SEARCH_API}?{params}"
     req = urllib.request.Request(url)
     req.add_header("X-API-Key", api_key)
-    req.add_header("User-Agent", "FluxDiscover/1.0")
+    req.add_header("User-Agent", "N-benchDiscover/1.0")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -303,7 +303,7 @@ def search_exa(
     req = urllib.request.Request(EXA_SEARCH_API, data=body, method="POST")
     req.add_header("Content-Type", "application/json")
     req.add_header("x-api-key", api_key)
-    req.add_header("User-Agent", "FluxDiscover/1.0")
+    req.add_header("User-Agent", "N-benchDiscover/1.0")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:

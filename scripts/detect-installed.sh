@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - Installed Tools Detection
+# N-bench Improve - Installed Tools Detection
 # Detects CLI tools, MCPs, plugins, and applications across platforms
 
 set -e

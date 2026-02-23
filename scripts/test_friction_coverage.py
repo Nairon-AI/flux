@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Friction Coverage Tests for Flux Recommendation Engine
+Friction Coverage Tests for N-bench Recommendation Engine
 
 Tests that EVERY type of user friction maps to the correct solution.
 This is the "no matter what problem they have" confidence test.

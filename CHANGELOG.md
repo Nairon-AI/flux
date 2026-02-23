@@ -35,7 +35,7 @@ N-bench is the new name. Same workflow engine, now with AI-native capability sco
 ### Migration
 
 If upgrading from Flux:
-1. Uninstall old plugin: `/plugin uninstall nairon-flux`
+1. Uninstall old plugin: `/plugin uninstall nairon-n-bench`
 2. Install N-bench: `/plugin marketplace add Nairon-AI/n-bench`
 3. Commands work the same, just with `/nbench:` prefix
 

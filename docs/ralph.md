@@ -1,6 +1,6 @@
 # Ralph — Autonomous Loop
 
-Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies multi-model review gates, and produces production-quality code overnight.
+Ralph is N-bench's repo-local autonomous harness. It loops over tasks, applies multi-model review gates, and produces production-quality code overnight.
 
 > **TL;DR**: External shell loop → fresh Claude session per task → cross-model review gates → receipt-based proof-of-work → iterate until SHIP.
 
@@ -147,7 +147,7 @@ flowchart TD
 
 ### Why Ralph vs ralph-wiggum
 
-Anthropic's official ralph-wiggum uses a Stop hook to keep Claude in the same session. Flux inverts this for production-grade reliability.
+Anthropic's official ralph-wiggum uses a Stop hook to keep Claude in the same session. N-bench inverts this for production-grade reliability.
 
 | Aspect | ralph-wiggum | Ralph |
 |--------|--------------|-------|
@@ -974,6 +974,6 @@ nbenchctl show fn-1.1 --json | jq '.evidence.commits'
 ## References
 
 - [nbenchctl CLI](nbenchctl.md)
-- [Flux README](../README.md)
+- [N-bench README](../README.md)
 - [flux-tui](../../../flux-tui/README.md)
 - Test scripts: `plugins/flux/scripts/ralph_e2e_*.sh`

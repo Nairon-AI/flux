@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Flux profile manager for export/import/view workflows."""
+"""N-bench profile manager for export/import/view workflows."""
 
 from __future__ import annotations
 
@@ -974,7 +974,7 @@ def build_profile_snapshot(
     snapshot = {
         "schema_version": "1.0",
         "profile_kind": "flux-sdlc-profile",
-        "profile_name": profile_name or "Flux SDLC Profile",
+        "profile_name": profile_name or "N-bench SDLC Profile",
         "created_at": now_iso(),
         "visibility": "public-anonymous",
         "link_policy": {
@@ -1034,7 +1034,7 @@ def http_json(
 
     req = urllib.request.Request(url, data=payload, method=method)
     req.add_header("Content-Type", "application/json")
-    req.add_header("User-Agent", "FluxProfile/1.0")
+    req.add_header("User-Agent", "N-benchProfile/1.0")
     if headers:
         for key, value in headers.items():
             req.add_header(key, value)
@@ -1619,7 +1619,7 @@ def cmd_saved_apps(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Flux profile export/import manager")
+    parser = argparse.ArgumentParser(description="N-bench profile export/import manager")
     sub = parser.add_subparsers(dest="command", required=True)
 
     def add_common_detection_options(cmd: argparse.ArgumentParser) -> None:

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - Preferences Management
+# N-bench Improve - Preferences Management
 # Manage dismissed recommendations and user alternatives
 
 set -e
@@ -95,7 +95,7 @@ undismiss() {
 # Usage
 usage() {
     cat <<EOF
-Flux Preferences Manager
+N-bench Preferences Manager
 
 Usage:
   $0 dismiss <name>              Don't recommend this again

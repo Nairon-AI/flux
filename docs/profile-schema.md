@@ -1,4 +1,4 @@
-# Flux Profile Schema (v1)
+# N-bench Profile Schema (v1)
 
 ## Snapshot payload
 

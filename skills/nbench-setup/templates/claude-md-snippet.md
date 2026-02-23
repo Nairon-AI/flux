@@ -1,7 +1,7 @@
 <!-- BEGIN FLUX -->
-## Flux
+## N-bench
 
-This project uses Flux for task tracking. Use `.nbench/bin/nbenchctl` instead of markdown TODOs or TodoWrite.
+This project uses N-bench for task tracking. Use `.nbench/bin/nbenchctl` instead of markdown TODOs or TodoWrite.
 
 **Quick commands:**
 ```bash

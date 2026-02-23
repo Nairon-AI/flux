@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Flux Session Parser - Analyzes Claude Code sessions for pain points and patterns.
+N-bench Session Parser - Analyzes Claude Code sessions for pain points and patterns.
 
 Extracts:
 - API errors and retries

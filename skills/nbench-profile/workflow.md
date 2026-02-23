@@ -1,4 +1,4 @@
-# Flux Profile Workflow
+# N-bench Profile Workflow
 
 Follow steps in order.
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - Plugin Installer
+# N-bench Improve - Plugin Installer
 # Installs Claude Code plugins via marketplace
 
 set -e

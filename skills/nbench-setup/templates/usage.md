@@ -1,4 +1,4 @@
-# Flux Usage Guide
+# N-bench Usage Guide
 
 Task tracking for AI agents. All state lives in `.nbench/`.
 

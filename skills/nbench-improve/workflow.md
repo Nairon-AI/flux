@@ -1,4 +1,4 @@
-# Flux Improve Workflow
+# N-bench Improve Workflow
 
 Follow these steps in order.
 
@@ -57,7 +57,7 @@ For `--alternative <rec> <alt>`:
 **Always display this privacy notice first:**
 
 ```
-┌─ Flux Improve ──────────────────────────────────────────────┐
+┌─ N-bench Improve ──────────────────────────────────────────────┐
 │                                                             │
 │ This analyzes your local environment to find workflow       │
 │ improvements. By default this stays local.                  │

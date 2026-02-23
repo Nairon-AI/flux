@@ -3,7 +3,7 @@ name: nbench-deps
 description: "Show epic dependency graph and execution order. Use when asking 'what's blocking what', 'execution order', 'dependency graph', 'what order should epics run', 'critical path', 'which epics can run in parallel'."
 ---
 
-# Flux Dependency Graph
+# N-bench Dependency Graph
 
 Visualize epic dependencies, blocking chains, and execution phases.
 

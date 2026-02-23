@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - Rollback Installation
+# N-bench Improve - Rollback Installation
 # Restores from a snapshot created during installation
 
 set -e

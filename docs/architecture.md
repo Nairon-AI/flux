@@ -1,6 +1,6 @@
-# Flux Architecture
+# N-bench Architecture
 
-How Flux executes commands and turns workflow friction into actionable improvements.
+How N-bench executes commands and turns workflow friction into actionable improvements.
 
 ## High-Level Flow
 

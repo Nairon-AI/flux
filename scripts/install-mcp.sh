@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - MCP Installer
+# N-bench Improve - MCP Installer
 # Installs an MCP server by merging config into ~/.mcp.json
 
 set -e

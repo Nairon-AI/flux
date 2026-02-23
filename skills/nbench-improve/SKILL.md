@@ -4,7 +4,7 @@ description: Analyze environment and recommend workflow optimizations (MCPs, plu
 user-invocable: false
 ---
 
-# Flux Improve
+# N-bench Improve
 
 Analyze user's environment and recommend workflow optimizations from a curated database.
 

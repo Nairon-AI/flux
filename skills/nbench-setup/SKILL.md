@@ -4,7 +4,7 @@ description: Optional local install of nbenchctl CLI and CLAUDE.md/AGENTS.md ins
 user-invocable: false
 ---
 
-# Flux Setup (Optional)
+# N-bench Setup (Optional)
 
 Install nbenchctl locally and add instructions to project docs. **Fully optional** - flux works without this via the plugin.
 

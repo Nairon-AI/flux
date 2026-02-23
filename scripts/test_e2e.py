@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-End Tests for Flux Improve Pipeline
+End-to-End Tests for N-bench Improve Pipeline
 
 Tests the full flow:
 1. parse-sessions.py extracts friction signals from session data

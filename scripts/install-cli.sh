@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - CLI Tool Installer
+# N-bench Improve - CLI Tool Installer
 # Installs CLI tools via brew, npm, or direct commands
 
 set -e

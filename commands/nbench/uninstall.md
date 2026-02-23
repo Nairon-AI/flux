@@ -3,7 +3,7 @@ name: flux:uninstall
 description: Remove flux files from project
 ---
 
-# Flux Uninstall
+# N-bench Uninstall
 
 Use `AskUserQuestion` to confirm:
 
@@ -50,10 +50,10 @@ For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEG
 ## Report
 
 ```
-Flux uninstall prepared.
+N-bench uninstall prepared.
 
 Cleaned up:
-- Flux sections from docs (if existed)
+- N-bench sections from docs (if existed)
 
 Run these commands manually to complete removal:
 <commands from above>

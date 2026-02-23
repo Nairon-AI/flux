@@ -1,5 +1,5 @@
 /**
- * Flux Scripts E2E Tests
+ * N-bench Scripts E2E Tests
  * 
  * Fast tests that don't require Claude Code.
  * Run: bun test tests/scripts.test.ts
@@ -55,7 +55,7 @@ async function runScriptWithEnv(
   }
 }
 
-describe('Flux Scripts', () => {
+describe('N-bench Scripts', () => {
   
   beforeAll(() => {
     expect(existsSync(FLUX_ROOT)).toBe(true)
@@ -252,7 +252,7 @@ describe('Flux Scripts', () => {
   })
 })
 
-describe('Fluxctl CLI', () => {
+describe('N-benchctl CLI', () => {
   const nbenchctl = join(FLUX_ROOT, 'scripts', 'nbenchctl')
   
   test('--help shows usage', async () => {

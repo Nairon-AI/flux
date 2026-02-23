@@ -15,7 +15,7 @@ Complete reference for all available `/nbench:*` commands.
 ```bash
 # Marketplace
 /plugin marketplace add Nairon-AI/n-bench
-/plugin install flux@nairon-flux
+/plugin install n-bench@nairon-n-bench
 
 # Manual
 git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench

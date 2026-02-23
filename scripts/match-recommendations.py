@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Flux Improve - SDLC-Aware Recommendation Engine
+N-bench Improve - SDLC-Aware Recommendation Engine
 
 Analyzes workflow gaps across the SDLC and recommends tools that solve
 specific problems. Not spray-and-pray - only recommends what fills real gaps.

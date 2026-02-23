@@ -1,4 +1,4 @@
-# Flux Setup Workflow
+# N-bench Setup Workflow
 
 Follow these steps in order. This workflow is **idempotent** - safe to re-run.
 
@@ -227,7 +227,7 @@ Available questions (include only if corresponding config is unset):
 ```json
 {
   "header": "Docs",
-  "question": "Update project documentation with Flux instructions?",
+  "question": "Update project documentation with N-bench instructions?",
   "options": [
     {"label": "CLAUDE.md only", "description": "Add flux section to CLAUDE.md"},
     {"label": "AGENTS.md only", "description": "Add flux section to AGENTS.md"},
@@ -242,7 +242,7 @@ Available questions (include only if corresponding config is unset):
 ```json
 {
   "header": "Star",
-  "question": "Flux is free and open source. Star the repo on GitHub?",
+  "question": "N-bench is free and open source. Star the repo on GitHub?",
   "options": [
     {"label": "Yes, star it", "description": "Uses gh CLI if available, otherwise shows link"},
     {"label": "No thanks", "description": "Skip starring"}
@@ -310,7 +310,7 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 ## Step 8: Print Summary
 
 ```
-Flux setup complete!
+N-bench setup complete!
 
 Installed:
 - .nbench/bin/nbenchctl (v<VERSION>)

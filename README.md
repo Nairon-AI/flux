@@ -186,7 +186,7 @@ N-bench checks for these during execution and tells you what's missing.
 
 ```bash
 /plugin marketplace add Nairon-AI/n-bench
-/plugin install flux@nairon-flux
+/plugin install n-bench@nairon-n-bench
 ```
 
 ### Claude Code (Manual)
@@ -207,7 +207,7 @@ After manual install, restart Claude Code. Commands will be available as `/nbenc
 
 ```bash
 /plugin marketplace add Nairon-AI/n-bench
-/plugin install flux@nairon-flux
+/plugin install n-bench@nairon-n-bench
 ```
 
 ### First-Time Setup
@@ -256,7 +256,7 @@ Here's how to use N-bench from install to daily usage:
 ### 1. Install & Setup (once)
 
 ```bash
-/plugin install flux@nairon-flux   # Install plugin
+/plugin install n-bench@nairon-n-bench   # Install plugin
 /nbench:setup                         # Initialize in your project
 ```
 

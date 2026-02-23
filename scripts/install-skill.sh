@@ -1,5 +1,5 @@
 #!/bin/bash
-# Flux Improve - Skill Installer
+# N-bench Improve - Skill Installer
 # Installs skills to ~/.claude/skills/ or project .claude/skills/
 
 set -e

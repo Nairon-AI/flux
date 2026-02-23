@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Flux version check - compares local vs remote version
+# N-bench version check - compares local vs remote version
 # Returns JSON with update info
 
 set -euo pipefail

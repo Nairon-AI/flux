@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unit tests for Flux recommendation matching engine.
+Unit tests for N-bench recommendation matching engine.
 
 Tests that the right recommendations are matched for different user setups.
 Run with: python -m pytest scripts/test_match_recommendations.py -v

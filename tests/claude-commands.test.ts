@@ -1,5 +1,5 @@
 /**
- * Flux Claude Commands E2E Tests
+ * N-bench Claude Commands E2E Tests
  * 
  * Uses tuistory CLI to test /flux:* commands in Claude Code.
  * 
@@ -58,8 +58,8 @@ describe('Prerequisites', () => {
 
   test('flux plugin is installed', async () => {
     const installed = await $`cat ~/.claude/plugins/installed_plugins.json`.json().catch(() => ({}))
-    const hasFlux = installed.plugins?.['flux@nairon-flux'] !== undefined
-    expect(hasFlux).toBe(true)
+    const hasN-bench = installed.plugins?.['flux@nairon-flux'] !== undefined
+    expect(hasN-bench).toBe(true)
   })
 
   test('flux plugin cache exists', async () => {
@@ -151,7 +151,7 @@ describe('Claude Code', () => {
 // These verify commands START executing. Full execution requires permission handling.
 // ============================================================================
 
-describe('Flux Commands Invocation', () => {
+describe('N-bench Commands Invocation', () => {
   
   afterAll(async () => {
     await cleanupSessions()
