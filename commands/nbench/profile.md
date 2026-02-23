@@ -1,5 +1,5 @@
 ---
-name: flux:profile
+name: nbench:profile
 description: Export, share, view, and import SDLC setup profiles
 argument-hint: "[export|import <url>|view <url>|tombstone <url|id>] [--skills=global|project|both]"
 ---
@@ -21,9 +21,9 @@ Then continue with the command. Do NOT block or prompt - just inform.
 
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-profile`
+# IMPORTANT: This command MUST invoke the skill `nbench-profile`
 
-The ONLY purpose of this command is to call the `flux-profile` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-profile` skill. You MUST use that skill now.
 
 **User request:** $ARGUMENTS
 

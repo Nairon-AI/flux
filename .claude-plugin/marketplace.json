@@ -1,5 +1,5 @@
 {
-  "name": "nairon-flux",
+  "name": "nairon-nbench",
   "owner": {
     "name": "NaironAI",
     "url": "https://github.com/Nairon-AI"
@@ -10,7 +10,7 @@
   },
   "plugins": [
     {
-      "name": "flux",
+      "name": "nbench",
       "description": "Structure your AI coding sessions. Plan first, work second. Zero external dependencies.",
       "version": "1.0.0",
       "author": {

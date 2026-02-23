@@ -8,8 +8,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Configuration (can be overridden via environment)
-DAYS_BACK="${FLUX_SESSION_DAYS:-7}"
-MAX_SESSIONS="${FLUX_SESSION_MAX:-50}"
+DAYS_BACK="${NBENCH_SESSION_DAYS:-7}"
+MAX_SESSIONS="${NBENCH_SESSION_MAX:-50}"
 
 # Check for Python
 if ! command -v python3 &> /dev/null; then

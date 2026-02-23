@@ -629,4 +629,4 @@ Run /nbench:improve again anytime for new recommendations.
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > ~/.nbench/last_improve
 ```
 
-This is checked by other flux commands for the daily nudge.
+This is checked by other nbench commands for the daily nudge.

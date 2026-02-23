@@ -117,7 +117,7 @@ python3 "$PROFILE_SCRIPT" export \
   --selected-new-apps "$SELECTED_NEW_APPS_CSV" \
   --include-saved-missing-apps "$SELECTED_SAVED_MISSING_APPS_CSV" \
   --required-items "$REQUIRED_ITEMS_CSV" \
-  --output-file /tmp/flux-profile-export.json
+  --output-file /tmp/nbench-profile-export.json
 ```
 
 This updates app memory state in `~/.nbench/profile-state.json` (unless dry-run).
@@ -127,11 +127,11 @@ This updates app memory state in `~/.nbench/profile-state.json` (unless dry-run)
 Run:
 
 ```bash
-PUBLISHED=$(python3 "$PROFILE_SCRIPT" publish --input-file /tmp/flux-profile-export.json)
+PUBLISHED=$(python3 "$PROFILE_SCRIPT" publish --input-file /tmp/nbench-profile-export.json)
 ```
 
 If publish fails due missing service URL, configure one of:
-- env `FLUX_PROFILE_SERVICE_URL`
+- env `NBENCH_PROFILE_SERVICE_URL`
 - `~/.nbench/config.json` key `profile_service_url`
 
 Show:
@@ -162,8 +162,8 @@ Else show:
 Run:
 
 ```bash
-python3 "$PROFILE_SCRIPT" fetch "$TARGET" > /tmp/flux-profile-fetch.json
-python3 "$PROFILE_SCRIPT" plan-import --profile-file /tmp/flux-profile-fetch.json > /tmp/flux-profile-plan.json
+python3 "$PROFILE_SCRIPT" fetch "$TARGET" > /tmp/nbench-profile-fetch.json
+python3 "$PROFILE_SCRIPT" plan-import --profile-file /tmp/nbench-profile-fetch.json > /tmp/nbench-profile-plan.json
 ```
 
 Show grouped plan:

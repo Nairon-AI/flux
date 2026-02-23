@@ -7,12 +7,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
 
-TEST_DIR="${TEST_DIR:-/tmp/flux-ralph-e2e-short-$$}"
+TEST_DIR="${TEST_DIR:-/tmp/nbench-ralph-e2e-short-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 FLOWCTL=""
 
@@ -48,18 +48,18 @@ export const placeholder = 0;
 EOF
 
 cat > package.json <<'EOF'
-{"name": "tmp-flux-ralph", "private": true, "version": "0.0.0"}
+{"name": "tmp-nbench-ralph", "private": true, "version": "0.0.0"}
 EOF
 
 cat > README.md <<'EOF'
-# tmp-flux-ralph
+# tmp-nbench-ralph
 EOF
 
 git add .
 git commit -m "chore: init" >/dev/null
 
 mkdir -p scripts/ralph
-cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
+cp -R "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
 cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl
@@ -87,8 +87,8 @@ mkdir -p .nbench/bin
 cp "$PLUGIN_ROOT/scripts/nbenchctl" .nbench/bin/nbenchctl
 cp "$PLUGIN_ROOT/scripts/nbenchctl.py" .nbench/bin/nbenchctl.py
 chmod +x .nbench/bin/nbenchctl
-cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .nbench/usage.md
-cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md
+cp "$PLUGIN_ROOT/skills/nbench-setup/templates/usage.md" .nbench/usage.md
+cat "$PLUGIN_ROOT/skills/nbench-setup/templates/claude-md-snippet.md" > CLAUDE.md
 echo -e "${GREEN}✓${NC} Setup mirrored"
 
 scripts/ralph/nbenchctl epic create --title "Add function" --json >/dev/null

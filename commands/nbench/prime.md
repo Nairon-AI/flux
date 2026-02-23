@@ -1,5 +1,5 @@
 ---
-name: flux:prime
+name: nbench:prime
 description: Analyze codebase for agent readiness and propose improvements
 argument-hint: "[--report-only] [--fix-all] [path]"
 ---
@@ -21,9 +21,9 @@ Then continue with the command. Do NOT block or prompt - just inform.
 
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-prime`
+# IMPORTANT: This command MUST invoke the skill `nbench-prime`
 
-The ONLY purpose of this command is to call the `flux-prime` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-prime` skill. You MUST use that skill now.
 
 **User request:** $ARGUMENTS
 

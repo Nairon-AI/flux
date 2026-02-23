@@ -1,13 +1,13 @@
 ---
-name: flux:uninstall
-description: Remove flux files from project
+name: nbench:uninstall
+description: Remove nbench files from project
 ---
 
 # N-bench Uninstall
 
 Use `AskUserQuestion` to confirm:
 
-**Question 1:** "Remove flux from this project?"
+**Question 1:** "Remove nbench from this project?"
 - "Yes, uninstall"
 - "Cancel"
 
@@ -45,7 +45,7 @@ fi
 
 ## Clean up docs (AI can do this)
 
-For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). This is safe for the AI to execute.
+For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN NBENCH -->` and `<!-- END NBENCH -->` (inclusive). This is safe for the AI to execute.
 
 ## Report
 

@@ -4,9 +4,9 @@ description: Quick interview (default) or deep requirements gathering. Use --dee
 argument-hint: "[epic ID, task ID, or file path] [--deep]"
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-interview`
+# IMPORTANT: This command MUST invoke the skill `nbench-interview`
 
-The ONLY purpose of this command is to call the `flux-interview` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-interview` skill. You MUST use that skill now.
 
 **User input:** $ARGUMENTS
 

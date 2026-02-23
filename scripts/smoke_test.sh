@@ -18,7 +18,7 @@ PYTHON_BIN="$(pick_python)"
 [[ -n "$PYTHON_BIN" ]] || { echo "ERROR: python not found (need python3 or python in PATH)" >&2; exit 1; }
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
@@ -897,7 +897,7 @@ PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- sync command files ---${NC}"
 # Test 1: Command stub exists
-if [[ -f "$PLUGIN_ROOT/commands/flux/sync.md" ]]; then
+if [[ -f "$PLUGIN_ROOT/commands/nbench/sync.md" ]]; then
   echo -e "${GREEN}✓${NC} sync command stub exists"
   PASS=$((PASS + 1))
 else
@@ -906,7 +906,7 @@ else
 fi
 
 # Test 2: Skill file exists
-if [[ -f "$PLUGIN_ROOT/skills/flux-sync/SKILL.md" ]]; then
+if [[ -f "$PLUGIN_ROOT/skills/nbench-sync/SKILL.md" ]]; then
   echo -e "${GREEN}✓${NC} sync skill exists"
   PASS=$((PASS + 1))
 else
@@ -915,7 +915,7 @@ else
 fi
 
 # Test 3: Command invokes skill
-if grep -q "flux-sync" "$PLUGIN_ROOT/commands/flux/sync.md"; then
+if grep -q "nbench-sync" "$PLUGIN_ROOT/commands/nbench/sync.md"; then
   echo -e "${GREEN}✓${NC} sync command invokes skill"
   PASS=$((PASS + 1))
 else
@@ -924,7 +924,7 @@ else
 fi
 
 # Test 4: Skill has correct frontmatter
-if grep -q "name: flux-sync" "$PLUGIN_ROOT/skills/flux-sync/SKILL.md"; then
+if grep -q "name: nbench-sync" "$PLUGIN_ROOT/skills/nbench-sync/SKILL.md"; then
   echo -e "${GREEN}✓${NC} sync skill has correct name"
   PASS=$((PASS + 1))
 else
@@ -933,7 +933,7 @@ else
 fi
 
 # Test 5: Skill mentions plan-sync agent
-if grep -q "plan-sync" "$PLUGIN_ROOT/skills/flux-sync/SKILL.md"; then
+if grep -q "plan-sync" "$PLUGIN_ROOT/skills/nbench-sync/SKILL.md"; then
   echo -e "${GREEN}✓${NC} sync skill references plan-sync agent"
   PASS=$((PASS + 1))
 else
@@ -942,7 +942,7 @@ else
 fi
 
 # Test 6: Skill supports dry-run
-if grep -qi "dry.run\|dry-run\|DRY_RUN" "$PLUGIN_ROOT/skills/flux-sync/SKILL.md"; then
+if grep -qi "dry.run\|dry-run\|DRY_RUN" "$PLUGIN_ROOT/skills/nbench-sync/SKILL.md"; then
   echo -e "${GREEN}✓${NC} sync skill supports dry-run"
   PASS=$((PASS + 1))
 else

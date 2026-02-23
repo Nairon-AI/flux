@@ -1,6 +1,6 @@
 ---
 name: nbench-export-context
-description: Export RepoPrompt context for external LLM review (ChatGPT, Claude web, etc.). Use when you want to review code or plans with an external model. Triggers on /flux:export-context.
+description: Export RepoPrompt context for external LLM review (ChatGPT, Claude web, etc.). Use when you want to review code or plans with an external model. Triggers on /nbench:export-context.
 ---
 
 # Export Context Mode
@@ -25,8 +25,8 @@ Types:
 - `impl` - Export implementation review context (current branch)
 
 Examples:
-- `/flux:export-context plan fn-1 focus on security`
-- `/flux:export-context impl focus on the auth changes`
+- `/nbench:export-context plan fn-1 focus on security`
+- `/nbench:export-context impl focus on the auth changes`
 
 ## Setup
 

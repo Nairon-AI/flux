@@ -1,0 +1,4 @@
+#!/bin/bash
+# nbenchctl wrapper - invokes nbenchctl.py from the same directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$SCRIPT_DIR/nbenchctl.py" "$@"

@@ -1,12 +1,12 @@
 ---
-name: flux:sync
+name: nbench:sync
 description: Manually trigger plan-sync to update downstream task specs after implementation drift
 argument-hint: "<id> [--dry-run]"
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-sync`
+# IMPORTANT: This command MUST invoke the skill `nbench-sync`
 
-The ONLY purpose of this command is to call the `flux-sync` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-sync` skill. You MUST use that skill now.
 
 **Arguments:** $ARGUMENTS
 

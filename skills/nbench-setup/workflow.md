@@ -6,7 +6,7 @@ Follow these steps in order. This workflow is **idempotent** - safe to re-run.
 
 The plugin root is the parent of this skill's directory. From this SKILL.md location, go up to find `scripts/` and `.claude-plugin/`.
 
-Example: if this file is at `~/.claude/plugins/cache/.../flux/0.3.12/skills/flux-setup/workflow.md`, then plugin root is `~/.claude/plugins/cache/.../flux/0.3.12/`.
+Example: if this file is at `~/.claude/plugins/cache/.../nbench/0.3.12/skills/nbench-setup/workflow.md`, then plugin root is `~/.claude/plugins/cache/.../nbench/0.3.12/`.
 
 Store this as `PLUGIN_ROOT` for use in later steps.
 
@@ -114,11 +114,11 @@ Read the template from [templates/claude-md-snippet.md](templates/claude-md-snip
 
 For each of CLAUDE.md and AGENTS.md:
 1. Check if file exists
-2. If exists, check if `<!-- BEGIN FLUX -->` marker exists
+2. If exists, check if `<!-- BEGIN NBENCH -->` marker exists
 3. If marker exists, extract content between markers and compare with template
 
 Determine status for each file:
-- **missing**: file doesn't exist or no flux section
+- **missing**: file doesn't exist or no nbench section
 - **current**: section exists and matches template
 - **outdated**: section exists but differs from template
 
@@ -229,9 +229,9 @@ Available questions (include only if corresponding config is unset):
   "header": "Docs",
   "question": "Update project documentation with N-bench instructions?",
   "options": [
-    {"label": "CLAUDE.md only", "description": "Add flux section to CLAUDE.md"},
-    {"label": "AGENTS.md only", "description": "Add flux section to AGENTS.md"},
-    {"label": "Both", "description": "Add flux section to both files"},
+    {"label": "CLAUDE.md only", "description": "Add nbench section to CLAUDE.md"},
+    {"label": "AGENTS.md only", "description": "Add nbench section to AGENTS.md"},
+    {"label": "Both", "description": "Add nbench section to both files"},
     {"label": "Skip", "description": "Don't update documentation"}
   ],
   "multiSelect": false
@@ -298,7 +298,7 @@ esac
 **Docs:**
 For each chosen file (CLAUDE.md and/or AGENTS.md):
 1. Read the file (create if doesn't exist)
-2. If marker exists: replace everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive)
+2. If marker exists: replace everything between `<!-- BEGIN NBENCH -->` and `<!-- END NBENCH -->` (inclusive)
 3. If no marker: append the snippet from [templates/claude-md-snippet.md](templates/claude-md-snippet.md)
 
 **Star:**
@@ -336,6 +336,6 @@ Notes:
 - Re-run /nbench:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /nbench:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
-- Uninstall (run manually): rm -rf .nbench/bin .nbench/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
+- Uninstall (run manually): rm -rf .nbench/bin .nbench/usage.md and remove <!-- BEGIN/END NBENCH --> block from docs
 - This setup is optional - plugin works without it
 ```

@@ -6,7 +6,7 @@ user-invocable: false
 
 # N-bench Setup (Optional)
 
-Install nbenchctl locally and add instructions to project docs. **Fully optional** - flux works without this via the plugin.
+Install nbenchctl locally and add instructions to project docs. **Fully optional** - nbench works without this via the plugin.
 
 ## Benefits
 

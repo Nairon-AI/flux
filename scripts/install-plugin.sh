@@ -9,7 +9,7 @@ REPO="$2"  # e.g., "Nairon-AI/n-bench" or marketplace name
 
 if [ -z "$NAME" ]; then
     echo "Usage: install-plugin.sh <name> [repo]"
-    echo "Example: install-plugin.sh flux Nairon-AI/n-bench"
+    echo "Example: install-plugin.sh nbench Nairon-AI/n-bench"
     exit 1
 fi
 

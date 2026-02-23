@@ -35,7 +35,7 @@ HOME = Path.home()
 DEFAULT_STATE_PATH = HOME / ".nbench" / "profile-state.json"
 DEFAULT_CONFIG_PATH = HOME / ".nbench" / "config.json"
 DEFAULT_RECS_DIR = Path(
-    os.environ.get("FLUX_RECS_DIR") or HOME / ".nbench" / "recommendations"
+    os.environ.get("NBENCH_RECS_DIR") or HOME / ".nbench" / "recommendations"
 )
 
 ALL_OSES = ["macos", "linux", "windows"]
@@ -973,7 +973,7 @@ def build_profile_snapshot(
 
     snapshot = {
         "schema_version": "1.0",
-        "profile_kind": "flux-sdlc-profile",
+        "profile_kind": "nbench-sdlc-profile",
         "profile_name": profile_name or "N-bench SDLC Profile",
         "created_at": now_iso(),
         "visibility": "public-anonymous",
@@ -1011,14 +1011,14 @@ def build_profile_snapshot(
 def resolve_service_url(config: dict[str, Any], explicit: str = "") -> str:
     if explicit:
         return explicit.rstrip("/")
-    env_url = os.environ.get("FLUX_PROFILE_SERVICE_URL", "").strip()
+    env_url = os.environ.get("NBENCH_PROFILE_SERVICE_URL", "").strip()
     if env_url:
         return env_url.rstrip("/")
     conf_url = str(config.get("profile_service_url", "")).strip()
     if conf_url:
         return conf_url.rstrip("/")
     raise RuntimeError(
-        "Profile service URL not configured. Set FLUX_PROFILE_SERVICE_URL or ~/.nbench/config.json profile_service_url"
+        "Profile service URL not configured. Set NBENCH_PROFILE_SERVICE_URL or ~/.nbench/config.json profile_service_url"
     )
 
 

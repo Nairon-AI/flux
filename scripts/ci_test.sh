@@ -48,7 +48,7 @@ nbenchctl() {
   "$PYTHON_BIN" "$TEST_DIR/scripts/nbenchctl.py" "$@"
 }
 
-echo -e "${YELLOW}=== flux CI tests ===${NC}"
+echo -e "${YELLOW}=== nbench CI tests ===${NC}"
 echo "Python: $PYTHON_BIN"
 echo "Test dir: $TEST_DIR"
 

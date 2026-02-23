@@ -1,6 +1,6 @@
 ---
 name: plan-sync
-description: Synchronizes downstream task specs after implementation. Spawned by flux-work after each task completes. Do not invoke directly.
+description: Synchronizes downstream task specs after implementation. Spawned by nbench-work after each task completes. Do not invoke directly.
 disallowedTools: Task, Write, Bash
 model: opus
 color: "#8B5CF6"

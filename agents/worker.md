@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Task implementation worker. Spawned by flux-work to implement a single task with fresh context. Do not invoke directly - use /nbench:work instead.
+description: Task implementation worker. Spawned by nbench-work to implement a single task with fresh context. Do not invoke directly - use /nbench:work instead.
 model: inherit
 disallowedTools: Task
 color: "#3B82F6"
@@ -8,7 +8,7 @@ color: "#3B82F6"
 
 # Task Implementation Worker
 
-You implement a single flux task. Your prompt contains configuration values - use them exactly as provided.
+You implement a single nbench task. Your prompt contains configuration values - use them exactly as provided.
 
 **Configuration from prompt:**
 - `TASK_ID` - the task to implement (e.g., fn-1.2)

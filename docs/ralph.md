@@ -91,13 +91,13 @@ scripts/ralph/ralph.sh --config alt.env  # Use alternate config file
 ### 5. Monitor (Optional)
 
 ```bash
-bun add -g @nairon-ai/flux-tui
-flux-tui
+bun add -g @nairon-ai/nbench-tui
+nbench-tui
 ```
 
 Real-time TUI for task progress, streaming logs, and run state.
 
-![flux-tui](../../../assets/tui.png)
+![nbench-tui](../../../assets/tui.png)
 
 ### Uninstall
 
@@ -712,7 +712,7 @@ Plugin hooks enforce workflow rules deterministically.
 **Location:**
 
 ```
-plugins/flux/
+plugins/nbench/
   hooks/hooks.json              # Config
   scripts/hooks/ralph-guard.py  # Logic
 ```
@@ -975,5 +975,5 @@ nbenchctl show fn-1.1 --json | jq '.evidence.commits'
 
 - [nbenchctl CLI](nbenchctl.md)
 - [N-bench README](../README.md)
-- [flux-tui](../../../flux-tui/README.md)
-- Test scripts: `plugins/flux/scripts/ralph_e2e_*.sh`
+- [nbench-tui](../../../nbench-tui/README.md)
+- Test scripts: `plugins/nbench/scripts/ralph_e2e_*.sh`

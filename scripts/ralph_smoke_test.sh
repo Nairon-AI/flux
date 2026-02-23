@@ -19,7 +19,7 @@ PYTHON_BIN="$(pick_python)"
 [[ -n "$PYTHON_BIN" ]] || { echo "ERROR: python not found (need python3 or python in PATH)" >&2; exit 1; }
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
@@ -53,7 +53,7 @@ git commit -m "chore: init" >/dev/null
 
 scaffold() {
   mkdir -p scripts/ralph
-  cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
+  cp -R "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/." scripts/ralph/
   cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
   cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl

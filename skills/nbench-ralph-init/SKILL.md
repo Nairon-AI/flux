@@ -54,12 +54,12 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    cp scripts/ralph/config.env /tmp/ralph-config-backup.env
 
    # Update templates (preserves runs/)
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/ralph.sh" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/ralph_once.sh" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_plan.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_work.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_completion.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/watch-filter.py" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/ralph.sh" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/ralph_once.sh" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/prompt_plan.md" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/prompt_work.md" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/prompt_completion.md" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/watch-filter.py" scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl.py" scripts/ralph/
    mkdir -p scripts/ralph/hooks
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
@@ -72,7 +72,7 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    **If UPDATE_MODE=0 (fresh install):**
    ```bash
    mkdir -p scripts/ralph/runs scripts/ralph/hooks
-   cp -R "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/." scripts/ralph/
+   cp -R "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/nbench-ralph-init/templates/." scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl.py" scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
    chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl scripts/ralph/hooks/ralph-guard.py

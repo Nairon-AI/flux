@@ -4,8 +4,8 @@ How N-bench executes commands and turns workflow friction into actionable improv
 
 ## High-Level Flow
 
-1. User runs `/flux:*` command.
-2. Command file in `commands/flux/*.md` routes to a skill.
+1. User runs `/nbench:*` command.
+2. Command file in `commands/nbench/*.md` routes to a skill.
 3. Skill orchestrates scripts in `scripts/`.
 4. Scripts return structured JSON.
 5. Skill presents output and executes selected actions.
@@ -14,13 +14,13 @@ How N-bench executes commands and turns workflow friction into actionable improv
 
 ### Command Layer
 
-- Location: `commands/flux/`
+- Location: `commands/nbench/`
 - Purpose: thin routing layer from command to skill.
 
 Example:
-- `/nbench:improve` -> `skills/flux-improve/`
-- `/nbench:plan` -> `skills/flux-plan/`
-- `/nbench:work` -> `skills/flux-work/`
+- `/nbench:improve` -> `skills/nbench-improve/`
+- `/nbench:plan` -> `skills/nbench-plan/`
+- `/nbench:work` -> `skills/nbench-work/`
 
 ### Skill Layer
 

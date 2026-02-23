@@ -21,9 +21,9 @@ Then continue with the command. Do NOT block or prompt - just inform.
 
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-improve`
+# IMPORTANT: This command MUST invoke the skill `nbench-improve`
 
-The ONLY purpose of this command is to call the `flux-improve` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-improve` skill. You MUST use that skill now.
 
 **User request:** $ARGUMENTS
 

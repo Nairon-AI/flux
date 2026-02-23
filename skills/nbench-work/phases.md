@@ -62,7 +62,7 @@ Detect input type in this order (first match wins):
 
 Based on user's answer from setup questions:
 
-- **Worktree**: use `skill: flux-worktree-kit`
+- **Worktree**: use `skill: nbench-worktree-kit`
 - **New branch**:
   ```bash
   git checkout main && git pull origin main
@@ -102,7 +102,7 @@ Use the Task tool to spawn a `worker` subagent. The worker gets fresh context an
 Pass config values only. Worker reads worker.md for phases. Do NOT paraphrase or add step-by-step instructions - worker.md has them.
 
 ```
-Implement flux task.
+Implement nbench task.
 
 TASK_ID: fn-X.Y
 EPIC_ID: fn-X
@@ -285,7 +285,7 @@ After all tasks complete (or periodically for large epics):
 - Run relevant tests
 - Run lint/format per repo
 - If change is large/risky, run the quality auditor subagent:
-  - Task flux:quality-auditor("Review recent changes")
+  - Task nbench:quality-auditor("Review recent changes")
 - Fix critical issues
 
 ## Phase 5: Ship

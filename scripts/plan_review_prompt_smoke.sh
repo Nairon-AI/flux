@@ -5,12 +5,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
 
-TEST_DIR="${TEST_DIR:-/tmp/flux-plan-review-smoke-rp-$$}"
+TEST_DIR="${TEST_DIR:-/tmp/nbench-plan-review-smoke-rp-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 EPIC_ID="${EPIC_ID:-fn-1}"
 
@@ -38,7 +38,7 @@ EOF
 
 cat > package.json <<'EOF'
 {
-  "name": "tmp-flux-plan-review-smoke",
+  "name": "tmp-nbench-plan-review-smoke",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -49,7 +49,7 @@ cat > package.json <<'EOF'
 EOF
 
 cat > README.md <<'EOF'
-# tmp-flux-plan-review-smoke
+# tmp-nbench-plan-review-smoke
 
 TBD
 EOF
@@ -112,7 +112,7 @@ RECEIPT_PATH="$RUN_DIR/receipts/plan-$EPIC_ID.json"
 mkdir -p "$RUN_DIR/receipts"
 
 PROMPT_OUT="$TEST_DIR/prompt_plan.txt"
-python3 - "$PLUGIN_ROOT/skills/flux-ralph-init/templates/prompt_plan.md" "$PROMPT_OUT" "$EPIC_ID" "$RECEIPT_PATH" <<'PY'
+python3 - "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/prompt_plan.md" "$PROMPT_OUT" "$EPIC_ID" "$RECEIPT_PATH" <<'PY'
 import sys
 from pathlib import Path
 

@@ -93,26 +93,26 @@ $FLOWCTL config get scouts.github --json
 Run ALL of these scouts in parallel:
 | Scout | Purpose | Required |
 |-------|---------|----------|
-| `flux:context-scout` | RepoPrompt AI file discovery | YES |
-| `flux:practice-scout` | Best practices + pitfalls | YES |
-| `flux:docs-scout` | External documentation | YES |
-| `flux:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
-| `flux:memory-scout` | Project memory entries | IF memory.enabled |
-| `flux:epic-scout` | Dependencies on open epics | YES |
-| `flux:docs-gap-scout` | Docs needing updates | YES |
+| `nbench:context-scout` | RepoPrompt AI file discovery | YES |
+| `nbench:practice-scout` | Best practices + pitfalls | YES |
+| `nbench:docs-scout` | External documentation | YES |
+| `nbench:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
+| `nbench:memory-scout` | Project memory entries | IF memory.enabled |
+| `nbench:epic-scout` | Dependencies on open epics | YES |
+| `nbench:docs-gap-scout` | Docs needing updates | YES |
 
 **If user chose repo-scout (default/faster)** OR rp-cli unavailable:
 
 Run ALL of these scouts in parallel:
 | Scout | Purpose | Required |
 |-------|---------|----------|
-| `flux:repo-scout` | Grep/Glob/Read patterns | YES |
-| `flux:practice-scout` | Best practices + pitfalls | YES |
-| `flux:docs-scout` | External documentation | YES |
-| `flux:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
-| `flux:memory-scout` | Project memory entries | IF memory.enabled |
-| `flux:epic-scout` | Dependencies on open epics | YES |
-| `flux:docs-gap-scout` | Docs needing updates | YES |
+| `nbench:repo-scout` | Grep/Glob/Read patterns | YES |
+| `nbench:practice-scout` | Best practices + pitfalls | YES |
+| `nbench:docs-scout` | External documentation | YES |
+| `nbench:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
+| `nbench:memory-scout` | Project memory entries | IF memory.enabled |
+| `nbench:epic-scout` | Dependencies on open epics | YES |
+| `nbench:docs-gap-scout` | Docs needing updates | YES |
 
 **Anti-pattern**: Running only 2-3 scouts "because they seem most relevant" — this causes incomplete plans.
 
@@ -138,7 +138,7 @@ This shapes what the plan needs to cover. A pure backend refactor needs differen
 ## Step 3: Flow gap check
 
 Run the gap analyst subagent:
-- Task flux:flow-gap-analyst(<request>, research_findings)
+- Task nbench:flow-gap-analyst(<request>, research_findings)
 
 Fold gaps + questions into the plan.
 

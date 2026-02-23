@@ -1,6 +1,6 @@
 # N-bench Pre-Launch Audit
 
-Comprehensive review of `flux/` and `n-bench-recommendations/` repos before public launch.
+Comprehensive review of `nbench/` and `n-bench-recommendations/` repos before public launch.
 
 ---
 
@@ -343,8 +343,8 @@ Before launch, manually verify:
 ## Appendix: File Structure Reference
 
 ```
-flux/
-├── commands/flux/          # 12 command definitions
+nbench/
+├── commands/nbench/          # 12 command definitions
 ├── skills/                 # 17 skill implementations
 ├── scripts/                # 28 shell/python scripts
 ├── tests/                  # 2 test files

@@ -5,7 +5,7 @@
 ```json
 {
   "schema_version": "1.0",
-  "profile_kind": "flux-sdlc-profile",
+  "profile_kind": "nbench-sdlc-profile",
   "profile_name": "Team Baseline",
   "created_at": "2026-02-22T12:00:00Z",
   "visibility": "public-anonymous",

@@ -13,19 +13,19 @@ Run all 9 scouts in parallel using the Task tool:
 ### Agent Readiness Scouts (Pillars 1-5)
 
 ```
-Task flux:tooling-scout    # linters, formatters, pre-commit, type checking
-Task flux:claude-md-scout  # CLAUDE.md/AGENTS.md quality
-Task flux:env-scout        # .env.example, docker, devcontainer
-Task flux:testing-scout    # test framework, coverage, commands
-Task flux:build-scout      # build system, scripts, CI
-Task flux:docs-gap-scout   # README, ADRs, architecture docs
+Task nbench:tooling-scout    # linters, formatters, pre-commit, type checking
+Task nbench:claude-md-scout  # CLAUDE.md/AGENTS.md quality
+Task nbench:env-scout        # .env.example, docker, devcontainer
+Task nbench:testing-scout    # test framework, coverage, commands
+Task nbench:build-scout      # build system, scripts, CI
+Task nbench:docs-gap-scout   # README, ADRs, architecture docs
 ```
 
 ### Production Readiness Scouts (Pillars 6-8)
 
 ```
-Task flux:observability-scout  # logging, tracing, metrics, health
-Task flux:security-scout       # branch protection, CODEOWNERS, secrets
+Task nbench:observability-scout  # logging, tracing, metrics, health
+Task nbench:security-scout       # branch protection, CODEOWNERS, secrets
 Task nbench:workflow-scout       # CI/CD, templates, automation
 ```
 

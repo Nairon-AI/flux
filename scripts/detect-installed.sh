@@ -4,7 +4,7 @@
 
 set -e
 
-WARNINGS_FILE="${TMPDIR:-/tmp}/flux-detect-installed-warnings-$$.txt"
+WARNINGS_FILE="${TMPDIR:-/tmp}/nbench-detect-installed-warnings-$$.txt"
 : > "$WARNINGS_FILE"
 
 cleanup() {

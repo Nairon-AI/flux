@@ -21,9 +21,9 @@ Then continue with the command. Do NOT block or prompt - just inform.
 
 ---
 
-# IMPORTANT: This command MUST invoke the skill `flux-plan`
+# IMPORTANT: This command MUST invoke the skill `nbench-plan`
 
-The ONLY purpose of this command is to call the `flux-plan` skill. You MUST use that skill now.
+The ONLY purpose of this command is to call the `nbench-plan` skill. You MUST use that skill now.
 
 **User request:** $ARGUMENTS
 

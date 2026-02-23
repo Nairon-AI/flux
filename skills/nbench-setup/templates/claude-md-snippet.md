@@ -1,4 +1,4 @@
-<!-- BEGIN FLUX -->
+<!-- BEGIN NBENCH -->
 ## N-bench
 
 This project uses N-bench for task tracking. Use `.nbench/bin/nbenchctl` instead of markdown TODOs or TodoWrite.
@@ -20,4 +20,4 @@ This project uses N-bench for task tracking. Use `.nbench/bin/nbenchctl` instead
 - Re-anchor (re-read spec + status) before every task
 
 **More info:** `.nbench/bin/nbenchctl --help` or read `.nbench/usage.md`
-<!-- END FLUX -->
+<!-- END NBENCH -->

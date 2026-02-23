@@ -8,7 +8,7 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT:-$(dirname "$(dirname "$0
 LOCAL_VERSION=$(jq -r '.version' "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "unknown")
 
 # Check remote version (cache for 1 hour to avoid rate limits)
-CACHE_FILE="${TMPDIR:-/tmp}/flux-version-cache"
+CACHE_FILE="${TMPDIR:-/tmp}/nbench-version-cache"
 CACHE_MAX_AGE=3600
 
 check_remote() {
@@ -48,6 +48,6 @@ cat << EOJSON
   "local_version": "$LOCAL_VERSION",
   "remote_version": "${REMOTE_VERSION:-unknown}",
   "update_available": $UPDATE_AVAILABLE,
-  "update_command": "/plugin marketplace update nairon-flux"
+  "update_command": "/plugin marketplace update nairon-nbench"
 }
 EOJSON

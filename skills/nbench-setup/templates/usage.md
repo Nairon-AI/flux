@@ -92,5 +92,5 @@ Migration is optional — existing repos work without changes.
 
 ## More Info
 
-- Human docs: https://github.com/Nairon-AI/n-bench/blob/main/plugins/flux/docs/nbenchctl.md
+- Human docs: https://github.com/Nairon-AI/n-bench/blob/main/plugins/nbench/docs/nbenchctl.md
 - CLI reference: `.nbench/bin/nbenchctl --help`
