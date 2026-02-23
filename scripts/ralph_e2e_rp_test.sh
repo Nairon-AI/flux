@@ -183,7 +183,7 @@ PY
 
 scripts/ralph/fluxctl init --json >/dev/null
 
-# Mirror /flux:setup - add .flux/bin/ + usage.md + CLAUDE.md
+# Mirror /nbench:setup - add .flux/bin/ + usage.md + CLAUDE.md
 mkdir -p .flux/bin
 cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py

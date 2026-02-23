@@ -228,7 +228,7 @@ def run_friction_coverage_tests():
     if not os.path.exists(RECS_DIR):
         print(f"ERROR: Recommendations not installed at {RECS_DIR}")
         print(
-            "Run: git clone https://github.com/Nairon-AI/flux-recommendations ~/.flux/recommendations"
+            "Run: git clone https://github.com/Nairon-AI/n-bench-recommendations ~/.flux/recommendations"
         )
         sys.exit(1)
 

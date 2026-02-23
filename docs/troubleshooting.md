@@ -1,6 +1,6 @@
 # Flux Troubleshooting
 
-## `/flux:improve` shows no recommendations
+## `/nbench:improve` shows no recommendations
 
 Possible reasons:
 - No meaningful friction detected in recent sessions
@@ -11,8 +11,8 @@ Possible reasons:
 Try:
 
 ```bash
-/flux:improve --detect
-/flux:improve --explain
+/nbench:improve --detect
+/nbench:improve --explain
 ```
 
 ## Session analysis says no sessions found
@@ -22,7 +22,7 @@ Flux analyzes sessions for the current project. If your project has no session h
 You can still run setup-only analysis:
 
 ```bash
-/flux:improve --skip-sessions
+/nbench:improve --skip-sessions
 ```
 
 ## Recommendation clone/update failed (offline or network issue)
@@ -30,7 +30,7 @@ You can still run setup-only analysis:
 Flux uses `~/.flux/recommendations` as cache.
 
 - If cache already exists, Flux should continue with cached recommendations.
-- If cache does not exist, connect to network once and run `/flux:improve` again.
+- If cache does not exist, connect to network once and run `/nbench:improve` again.
 
 ## Optional discover mode returns nothing
 
@@ -40,16 +40,16 @@ Check:
 - `~/.flux/config.json` has valid `exa_api_key` or `twitter_api_key`
 - query context is specific enough (`--explain` can help)
 
-## `/flux:profile` publish fails
+## `/nbench:profile` publish fails
 
 Check profile link service config:
 
 - set env `FLUX_PROFILE_SERVICE_URL`, or
 - set `profile_service_url` in `~/.flux/config.json`
 
-Then retry `/flux:profile`.
+Then retry `/nbench:profile`.
 
-## `/flux:profile` import skipped many items
+## `/nbench:profile` import skipped many items
 
 This is expected when:
 
@@ -57,9 +57,9 @@ This is expected when:
 - items are OS-incompatible (compatible-only import policy)
 - items are manual-only (shown as instructions, not auto-installed)
 
-Use `/flux:profile view <url>` first to inspect the snapshot contents.
+Use `/nbench:profile view <url>` first to inspect the snapshot contents.
 
-## `/flux:profile` tombstone fails
+## `/nbench:profile` tombstone fails
 
 - Tombstone requires owner manage token (stored in `~/.flux/profile-state.json` after publish)
 - If the snapshot was published elsewhere, provide a valid token explicitly
@@ -71,7 +71,7 @@ Flux snapshots config before changes in `~/.flux/snapshots/`.
 Use:
 
 ```bash
-/flux:improve --rollback <snapshot-id>
+/nbench:improve --rollback <snapshot-id>
 ```
 
 ## Consent and privacy

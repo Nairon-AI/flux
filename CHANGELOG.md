@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Flux will be documented in this file.
+All notable changes to N-bench will be documented in this file.
 
 ## [flux 0.9.0] - 2026-02-23
 
@@ -24,7 +24,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Added
 
-- **Profile workflows** via `/flux:profile`:
+- **Profile workflows** via `/nbench:profile`:
   - export machine setup as immutable public-anonymous snapshots
   - import teammate profiles with compatible-only filtering + per-item consent
   - view snapshots and owner tombstone support
@@ -41,7 +41,7 @@ All notable changes to Flux will be documented in this file.
   - profile coverage in `tests/scripts.test.ts`
   - `docs/profile-command-spec.md`, `docs/profile-schema.md`, `docs/profile-launch-checklist.md`
 
-- **Community discovery mode** for `/flux:improve`:
+- **Community discovery mode** for `/nbench:improve`:
   - `--discover` enables optional live search for novel optimizations from X/Twitter sources
   - Exa-first search with Twitter API fallback
   - BYOK support via `~/.flux/config.json` (`exa_api_key`, `twitter_api_key`)
@@ -69,7 +69,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Added
 
-- **Optional user context boost** for `/flux:improve`:
+- **Optional user context boost** for `/nbench:improve`:
   - asks user for short pain-point description
   - maps plain-language frustrations into friction signals
   - significantly improves recommendation precision when provided
@@ -97,7 +97,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Changed
 
-- `/flux:improve` output and docs improved for clarity and FAQ coverage
+- `/nbench:improve` output and docs improved for clarity and FAQ coverage
 
 ## [flux 0.5.0] - 2026-02-21
 
@@ -127,7 +127,7 @@ All notable changes to Flux will be documented in this file.
 ### Added
 
 - **E2E test suite** — Comprehensive tests using tuistory (Playwright for TUIs):
-  - `tests/scripts.test.ts` — 25 fast tests for all Flux scripts (detect-installed, analyze-context, manage-preferences, etc.)
+  - `tests/scripts.test.ts` — 25 fast tests for all N-bench scripts (detect-installed, analyze-context, manage-preferences, etc.)
   - `tests/claude-commands.test.ts` — 13 tests for Claude Code command invocation
   - Verifies plugin installation, skill loading, and command execution
 
@@ -179,7 +179,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Added
 
-- **`/flux:improve` command** — Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Fetches recommendations from `Nairon-AI/flux-recommendations` database.
+- **`/nbench:improve` command** — Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Fetches recommendations from `Nairon-AI/n-bench-recommendations` database.
 
 - **Session analysis consent flow** — Privacy-first approach using `mcp_question` for explicit user consent before analyzing Claude Code sessions. Displays what data is analyzed and confirms local-only processing.
 
@@ -197,7 +197,7 @@ All notable changes to Flux will be documented in this file.
 
 - **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.flux/snapshots/`.
 
-- **23 recommendations** in flux-recommendations database:
+- **23 recommendations** in n-bench-recommendations database:
   - MCPs (7): context7, exa, linear, supermemory, github, figma, excalidraw
   - CLI tools (6): lefthook, oxlint, beads, biome, jq, fzf
   - Applications (4): wispr-flow, granola, raycast, dia
@@ -214,15 +214,15 @@ All notable changes to Flux will be documented in this file.
 
 - **Initial release** — AI-augmented SDLC workflow plugin for Claude Code.
 
-- **`/flux:plan`** — AI-augmented planning with spec validation and worker subagent architecture.
+- **`/nbench:plan`** — AI-augmented planning with spec validation and worker subagent architecture.
 
-- **`/flux:work`** — Worker subagent execution per task with context isolation.
+- **`/nbench:work`** — Worker subagent execution per task with context isolation.
 
-- **`/flux:prime`** — Codebase health assessment.
+- **`/nbench:prime`** — Codebase health assessment.
 
-- **`/flux:sync`** — State synchronization across sessions.
+- **`/nbench:sync`** — State synchronization across sessions.
 
-- **`/flux:setup`** — Project initialization and configuration.
+- **`/nbench:setup`** — Project initialization and configuration.
 
 - **Subagent architecture** — Context isolation per task prevents cross-contamination.
 

@@ -1,7 +1,7 @@
 {
-  "name": "flux",
-  "version": "0.9.0",
-  "description": "AI-augmented SDLC workflow plugin for Claude Code",
+  "name": "n-bench",
+  "version": "1.0.0",
+  "description": "AI-native capability benchmarking and structured SDLC workflow for Claude Code",
   "type": "module",
   "private": true,
   "scripts": {

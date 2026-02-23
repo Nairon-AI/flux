@@ -1,6 +1,6 @@
 ---
 name: env-scout
-description: Used by /flux:prime to scan for environment setup, .env templates, Docker, and devcontainer configuration. Do not invoke directly.
+description: Used by /nbench:prime to scan for environment setup, .env templates, Docker, and devcontainer configuration. Do not invoke directly.
 model: claude-sonnet-4-6
 disallowedTools: Edit, Write, Task
 color: "#06B6D4"

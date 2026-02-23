@@ -21,7 +21,7 @@ check_remote() {
   fi
   
   # Fetch from GitHub API
-  REMOTE_VERSION=$(curl -sf "https://api.github.com/repos/Nairon-AI/flux/releases/latest" 2>/dev/null | jq -r '.tag_name // empty' | sed 's/^v//' || echo "")
+  REMOTE_VERSION=$(curl -sf "https://api.github.com/repos/Nairon-AI/n-bench/releases/latest" 2>/dev/null | jq -r '.tag_name // empty' | sed 's/^v//' || echo "")
   
   if [[ -n "$REMOTE_VERSION" ]]; then
     echo "$REMOTE_VERSION" > "$CACHE_FILE"

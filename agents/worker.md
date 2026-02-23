@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Task implementation worker. Spawned by flux-work to implement a single task with fresh context. Do not invoke directly - use /flux:work instead.
+description: Task implementation worker. Spawned by flux-work to implement a single task with fresh context. Do not invoke directly - use /nbench:work instead.
 model: inherit
 disallowedTools: Task
 color: "#3B82F6"
@@ -97,7 +97,7 @@ Use conventional commits. Scope from task context.
 Use the Skill tool to invoke impl-review (NOT fluxctl directly):
 
 ```
-/flux:impl-review <TASK_ID> --base $BASE_COMMIT
+/nbench:impl-review <TASK_ID> --base $BASE_COMMIT
 ```
 
 The skill handles everything:
@@ -110,7 +110,7 @@ The skill handles everything:
 If NEEDS_WORK:
 1. Fix the issues identified
 2. Commit fixes
-3. Re-invoke the skill: `/flux:impl-review <TASK_ID> --base $BASE_COMMIT`
+3. Re-invoke the skill: `/nbench:impl-review <TASK_ID> --base $BASE_COMMIT`
 
 Continue until SHIP verdict.
 

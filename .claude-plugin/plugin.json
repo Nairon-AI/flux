@@ -1,13 +1,13 @@
 {
-  "name": "flux",
-  "version": "0.5.0",
-  "description": "AI-augmented SDLC workflow with planning, execution, and review. Worker subagent per task for context isolation. Prime assesses codebase health. Includes subagents, commands, and skills.",
+  "name": "n-bench",
+  "version": "1.0.0",
+  "description": "AI-native capability benchmarking with structured SDLC workflow. Measures interview depth, pushback ratio, prompt quality, and iteration efficiency. Worker subagent per task for context isolation.",
   "author": {
     "name": "NaironAI",
     "url": "https://nairon.ai"
   },
-  "homepage": "https://github.com/Nairon-AI/flux",
-  "repository": "https://github.com/Nairon-AI/flux",
+  "homepage": "https://github.com/Nairon-AI/n-bench",
+  "repository": "https://github.com/Nairon-AI/n-bench",
   "license": "MIT",
   "keywords": [
     "workflow",

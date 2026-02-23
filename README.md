@@ -1,11 +1,11 @@
 <div align="center">
 
-# Flux
+# N-bench
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**Your AI workflow has gaps. Flux finds them.**
+**Your AI workflow has gaps. N-bench finds them.**
 
 </div>
 
@@ -31,13 +31,13 @@ All you want is to be as productive as possible without going homeless and final
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
 </p>
 
-**This is where Flux comes in.**
+**This is where N-bench comes in.**
 
 ---
 
-## What Flux Does
+## What N-bench Does
 
-Flux gives you a **structured workflow** based on how software is actually built—so you stop pulling your hair out.
+N-bench gives you a **structured workflow** based on how software is actually built—so you stop pulling your hair out.
 
 ### The Workflow
 
@@ -45,7 +45,7 @@ Instead of jumping straight into code and watching the agent go off the rails:
 
 1. **Quick Interview** — Get just enough to start (~5 min). What's the MVP? What's the riskiest unknown? You'll learn more as you build. Use `--deep` only for high-risk features.
 
-2. **Plan** — Break down into small, atomic tasks. Flux creates tasks in `.flux/` with clear scope. Each task should be 30-90 min of work.
+2. **Plan** — Break down into small, atomic tasks. N-bench creates tasks in `.flux/` with clear scope. Each task should be 30-90 min of work.
 
 3. **Build → Feel → Adapt** — Execute one task, then:
    - **Feel check**: Does it work? Does it feel right?
@@ -58,20 +58,20 @@ Instead of jumping straight into code and watching the agent go off the rails:
 
 Documentation drift is your worst enemy on large projects with AI agents. Code changes but specs don't. Future tasks reference outdated assumptions.
 
-Flux runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed. Another pass runs at epic completion to catch anything that slipped through.
+N-bench runs drift checks after every task completion—verifying specs match implementation and updating future tasks if needed. Another pass runs at epic completion to catch anything that slipped through.
 
 You should not be manually updating Documentation. Delegate to Agents. Always.
 
 ### Tool Discovery
 
-Flux also analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
+N-bench also analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help:
 
 - MCPs, CLI tools, skills, workflow patterns
 - Matched to your project type and detected pain points
 - Only recommends when there's actual friction (not tool spam)
 
 ```
-/flux:improve
+/nbench:improve
 ```
 
 Reads your session history, detects frustration patterns, checks what you already have, shows what's missing.
@@ -123,24 +123,24 @@ Step 4/4: Install
 Try this in any active project:
 
 ```bash
-/flux:improve
+/nbench:improve
 ```
 
 In one run you'll see:
-- what Flux detected in your environment
+- what N-bench detected in your environment
 - what friction showed up in recent sessions
 - exactly which fixes/tools map to those issues
 
 If you want live community discoveries too:
 
 ```bash
-/flux:improve --discover
+/nbench:improve --discover
 ```
 
 If you want full matching rationale (signals + gaps):
 
 ```bash
-/flux:improve --explain
+/nbench:improve --explain
 ```
 
 ---
@@ -151,11 +151,11 @@ If you want full matching rationale (signals + gaps):
 
 ```bash
 # From marketplace
-/plugin marketplace add Nairon-AI/flux
+/plugin marketplace add Nairon-AI/n-bench
 /plugin install flux@nairon-flux
 
 # Or manual
-git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
+git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/flux
 ```
 
 If marketplace isn't available in your CLI version, use the manual install path.
@@ -163,16 +163,16 @@ If marketplace isn't available in your CLI version, use the manual install path.
 ### OpenCode
 
 ```bash
-/plugin marketplace add Nairon-AI/flux
+/plugin marketplace add Nairon-AI/n-bench
 /plugin install flux@nairon-flux
 ```
 
 ### First-Time Setup
 
-After installing, initialize Flux in your project:
+After installing, initialize N-bench in your project:
 
 ```bash
-/flux:setup
+/nbench:setup
 ```
 
 This creates `.flux/` in your project, sets up task tracking, and bootstraps `claudeception` into `~/.claude/skills/claudeception` if missing. Run once per project.
@@ -180,10 +180,10 @@ This creates `.flux/` in your project, sets up task tracking, and bootstraps `cl
 Then run:
 
 ```bash
-/flux:improve
+/nbench:improve
 ```
 
-Note: first run may take a few seconds while Flux clones the recommendations database into `~/.flux/recommendations`.
+Note: first run may take a few seconds while N-bench clones the recommendations database into `~/.flux/recommendations`.
 
 ### Support
 
@@ -191,45 +191,45 @@ Note: first run may take a few seconds while Flux clones the recommendations dat
 - Linux: supported
 - Windows: use WSL (best-effort)
 
-Flux is local-first. It also provides optional discovery mode (`--discover`) for live external search.
+N-bench is local-first. It also provides optional discovery mode (`--discover`) for live external search.
 
 ### Dependency Setup
 
-Flux checks for required tools during execution and tells you what to install when something is missing.
-You can start with `/flux:setup` and `/flux:improve` directly.
+N-bench checks for required tools during execution and tells you what to install when something is missing.
+You can start with `/nbench:setup` and `/nbench:improve` directly.
 
 ---
 
 ## Quick Start
 
-Here's how to use Flux from install to daily usage:
+Here's how to use N-bench from install to daily usage:
 
 ### 1. Install & Setup (once)
 
 ```bash
 /plugin install flux@nairon-flux   # Install plugin
-/flux:setup                         # Initialize in your project
+/nbench:setup                         # Initialize in your project
 ```
 
 ### 2. Start a Feature
 
 ```bash
-/flux:interview Add user notifications   # Optional: flesh out requirements
-/flux:plan Add user notifications         # Break into tasks
+/nbench:interview Add user notifications   # Optional: flesh out requirements
+/nbench:plan Add user notifications         # Break into tasks
 ```
 
 ### 3. Build It
 
 ```bash
-/flux:work fn-1.1                         # Execute first task
-/flux:work fn-1.2                         # Next task (auto-reloads context)
+/nbench:work fn-1.1                         # Execute first task
+/nbench:work fn-1.2                         # Next task (auto-reloads context)
 # ... continue until done
 ```
 
 ### 4. Find Better Tools (anytime)
 
 ```bash
-/flux:improve                             # Analyze sessions, get recommendations
+/nbench:improve                             # Analyze sessions, get recommendations
 ```
 
 ---
@@ -238,19 +238,19 @@ Here's how to use Flux from install to daily usage:
 
 | Command | What it does |
 |---------|--------------|
-| `/flux:setup` | Optional local install of `fluxctl` and project docs |
-| `/flux:improve` | Analyze sessions, detect friction, and recommend improvements |
-| `/flux:profile` | Export/share/import SDLC profile snapshots |
-| `/flux:plan <idea|epic>` | Build structured execution plan |
-| `/flux:work <task|epic>` | Execute tasks with context reload + checks |
-| `/flux:interview <id|file>` | Quick (default) or deep (`--deep`) requirements interview |
-| `/flux:prime` | Agent readiness assessment + guided fixes |
-| `/flux:sync <id>` | Sync downstream task specs after drift |
-| `/flux:plan-review <epic>` | Carmack-level plan quality review |
-| `/flux:impl-review` | Carmack-level implementation review |
-| `/flux:epic-review <epic>` | Verify epic completion against spec |
-| `/flux:ralph-init` | Scaffold Ralph autonomous harness |
-| `/flux:uninstall` | Remove Flux files from project |
+| `/nbench:setup` | Optional local install of `fluxctl` and project docs |
+| `/nbench:improve` | Analyze sessions, detect friction, and recommend improvements |
+| `/nbench:profile` | Export/share/import SDLC profile snapshots |
+| `/nbench:plan <idea|epic>` | Build structured execution plan |
+| `/nbench:work <task|epic>` | Execute tasks with context reload + checks |
+| `/nbench:interview <id|file>` | Quick (default) or deep (`--deep`) requirements interview |
+| `/nbench:prime` | Agent readiness assessment + guided fixes |
+| `/nbench:sync <id>` | Sync downstream task specs after drift |
+| `/nbench:plan-review <epic>` | Carmack-level plan quality review |
+| `/nbench:impl-review` | Carmack-level implementation review |
+| `/nbench:epic-review <epic>` | Verify epic completion against spec |
+| `/nbench:ralph-init` | Scaffold Ralph autonomous harness |
+| `/nbench:uninstall` | Remove N-bench files from project |
 
 For full options and examples, see `docs/commands-reference.md`.
 
@@ -260,12 +260,12 @@ For full options and examples, see `docs/commands-reference.md`.
 
 ### Task Tracking
 
-Flux maintains tasks in `.flux/`:
+N-bench maintains tasks in `.flux/`:
 - Epics: `.flux/epics/fn-N-slug.json`
 - Tasks: `.flux/tasks/fn-N-slug.M.json`
 - Specs: `.flux/specs/fn-N-slug.md`
 
-Each task has clear scope, dependencies, and acceptance criteria. `/flux:work` reloads this context before each task—nothing drifts.
+Each task has clear scope, dependencies, and acceptance criteria. `/nbench:work` reloads this context before each task—nothing drifts.
 
 ### Tool Discovery
 
@@ -286,7 +286,7 @@ Profile curation state saved to `~/.flux/profile-state.json`.
 
 ### Privacy & Data
 
-**What data does Flux read?**
+**What data does N-bench read?**
 
 - Your repo structure (package.json, config files, directories)
 - Installed MCPs from `~/.mcp.json`
@@ -296,13 +296,13 @@ Profile curation state saved to `~/.flux/profile-state.json`.
 
 By default, analysis runs locally. Network access is used to fetch the recommendations repo.
 
-If you run `/flux:improve --discover`, Flux also sends search queries to Exa/Twitter APIs (using your keys) to find optional community discoveries.
+If you run `/nbench:improve --discover`, N-bench also sends search queries to Exa/Twitter APIs (using your keys) to find optional community discoveries.
 
-If you run `/flux:profile`, Flux can publish a public-anonymous immutable profile snapshot link. Secrets are auto-redacted before publish.
+If you run `/nbench:profile`, N-bench can publish a public-anonymous immutable profile snapshot link. Secrets are auto-redacted before publish.
 
 **How does session analysis work?**
 
-Flux reads your Claude Code JSONL session files and looks for friction patterns:
+N-bench reads your Claude Code JSONL session files and looks for friction patterns:
 - Tool errors and failures
 - Repeated attempts at the same thing
 - Knowledge gaps ("I don't know how to...")
@@ -317,7 +317,7 @@ You're asked for consent before any session files are read.
 
 **How are recommendations chosen?**
 
-Flux only recommends tools when it detects **actual friction**. No friction = no recommendations.
+N-bench only recommends tools when it detects **actual friction**. No friction = no recommendations.
 
 Matching logic:
 - `api_hallucination` errors → context7 (current docs)
@@ -333,7 +333,7 @@ Either you have no friction (great!) or:
 - You've dismissed all relevant tools
 - Your setup already covers the gaps
 
-Run `/flux:improve --detect` to see what Flux found.
+Run `/nbench:improve --detect` to see what N-bench found.
 
 **Can I see why a specific tool was recommended?**
 
@@ -345,17 +345,17 @@ context7 (MCP)
 
 **Where do recommendations come from?**
 
-A curated database at [Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations). Currently 30+ tools across MCPs, CLI tools, apps, and workflow patterns.
+A curated database at [Nairon-AI/n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations). Currently 30+ tools across MCPs, CLI tools, apps, and workflow patterns.
 
 **How do I suggest a tool?**
 
-Open an issue on the [recommendations repo](https://github.com/Nairon-AI/flux-recommendations/issues).
+Open an issue on the [recommendations repo](https://github.com/Nairon-AI/n-bench-recommendations/issues).
 
 ---
 
 ### Profiles
 
-**What is `/flux:profile` for?**
+**What is `/nbench:profile` for?**
 
 It exports your SDLC setup (MCPs, CLI tools, skills, apps, patterns, model prefs) into an immutable share link teammates can import.
 
@@ -365,7 +365,7 @@ Each export asks for scope: global, project, or both. When using both, skills ar
 
 **How are applications handled over time?**
 
-Flux remembers saved apps. Future exports primarily surface newly detected apps, with an option to re-include previously saved-but-missing apps.
+N-bench remembers saved apps. Future exports primarily surface newly detected apps, with an option to re-include previously saved-but-missing apps.
 
 **How does import safety work?**
 
@@ -382,7 +382,7 @@ They can be tombstoned by owner action, which preserves the link but hides profi
 
 ## Vision: Engineering Observability
 
-Today, Flux helps individual engineers work more effectively. Tomorrow, it becomes observability for your entire engineering organization.
+Today, N-bench helps individual engineers work more effectively. Tomorrow, it becomes observability for your entire engineering organization.
 
 **What's coming:**
 
@@ -394,9 +394,9 @@ Today, Flux helps individual engineers work more effectively. Tomorrow, it becom
 
 The goal: **every engineer as effective as your best engineer**. No bottlenecks. No one left behind.
 
-Flux will grow with the industry. The SDLC framework evolves as we collectively learn better ways to build software with AI.
+N-bench will grow with the industry. The SDLC framework evolves as we collectively learn better ways to build software with AI.
 
-*Interested in early access for your team? [Get in touch](https://github.com/Nairon-AI/flux/issues).*
+*Interested in early access for your team? [Get in touch](https://github.com/Nairon-AI/n-bench/issues).*
 
 ---
 

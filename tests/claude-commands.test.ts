@@ -5,7 +5,7 @@
  * 
  * VERIFIED WORKING:
  * - Plugin installs and loads correctly (v0.3.0)
- * - Commands like /flux:improve execute and show UI
+ * - Commands like /nbench:improve execute and show UI
  * - Version check, skill loading, consent prompts all work
  * 
  * LIMITATIONS:
@@ -157,20 +157,20 @@ describe('Flux Commands Invocation', () => {
     await cleanupSessions()
   })
 
-  test('/flux:improve starts executing', async () => {
+  test('/nbench:improve starts executing', async () => {
     const session = `flux-test-improve-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:improve"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:improve"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
     const snapshot = await $`${TUISTORY} -s ${session} snapshot --trim`.text().catch(() => '')
     await $`${TUISTORY} -s ${session} close`.quiet().catch(() => {})
     
-    console.log('--- /flux:improve snapshot ---')
+    console.log('--- /nbench:improve snapshot ---')
     console.log(snapshot.slice(0, 1500))
     
     // Should NOT show "Unknown skill" - plugin is installed
@@ -180,13 +180,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:profile starts executing', async () => {
+  test('/nbench:profile starts executing', async () => {
     const session = `flux-test-profile-${Date.now()}`
 
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
 
-    await $`${TUISTORY} -s ${session} type "/flux:profile"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:profile"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
 
@@ -197,13 +197,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:setup starts executing', async () => {
+  test('/nbench:setup starts executing', async () => {
     const session = `flux-test-setup-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:setup"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:setup"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
@@ -214,13 +214,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:prime starts executing', async () => {
+  test('/nbench:prime starts executing', async () => {
     const session = `flux-test-prime-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:prime"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:prime"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
@@ -231,13 +231,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:plan starts executing', async () => {
+  test('/nbench:plan starts executing', async () => {
     const session = `flux-test-plan-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:plan"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:plan"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
@@ -248,13 +248,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:work starts executing', async () => {
+  test('/nbench:work starts executing', async () => {
     const session = `flux-test-work-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:work"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:work"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
@@ -265,13 +265,13 @@ describe('Flux Commands Invocation', () => {
     expect(snapshot.length).toBeGreaterThan(500)
   }, 30000)
 
-  test('/flux:sync starts executing', async () => {
+  test('/nbench:sync starts executing', async () => {
     const session = `flux-test-sync-${Date.now()}`
     
     await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
     await Bun.sleep(5000)
     
-    await $`${TUISTORY} -s ${session} type "/flux:sync"`.quiet()
+    await $`${TUISTORY} -s ${session} type "/nbench:sync"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     

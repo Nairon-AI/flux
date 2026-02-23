@@ -27,5 +27,5 @@ jobs:
           # python3 ./scripts/fluxctl.py validate --all --json
 
           # Option 2: Download from plugin (example)
-          curl -sL https://raw.githubusercontent.com/Nairon-AI/flux/main/scripts/fluxctl.py -o fluxctl.py
+          curl -sL https://raw.githubusercontent.com/Nairon-AI/n-bench/main/scripts/fluxctl.py -o fluxctl.py
           python3 fluxctl.py validate --all --json

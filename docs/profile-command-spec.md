@@ -1,4 +1,4 @@
-# /flux:profile Command Spec
+# /nbench:profile Command Spec
 
 Defines command behavior for profile export/import/view/tombstone.
 

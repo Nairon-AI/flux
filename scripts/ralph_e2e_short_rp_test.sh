@@ -82,7 +82,7 @@ PY
 
 scripts/ralph/fluxctl init --json >/dev/null
 
-# Setup .flux/bin + docs (mirror /flux:setup)
+# Setup .flux/bin + docs (mirror /nbench:setup)
 mkdir -p .flux/bin
 cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py

@@ -1,4 +1,4 @@
-# /flux:profile Launch Checklist
+# /nbench:profile Launch Checklist
 
 ## Export
 

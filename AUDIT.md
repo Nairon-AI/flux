@@ -1,6 +1,6 @@
-# Flux Pre-Launch Audit
+# N-bench Pre-Launch Audit
 
-Comprehensive review of `flux/` and `flux-recommendations/` repos before public launch.
+Comprehensive review of `flux/` and `n-bench-recommendations/` repos before public launch.
 
 ---
 
@@ -24,19 +24,19 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
 ### Critical
 
 - [ ] **Install path assumes marketplace exists**
-  - README says `/plugin marketplace add Nairon-AI/flux` but this requires:
+  - README says `/plugin marketplace add Nairon-AI/n-bench` but this requires:
     1. User knows about plugin marketplace
     2. Marketplace is available in their Claude Code version
     3. Network access
   - **Fix**: Add manual install instructions (git clone + symlink)
 
 - [ ] **No quick demo**
-  - Users can't see what Flux does before installing
-  - **Fix**: Add GIF/video showing `/flux:improve` output
+  - Users can't see what N-bench does before installing
+  - **Fix**: Add GIF/video showing `/nbench:improve` output
 
 - [ ] **First-run experience unclear**
   - After install, what do they do?
-  - **Fix**: Add "Quick Start" section: "Run `/flux:improve` in any project"
+  - **Fix**: Add "Quick Start" section: "Run `/nbench:improve` in any project"
 
 ### Medium
 
@@ -47,7 +47,7 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
   - **Fix**: Add prerequisites with install commands
 
 - [ ] **Recommendations repo not auto-cloned**
-  - First `/flux:improve` run will clone `~/.flux/recommendations`
+  - First `/nbench:improve` run will clone `~/.flux/recommendations`
   - Users might be confused by the delay
   - **Fix**: Document this in README, show progress during clone
 
@@ -59,25 +59,25 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
 
 | README | Exists? | Notes |
 |--------|---------|-------|
-| `/flux:improve` | Yes | Main command |
-| `/flux:improve --detect` | Partial | Option exists but undocumented behavior |
-| `/flux:improve --dismiss X` | Yes | Not in command file, handled in workflow |
-| `/flux:plan` | Yes | |
-| `/flux:work` | Yes | |
+| `/nbench:improve` | Yes | Main command |
+| `/nbench:improve --detect` | Partial | Option exists but undocumented behavior |
+| `/nbench:improve --dismiss X` | Yes | Not in command file, handled in workflow |
+| `/nbench:plan` | Yes | |
+| `/nbench:work` | Yes | |
 
 ### Commands NOT in README (hidden)
 
 | Command | What it does |
 |---------|--------------|
-| `/flux:setup` | Optional local install of fluxctl CLI |
-| `/flux:sync` | Sync tasks with git |
-| `/flux:prime` | Re-anchor to project context |
-| `/flux:interview` | Requirements gathering |
-| `/flux:epic-review` | Review epic scope |
-| `/flux:plan-review` | Review plan before execution |
-| `/flux:impl-review` | Review implementation |
-| `/flux:ralph-init` | Initialize Ralph automation |
-| `/flux:uninstall` | Remove Flux from project |
+| `/nbench:setup` | Optional local install of fluxctl CLI |
+| `/nbench:sync` | Sync tasks with git |
+| `/nbench:prime` | Re-anchor to project context |
+| `/nbench:interview` | Requirements gathering |
+| `/nbench:epic-review` | Review epic scope |
+| `/nbench:plan-review` | Review plan before execution |
+| `/nbench:impl-review` | Review implementation |
+| `/nbench:ralph-init` | Initialize Ralph automation |
+| `/nbench:uninstall` | Remove N-bench from project |
 
 **Fix**: 
 1. Create "Commands Reference" doc with ALL commands
@@ -157,7 +157,7 @@ Step 3: Matched Recommendations
 ### Missing User Docs
 
 - [ ] **FAQ / Troubleshooting**
-  - "Why does `/flux:improve` show no recommendations?"
+  - "Why does `/nbench:improve` show no recommendations?"
   - "How do I undo an installation?"
   - "Can I use this offline?"
 
@@ -261,7 +261,7 @@ Install:
   Ubuntu: sudo apt install jq
   Fedora: sudo dnf install jq
   
-Then re-run /flux:improve
+Then re-run /nbench:improve
 ```
 
 ---
@@ -299,7 +299,7 @@ Then re-run /flux:improve
 ### Must Have (P0)
 
 1. **Add manual install instructions** - Not everyone has plugin marketplace
-2. **Add GIF demo** - Show `/flux:improve` in action
+2. **Add GIF demo** - Show `/nbench:improve` in action
 3. **Update CHANGELOG** - Add 0.6.0 entry
 4. **Fix Discord link** - Set up or remove
 5. **Add prerequisites** - Python, jq, git
@@ -326,15 +326,15 @@ Before launch, manually verify:
 
 - [ ] Fresh install on macOS
 - [ ] Fresh install on Ubuntu
-- [ ] `/flux:improve` with no sessions
-- [ ] `/flux:improve` with sessions + consent
-- [ ] `/flux:improve --skip-sessions`
-- [ ] `/flux:improve --dismiss granola`
+- [ ] `/nbench:improve` with no sessions
+- [ ] `/nbench:improve` with sessions + consent
+- [ ] `/nbench:improve --skip-sessions`
+- [ ] `/nbench:improve --dismiss granola`
 - [ ] Install an MCP (context7)
 - [ ] Install a CLI tool (jq)
 - [ ] Rollback after failed install
-- [ ] `/flux:plan "Add dark mode"`
-- [ ] `/flux:work` on a task
+- [ ] `/nbench:plan "Add dark mode"`
+- [ ] `/nbench:work` on a task
 - [ ] Run with malformed ~/.mcp.json
 - [ ] Run offline (no network)
 

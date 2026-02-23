@@ -2,7 +2,7 @@
 
 CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 
-> **Note:** This is the full human reference. Agents should read `.flux/usage.md` (created by `/flux:setup`).
+> **Note:** This is the full human reference. Agents should read `.flux/usage.md` (created by `/nbench:setup`).
 
 ## Available Commands
 
@@ -31,10 +31,10 @@ Works out of the box for parallel branches. No setup required.
 ├── tasks/fn-N-slug.M.json  # Task state (e.g., fn-1-add-oauth.1.json)
 ├── tasks/fn-N-slug.M.md    # Task spec (markdown)
 ├── memory/                 # Agent memory (reserved)
-├── bin/                    # (optional) Local fluxctl install via /flux:setup
+├── bin/                    # (optional) Local fluxctl install via /nbench:setup
 │   ├── fluxctl
 │   └── fluxctl.py
-└── usage.md                # (optional) CLI reference via /flux:setup
+└── usage.md                # (optional) CLI reference via /nbench:setup
 ```
 
 Flowctl accepts schema v1 and v2; new fields are optional and defaulted.
@@ -475,7 +475,7 @@ fluxctl config toggle memory.enabled [--json]
 
 Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.flux/config.json` > error.
 
-No auto-detect. Run `/flux:setup` (or `fluxctl config set review.backend ...`) to configure.
+No auto-detect. Run `/nbench:setup` (or `fluxctl config set review.backend ...`) to configure.
 
 ### memory
 
@@ -662,7 +662,7 @@ Completion review receipt:
 
 **Windows users:** Codex CLI's `read-only` sandbox blocks ALL shell commands on Windows (including reads). Use `--sandbox auto` or `--sandbox danger-full-access` for Windows compatibility.
 
-**Note:** After plugin update, re-run `/flux:setup` or `/flux:ralph-init` to get sandbox fixes.
+**Note:** After plugin update, re-run `/nbench:setup` or `/nbench:ralph-init` to get sandbox fixes.
 
 ### checkpoint
 

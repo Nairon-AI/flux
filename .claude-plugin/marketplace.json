@@ -17,7 +17,7 @@
         "name": "NaironAI",
         "url": "https://nairon.ai"
       },
-      "homepage": "https://github.com/Nairon-AI/flux",
+      "homepage": "https://github.com/Nairon-AI/n-bench",
       "tags": ["workflow", "planning", "sdlc", "claude-code"],
       "source": "./"
     }

@@ -18,9 +18,9 @@ How Flux executes commands and turns workflow friction into actionable improveme
 - Purpose: thin routing layer from command to skill.
 
 Example:
-- `/flux:improve` -> `skills/flux-improve/`
-- `/flux:plan` -> `skills/flux-plan/`
-- `/flux:work` -> `skills/flux-work/`
+- `/nbench:improve` -> `skills/flux-improve/`
+- `/nbench:plan` -> `skills/flux-plan/`
+- `/nbench:work` -> `skills/flux-work/`
 
 ### Skill Layer
 
@@ -44,7 +44,7 @@ Important scripts:
 ### Recommendations Database
 
 - Default path: `~/.flux/recommendations`
-- Source: `https://github.com/Nairon-AI/flux-recommendations`
+- Source: `https://github.com/Nairon-AI/n-bench-recommendations`
 - Categories: MCPs, CLI tools, skills, applications, workflow patterns, models
 
 ## Data Model
@@ -65,8 +65,8 @@ Important scripts:
 
 - Default behavior is local analysis.
 - Session analysis requires explicit consent unless user enabled always-allow.
-- Optional `/flux:improve --discover` sends search queries to external providers.
-- `/flux:profile` publishes public-anonymous snapshots with automatic secret redaction and minimal metadata.
+- Optional `/nbench:improve --discover` sends search queries to external providers.
+- `/nbench:profile` publishes public-anonymous snapshots with automatic secret redaction and minimal metadata.
 
 ## Reliability Model
 

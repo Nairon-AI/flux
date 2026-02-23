@@ -40,10 +40,10 @@ Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies mult
 
 ```bash
 # Inside Claude Code
-/flux:ralph-init
+/nbench:ralph-init
 
 # Or from terminal
-claude -p "/flux:ralph-init"
+claude -p "/nbench:ralph-init"
 ```
 
 Creates `scripts/ralph/` with:
@@ -118,7 +118,7 @@ rm -rf scripts/ralph/
 │  scripts/ralph/ralph.sh                                      │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  while fluxctl next returns work:                      │  │
-│  │    1. claude -p "/flux:plan" or :work             │  │
+│  │    1. claude -p "/nbench:plan" or :work             │  │
 │  │    2. check review receipts                            │  │
 │  │    3. if missing/invalid → retry                       │  │
 │  │    4. if SHIP verdict → next task                      │  │
@@ -129,11 +129,11 @@ rm -rf scripts/ralph/
 ```mermaid
 flowchart TD
   A[ralph.sh loop] --> B[fluxctl next]
-  B -->|plan needed| C[/flux:plan/]
-  C --> D[/flux:plan-review/]
-  B -->|work needed| E[/flux:work/]
-  E --> F[/flux:impl-review/]
-  B -->|completion review needed| K[/flux:epic-review/]
+  B -->|plan needed| C[/nbench:plan/]
+  C --> D[/nbench:plan-review/]
+  B -->|work needed| E[/nbench:work/]
+  E --> F[/nbench:impl-review/]
+  B -->|completion review needed| K[/nbench:epic-review/]
   D --> G{Receipt valid?}
   F --> G
   K --> G
@@ -202,7 +202,7 @@ The plan review gate ensures epics are architecturally sound before any implemen
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │  1. Find epics with plan_review_status = unknown       │ │
 │  │  2. Return status=plan, epic=fn-1                      │ │
-│  │  3. Ralph invokes /flux:plan-review fn-1          │ │
+│  │  3. Ralph invokes /nbench:plan-review fn-1          │ │
 │  │  4. Skill loops until <verdict>SHIP</verdict>          │ │
 │  │  5. fluxctl epic set-plan-review-status fn-1 --status ship │
 │  │  6. Next iteration: epic unlocked for work             │ │
@@ -241,7 +241,7 @@ When `fluxctl next` returns `status=plan`:
 
 2. **Review** — Invoke the plan review skill
    ```bash
-   /flux:plan-review fn-1 --review=codex
+   /nbench:plan-review fn-1 --review=codex
    ```
 
 3. **Fix loop** — If `NEEDS_WORK`:
@@ -306,7 +306,7 @@ The epic-completion review gate ensures implementation matches the spec before c
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │  1. All tasks done, completion_review_status != ship   │ │
 │  │  2. Return status=completion_review, epic=fn-1         │ │
-│  │  3. Ralph invokes /flux:epic-review fn-1          │ │
+│  │  3. Ralph invokes /nbench:epic-review fn-1          │ │
 │  │  4. Skill loops until <verdict>SHIP</verdict>          │ │
 │  │  5. fluxctl epic set-completion-review-status fn-1 --status ship │
 │  │  6. Next iteration: epic can close                     │ │
@@ -335,7 +335,7 @@ When `fluxctl next` returns `status=completion_review`:
 
 1. **Review** — Invoke the epic-review skill
    ```bash
-   /flux:epic-review fn-1 --review=codex
+   /nbench:epic-review fn-1 --review=codex
    ```
 
 2. **Fix loop** — If `NEEDS_WORK`:
