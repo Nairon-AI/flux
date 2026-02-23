@@ -65,10 +65,11 @@ N-bench is the accumulation of our learnings working at enterprise and building 
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
-**N-bench gives you two things:**
+**N-bench gives you three things:**
 
 1. **A structured workflow** — Interview → Plan → Build → Review
 2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
+3. **Observability** — Tap into your sessions to understand how "AI-native" you actually are
 
 ---
 
