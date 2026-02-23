@@ -119,6 +119,8 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 That's it. Interview → Plan → Build → Review → Improve. Repeat.
 
+> **You can stop reading here.** Everything below is optional deep-dives.
+
 ---
 
 ## How `/nbench:improve` Works
@@ -145,6 +147,8 @@ A curated database of **battle-tested solutions** mapped to your specific fricti
 | **Skills** | Workflow templates, prompt libraries |
 | **CLI Tools** | Lefthook (git hooks), Beads (task tracking) |
 | **Workflows** | Clarify-first, test-driven-prompting |
+
+Browse or contribute: **[n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations)**
 
 ### Example Output
 
