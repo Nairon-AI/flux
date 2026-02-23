@@ -191,7 +191,7 @@ Get better at AI collaboration through data, not vibes.
 - Which workflows produce the highest quality output
 - Share your entire setup with new engineers for instant 10x onboarding
 
-### For Engineering Leaders
+### For Engineering Leaders (Coming Soon)
 
 CTO-level observability:
 - Team benchmarks and improvement trends
