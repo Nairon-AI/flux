@@ -32,7 +32,7 @@
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin marketplace add Nairon-AI/n-bench` |
 | [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/n-bench` |
 | [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh nbench` |
-| [OpenCode](https://github.com/anomalyco/opencode) | ✅ 96% parity | [n-bench-opencode](https://github.com/Nairon-AI/n-bench-opencode) |
+| [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [n-bench-opencode](https://github.com/Nairon-AI/n-bench-opencode) |
 
 ---
 
