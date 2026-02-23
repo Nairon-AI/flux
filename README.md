@@ -16,12 +16,19 @@
 | | |
 |---|---|
 | **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers (CTOs soon) using Claude Code, OpenCode, or Factory Droid |
+| **Who** | Engineers (CTOs soon) using Claude Code or Factory Droid |
 | **When** | You think you're productive with AI but know you could be better |
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
 
 > *"Are you actually good at working with AI, or are you just typing 'implement this' and hoping for the best?"*
+
+> [!TIP]
+> **🤖 Works on [Factory Droid](https://factory.ai) too!** Claude Code plugins are fully compatible:
+> ```bash
+> droid plugin marketplace add https://github.com/Nairon-AI/n-bench
+> ```
+> Then `/plugins` → Marketplace → install n-bench. Commands work when typed (e.g. `/nbench:plan`).
 
 ---
 
@@ -69,16 +76,9 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ### Install
 
-**Claude Code / OpenCode:**
 ```bash
 /plugin marketplace add Nairon-AI/n-bench
 /plugin install n-bench@nairon-n-bench
-```
-
-**Factory Droid:**
-```bash
-droid plugin marketplace add https://github.com/Nairon-AI/n-bench
-# Then: /plugins → Marketplace → install n-bench
 ```
 
 **Then initialize:**
