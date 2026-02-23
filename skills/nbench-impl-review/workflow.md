@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-The reviewer model only sees selected files. RepoPrompt's Builder discovers context you'd miss (rp backend). Codex uses context hints from fluxctl (codex backend).
+The reviewer model only sees selected files. RepoPrompt's Builder discovers context you'd miss (rp backend). Codex uses context hints from nbenchctl (codex backend).
 
 ---
 
@@ -10,11 +10,11 @@ The reviewer model only sees selected files. RepoPrompt's Builder discovers cont
 
 **Run this first. Do not skip.**
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 
 ```bash
 set -e
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
@@ -77,7 +77,7 @@ If `VERDICT=NEEDS_WORK`:
 
 ### Step 4: Receipt
 
-Receipt is written automatically by `fluxctl codex impl-review` when `--receipt` provided.
+Receipt is written automatically by `nbenchctl codex impl-review` when `--receipt` provided.
 Format: `{"mode":"codex","task":"<id>","verdict":"<verdict>","session_id":"<thread_id>","timestamp":"..."}`
 
 ---
@@ -190,7 +190,7 @@ Files: [LIST CHANGED FILES]
 Commits: [COMMIT SUMMARY]
 
 ## Original Spec
-[PASTE fluxctl show OUTPUT if known]
+[PASTE nbenchctl show OUTPUT if known]
 
 ## Review Focus
 [USER'S FOCUS AREAS]
@@ -333,4 +333,4 @@ If verdict is NEEDS_WORK:
 
 **Codex backend only:**
 - **Using `--last` flag** - Conflicts with parallel usage; use `--receipt` instead
-- **Direct codex calls** - Must use `fluxctl codex` wrappers
+- **Direct codex calls** - Must use `nbenchctl codex` wrappers

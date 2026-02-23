@@ -253,15 +253,15 @@ describe('Flux Scripts', () => {
 })
 
 describe('Fluxctl CLI', () => {
-  const fluxctl = join(FLUX_ROOT, 'scripts', 'fluxctl')
+  const nbenchctl = join(FLUX_ROOT, 'scripts', 'nbenchctl')
   
   test('--help shows usage', async () => {
-    const result = await $`${fluxctl} --help`.text().catch(e => e.stdout?.toString() || e.message)
+    const result = await $`${nbenchctl} --help`.text().catch(e => e.stdout?.toString() || e.message)
     expect(result.toLowerCase()).toMatch(/usage|help|flux|command/i)
   }, SCRIPT_TIMEOUT)
 
   test('list handles missing .flux gracefully', async () => {
-    const result = await $`${fluxctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
+    const result = await $`${nbenchctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
     expect(result).toBeTruthy()
   }, SCRIPT_TIMEOUT)
 })

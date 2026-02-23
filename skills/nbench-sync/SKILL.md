@@ -8,9 +8,9 @@ user-invocable: false
 
 Manually trigger plan-sync to update downstream task specs.
 
-**CRITICAL: fluxctl is BUNDLED - NOT installed globally.** Always use:
+**CRITICAL: nbenchctl is BUNDLED - NOT installed globally.** Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 ```
 
 ## Input
@@ -26,7 +26,7 @@ Format: `<id> [--dry-run]`
 ### Step 1: Parse Arguments
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -46,7 +46,7 @@ Detect ID type:
 ### Step 2: Validate Environment
 
 ```bash
-test -d .flow || { echo "No .flux/ found. Run fluxctl init first."; exit 1; }
+test -d .flow || { echo "No .flux/ found. Run nbenchctl init first."; exit 1; }
 ```
 
 If `.flux/` missing, output error and stop.
@@ -58,8 +58,8 @@ $FLOWCTL show <ID> --json
 ```
 
 If command fails:
-- For task ID: "Task <id> not found. Run `fluxctl list` to see available."
-- For epic ID: "Epic <id> not found. Run `fluxctl epics` to see available."
+- For task ID: "Task <id> not found. Run `nbenchctl list` to see available."
+- For epic ID: "Epic <id> not found. Run `nbenchctl epics` to see available."
 
 Stop on failure.
 
@@ -102,7 +102,7 @@ Build context and spawn via Task tool:
 Sync task specs from <source> to downstream tasks.
 
 COMPLETED_TASK_ID: <source task id - the input task, or selected source for epic mode>
-FLOWCTL: ${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl
+FLOWCTL: ${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl
 EPIC_ID: <epic id>
 DOWNSTREAM_TASK_IDS: <comma-separated list from step 4>
 DRY_RUN: <true|false>
@@ -142,10 +142,10 @@ No files modified.
 | Case | Message |
 |------|---------|
 | No ID provided | "Usage: /nbench:sync <id> [--dry-run]" |
-| No `.flux/` | "No .flux/ found. Run `fluxctl init` first." |
+| No `.flux/` | "No .flux/ found. Run `nbenchctl init` first." |
 | Invalid format | "Invalid ID format. Use fn-N-slug (epic) or fn-N-slug.M (task). Legacy fn-N, fn-N-xxx also work." |
-| Task not found | "Task <id> not found. Run `fluxctl list` to see available." |
-| Epic not found | "Epic <id> not found. Run `fluxctl list` to see available." |
+| Task not found | "Task <id> not found. Run `nbenchctl list` to see available." |
+| Epic not found | "Epic <id> not found. Run `nbenchctl list` to see available." |
 | No source (epic mode) | "No completed or in-progress tasks to sync from. Complete a task first." |
 | No downstream | "No downstream tasks to sync (all done or none exist)." |
 

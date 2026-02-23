@@ -9,11 +9,11 @@ Enforces:
 - No --json flag on chat-send (suppresses review text)
 - No --new-chat on re-reviews (loses reviewer context)
 - Receipt must be written after SHIP verdict
-- Validates fluxctl command patterns
+- Validates nbenchctl command patterns
 
 Supports both review backends:
 - rp (RepoPrompt): tracks chat-send calls and receipt writes
-- codex: tracks fluxctl codex impl-review/plan-review and verdict output
+- codex: tracks nbenchctl codex impl-review/plan-review and verdict output
 """
 
 # Version for drift detection (bump when making changes)
@@ -44,7 +44,7 @@ def load_state(session_id: str) -> dict:
             state.setdefault("window", None)
             state.setdefault("tab", None)
             state.setdefault("chat_send_succeeded", False)
-            state.setdefault("fluxctl_done_called", set())
+            state.setdefault("nbenchctl_done_called", set())
             state.setdefault("codex_review_succeeded", False)
             return state
         except (json.JSONDecodeError, KeyError, TypeError):
@@ -55,15 +55,15 @@ def load_state(session_id: str) -> dict:
         "window": None,
         "tab": None,
         "chat_send_succeeded": False,  # Track if chat-send actually returned review text
-        "fluxctl_done_called": set(),  # Track tasks that had fluxctl done called
+        "nbenchctl_done_called": set(),  # Track tasks that had nbenchctl done called
         "codex_review_succeeded": False,  # Track if codex review returned verdict
     }
 
 
 def state_decoder(obj):
     """JSON decoder that handles sets."""
-    if "fluxctl_done_called" in obj and isinstance(obj["fluxctl_done_called"], list):
-        obj["fluxctl_done_called"] = set(obj["fluxctl_done_called"])
+    if "nbenchctl_done_called" in obj and isinstance(obj["nbenchctl_done_called"], list):
+        obj["nbenchctl_done_called"] = set(obj["nbenchctl_done_called"])
     return obj
 
 
@@ -125,8 +125,8 @@ def output_json(data: dict) -> None:
 PROTECTED_FILE_PATTERNS = [
     "ralph-guard.py",
     "ralph-guard",
-    "fluxctl.py",
-    "fluxctl",
+    "nbenchctl.py",
+    "nbenchctl",
     "/hooks/hooks.json",
 ]
 
@@ -141,7 +141,7 @@ def handle_protected_file_check(data: dict) -> None:
         if file_path.endswith(pattern):
             output_block(
                 f"BLOCKED: Cannot modify protected file '{os.path.basename(file_path)}'. "
-                "Ralph must not edit its own workflow tooling (ralph-guard, fluxctl, hooks). "
+                "Ralph must not edit its own workflow tooling (ralph-guard, nbenchctl, hooks). "
                 "If the guard is blocking incorrectly, report the bug instead of bypassing it."
             )
 
@@ -171,22 +171,22 @@ def handle_pre_tool_use(data: dict) -> None:
                     "Remove --new-chat flag."
                 )
 
-    # Block direct codex calls (must use fluxctl codex wrappers)
+    # Block direct codex calls (must use nbenchctl codex wrappers)
     if re.search(r"\bcodex\b", command):
-        # Allow fluxctl codex wrappers
-        is_wrapper = re.search(r"fluxctl\s+codex|FLOWCTL.*codex", command)
+        # Allow nbenchctl codex wrappers
+        is_wrapper = re.search(r"nbenchctl\s+codex|FLOWCTL.*codex", command)
         if not is_wrapper:
             # Block direct codex usage
             if re.search(r"\bcodex\s+exec\b", command):
                 output_block(
                     "BLOCKED: Do not call 'codex exec' directly. "
-                    "Use 'fluxctl codex impl-review' or 'fluxctl codex plan-review' "
+                    "Use 'nbenchctl codex impl-review' or 'nbenchctl codex plan-review' "
                     "to ensure proper receipt handling and session continuity."
                 )
             if re.search(r"\bcodex\s+review\b", command):
                 output_block(
                     "BLOCKED: Do not call 'codex review' directly. "
-                    "Use 'fluxctl codex impl-review' or 'fluxctl codex plan-review'."
+                    "Use 'nbenchctl codex impl-review' or 'nbenchctl codex plan-review'."
                 )
         # Block --last even through wrappers (breaks session continuity)
         if re.search(r"--last\b", command):
@@ -216,21 +216,21 @@ def handle_pre_tool_use(data: dict) -> None:
                 'Use: select-add --window "$W" --tab "$T" <path>'
             )
 
-    # Enforce fluxctl done requires --evidence-json and --summary-file
-    if " done " in command and ("fluxctl" in command or "FLOWCTL" in command):
-        # Skip if it's just "fluxctl done --help" or similar
+    # Enforce nbenchctl done requires --evidence-json and --summary-file
+    if " done " in command and ("nbenchctl" in command or "FLOWCTL" in command):
+        # Skip if it's just "nbenchctl done --help" or similar
         if not re.search(r"--help|-h", command):
             if not re.search(r"--evidence-json|--evidence", command):
                 output_block(
-                    "BLOCKED: fluxctl done requires --evidence-json flag. "
+                    "BLOCKED: nbenchctl done requires --evidence-json flag. "
                     "You must capture commit SHAs and test commands. "
-                    "Use: fluxctl done <task> --summary-file <s.md> --evidence-json <e.json>"
+                    "Use: nbenchctl done <task> --summary-file <s.md> --evidence-json <e.json>"
                 )
             if not re.search(r"--summary-file|--summary", command):
                 output_block(
-                    "BLOCKED: fluxctl done requires --summary-file flag. "
+                    "BLOCKED: nbenchctl done requires --summary-file flag. "
                     "You must write a done summary. "
-                    "Use: fluxctl done <task> --summary-file <s.md> --evidence-json <e.json>"
+                    "Use: nbenchctl done <task> --summary-file <s.md> --evidence-json <e.json>"
                 )
 
     # Block receipt writes unless chat-send has succeeded + validate format
@@ -250,7 +250,7 @@ def handle_pre_tool_use(data: dict) -> None:
             ):
                 output_block(
                     "BLOCKED: Cannot write receipt before review completes. "
-                    "You must run 'fluxctl rp chat-send' or 'fluxctl codex impl-review/plan-review' "
+                    "You must run 'nbenchctl rp chat-send' or 'nbenchctl codex impl-review/plan-review' "
                     "and receive a review response before writing the receipt."
                 )
             # Validate receipt has required 'id' field
@@ -268,20 +268,20 @@ def handle_pre_tool_use(data: dict) -> None:
                         'Completion review receipts must include: {"verdict":"SHIP",...} '
                         "Copy the exact command from the prompt template."
                     )
-            # For impl receipts, verify fluxctl done was called
+            # For impl receipts, verify nbenchctl done was called
             if "impl_review" in command:
                 # Extract task id from receipt
                 id_match = re.search(r'"id"\s*:\s*"([^"]+)"', command)
                 if id_match:
                     task_id = id_match.group(1)
-                    done_set = state.get("fluxctl_done_called", set())
+                    done_set = state.get("nbenchctl_done_called", set())
                     if isinstance(done_set, list):
                         done_set = set(done_set)
                     if task_id not in done_set:
                         output_block(
-                            f"BLOCKED: Cannot write impl receipt for {task_id} - fluxctl done was not called. "
-                            f"You MUST run 'fluxctl done {task_id} --evidence ...' BEFORE writing the receipt. "
-                            "The task is NOT complete until fluxctl done succeeds."
+                            f"BLOCKED: Cannot write impl receipt for {task_id} - nbenchctl done was not called. "
+                            f"You MUST run 'nbenchctl done {task_id} --evidence ...' BEFORE writing the receipt. "
+                            "The task is NOT complete until nbenchctl done succeeds."
                         )
 
     # All checks passed
@@ -355,7 +355,7 @@ def handle_post_tool_use(data: dict) -> None:
 
     # Track codex review calls - check for verdict in output
     if (
-        "fluxctl" in command
+        "nbenchctl" in command
         and "codex" in command
         and ("impl-review" in command or "plan-review" in command or "completion-review" in command)
     ):
@@ -368,20 +368,20 @@ def handle_post_tool_use(data: dict) -> None:
             state["last_verdict"] = verdict_in_output.group(1)
             save_state(session_id, state)
 
-    # Track fluxctl done calls - match various invocation patterns:
-    # - fluxctl done <task>
-    # - fluxctl.py done <task>
-    # - .flux/bin/fluxctl done <task>
-    # - scripts/ralph/fluxctl done <task>
+    # Track nbenchctl done calls - match various invocation patterns:
+    # - nbenchctl done <task>
+    # - nbenchctl.py done <task>
+    # - .flux/bin/nbenchctl done <task>
+    # - scripts/ralph/nbenchctl done <task>
     # - $FLOWCTL done <task>
     # - "$FLOWCTL" done <task>
-    if " done " in command and ("fluxctl" in command or "FLOWCTL" in command):
+    if " done " in command and ("nbenchctl" in command or "FLOWCTL" in command):
         # Debug logging
         with Path("/tmp/ralph-guard-debug.log").open("a") as f:
-            f.write(f"  -> fluxctl done detected in: {command[:100]}...\n")
+            f.write(f"  -> nbenchctl done detected in: {command[:100]}...\n")
 
         # Extract task ID from command - look for "done" followed by task ID
-        # Simplified: just find "done <task_id>" pattern since we already validated fluxctl context
+        # Simplified: just find "done <task_id>" pattern since we already validated nbenchctl context
         done_match = re.search(r"\bdone\s+([a-zA-Z0-9][a-zA-Z0-9._-]*)", command)
         if done_match:
             task_id = done_match.group(1)
@@ -398,15 +398,15 @@ def handle_post_tool_use(data: dict) -> None:
                 or "updated" in response_lower
                 or "completed" in response_lower
             ):
-                done_set = state.get("fluxctl_done_called", set())
+                done_set = state.get("nbenchctl_done_called", set())
                 if isinstance(done_set, list):
                     done_set = set(done_set)
                 done_set.add(task_id)
-                state["fluxctl_done_called"] = done_set
+                state["nbenchctl_done_called"] = done_set
                 save_state(session_id, state)
                 with Path("/tmp/ralph-guard-debug.log").open("a") as f:
                     f.write(
-                        f"  -> Added {task_id} to fluxctl_done_called: {done_set}\n"
+                        f"  -> Added {task_id} to nbenchctl_done_called: {done_set}\n"
                     )
 
     # Track receipt writes - reset review state after write
@@ -485,7 +485,7 @@ def handle_post_tool_use(data: dict) -> None:
                             "additionalContext": (
                                 "MEMORY: Review returned NEEDS_WORK. After fixing, consider if any lessons are "
                                 "GENERALIZABLE (apply beyond this task). If so, capture with:\n"
-                                '  fluxctl memory add --type <type> "<one-line lesson>"\n'
+                                '  nbenchctl memory add --type <type> "<one-line lesson>"\n'
                                 "Types: pitfall (gotchas/mistakes), convention (patterns to follow), decision (architectural choices)\n"
                                 "Skip: task-specific fixes, typos, style issues, or 'fine as-is' explanations."
                             ),

@@ -58,11 +58,11 @@ git add .
 git commit -m "chore: init" >/dev/null
 
 mkdir -p scripts/ralph
-cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
-cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
-chmod +x scripts/ralph/fluxctl
+cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
+cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
+chmod +x scripts/ralph/nbenchctl
 
-FLOWCTL="scripts/ralph/fluxctl"
+FLOWCTL="scripts/ralph/nbenchctl"
 $FLOWCTL init --json >/dev/null
 $FLOWCTL epic create --title "Tiny lib" --json >/dev/null
 

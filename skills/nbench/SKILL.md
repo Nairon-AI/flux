@@ -9,10 +9,10 @@ Quick task operations in `.flux/`. For planning features use `/nbench:plan`, for
 
 ## Setup
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 ```
 
 Then run commands with `$FLOWCTL <command>`.
@@ -154,6 +154,6 @@ Legacy formats `fn-N` and `fn-N-xxx` (random 3-char suffix) are still supported.
 ## Notes
 
 - Run `$FLOWCTL --help` to discover all commands and options
-- All writes go through fluxctl (don't edit JSON/MD files directly)
+- All writes go through nbenchctl (don't edit JSON/MD files directly)
 - `--json` flag gives machine-readable output
 - For complex planning/execution, use `/nbench:plan` and `/nbench:work`

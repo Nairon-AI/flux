@@ -13,8 +13,8 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
 - Only create/update `scripts/ralph/` in the current repo.
 - If `scripts/ralph/` already exists, offer to update (preserves config.env).
 - Copy templates from `templates/` into `scripts/ralph/`.
-- Copy `fluxctl` and `fluxctl.py` from `${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/` into `scripts/ralph/`.
-- Set executable bit on `scripts/ralph/ralph.sh`, `scripts/ralph/ralph_once.sh`, and `scripts/ralph/fluxctl`.
+- Copy `nbenchctl` and `nbenchctl.py` from `${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/` into `scripts/ralph/`.
+- Set executable bit on `scripts/ralph/ralph.sh`, `scripts/ralph/ralph_once.sh`, and `scripts/ralph/nbenchctl`.
 
 ## Workflow
 
@@ -60,10 +60,10 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_work.md" scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_completion.md" scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/watch-filter.py" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl.py" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl.py" scripts/ralph/
    mkdir -p scripts/ralph/hooks
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
-   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl scripts/ralph/hooks/ralph-guard.py
+   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl scripts/ralph/hooks/ralph-guard.py
 
    # Restore config.env
    cp /tmp/ralph-config-backup.env scripts/ralph/config.env
@@ -73,9 +73,9 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    ```bash
    mkdir -p scripts/ralph/runs scripts/ralph/hooks
    cp -R "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/." scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl.py" scripts/ralph/
+   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl.py" scripts/ralph/
    cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
-   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl scripts/ralph/hooks/ralph-guard.py
+   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl scripts/ralph/hooks/ralph-guard.py
    ```
    Note: `cp -R templates/.` copies all files including dotfiles (.gitignore).
 

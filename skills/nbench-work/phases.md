@@ -8,15 +8,15 @@
 - or any plan files outside `.flux/`,
 
 **STOP** and instead:
-- create/update tasks in `.flux/` using `fluxctl`,
+- create/update tasks in `.flux/` using `nbenchctl`,
 - record details in the epic/task spec markdown.
 
 ## Setup
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 ```
 
 ## Phase 1: Resolve Input
@@ -95,7 +95,7 @@ Use the Task tool to spawn a `worker` subagent. The worker gets fresh context an
 - Implementation
 - Committing
 - Review cycles (if enabled)
-- Completing the task (fluxctl done)
+- Completing the task (nbenchctl done)
 
 **Prompt template for worker:**
 
@@ -106,7 +106,7 @@ Implement flux task.
 
 TASK_ID: fn-X.Y
 EPIC_ID: fn-X
-FLOWCTL: /path/to/fluxctl
+FLOWCTL: /path/to/nbenchctl
 REVIEW_MODE: none|rp|codex
 RALPH_MODE: true|false
 
@@ -213,7 +213,7 @@ Sync downstream tasks after implementation.
 
 COMPLETED_TASK_ID: fn-X.Y
 EPIC_ID: fn-X
-FLOWCTL: /path/to/fluxctl
+FLOWCTL: /path/to/nbenchctl
 DOWNSTREAM_TASK_IDS: fn-X.3,fn-X.4,fn-X.5
 
 Follow your phases in plan-sync.md exactly.

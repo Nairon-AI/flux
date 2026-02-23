@@ -7,19 +7,19 @@ Inputs:
 
 Steps:
 1) Re-anchor:
-   - scripts/ralph/fluxctl show {{EPIC_ID}} --json
-   - scripts/ralph/fluxctl cat {{EPIC_ID}}
+   - scripts/ralph/nbenchctl show {{EPIC_ID}} --json
+   - scripts/ralph/nbenchctl cat {{EPIC_ID}}
    - git status
    - git log -10 --oneline
 
 2) Save checkpoint (recovery point if context compacts during review cycles):
    ```bash
-   scripts/ralph/fluxctl checkpoint save --epic {{EPIC_ID}} --json
+   scripts/ralph/nbenchctl checkpoint save --epic {{EPIC_ID}} --json
    ```
 
 Ralph mode rules (must follow):
-- If PLAN_REVIEW=rp: use `fluxctl rp` wrappers (setup-review, select-add, prompt-get, chat-send).
-- If PLAN_REVIEW=codex: use `fluxctl codex` wrappers (plan-review with --receipt).
+- If PLAN_REVIEW=rp: use `nbenchctl rp` wrappers (setup-review, select-add, prompt-get, chat-send).
+- If PLAN_REVIEW=codex: use `nbenchctl codex` wrappers (plan-review with --receipt).
 - Write receipt via bash heredoc (no Write tool) if `REVIEW_RECEIPT_PATH` set.
 - If any rule is violated, output `<promise>RETRY</promise>` and stop.
 
@@ -30,14 +30,14 @@ Ralph mode rules (must follow):
    - If PLAN_REVIEW=none:
      - If REQUIRE_PLAN_REVIEW=1: output `<promise>RETRY</promise>` and stop.
      - Else: set ship and stop:
-       `scripts/ralph/fluxctl epic set-plan-review-status {{EPIC_ID}} --status ship --json`
+       `scripts/ralph/nbenchctl epic set-plan-review-status {{EPIC_ID}} --status ship --json`
 
 4) The skill will loop internally until `<verdict>SHIP</verdict>`:
    - First review uses `--new-chat`
    - If NEEDS_WORK: skill fixes plan AND syncs affected task specs, re-reviews in SAME chat (no --new-chat)
    - Repeats until SHIP
    - Only returns to Ralph after SHIP or MAJOR_RETHINK
-   - If context compacts mid-review: `scripts/ralph/fluxctl checkpoint restore --epic {{EPIC_ID}} --json`
+   - If context compacts mid-review: `scripts/ralph/nbenchctl checkpoint restore --epic {{EPIC_ID}} --json`
 
 5) IMMEDIATELY after SHIP verdict, write receipt (for rp mode):
    ```bash
@@ -47,16 +47,16 @@ Ralph mode rules (must follow):
    {"type":"plan_review","id":"{{EPIC_ID}}","mode":"rp","timestamp":"$ts","iteration":{{RALPH_ITERATION}}}
    EOF
    ```
-   For codex mode, receipt is written automatically by `fluxctl codex plan-review --receipt`.
+   For codex mode, receipt is written automatically by `nbenchctl codex plan-review --receipt`.
    **CRITICAL: Copy EXACTLY. The `"id":"{{EPIC_ID}}"` field is REQUIRED.**
    Missing id = verification fails = forced retry.
 
 6) After SHIP:
-   - `scripts/ralph/fluxctl epic set-plan-review-status {{EPIC_ID}} --status ship --json`
+   - `scripts/ralph/nbenchctl epic set-plan-review-status {{EPIC_ID}} --status ship --json`
    - stop (do NOT output promise tag)
 
 7) If MAJOR_RETHINK (rare):
-   - `scripts/ralph/fluxctl epic set-plan-review-status {{EPIC_ID}} --status needs_work --json`
+   - `scripts/ralph/nbenchctl epic set-plan-review-status {{EPIC_ID}} --status needs_work --json`
    - output `<promise>FAIL</promise>` and stop
 
 8) On hard failure, output `<promise>FAIL</promise>` and stop.

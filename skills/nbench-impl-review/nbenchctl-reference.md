@@ -1,6 +1,6 @@
 # RepoPrompt Wrapper Reference
 
-Use `fluxctl rp` wrappers only.
+Use `nbenchctl rp` wrappers only.
 
 ## Primary Command (Ralph mode)
 
@@ -18,18 +18,18 @@ After `setup-review`, use these with `$W` and `$T`:
 
 ```bash
 # Get/modify selection
-fluxctl rp select-get --window "$W" --tab "$T"
-fluxctl rp select-add --window "$W" --tab "$T" path/to/file
+nbenchctl rp select-get --window "$W" --tab "$T"
+nbenchctl rp select-add --window "$W" --tab "$T" path/to/file
 
 # Get/set prompt
-fluxctl rp prompt-get --window "$W" --tab "$T"
-fluxctl rp prompt-set --window "$W" --tab "$T" --message-file /tmp/prompt.md
+nbenchctl rp prompt-get --window "$W" --tab "$T"
+nbenchctl rp prompt-set --window "$W" --tab "$T" --message-file /tmp/prompt.md
 
 # Execute review
-fluxctl rp chat-send --window "$W" --tab "$T" --message-file /tmp/review.md --new-chat --chat-name "Review: X"
+nbenchctl rp chat-send --window "$W" --tab "$T" --message-file /tmp/review.md --new-chat --chat-name "Review: X"
 
 # Export (non-Ralph)
-fluxctl rp prompt-export --window "$W" --tab "$T" --out ~/Desktop/export.md
+nbenchctl rp prompt-export --window "$W" --tab "$T" --out ~/Desktop/export.md
 ```
 
 ## Key Rules

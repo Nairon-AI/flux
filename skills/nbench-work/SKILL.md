@@ -18,18 +18,18 @@ Execute a plan with tight feedback loops. Ship small, feel it, adapt.
 
 Follow this skill and linked workflows exactly. Deviations cause drift, bad gates, retries, and user frustration.
 
-**IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `fluxctl`.
+**IMPORTANT**: This plugin uses `.flux/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `nbenchctl`.
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 $FLOWCTL <command>
 ```
 
 **Hard requirements (non-negotiable):**
-- You MUST run `fluxctl done` for each completed task and verify the task status is `done`.
+- You MUST run `nbenchctl done` for each completed task and verify the task status is `done`.
 - You MUST stage with `git add -A` (never list files). This ensures `.flux/` and `scripts/ralph/` (if present) are included.
-- Do NOT claim completion until `fluxctl show <task>` reports `status: done`.
+- Do NOT claim completion until `nbenchctl show <task>` reports `status: done`.
 - Do NOT invoke `/nbench:impl-review` until tests/Quick commands are green.
 
 **Role**: execution lead, plan fidelity first.
@@ -57,7 +57,7 @@ Continue regardless.
 ## Ralph Mode Rules (always follow)
 
 If `REVIEW_RECEIPT_PATH` is set or `FLOW_RALPH=1`:
-- **Must** use `fluxctl done` and verify task status is `done` before committing.
+- **Must** use `nbenchctl done` and verify task status is `done` before committing.
 - **Must** stage with `git add -A` (never list files).
 - **Do NOT** use TodoWrite for tracking.
 
@@ -101,7 +101,7 @@ Parse the arguments for these patterns. If found, use them and skip correspondin
 
 **Review mode**:
 - `--review=codex` or "review with codex" or "codex review" or "use codex" → Codex CLI (GPT 5.2 High)
-- `--review=rp` or "review with rp" or "rp chat" or "repoprompt review" → RepoPrompt chat (via `fluxctl rp chat-send`)
+- `--review=rp` or "review with rp" or "rp chat" or "repoprompt review" → RepoPrompt chat (via `nbenchctl rp chat-send`)
 - `--review=export` or "export review" or "external llm" → export for external LLM
 - `--review=none` or `--no-review` or "no review" or "skip review" → no review
 
@@ -152,7 +152,7 @@ After setup questions answered, read [phases.md](phases.md) and execute each pha
 
 If user chose review, pass the review mode to the worker. The worker invokes `/nbench:impl-review` after implementation and loops until SHIP.
 
-**Completion review gate**: When all tasks in an epic are done, if `--require-completion-review` is configured (via `fluxctl next`), the work skill invokes `/nbench:epic-review` before allowing the epic to close. This verifies the combined implementation satisfies the spec. The epic-review skill handles the fix loop internally until SHIP.
+**Completion review gate**: When all tasks in an epic are done, if `--require-completion-review` is configured (via `nbenchctl next`), the work skill invokes `/nbench:epic-review` before allowing the epic to close. This verifies the combined implementation satisfies the spec. The epic-review skill handles the fix loop internally until SHIP.
 
 ## Guardrails
 

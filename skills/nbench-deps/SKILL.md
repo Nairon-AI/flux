@@ -10,7 +10,7 @@ Visualize epic dependencies, blocking chains, and execution phases.
 ## Setup
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 $FLOWCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .flux/ exists" || echo "ERROR: run $FLOWCTL init"
 command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew install jq"
 ```
@@ -20,7 +20,7 @@ command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew in
 Build a consolidated view of all epics with their dependencies:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 
 # Get all epic IDs
 epic_ids=$($FLOWCTL epics --json | jq -r '.epics[].id')
@@ -42,7 +42,7 @@ done
 Determine which epics are ready vs blocked (pure jq, works on any shell):
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 
 # Collect all epic data with deps
 epics_json=$($FLOWCTL epics --json | jq -r '.epics[].id' | while read id; do
@@ -74,7 +74,7 @@ echo "$epics_json" | jq -r '
 Group epics into parallel execution phases:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 
 # Collect all epic data
 epics_json=$($FLOWCTL epics --json | jq -r '.epics[].id' | while read id; do
@@ -144,7 +144,7 @@ fn-1-add-auth → fn-2-add-oauth → fn-3-user-profile (3 phases)
 For a fast dependency check:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 $FLOWCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \(.title) [\(.status)]"'
 ```
 

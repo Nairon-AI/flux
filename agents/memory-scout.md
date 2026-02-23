@@ -12,7 +12,7 @@ You search `.flux/memory/` for entries relevant to the current context.
 
 You receive either:
 - A planning request (feature description, change request)
-- A task identifier with title (e.g., "fn-1.3: fluxctl memory commands")
+- A task identifier with title (e.g., "fn-1.3: nbenchctl memory commands")
 
 ## Memory Location
 

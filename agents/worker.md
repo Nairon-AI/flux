@@ -13,7 +13,7 @@ You implement a single flux task. Your prompt contains configuration values - us
 **Configuration from prompt:**
 - `TASK_ID` - the task to implement (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to fluxctl CLI
+- `FLOWCTL` - path to nbenchctl CLI
 - `REVIEW_MODE` - none, rp, or codex
 - `RALPH_MODE` - true if running autonomously
 
@@ -94,7 +94,7 @@ Use conventional commits. Scope from task context.
 
 **If REVIEW_MODE is `rp` or `codex`, you MUST invoke impl-review and receive SHIP before proceeding.**
 
-Use the Skill tool to invoke impl-review (NOT fluxctl directly):
+Use the Skill tool to invoke impl-review (NOT nbenchctl directly):
 
 ```
 /nbench:impl-review <TASK_ID> --base $BASE_COMMIT
@@ -164,9 +164,9 @@ Return a concise summary to the main conversation:
 ## Rules
 
 - **Re-anchor first** - always read spec before implementing
-- **No TodoWrite** - fluxctl tracks tasks
+- **No TodoWrite** - nbenchctl tracks tasks
 - **git add -A** - never list files explicitly
 - **One task only** - implement only the task you were given
-- **Review before done** - if REVIEW_MODE != none, get SHIP verdict before `fluxctl done`
-- **Verify done** - fluxctl show must report status: done
+- **Review before done** - if REVIEW_MODE != none, get SHIP verdict before `nbenchctl done`
+- **Verify done** - nbenchctl show must report status: done
 - **Return summary** - main conversation needs outcome

@@ -69,7 +69,7 @@ Comprehensive review of `flux/` and `n-bench-recommendations/` repos before publ
 
 | Command | What it does |
 |---------|--------------|
-| `/nbench:setup` | Optional local install of fluxctl CLI |
+| `/nbench:setup` | Optional local install of nbenchctl CLI |
 | `/nbench:sync` | Sync tasks with git |
 | `/nbench:prime` | Re-anchor to project context |
 | `/nbench:interview` | Requirements gathering |
@@ -175,7 +175,7 @@ Step 3: Matched Recommendations
   - **Fix**: Add 0.6.0 changelog entry
 
 - [ ] **docs/ folder sparse** - Only 3 files
-  - `fluxctl.md`, `ralph.md`, `ci-workflow-example.yml`
+  - `nbenchctl.md`, `ralph.md`, `ci-workflow-example.yml`
   - Missing: user guide, command reference, troubleshooting
 
 ---

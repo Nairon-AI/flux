@@ -8,7 +8,7 @@
 - or any plan files outside `.flux/`,
 
 **STOP** and instead:
-- create/update tasks in `.flux/` using `fluxctl`,
+- create/update tasks in `.flux/` using `nbenchctl`,
 - record details in the epic/task spec markdown.
 
 ## Success criteria
@@ -56,15 +56,15 @@ When splitting tasks, design for minimal file overlap. Tasks touching disjoint f
 - ❌ Bad: Task A and B both modify `src/auth.ts`
 - ✅ Good: Task A modifies `src/auth.ts`, Task B modifies `src/routes.ts`
 
-List expected files in each task's `**Files:**` field. If multiple tasks must touch the same file, mark dependencies explicitly with `fluxctl dep add`.
+List expected files in each task's `**Files:**` field. If multiple tasks must touch the same file, mark dependencies explicitly with `nbenchctl dep add`.
 
 ## Step 0: Initialize .flow
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 
 ```bash
-# Get fluxctl path
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+# Get nbenchctl path
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 
 # Ensure .flow exists
 $FLOWCTL init --json

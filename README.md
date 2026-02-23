@@ -287,7 +287,7 @@ Here's how to use N-bench from install to daily usage:
 
 | Command | What it does |
 |---------|--------------|
-| `/nbench:setup` | Optional local install of `fluxctl` and project docs |
+| `/nbench:setup` | Optional local install of `nbenchctl` and project docs |
 | `/nbench:improve` | Analyze sessions, detect friction, and recommend improvements |
 | `/nbench:score` | Compute AI-native capability score from session data |
 | `/nbench:profile` | Export/share/import SDLC profile snapshots |

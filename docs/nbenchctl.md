@@ -1,6 +1,6 @@
-# fluxctl CLI Reference
+# nbenchctl CLI Reference
 
-CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
+CLI for `.flux/` task tracking. Agents must use nbenchctl for all writes.
 
 > **Note:** This is the full human reference. Agents should read `.flux/usage.md` (created by `/nbench:setup`).
 
@@ -17,7 +17,7 @@ Works out of the box for parallel branches. No setup required.
 - **ID allocation**: Scans existing files to determine next ID (merge-safe)
 - **Soft claims**: Tasks have `assignee` field to prevent duplicate work
 - **Actor resolution**: `FLOW_ACTOR` env → git email → git name → `$USER` → "unknown"
-- **Local validation**: `fluxctl validate --all` catches issues before commit
+- **Local validation**: `nbenchctl validate --all` catches issues before commit
 
 **Optional**: Add CI gate with `docs/ci-workflow-example.yml` to block bad PRs.
 
@@ -31,9 +31,9 @@ Works out of the box for parallel branches. No setup required.
 ├── tasks/fn-N-slug.M.json  # Task state (e.g., fn-1-add-oauth.1.json)
 ├── tasks/fn-N-slug.M.md    # Task spec (markdown)
 ├── memory/                 # Agent memory (reserved)
-├── bin/                    # (optional) Local fluxctl install via /nbench:setup
-│   ├── fluxctl
-│   └── fluxctl.py
+├── bin/                    # (optional) Local nbenchctl install via /nbench:setup
+│   ├── nbenchctl
+│   └── nbenchctl.py
 └── usage.md                # (optional) CLI reference via /nbench:setup
 ```
 
@@ -57,7 +57,7 @@ New fields:
 Initialize `.flux/` directory.
 
 ```bash
-fluxctl init [--json]
+nbenchctl init [--json]
 ```
 
 ### detect
@@ -65,7 +65,7 @@ fluxctl init [--json]
 Check if `.flux/` exists and is valid.
 
 ```bash
-fluxctl detect [--json]
+nbenchctl detect [--json]
 ```
 
 Output:
@@ -78,7 +78,7 @@ Output:
 Create new epic.
 
 ```bash
-fluxctl epic create --title "Epic title" [--branch "fn-1-epic-title"] [--json]
+nbenchctl epic create --title "Epic title" [--branch "fn-1-epic-title"] [--json]
 ```
 
 Output:
@@ -91,7 +91,7 @@ Output:
 Overwrite epic spec from file.
 
 ```bash
-fluxctl epic set-plan fn-1 --file plan.md [--json]
+nbenchctl epic set-plan fn-1 --file plan.md [--json]
 ```
 
 ### epic set-plan-review-status
@@ -99,7 +99,7 @@ fluxctl epic set-plan fn-1 --file plan.md [--json]
 Set plan review status and timestamp.
 
 ```bash
-fluxctl epic set-plan-review-status fn-1 --status ship|needs_work|unknown [--json]
+nbenchctl epic set-plan-review-status fn-1 --status ship|needs_work|unknown [--json]
 ```
 
 ### epic set-completion-review-status
@@ -107,7 +107,7 @@ fluxctl epic set-plan-review-status fn-1 --status ship|needs_work|unknown [--jso
 Set completion review status and timestamp.
 
 ```bash
-fluxctl epic set-completion-review-status fn-1 --status ship|needs_work|unknown [--json]
+nbenchctl epic set-completion-review-status fn-1 --status ship|needs_work|unknown [--json]
 ```
 
 ### epic set-branch
@@ -115,7 +115,7 @@ fluxctl epic set-completion-review-status fn-1 --status ship|needs_work|unknown 
 Set epic branch_name.
 
 ```bash
-fluxctl epic set-branch fn-1 --branch "fn-1-epic" [--json]
+nbenchctl epic set-branch fn-1 --branch "fn-1-epic" [--json]
 ```
 
 ### epic close
@@ -123,7 +123,7 @@ fluxctl epic set-branch fn-1 --branch "fn-1-epic" [--json]
 Close epic (requires all tasks done).
 
 ```bash
-fluxctl epic close fn-1 [--json]
+nbenchctl epic close fn-1 [--json]
 ```
 
 ### epic set-backend
@@ -131,9 +131,9 @@ fluxctl epic close fn-1 [--json]
 Set default backend specs for impl/review/sync workers. Used by orchestration products (e.g., flow-swarm).
 
 ```bash
-fluxctl epic set-backend fn-1 --impl codex:gpt-5.2-codex [--json]
-fluxctl epic set-backend fn-1 --impl codex:gpt-5.2-high --review claude:opus [--json]
-fluxctl epic set-backend fn-1 --impl "" [--json]  # Clear impl (inherit from config)
+nbenchctl epic set-backend fn-1 --impl codex:gpt-5.2-codex [--json]
+nbenchctl epic set-backend fn-1 --impl codex:gpt-5.2-high --review claude:opus [--json]
+nbenchctl epic set-backend fn-1 --impl "" [--json]  # Clear impl (inherit from config)
 ```
 
 Options:
@@ -148,7 +148,7 @@ Format: `backend:model` where backend is a CLI name and model is backend-specifi
 Create task under epic.
 
 ```bash
-fluxctl task create --epic fn-1 --title "Task title" [--deps fn-1.2,fn-1.3] [--acceptance-file accept.md] [--priority 10] [--json]
+nbenchctl task create --epic fn-1 --title "Task title" [--deps fn-1.2,fn-1.3] [--acceptance-file accept.md] [--priority 10] [--json]
 ```
 
 Output:
@@ -161,7 +161,7 @@ Output:
 Set task description section.
 
 ```bash
-fluxctl task set-description fn-1.2 --file desc.md [--json]
+nbenchctl task set-description fn-1.2 --file desc.md [--json]
 ```
 
 ### task set-acceptance
@@ -169,7 +169,7 @@ fluxctl task set-description fn-1.2 --file desc.md [--json]
 Set task acceptance section.
 
 ```bash
-fluxctl task set-acceptance fn-1.2 --file accept.md [--json]
+nbenchctl task set-acceptance fn-1.2 --file accept.md [--json]
 ```
 
 ### task set-spec
@@ -177,7 +177,7 @@ fluxctl task set-acceptance fn-1.2 --file accept.md [--json]
 Set description and acceptance in one call (fewer writes).
 
 ```bash
-fluxctl task set-spec fn-1.2 --description desc.md --acceptance accept.md [--json]
+nbenchctl task set-spec fn-1.2 --description desc.md --acceptance accept.md [--json]
 ```
 
 Both `--description` and `--acceptance` are optional; supply one or both.
@@ -187,7 +187,7 @@ Both `--description` and `--acceptance` are optional; supply one or both.
 Reset task to `todo` status, clearing assignee and completion data.
 
 ```bash
-fluxctl task reset fn-1.2 [--cascade] [--json]
+nbenchctl task reset fn-1.2 [--cascade] [--json]
 ```
 
 Use `--cascade` to also reset dependent tasks within the same epic.
@@ -197,9 +197,9 @@ Use `--cascade` to also reset dependent tasks within the same epic.
 Set backend specs for impl/review/sync workers. Used by orchestration products (e.g., flow-swarm).
 
 ```bash
-fluxctl task set-backend fn-1.1 --impl codex:gpt-5.2-high [--json]
-fluxctl task set-backend fn-1.1 --impl codex:gpt-5.2-high --review claude:opus [--json]
-fluxctl task set-backend fn-1.1 --impl "" [--json]  # Clear impl (inherit from epic/config)
+nbenchctl task set-backend fn-1.1 --impl codex:gpt-5.2-high [--json]
+nbenchctl task set-backend fn-1.1 --impl codex:gpt-5.2-high --review claude:opus [--json]
+nbenchctl task set-backend fn-1.1 --impl "" [--json]  # Clear impl (inherit from epic/config)
 ```
 
 Options:
@@ -214,7 +214,7 @@ Format: `backend:model` where backend is a CLI name and model is backend-specifi
 Show effective backend specs for a task. Reports task-level and epic-level specs only (config-level resolution happens in flow-swarm).
 
 ```bash
-fluxctl task show-backend fn-1.1 [--json]
+nbenchctl task show-backend fn-1.1 [--json]
 ```
 
 Output (text):
@@ -241,7 +241,7 @@ Output (json):
 Add single dependency to task.
 
 ```bash
-fluxctl dep add fn-1.3 fn-1.2 [--json]
+nbenchctl dep add fn-1.3 fn-1.2 [--json]
 ```
 
 Dependencies must be within same epic.
@@ -251,7 +251,7 @@ Dependencies must be within same epic.
 Set multiple dependencies for a task (convenience command).
 
 ```bash
-fluxctl task set-deps fn-1.3 --deps fn-1.1,fn-1.2 [--json]
+nbenchctl task set-deps fn-1.3 --deps fn-1.1,fn-1.2 [--json]
 ```
 
 Equivalent to multiple `dep add` calls. Dependencies must be within same epic.
@@ -261,8 +261,8 @@ Equivalent to multiple `dep add` calls. Dependencies must be within same epic.
 Show epic or task details.
 
 ```bash
-fluxctl show fn-1 [--json]     # Epic with tasks
-fluxctl show fn-1.2 [--json]   # Task only
+nbenchctl show fn-1 [--json]     # Epic with tasks
+nbenchctl show fn-1.2 [--json]   # Task only
 ```
 
 Epic output includes `tasks` array with id/title/status/priority/depends_on.
@@ -272,7 +272,7 @@ Epic output includes `tasks` array with id/title/status/priority/depends_on.
 List all epics.
 
 ```bash
-fluxctl epics [--json]
+nbenchctl epics [--json]
 ```
 
 Output:
@@ -287,10 +287,10 @@ Human-readable output shows progress: `[open] fn-1: Title (2/5 tasks done)`
 List tasks, optionally filtered.
 
 ```bash
-fluxctl tasks [--json]                    # All tasks
-fluxctl tasks --epic fn-1 [--json]        # Tasks for specific epic
-fluxctl tasks --status todo [--json]      # Filter by status
-fluxctl tasks --epic fn-1 --status done   # Combine filters
+nbenchctl tasks [--json]                    # All tasks
+nbenchctl tasks --epic fn-1 [--json]        # Tasks for specific epic
+nbenchctl tasks --status todo [--json]      # Filter by status
+nbenchctl tasks --epic fn-1 --status done   # Combine filters
 ```
 
 Status options: `todo`, `in_progress`, `blocked`, `done`
@@ -305,7 +305,7 @@ Output:
 List all epics with their tasks grouped together.
 
 ```bash
-fluxctl list [--json]
+nbenchctl list [--json]
 ```
 
 Human-readable output:
@@ -332,8 +332,8 @@ JSON output:
 Print spec markdown (no JSON mode).
 
 ```bash
-fluxctl cat fn-1      # Epic spec
-fluxctl cat fn-1.2    # Task spec
+nbenchctl cat fn-1      # Epic spec
+nbenchctl cat fn-1.2    # Task spec
 ```
 
 ### ready
@@ -341,7 +341,7 @@ fluxctl cat fn-1.2    # Task spec
 List tasks ready to start, in progress, and blocked.
 
 ```bash
-fluxctl ready --epic fn-1 [--json]
+nbenchctl ready --epic fn-1 [--json]
 ```
 
 Output:
@@ -361,7 +361,7 @@ Output:
 Select next plan/work unit.
 
 ```bash
-fluxctl next [--epics-file epics.json] [--require-plan-review] [--require-completion-review] [--json]
+nbenchctl next [--epics-file epics.json] [--require-plan-review] [--require-completion-review] [--json]
 ```
 
 Output:
@@ -376,7 +376,7 @@ The `--require-completion-review` flag gates epic closure on completion review. 
 Start task (set status=in_progress). Sets assignee to current actor.
 
 ```bash
-fluxctl start fn-1.2 [--force] [--note "..."] [--json]
+nbenchctl start fn-1.2 [--force] [--note "..."] [--json]
 ```
 
 Validates:
@@ -393,7 +393,7 @@ Use `--note` to add a claim note (auto-set on takeover).
 Complete task with summary and evidence. Requires `in_progress` status.
 
 ```bash
-fluxctl done fn-1.2 --summary-file summary.md --evidence-json evidence.json [--force] [--json]
+nbenchctl done fn-1.2 --summary-file summary.md --evidence-json evidence.json [--force] [--json]
 ```
 
 Use `--force` to skip status check.
@@ -408,7 +408,7 @@ Evidence JSON format:
 Block a task and record a reason in the task spec.
 
 ```bash
-fluxctl block fn-1.2 --reason-file reason.md [--json]
+nbenchctl block fn-1.2 --reason-file reason.md [--json]
 ```
 
 ### validate
@@ -416,8 +416,8 @@ fluxctl block fn-1.2 --reason-file reason.md [--json]
 Validate epic structure (specs, deps, cycles).
 
 ```bash
-fluxctl validate --epic fn-1 [--json]
-fluxctl validate --all [--json]
+nbenchctl validate --epic fn-1 [--json]
+nbenchctl validate --all [--json]
 ```
 
 Single epic output:
@@ -453,15 +453,15 @@ Manage project configuration stored in `.flux/config.json`.
 
 ```bash
 # Get a config value
-fluxctl config get memory.enabled [--json]
-fluxctl config get review.backend [--json]
+nbenchctl config get memory.enabled [--json]
+nbenchctl config get review.backend [--json]
 
 # Set a config value
-fluxctl config set memory.enabled true [--json]
-fluxctl config set review.backend codex [--json]  # rp, codex, or none
+nbenchctl config set memory.enabled true [--json]
+nbenchctl config set review.backend codex [--json]  # rp, codex, or none
 
 # Toggle boolean config
-fluxctl config toggle memory.enabled [--json]
+nbenchctl config toggle memory.enabled [--json]
 ```
 
 **Available settings:**
@@ -475,7 +475,7 @@ fluxctl config toggle memory.enabled [--json]
 
 Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.flux/config.json` > error.
 
-No auto-detect. Run `/nbench:setup` (or `fluxctl config set review.backend ...`) to configure.
+No auto-detect. Run `/nbench:setup` (or `nbenchctl config set review.backend ...`) to configure.
 
 ### memory
 
@@ -483,17 +483,17 @@ Manage persistent learnings in `.flux/memory/`.
 
 ```bash
 # Initialize memory directory
-fluxctl memory init [--json]
+nbenchctl memory init [--json]
 
 # Add entries
-fluxctl memory add --type pitfall "Always use fluxctl rp wrappers" [--json]
-fluxctl memory add --type convention "Tests in __tests__ dirs" [--json]
-fluxctl memory add --type decision "SQLite for simplicity" [--json]
+nbenchctl memory add --type pitfall "Always use nbenchctl rp wrappers" [--json]
+nbenchctl memory add --type convention "Tests in __tests__ dirs" [--json]
+nbenchctl memory add --type decision "SQLite for simplicity" [--json]
 
 # Query
-fluxctl memory list [--json]
-fluxctl memory search "pattern" [--json]
-fluxctl memory read --type pitfalls [--json]
+nbenchctl memory list [--json]
+nbenchctl memory search "pattern" [--json]
+nbenchctl memory read --type pitfalls [--json]
 ```
 
 Types: `pitfall`, `convention`, `decision`
@@ -510,7 +510,7 @@ Your multi-line prompt with "quotes", $variables, and `backticks`.
 EOF
 
 # Generate JSON
-fluxctl prep-chat \
+nbenchctl prep-chat \
   --message-file /tmp/prompt.md \
   --mode chat \
   [--new-chat] \
@@ -518,8 +518,8 @@ fluxctl prep-chat \
   [--selected-paths file1.ts file2.ts] \
   [-o /tmp/payload.json]
 
-# Prefer fluxctl rp chat-send (uses this internally)
-fluxctl rp chat-send --window W --tab T --message-file /tmp/prompt.md
+# Prefer nbenchctl rp chat-send (uses this internally)
+nbenchctl rp chat-send --window W --tab T --message-file /tmp/prompt.md
 ```
 
 Options:
@@ -543,30 +543,30 @@ RepoPrompt wrappers (preferred for reviews). Requires RepoPrompt 1.5.68+.
 
 ```bash
 # Atomic setup - picks window by repo root and creates builder tab
-eval "$(fluxctl rp setup-review --repo-root "$REPO_ROOT" --summary "Review a plan to ...")"
+eval "$(nbenchctl rp setup-review --repo-root "$REPO_ROOT" --summary "Review a plan to ...")"
 # Returns: W=<window> T=<tab>
 
 # With --create: auto-creates RP window if none matches (RP 1.5.68+)
-eval "$(fluxctl rp setup-review --repo-root "$REPO_ROOT" --summary "..." --create)"
+eval "$(nbenchctl rp setup-review --repo-root "$REPO_ROOT" --summary "..." --create)"
 ```
 
 **Post-setup commands** (use $W and $T from setup-review):
 
 ```bash
-fluxctl rp prompt-get --window "$W" --tab "$T"
-fluxctl rp prompt-set --window "$W" --tab "$T" --message-file /tmp/review-prompt.md
-fluxctl rp select-add --window "$W" --tab "$T" path/to/file
-fluxctl rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md
-fluxctl rp prompt-export --window "$W" --tab "$T" --out /tmp/export.md
+nbenchctl rp prompt-get --window "$W" --tab "$T"
+nbenchctl rp prompt-set --window "$W" --tab "$T" --message-file /tmp/review-prompt.md
+nbenchctl rp select-add --window "$W" --tab "$T" path/to/file
+nbenchctl rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md
+nbenchctl rp prompt-export --window "$W" --tab "$T" --out /tmp/export.md
 ```
 
 **Low-level commands** (prefer setup-review instead):
 
 ```bash
-fluxctl rp windows [--json]
-fluxctl rp pick-window --repo-root "$REPO_ROOT"
-fluxctl rp ensure-workspace --window "$W" --repo-root "$REPO_ROOT"
-fluxctl rp builder --window "$W" --summary "Review a plan to ..."
+nbenchctl rp windows [--json]
+nbenchctl rp pick-window --repo-root "$REPO_ROOT"
+nbenchctl rp ensure-workspace --window "$W" --repo-root "$REPO_ROOT"
+nbenchctl rp builder --window "$W" --summary "Review a plan to ..."
 ```
 
 ### codex
@@ -585,20 +585,20 @@ codex auth
 
 ```bash
 # Verify codex is available
-fluxctl codex check [--json]
+nbenchctl codex check [--json]
 
 # Implementation review (reviews code changes for a task)
-fluxctl codex impl-review <task-id> --base <branch> [--sandbox <mode>] [--receipt <path>] [--json]
-# Example: fluxctl codex impl-review fn-1.3 --base main --sandbox auto --receipt /tmp/impl-fn-1.3.json
+nbenchctl codex impl-review <task-id> --base <branch> [--sandbox <mode>] [--receipt <path>] [--json]
+# Example: nbenchctl codex impl-review fn-1.3 --base main --sandbox auto --receipt /tmp/impl-fn-1.3.json
 
 # Plan review (reviews epic spec before implementation)
-fluxctl codex plan-review <epic-id> --files <file1,file2,...> [--sandbox <mode>] [--receipt <path>] [--json]
-# Example: fluxctl codex plan-review fn-1 --files "src/auth.ts,src/config.ts" --sandbox auto --receipt /tmp/plan-fn-1.json
+nbenchctl codex plan-review <epic-id> --files <file1,file2,...> [--sandbox <mode>] [--receipt <path>] [--json]
+# Example: nbenchctl codex plan-review fn-1 --files "src/auth.ts,src/config.ts" --sandbox auto --receipt /tmp/plan-fn-1.json
 # Note: Epic/task specs are included automatically; --files should be CODE files for repository context.
 
 # Completion review (reviews epic implementation against spec)
-fluxctl codex completion-review <epic-id> [--sandbox <mode>] [--receipt <path>] [--json]
-# Example: fluxctl codex completion-review fn-1 --sandbox auto --receipt /tmp/completion-fn-1.json
+nbenchctl codex completion-review <epic-id> [--sandbox <mode>] [--receipt <path>] [--json]
+# Example: nbenchctl codex completion-review fn-1 --sandbox auto --receipt /tmp/completion-fn-1.json
 # Runs after all tasks done; verifies implementation matches spec requirements
 ```
 
@@ -670,13 +670,13 @@ Save and restore epic state (used during review-fix cycles).
 
 ```bash
 # Save epic state to .flux/.checkpoint-fn-1.json
-fluxctl checkpoint save --epic fn-1 [--json]
+nbenchctl checkpoint save --epic fn-1 [--json]
 
 # Restore epic state from checkpoint
-fluxctl checkpoint restore --epic fn-1 [--json]
+nbenchctl checkpoint restore --epic fn-1 [--json]
 
 # Delete checkpoint
-fluxctl checkpoint delete --epic fn-1 [--json]
+nbenchctl checkpoint delete --epic fn-1 [--json]
 ```
 
 Checkpoints preserve full epic + task state. Useful when compaction occurs during plan-review cycles.
@@ -686,7 +686,7 @@ Checkpoints preserve full epic + task state. Useful when compaction occurs durin
 Show `.flux/` state summary.
 
 ```bash
-fluxctl status [--json]
+nbenchctl status [--json]
 ```
 
 Output:
@@ -701,7 +701,7 @@ Human-readable output shows epic/task counts and any active Ralph runs.
 Show the resolved state directory path (useful for debugging parallel worktree setups).
 
 ```bash
-fluxctl state-path [--json]
+nbenchctl state-path [--json]
 ```
 
 Output:
@@ -719,7 +719,7 @@ Source values:
 Migrate existing repos to the shared runtime state model.
 
 ```bash
-fluxctl migrate-state [--clean] [--json]
+nbenchctl migrate-state [--clean] [--json]
 ```
 
 Options:
@@ -738,7 +738,7 @@ What it does:
 
 ## Ralph Receipts
 
-RepoPrompt review receipts are written by the review skills (not fluxctl commands). Codex review receipts are written by `fluxctl codex impl-review` and `fluxctl codex completion-review` when `--receipt` is provided. Ralph sets `REVIEW_RECEIPT_PATH` to coordinate both.
+RepoPrompt review receipts are written by the review skills (not nbenchctl commands). Codex review receipts are written by `nbenchctl codex impl-review` and `nbenchctl codex completion-review` when `--receipt` is provided. Ralph sets `REVIEW_RECEIPT_PATH` to coordinate both.
 
 See: [Ralph deep dive](ralph.md)
 
@@ -755,7 +755,7 @@ Exit codes: 0=success, 1=general error, 2=tool/parse error, 3=sandbox configurat
 
 ## Error Handling
 
-- Missing `.flux/`: "Run 'fluxctl init' first"
+- Missing `.flux/`: "Run 'nbenchctl init' first"
 - Invalid ID format: "Expected format: fn-N (epic) or fn-N.M (task)"
 - File conflicts: Refuses to overwrite existing epics/tasks
 - Dependency violations: Same-epic only, must exist, no cycles

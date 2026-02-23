@@ -27,8 +27,8 @@ export PYTHON_BIN
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONFIG="$SCRIPT_DIR/config.env"
-FLOWCTL="$SCRIPT_DIR/fluxctl"
-FLOWCTL_PY="$SCRIPT_DIR/fluxctl.py"
+FLOWCTL="$SCRIPT_DIR/nbenchctl"
+FLOWCTL_PY="$SCRIPT_DIR/nbenchctl.py"
 
 fail() { echo "ralph: $*" >&2; exit 1; }
 
@@ -53,23 +53,23 @@ log() {
   return 0
 }
 
-# Ensure fluxctl is runnable even when NTFS exec bit / shebang handling is flaky on Windows
-ensure_fluxctl_wrapper() {
-  # If fluxctl exists and is executable, use it
+# Ensure nbenchctl is runnable even when NTFS exec bit / shebang handling is flaky on Windows
+ensure_nbenchctl_wrapper() {
+  # If nbenchctl exists and is executable, use it
   if [[ -f "$FLOWCTL" && -x "$FLOWCTL" ]]; then
     return 0
   fi
 
-  # On Windows or if fluxctl not executable, create a wrapper that calls Python explicitly
+  # On Windows or if nbenchctl not executable, create a wrapper that calls Python explicitly
   if [[ -f "$FLOWCTL_PY" ]]; then
-    local wrapper="$SCRIPT_DIR/fluxctl-wrapper.sh"
+    local wrapper="$SCRIPT_DIR/nbenchctl-wrapper.sh"
     cat > "$wrapper" <<SH
 #!/usr/bin/env bash
 set -euo pipefail
 DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 PY="\${PYTHON_BIN:-python3}"
 command -v "\$PY" >/dev/null 2>&1 || PY="python"
-exec "\$PY" "\$DIR/fluxctl.py" "\$@"
+exec "\$PY" "\$DIR/nbenchctl.py" "\$@"
 SH
     chmod +x "$wrapper" 2>/dev/null || true
     FLOWCTL="$wrapper"
@@ -77,10 +77,10 @@ SH
     return 0
   fi
 
-  fail "missing fluxctl (expected $SCRIPT_DIR/fluxctl or $SCRIPT_DIR/fluxctl.py)"
+  fail "missing nbenchctl (expected $SCRIPT_DIR/nbenchctl or $SCRIPT_DIR/nbenchctl.py)"
 }
 
-ensure_fluxctl_wrapper
+ensure_nbenchctl_wrapper
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Presentation layer (human-readable output)
@@ -368,7 +368,7 @@ ui_waiting() {
 }
 
 [[ -f "$CONFIG" ]] || fail "config file not found: $CONFIG"
-[[ -x "$FLOWCTL" ]] || fail "missing fluxctl"
+[[ -x "$FLOWCTL" ]] || fail "missing nbenchctl"
 
 # shellcheck disable=SC1090
 set -a
@@ -383,11 +383,11 @@ BRANCH_MODE="${BRANCH_MODE:-new}"
 PLAN_REVIEW="${PLAN_REVIEW:-none}"
 WORK_REVIEW="${WORK_REVIEW:-none}"
 COMPLETION_REVIEW="${COMPLETION_REVIEW:-none}"
-CODEX_SANDBOX="${CODEX_SANDBOX:-auto}"  # Codex sandbox mode; fluxctl reads this env var
+CODEX_SANDBOX="${CODEX_SANDBOX:-auto}"  # Codex sandbox mode; nbenchctl reads this env var
 REQUIRE_PLAN_REVIEW="${REQUIRE_PLAN_REVIEW:-0}"
 YOLO="${YOLO:-0}"
 EPICS="${EPICS:-}"
-export CODEX_SANDBOX  # Ensure available to Claude worker for fluxctl codex commands
+export CODEX_SANDBOX  # Ensure available to Claude worker for nbenchctl codex commands
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -634,13 +634,13 @@ append_progress() {
   } >> "$PROGRESS_FILE"
 }
 
-# Write completion marker to progress.txt (MUST match find_active_runs() detection in fluxctl.py)
+# Write completion marker to progress.txt (MUST match find_active_runs() detection in nbenchctl.py)
 write_completion_marker() {
   local reason="${1:-DONE}"
   {
     echo ""
     echo "completion_reason=$reason"
-    echo "promise=COMPLETE"  # CANONICAL - must match fluxctl.py substring search
+    echo "promise=COMPLETE"  # CANONICAL - must match nbenchctl.py substring search
   } >> "$PROGRESS_FILE"
 }
 
@@ -762,7 +762,7 @@ print("1")
 PY
 }
 
-# Get list of open (non-done) epic IDs from fluxctl epics --json
+# Get list of open (non-done) epic IDs from nbenchctl epics --json
 list_open_epics() {
   local tmpfile
   tmpfile="$(mktemp)"
@@ -786,7 +786,7 @@ maybe_close_epics() {
     # Scoped run: use epic list from file
     epics="$(list_epics_from_file)"
   else
-    # Unscoped run: get all open epics from fluxctl
+    # Unscoped run: get all open epics from nbenchctl
     epics="$(list_open_epics)"
   fi
   [[ -z "$epics" ]] && return 0
@@ -973,8 +973,8 @@ while (( iter <= MAX_ITERATIONS )); do
   # Autonomous mode system prompt - critical for preventing drift
   claude_args+=(--append-system-prompt "AUTONOMOUS MODE ACTIVE (FLOW_RALPH=1). You are running unattended. CRITICAL RULES:
 1. EXECUTE COMMANDS EXACTLY as shown in prompts. Do not paraphrase or improvise.
-2. VERIFY OUTCOMES by running the verification commands (fluxctl show, git status).
-3. NEVER CLAIM SUCCESS without proof. If fluxctl done was not run, the task is NOT done.
+2. VERIFY OUTCOMES by running the verification commands (nbenchctl show, git status).
+3. NEVER CLAIM SUCCESS without proof. If nbenchctl done was not run, the task is NOT done.
 4. COPY TEMPLATES VERBATIM - receipt JSON must match exactly including all fields.
 5. USE SKILLS AS SPECIFIED - invoke /nbench:impl-review, do not improvise review prompts.
 Violations break automation and leave the user with incomplete work. Be precise, not creative.")
@@ -1113,7 +1113,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
   verdict="$(printf '%s' "$claude_text" | extract_tag verdict)"
   promise="$(printf '%s' "$claude_text" | extract_tag promise)"
 
-  # Fallback: derive verdict from fluxctl status for logging
+  # Fallback: derive verdict from nbenchctl status for logging
   if [[ -z "$verdict" && -n "$plan_review_status" ]]; then
     case "$plan_review_status" in
       ship) verdict="SHIP" ;;
@@ -1133,7 +1133,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
     if [[ "$task_status" == "done" ]]; then
       if [[ "$impl_receipt_ok" == "0" ]]; then
         # Task marked done but receipt missing/invalid - can't trust done status
-        # Reset to todo so fluxctl next picks it up again (prevents task jumping)
+        # Reset to todo so nbenchctl next picks it up again (prevents task jumping)
         echo "ralph: task done but receipt missing; resetting to todo" >> "$iter_log"
         log "task $task_id: resetting done→todo (receipt missing)"
         if "$FLOWCTL" task reset "$task_id" --json >/dev/null 2>&1; then

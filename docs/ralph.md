@@ -117,7 +117,7 @@ rm -rf scripts/ralph/
 ┌─────────────────────────────────────────────────────────────┐
 │  scripts/ralph/ralph.sh                                      │
 │  ┌────────────────────────────────────────────────────────┐  │
-│  │  while fluxctl next returns work:                      │  │
+│  │  while nbenchctl next returns work:                      │  │
 │  │    1. claude -p "/nbench:plan" or :work             │  │
 │  │    2. check review receipts                            │  │
 │  │    3. if missing/invalid → retry                       │  │
@@ -128,7 +128,7 @@ rm -rf scripts/ralph/
 
 ```mermaid
 flowchart TD
-  A[ralph.sh loop] --> B[fluxctl next]
+  A[ralph.sh loop] --> B[nbenchctl next]
   B -->|plan needed| C[/nbench:plan/]
   C --> D[/nbench:plan-review/]
   B -->|work needed| E[/nbench:work/]
@@ -198,13 +198,13 @@ The plan review gate ensures epics are architecturally sound before any implemen
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  fluxctl next --require-plan-review                         │
+│  nbenchctl next --require-plan-review                         │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │  1. Find epics with plan_review_status = unknown       │ │
 │  │  2. Return status=plan, epic=fn-1                      │ │
 │  │  3. Ralph invokes /nbench:plan-review fn-1          │ │
 │  │  4. Skill loops until <verdict>SHIP</verdict>          │ │
-│  │  5. fluxctl epic set-plan-review-status fn-1 --status ship │
+│  │  5. nbenchctl epic set-plan-review-status fn-1 --status ship │
 │  │  6. Next iteration: epic unlocked for work             │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
@@ -232,11 +232,11 @@ PLAN_REVIEW=codex       # Backend: rp, codex, or export
 
 #### The Review Cycle
 
-When `fluxctl next` returns `status=plan`:
+When `nbenchctl next` returns `status=plan`:
 
 1. **Checkpoint** — Save epic state before review
    ```bash
-   fluxctl checkpoint save --epic fn-1 --json
+   nbenchctl checkpoint save --epic fn-1 --json
    ```
 
 2. **Review** — Invoke the plan review skill
@@ -246,8 +246,8 @@ When `fluxctl next` returns `status=plan`:
 
 3. **Fix loop** — If `NEEDS_WORK`:
    - Parse reviewer feedback
-   - Update epic spec via `fluxctl epic set-plan`
-   - Sync affected task specs via `fluxctl task set-spec`
+   - Update epic spec via `nbenchctl epic set-plan`
+   - Sync affected task specs via `nbenchctl task set-spec`
    - Re-review (same chat for RP, receipt continuity for Codex)
    - Repeat until `SHIP`
 
@@ -258,7 +258,7 @@ When `fluxctl next` returns `status=plan`:
 
 5. **Unlock** — Set status to ship
    ```bash
-   fluxctl epic set-plan-review-status fn-1 --status ship
+   nbenchctl epic set-plan-review-status fn-1 --status ship
    ```
 
 #### Recovery
@@ -266,7 +266,7 @@ When `fluxctl next` returns `status=plan`:
 If context compacts during review cycles:
 
 ```bash
-fluxctl checkpoint restore --epic fn-1 --json
+nbenchctl checkpoint restore --epic fn-1 --json
 ```
 
 This restores the epic/task state from before the review started.
@@ -275,13 +275,13 @@ This restores the epic/task state from before the review started.
 
 ```bash
 # Check all epics
-fluxctl epics --json | jq '.epics[] | {id, plan_review_status}'
+nbenchctl epics --json | jq '.epics[] | {id, plan_review_status}'
 
 # Check specific epic
-fluxctl show fn-1 --json | jq '.plan_review_status'
+nbenchctl show fn-1 --json | jq '.plan_review_status'
 
 # Find epics needing review
-fluxctl next --require-plan-review --json
+nbenchctl next --require-plan-review --json
 ```
 
 #### Plan Review vs Impl Review
@@ -302,13 +302,13 @@ The epic-completion review gate ensures implementation matches the spec before c
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  fluxctl next --require-completion-review                    │
+│  nbenchctl next --require-completion-review                    │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │  1. All tasks done, completion_review_status != ship   │ │
 │  │  2. Return status=completion_review, epic=fn-1         │ │
 │  │  3. Ralph invokes /nbench:epic-review fn-1          │ │
 │  │  4. Skill loops until <verdict>SHIP</verdict>          │ │
-│  │  5. fluxctl epic set-completion-review-status fn-1 --status ship │
+│  │  5. nbenchctl epic set-completion-review-status fn-1 --status ship │
 │  │  6. Next iteration: epic can close                     │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
@@ -331,7 +331,7 @@ When `COMPLETION_REVIEW != none`, Ralph passes `--require-completion-review` to 
 
 #### The Review Cycle
 
-When `fluxctl next` returns `status=completion_review`:
+When `nbenchctl next` returns `status=completion_review`:
 
 1. **Review** — Invoke the epic-review skill
    ```bash
@@ -351,7 +351,7 @@ When `fluxctl next` returns `status=completion_review`:
 
 4. **Unlock** — Set status to ship
    ```bash
-   fluxctl epic set-completion-review-status fn-1 --status ship
+   nbenchctl epic set-completion-review-status fn-1 --status ship
    ```
 
 5. **Close** — Epic can now close normally
@@ -420,7 +420,7 @@ Fix → re-review → fix → re-review... until the reviewer approves.
 When enabled, NEEDS_WORK reviews auto-capture learnings:
 
 ```bash
-fluxctl config set memory.enabled true
+nbenchctl config set memory.enabled true
 ```
 
 Builds `.flux/memory/pitfalls.md` — things reviewers catch that models miss.
@@ -500,12 +500,12 @@ Edit `scripts/ralph/config.env`:
 When using `PLAN_REVIEW=rp` or `WORK_REVIEW=rp`:
 
 ```bash
-fluxctl rp pick-window --repo-root .  # Find window
-fluxctl rp builder ...                 # Build context
-fluxctl rp chat-send ...               # Send to reviewer
+nbenchctl rp pick-window --repo-root .  # Find window
+nbenchctl rp builder ...                 # Build context
+nbenchctl rp chat-send ...               # Send to reviewer
 ```
 
-> **Never call `rp-cli` directly in Ralph mode.** Use fluxctl wrappers.
+> **Never call `rp-cli` directly in Ralph mode.** Use nbenchctl wrappers.
 
 Window selection is automatic. With RP 1.5.68+, `--create` auto-opens windows.
 
@@ -514,9 +514,9 @@ Window selection is automatic. With RP 1.5.68+, `--create` auto-opens windows.
 When using `PLAN_REVIEW=codex` or `WORK_REVIEW=codex`:
 
 ```bash
-fluxctl codex check                    # Verify available
-fluxctl codex impl-review ...          # Run impl review
-fluxctl codex plan-review <id> --files "src/auth.ts,src/config.ts"
+nbenchctl codex check                    # Verify available
+nbenchctl codex impl-review ...          # Run impl review
+nbenchctl codex plan-review <id> --files "src/auth.ts,src/config.ts"
 ```
 
 **Requirements:**
@@ -557,12 +557,12 @@ scripts/ralph/runs/<run-id>/
 ### CLI Commands
 
 ```bash
-fluxctl status                    # Epic/task counts + active runs
-fluxctl ralph pause               # Pause run
-fluxctl ralph resume              # Resume run
-fluxctl ralph stop                # Graceful stop
-fluxctl ralph status              # Show run state
-fluxctl ralph pause --run <id>    # Specify run when multiple active
+nbenchctl status                    # Epic/task counts + active runs
+nbenchctl ralph pause               # Pause run
+nbenchctl ralph resume              # Resume run
+nbenchctl ralph stop                # Graceful stop
+nbenchctl ralph status              # Show run state
+nbenchctl ralph pause --run <id>    # Specify run when multiple active
 ```
 
 ### Sentinel Files
@@ -583,8 +583,8 @@ Ralph checks sentinels at iteration boundaries.
 ### Task Retry/Rollback
 
 ```bash
-fluxctl unblock fn-1.2                    # Re-enable blocked task
-fluxctl update fn-1.2 --status pending    # Reset to pending
+nbenchctl unblock fn-1.2                    # Re-enable blocked task
+nbenchctl update fn-1.2 --status pending    # Reset to pending
 ```
 
 ---
@@ -746,7 +746,7 @@ grep -E "REQUIRE_PLAN_REVIEW|PLAN_REVIEW" scripts/ralph/config.env
 **Verify selector sees plan work:**
 
 ```bash
-fluxctl next --require-plan-review --json
+nbenchctl next --require-plan-review --json
 ```
 
 Should return `status: "plan"` if epics need review.
@@ -759,7 +759,7 @@ Should return `status: "plan"` if epics need review.
 
 ```bash
 # What's the epic status?
-fluxctl show fn-1 --json | jq '.plan_review_status'
+nbenchctl show fn-1 --json | jq '.plan_review_status'
 
 # Is there a receipt?
 ls scripts/ralph/runs/*/receipts/plan-fn-1.json
@@ -791,10 +791,10 @@ REQUIRE_PLAN_REVIEW=0
 
 ```bash
 # Is A actually closed?
-fluxctl show fn-1 --json | jq '.status'
+nbenchctl show fn-1 --json | jq '.status'
 
 # Does B depend on A?
-fluxctl show fn-2 --json | jq '.depends_on_epics'
+nbenchctl show fn-2 --json | jq '.depends_on_epics'
 ```
 
 **Common cause:** Race condition — selector runs before `maybe_close_epics()`. Fixed in v0.18.23+.
@@ -803,7 +803,7 @@ fluxctl show fn-2 --json | jq '.depends_on_epics'
 
 ```bash
 # Manually close the epic
-fluxctl epic close fn-1 --json
+nbenchctl epic close fn-1 --json
 
 # Re-run Ralph
 scripts/ralph/ralph.sh
@@ -835,13 +835,13 @@ grep -i verdict scripts/ralph/runs/*/iter-*.log | tail -5
 After `MAX_ATTEMPTS_PER_TASK` failures:
 
 1. Ralph writes `block-<task>.md` with context
-2. Marks task blocked via `fluxctl block`
+2. Marks task blocked via `nbenchctl block`
 3. Moves to next task
 
 **To retry:**
 
 ```bash
-fluxctl unblock fn-1.2
+nbenchctl unblock fn-1.2
 ```
 
 ### RepoPrompt Issues
@@ -907,7 +907,7 @@ cat scripts/ralph/runs/*/progress.txt | tail -5
 ls scripts/ralph/runs/*/block-*.md 2>/dev/null
 
 # Pending tasks
-fluxctl ready --json
+nbenchctl ready --json
 ```
 
 **Partial run?** Review `block-*.md`, fix issues, re-run `ralph.sh` (resumes from pending).
@@ -966,14 +966,14 @@ git merge ralph-<run-id>
 
 ```bash
 git log --oneline --grep="fn-1"
-fluxctl show fn-1.1 --json | jq '.evidence.commits'
+nbenchctl show fn-1.1 --json | jq '.evidence.commits'
 ```
 
 ---
 
 ## References
 
-- [fluxctl CLI](fluxctl.md)
+- [nbenchctl CLI](nbenchctl.md)
 - [Flux README](../README.md)
 - [flux-tui](../../../flux-tui/README.md)
 - Test scripts: `plugins/flux/scripts/ralph_e2e_*.sh`

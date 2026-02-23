@@ -2,7 +2,7 @@
 
 ## Philosophy
 
-The reviewer model only sees selected files. RepoPrompt's Builder discovers context you'd miss (rp backend). Codex uses context hints from fluxctl (codex backend).
+The reviewer model only sees selected files. RepoPrompt's Builder discovers context you'd miss (rp backend). Codex uses context hints from nbenchctl (codex backend).
 
 ---
 
@@ -10,11 +10,11 @@ The reviewer model only sees selected files. RepoPrompt's Builder discovers cont
 
 **Run this first. Do not skip.**
 
-**CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
+**CRITICAL: nbenchctl is BUNDLED — NOT installed globally.** `which nbenchctl` will fail (expected). Always use:
 
 ```bash
 set -e
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/nbenchctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
@@ -81,7 +81,7 @@ If `VERDICT=NEEDS_WORK`:
 
 ### Step 4: Receipt
 
-Receipt is written automatically by `fluxctl codex plan-review` when `--receipt` provided.
+Receipt is written automatically by `nbenchctl codex plan-review` when `--receipt` provided.
 Format: `{"mode":"codex","epic":"<id>","verdict":"<verdict>","session_id":"<thread_id>","timestamp":"..."}`
 
 ---
@@ -181,7 +181,7 @@ RepoPrompt includes the actual source code of selected files in a `<file_content
 If you cannot find `<file_contents>`, ask for the files to be re-attached before proceeding.
 
 ## Plan Under Review
-[PASTE fluxctl show OUTPUT]
+[PASTE nbenchctl show OUTPUT]
 
 ## Review Focus
 [USER'S FOCUS AREAS]
@@ -278,7 +278,7 @@ If verdict is NEEDS_WORK:
 
 1. **Parse issues** - Extract ALL issues by severity (Critical → Major → Minor)
 2. **Fix the epic spec** - Address each issue.
-3. **Update epic spec in fluxctl** (MANDATORY before re-review):
+3. **Update epic spec in nbenchctl** (MANDATORY before re-review):
    ```bash
    # Option A: stdin heredoc (preferred, no temp file)
    $FLOWCTL epic set-plan <EPIC_ID> --file - --json <<'EOF'
@@ -357,4 +357,4 @@ If verdict is NEEDS_WORK:
 
 **Codex backend only:**
 - **Using `--last` flag** - Conflicts with parallel usage; use `--receipt` instead
-- **Direct codex calls** - Must use `fluxctl codex` wrappers
+- **Direct codex calls** - Must use `nbenchctl codex` wrappers

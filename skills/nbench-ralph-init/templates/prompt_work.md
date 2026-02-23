@@ -12,13 +12,13 @@ Inputs:
 /nbench:work {{TASK_ID}} --branch={{BRANCH_MODE_EFFECTIVE}} --review={{WORK_REVIEW}}
 ```
 When `--review=rp`, the worker subagent invokes `/nbench:impl-review` internally.
-When `--review=codex`, the worker uses `fluxctl codex impl-review` for review.
+When `--review=codex`, the worker uses `nbenchctl codex impl-review` for review.
 The impl-review skill handles review coordination and requires `<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>` from reviewer.
 Do NOT improvise review prompts - the skill has the correct format.
 
 **Step 2: Verify task done** (AFTER skill returns)
 ```bash
-scripts/ralph/fluxctl show {{TASK_ID}} --json
+scripts/ralph/nbenchctl show {{TASK_ID}} --json
 ```
 If status != `done`, output `<promise>RETRY</promise>` and stop.
 
@@ -32,19 +32,19 @@ cat > '{{REVIEW_RECEIPT_PATH}}' <<EOF
 EOF
 echo "Receipt written: {{REVIEW_RECEIPT_PATH}}"
 ```
-For codex mode, receipt is written automatically by `fluxctl codex impl-review --receipt`.
+For codex mode, receipt is written automatically by `nbenchctl codex impl-review --receipt`.
 **CRITICAL: Copy the command EXACTLY. The `"id":"{{TASK_ID}}"` field is REQUIRED.**
 Ralph verifies receipts match this exact schema. Missing id = verification fails = forced retry.
 
 **Step 4: Validate epic**
 ```bash
-scripts/ralph/fluxctl validate --epic $(echo {{TASK_ID}} | sed 's/\.[0-9]*$//') --json
+scripts/ralph/nbenchctl validate --epic $(echo {{TASK_ID}} | sed 's/\.[0-9]*$//') --json
 ```
 
 **Step 5: On hard failure** → output `<promise>FAIL</promise>` and stop.
 
 ## Rules
-- Must run `fluxctl done` and verify task status is `done` before commit.
+- Must run `nbenchctl done` and verify task status is `done` before commit.
 - Must `git add -A` (never list files).
 - Do NOT use TodoWrite.
 

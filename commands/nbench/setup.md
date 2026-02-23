@@ -1,6 +1,6 @@
 ---
 name: nbench:setup
-description: Optional local install of fluxctl CLI and project docs
+description: Optional local install of nbenchctl CLI and project docs
 ---
 
 # IMPORTANT: This command MUST invoke the skill `flux-setup`

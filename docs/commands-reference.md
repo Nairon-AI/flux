@@ -27,7 +27,7 @@ git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:setup` | `/nbench:setup` | Optional local setup (installs local `fluxctl` + project docs) |
+| `/nbench:setup` | `/nbench:setup` | Optional local setup (installs local `nbenchctl` + project docs) |
 | `/nbench:interview` | `/nbench:interview <epic|task|file|idea>` | Deep requirements interview and refinement |
 | `/nbench:plan` | `/nbench:plan <idea or fn-N>` | Convert request into structured epic + tasks |
 | `/nbench:work` | `/nbench:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |

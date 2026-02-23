@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Comprehensive CI tests for fluxctl.py and ralph.sh helpers
+# Comprehensive CI tests for nbenchctl.py and ralph.sh helpers
 # Runs on Linux, macOS, and Windows (Git Bash)
 set -euo pipefail
 
@@ -43,9 +43,9 @@ trap cleanup EXIT
 pass() { echo -e "${GREEN}✓${NC} $1"; PASS=$((PASS + 1)); }
 fail() { echo -e "${RED}✗${NC} $1"; FAIL=$((FAIL + 1)); }
 
-# Helper to run fluxctl
-fluxctl() {
-  "$PYTHON_BIN" "$TEST_DIR/scripts/fluxctl.py" "$@"
+# Helper to run nbenchctl
+nbenchctl() {
+  "$PYTHON_BIN" "$TEST_DIR/scripts/nbenchctl.py" "$@"
 }
 
 echo -e "${YELLOW}=== flux CI tests ===${NC}"
@@ -61,29 +61,29 @@ git init -q
 git config user.email "ci@test.local"
 git config user.name "CI Test"
 
-cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/
+cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Basic Commands
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}--- Basic Commands ---${NC}"
 
-fluxctl init --json >/dev/null && pass "init" || fail "init"
+nbenchctl init --json >/dev/null && pass "init" || fail "init"
 
-EPIC_JSON="$(fluxctl epic create --title "Test Epic" --json)"
+EPIC_JSON="$(nbenchctl epic create --title "Test Epic" --json)"
 EPIC_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$EPIC_JSON")"
 [[ -n "$EPIC_ID" ]] && pass "epic create ($EPIC_ID)" || fail "epic create"
 
-TASK1_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task One" --priority 2 --json)"
+TASK1_JSON="$(nbenchctl task create --epic "$EPIC_ID" --title "Task One" --priority 2 --json)"
 TASK1_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$TASK1_JSON")"
 [[ -n "$TASK1_ID" ]] && pass "task create ($TASK1_ID)" || fail "task create"
 
-TASK2_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task Two" --priority 1 --json)"
+TASK2_JSON="$(nbenchctl task create --epic "$EPIC_ID" --title "Task Two" --priority 1 --json)"
 TASK2_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$TASK2_JSON")"
 
-fluxctl list --json >/dev/null && pass "list" || fail "list"
-fluxctl show "$EPIC_ID" --json >/dev/null && pass "show epic" || fail "show epic"
-fluxctl show "$TASK1_ID" --json >/dev/null && pass "show task" || fail "show task"
+nbenchctl list --json >/dev/null && pass "list" || fail "list"
+nbenchctl show "$EPIC_ID" --json >/dev/null && pass "show epic" || fail "show epic"
+nbenchctl show "$TASK1_ID" --json >/dev/null && pass "show task" || fail "show task"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. State Machine Transitions
@@ -91,41 +91,41 @@ fluxctl show "$TASK1_ID" --json >/dev/null && pass "show task" || fail "show tas
 echo -e "\n${YELLOW}--- State Machine ---${NC}"
 
 # next should return plan (no plan review yet)
-NEXT_JSON="$(fluxctl next --require-plan-review --json)"
+NEXT_JSON="$(nbenchctl next --require-plan-review --json)"
 STATUS="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])" <<< "$NEXT_JSON")"
 [[ "$STATUS" == "plan" ]] && pass "next returns plan" || fail "next returns plan (got $STATUS)"
 
 # set plan review status
-fluxctl epic set-plan-review-status "$EPIC_ID" --status ship --json >/dev/null && pass "set-plan-review-status" || fail "set-plan-review-status"
+nbenchctl epic set-plan-review-status "$EPIC_ID" --status ship --json >/dev/null && pass "set-plan-review-status" || fail "set-plan-review-status"
 
 # next should now return work with higher priority task (Task Two, priority 1)
-NEXT_JSON="$(fluxctl next --json)"
+NEXT_JSON="$(nbenchctl next --json)"
 NEXT_TASK="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('task',''))" <<< "$NEXT_JSON")"
 [[ "$NEXT_TASK" == "$TASK2_ID" ]] && pass "next picks high priority task" || fail "next picks high priority (expected $TASK2_ID, got $NEXT_TASK)"
 
 # start task
-fluxctl start "$TASK2_ID" --json >/dev/null && pass "start task" || fail "start task"
+nbenchctl start "$TASK2_ID" --json >/dev/null && pass "start task" || fail "start task"
 
 # verify task is in_progress
-TASK_STATUS="$(fluxctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
+TASK_STATUS="$(nbenchctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
 [[ "$TASK_STATUS" == "in_progress" ]] && pass "task status is in_progress" || fail "task status (got $TASK_STATUS)"
 
 # block task (requires --reason-file)
 echo "Waiting for external API" > "$TEST_DIR/block_reason.md"
-fluxctl block "$TASK2_ID" --reason-file "$TEST_DIR/block_reason.md" --json >/dev/null && pass "block task" || fail "block task"
-TASK_STATUS="$(fluxctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
+nbenchctl block "$TASK2_ID" --reason-file "$TEST_DIR/block_reason.md" --json >/dev/null && pass "block task" || fail "block task"
+TASK_STATUS="$(nbenchctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
 [[ "$TASK_STATUS" == "blocked" ]] && pass "task status is blocked" || fail "task blocked status (got $TASK_STATUS)"
 
 # Note: there's no unblock command - use --force to restart blocked tasks
-fluxctl start "$TASK2_ID" --force --json >/dev/null && pass "restart blocked task (--force)" || fail "restart blocked task"
-TASK_STATUS="$(fluxctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
+nbenchctl start "$TASK2_ID" --force --json >/dev/null && pass "restart blocked task (--force)" || fail "restart blocked task"
+TASK_STATUS="$(nbenchctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
 [[ "$TASK_STATUS" == "in_progress" ]] && pass "task status restored to in_progress" || fail "task unblocked status (got $TASK_STATUS)"
 
 # done task (create temp files for evidence)
 echo "Task completed" > "$TEST_DIR/summary.md"
 echo '{"commits":["abc123"],"tests":["npm test"],"prs":[]}' > "$TEST_DIR/evidence.json"
-fluxctl done "$TASK2_ID" --summary-file "$TEST_DIR/summary.md" --evidence-json "$TEST_DIR/evidence.json" --json >/dev/null && pass "done task" || fail "done task"
-TASK_STATUS="$(fluxctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
+nbenchctl done "$TASK2_ID" --summary-file "$TEST_DIR/summary.md" --evidence-json "$TEST_DIR/evidence.json" --json >/dev/null && pass "done task" || fail "done task"
+TASK_STATUS="$(nbenchctl show "$TASK2_ID" --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['status'])")"
 [[ "$TASK_STATUS" == "done" ]] && pass "task status is done" || fail "task done status (got $TASK_STATUS)"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -135,21 +135,21 @@ echo -e "\n${YELLOW}--- Error Handling ---${NC}"
 
 # Invalid epic ID
 set +e
-ERR_OUT="$(fluxctl show "fn-9999-xxx" --json 2>&1)"
+ERR_OUT="$(nbenchctl show "fn-9999-xxx" --json 2>&1)"
 ERR_RC=$?
 set -e
 [[ $ERR_RC -ne 0 ]] && pass "invalid epic ID returns error" || fail "invalid epic ID should fail"
 
 # Invalid task ID
 set +e
-ERR_OUT="$(fluxctl start "fn-9999-xxx.99" --json 2>&1)"
+ERR_OUT="$(nbenchctl start "fn-9999-xxx.99" --json 2>&1)"
 ERR_RC=$?
 set -e
 [[ $ERR_RC -ne 0 ]] && pass "invalid task ID returns error" || fail "invalid task ID should fail"
 
 # Double start (task already done)
 set +e
-ERR_OUT="$(fluxctl start "$TASK2_ID" --json 2>&1)"
+ERR_OUT="$(nbenchctl start "$TASK2_ID" --json 2>&1)"
 ERR_RC=$?
 set -e
 [[ $ERR_RC -ne 0 ]] && pass "start done task returns error" || fail "start done task should fail"
@@ -159,9 +159,9 @@ set -e
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}--- Config System ---${NC}"
 
-fluxctl config set memory.enabled true --json >/dev/null && pass "config set" || fail "config set"
+nbenchctl config set memory.enabled true --json >/dev/null && pass "config set" || fail "config set"
 
-CONFIG_VAL="$(fluxctl config get memory.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
+CONFIG_VAL="$(nbenchctl config get memory.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
 [[ "$CONFIG_VAL" == "True" ]] && pass "config get" || fail "config get (got $CONFIG_VAL)"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -169,12 +169,12 @@ CONFIG_VAL="$(fluxctl config get memory.enabled --json | "$PYTHON_BIN" -c "impor
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}--- Memory System ---${NC}"
 
-fluxctl memory init --json >/dev/null && pass "memory init" || fail "memory init"
+nbenchctl memory init --json >/dev/null && pass "memory init" || fail "memory init"
 
-fluxctl memory add --type pitfall "Never use sync IO in async handlers" --json >/dev/null && pass "memory add pitfall" || fail "memory add pitfall"
-fluxctl memory add --type convention "Use snake_case for functions" --json >/dev/null && pass "memory add convention" || fail "memory add convention"
+nbenchctl memory add --type pitfall "Never use sync IO in async handlers" --json >/dev/null && pass "memory add pitfall" || fail "memory add pitfall"
+nbenchctl memory add --type convention "Use snake_case for functions" --json >/dev/null && pass "memory add convention" || fail "memory add convention"
 
-MEM_LIST="$(fluxctl memory list --json)"
+MEM_LIST="$(nbenchctl memory list --json)"
 # memory list returns {counts: {pitfalls.md: N, conventions.md: M, ...}, total: X}
 MEM_TOTAL="$("$PYTHON_BIN" -c "import json,sys; d=json.load(sys.stdin); print(d.get('total', 0))" <<< "$MEM_LIST")"
 [[ "$MEM_TOTAL" -ge 2 ]] && pass "memory list ($MEM_TOTAL total)" || fail "memory list (got $MEM_TOTAL)"
@@ -268,7 +268,7 @@ EOF
 "$PYTHON_BIN" - "$TEST_DIR" << 'PYTEST'
 import sys
 sys.path.insert(0, sys.argv[1] + "/scripts")
-from fluxctl import extract_symbols_from_file
+from nbenchctl import extract_symbols_from_file
 from pathlib import Path
 
 test_dir = Path(sys.argv[1])
@@ -432,7 +432,7 @@ EOF
 
 # next should still work (not crash on artifact files)
 set +e
-NEXT_OUT="$(fluxctl next --json 2>&1)"
+NEXT_OUT="$(nbenchctl next --json 2>&1)"
 NEXT_RC=$?
 set -e
 [[ $NEXT_RC -eq 0 ]] && pass "next ignores artifact files" || fail "next with artifact files (rc=$NEXT_RC)"
@@ -443,11 +443,11 @@ set -e
 echo -e "\n${YELLOW}--- Async Control Commands ---${NC}"
 
 # Test status command
-fluxctl status >/dev/null 2>&1
+nbenchctl status >/dev/null 2>&1
 [[ $? -eq 0 ]] && pass "status command" || fail "status command"
 
 # Test status --json (Python validates JSON, not jq)
-STATUS_OUT="$(fluxctl status --json)"
+STATUS_OUT="$(nbenchctl status --json)"
 echo "$STATUS_OUT" | "$PYTHON_BIN" -c 'import json,sys; json.load(sys.stdin)' 2>/dev/null
 [[ $? -eq 0 ]] && pass "status --json" || fail "status --json invalid JSON"
 
@@ -455,51 +455,51 @@ echo "$STATUS_OUT" | "$PYTHON_BIN" -c 'import json,sys; json.load(sys.stdin)' 2>
 mkdir -p scripts/ralph/runs/test-run
 echo "iteration: 1" > scripts/ralph/runs/test-run/progress.txt
 
-fluxctl ralph pause --run test-run >/dev/null
+nbenchctl ralph pause --run test-run >/dev/null
 [[ -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph pause" || fail "ralph pause"
 
-fluxctl ralph resume --run test-run >/dev/null
+nbenchctl ralph resume --run test-run >/dev/null
 [[ ! -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph resume" || fail "ralph resume"
 
-fluxctl ralph stop --run test-run >/dev/null
+nbenchctl ralph stop --run test-run >/dev/null
 [[ -f scripts/ralph/runs/test-run/STOP ]] && pass "ralph stop" || fail "ralph stop"
 
 rm -rf scripts/ralph/runs/test-run
 
 # Test task reset
-RESET_EPIC="$(fluxctl epic create --title "Reset test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-RESET_TASK="$(fluxctl task create --epic "$RESET_EPIC" --title "Test task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_EPIC="$(nbenchctl epic create --title "Reset test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_TASK="$(nbenchctl task create --epic "$RESET_EPIC" --title "Test task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 
-fluxctl start "$RESET_TASK" --json >/dev/null
-fluxctl done "$RESET_TASK" --json >/dev/null
-fluxctl task reset "$RESET_TASK" --json >/dev/null
-RESET_STATUS="$(fluxctl show "$RESET_TASK" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+nbenchctl start "$RESET_TASK" --json >/dev/null
+nbenchctl done "$RESET_TASK" --json >/dev/null
+nbenchctl task reset "$RESET_TASK" --json >/dev/null
+RESET_STATUS="$(nbenchctl show "$RESET_TASK" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
 [[ "$RESET_STATUS" == "todo" ]] && pass "task reset" || fail "task reset: status=$RESET_STATUS"
 
 # Test task reset errors on in_progress
-fluxctl start "$RESET_TASK" --json >/dev/null
+nbenchctl start "$RESET_TASK" --json >/dev/null
 set +e
-fluxctl task reset "$RESET_TASK" --json 2>/dev/null
+nbenchctl task reset "$RESET_TASK" --json 2>/dev/null
 RESET_RC=$?
 set -e
 [[ $RESET_RC -ne 0 ]] && pass "task reset rejects in_progress" || fail "task reset should reject in_progress"
 
 # Test epic add-dep/rm-dep
-DEP_BASE="$(fluxctl epic create --title "Dep base" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-DEP_CHILD="$(fluxctl epic create --title "Dep child" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_BASE="$(nbenchctl epic create --title "Dep base" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_CHILD="$(nbenchctl epic create --title "Dep child" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 
-fluxctl epic add-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
-DEPS="$(fluxctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+nbenchctl epic add-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(nbenchctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
 [[ "$DEPS" == "$DEP_BASE" ]] && pass "epic add-dep" || fail "epic add-dep: deps=$DEPS"
 
-fluxctl epic rm-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
-DEPS="$(fluxctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+nbenchctl epic rm-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(nbenchctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
 [[ -z "$DEPS" ]] && pass "epic rm-dep" || fail "epic rm-dep: deps=$DEPS"
 
 # Test ralph auto-detection (single active run)
 mkdir -p scripts/ralph/runs/auto-test
 echo "iteration: 1" > scripts/ralph/runs/auto-test/progress.txt
-fluxctl ralph pause >/dev/null 2>&1  # Should auto-detect single run
+nbenchctl ralph pause >/dev/null 2>&1  # Should auto-detect single run
 [[ -f scripts/ralph/runs/auto-test/PAUSE ]] && pass "ralph auto-detect single run" || fail "ralph auto-detect"
 rm -rf scripts/ralph/runs/auto-test
 
@@ -508,7 +508,7 @@ mkdir -p scripts/ralph/runs/run-a scripts/ralph/runs/run-b
 echo "iteration: 1" > scripts/ralph/runs/run-a/progress.txt
 echo "iteration: 1" > scripts/ralph/runs/run-b/progress.txt
 set +e
-fluxctl ralph pause 2>/dev/null
+nbenchctl ralph pause 2>/dev/null
 MULTI_RC=$?
 set -e
 [[ $MULTI_RC -ne 0 ]] && pass "ralph rejects multiple active runs" || fail "ralph should reject multiple runs"
@@ -523,19 +523,19 @@ promise=RETRY
 completion_reason=DONE
 promise=COMPLETE
 PROGRESS
-ACTIVE_COUNT="$(fluxctl status --json | "$PYTHON_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("active_runs",[])))')"
+ACTIVE_COUNT="$(nbenchctl status --json | "$PYTHON_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("active_runs",[])))')"
 [[ "$ACTIVE_COUNT" == "0" ]] && pass "completed run excluded from active" || fail "completed run still active: count=$ACTIVE_COUNT"
 rm -rf scripts/ralph/runs/completed-test
 
 # Test task reset --cascade
-CASCADE_EPIC="$(fluxctl epic create --title "Cascade test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-CASCADE_T1="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Base task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-CASCADE_T2="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Dependent task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-fluxctl dep add "$CASCADE_T2" "$CASCADE_T1" --json >/dev/null  # T2 depends on T1
-fluxctl start "$CASCADE_T1" >/dev/null && fluxctl done "$CASCADE_T1" >/dev/null
-fluxctl start "$CASCADE_T2" >/dev/null && fluxctl done "$CASCADE_T2" >/dev/null
-fluxctl task reset "$CASCADE_T1" --cascade --json >/dev/null
-T2_STATUS="$(fluxctl show "$CASCADE_T2" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+CASCADE_EPIC="$(nbenchctl epic create --title "Cascade test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T1="$(nbenchctl task create --epic "$CASCADE_EPIC" --title "Base task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T2="$(nbenchctl task create --epic "$CASCADE_EPIC" --title "Dependent task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+nbenchctl dep add "$CASCADE_T2" "$CASCADE_T1" --json >/dev/null  # T2 depends on T1
+nbenchctl start "$CASCADE_T1" >/dev/null && nbenchctl done "$CASCADE_T1" >/dev/null
+nbenchctl start "$CASCADE_T2" >/dev/null && nbenchctl done "$CASCADE_T2" >/dev/null
+nbenchctl task reset "$CASCADE_T1" --cascade --json >/dev/null
+T2_STATUS="$(nbenchctl show "$CASCADE_T2" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
 [[ "$T2_STATUS" == "todo" ]] && pass "task reset --cascade" || fail "cascade reset: t2 status=$T2_STATUS"
 
 # ─────────────────────────────────────────────────────────────────────────────

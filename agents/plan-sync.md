@@ -13,7 +13,7 @@ You synchronize downstream task specs after implementation drift.
 **Input from prompt:**
 - `COMPLETED_TASK_ID` - task that just finished (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to fluxctl CLI
+- `FLOWCTL` - path to nbenchctl CLI
 - `DOWNSTREAM_TASK_IDS` - comma-separated list of remaining tasks
 - `DRY_RUN` - "true" or "false" (optional, defaults to false)
 - `CROSS_EPIC` - "true" or "false" (from config planSync.crossEpic, defaults to false)

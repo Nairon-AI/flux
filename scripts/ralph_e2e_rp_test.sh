@@ -160,10 +160,10 @@ git commit -m "chore: init" >/dev/null
 
 mkdir -p scripts/ralph
 cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
-cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
-cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
-chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
-FLOWCTL="scripts/ralph/fluxctl"
+cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
+cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
+chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl
+FLOWCTL="scripts/ralph/nbenchctl"
 
 python3 - <<'PY'
 from pathlib import Path
@@ -181,19 +181,19 @@ text = re.sub(r"^EPICS=.*$", "EPICS=fn-1,fn-2", text, flags=re.M)
 cfg.write_text(text)
 PY
 
-scripts/ralph/fluxctl init --json >/dev/null
+scripts/ralph/nbenchctl init --json >/dev/null
 
 # Mirror /nbench:setup - add .flux/bin/ + usage.md + CLAUDE.md
 mkdir -p .flux/bin
-cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
-cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py
-chmod +x .flux/bin/fluxctl
+cp "$PLUGIN_ROOT/scripts/nbenchctl" .flux/bin/nbenchctl
+cp "$PLUGIN_ROOT/scripts/nbenchctl.py" .flux/bin/nbenchctl.py
+chmod +x .flux/bin/nbenchctl
 cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .flux/usage.md
 cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md
 echo -e "${GREEN}✓${NC} Setup mirrored (.flux/bin/, usage.md, CLAUDE.md)"
 
-scripts/ralph/fluxctl epic create --title "Tiny lib" --json >/dev/null
-scripts/ralph/fluxctl epic create --title "Tiny follow-up" --json >/dev/null
+scripts/ralph/nbenchctl epic create --title "Tiny lib" --json >/dev/null
+scripts/ralph/nbenchctl epic create --title "Tiny follow-up" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -243,9 +243,9 @@ Edit src/index.ts and README.md only. Repo is source-only (no build step).
 - None
 EOF
 
-scripts/ralph/fluxctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
-scripts/ralph/fluxctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
-scripts/ralph/fluxctl epic set-plan-review-status fn-2 --status ship --json >/dev/null
+scripts/ralph/nbenchctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/nbenchctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/nbenchctl epic set-plan-review-status fn-2 --status ship --json >/dev/null
 
 cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] Export `add(a: number, b: number): number` from `src/index.ts`
@@ -255,8 +255,8 @@ cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] `npm test` passes (smoke only)
 EOF
 
-scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
-scripts/ralph/fluxctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/nbenchctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/nbenchctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"
@@ -358,12 +358,12 @@ if [[ "${FLOW_RALPH_VERBOSE:-}" == "1" ]]; then
   log_file="scripts/ralph/runs/$run_dir/ralph.log"
   [[ -f "$log_file" ]] || fail "missing verbose log $log_file"
   if command -v rg >/dev/null 2>&1; then
-    rg -q "fluxctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
-    rg -q "fluxctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
+    rg -q "nbenchctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
+    rg -q "nbenchctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
     rg -q "REVIEW_RECEIPT_WRITTEN" "$log_file" || fail "missing receipt marker in ralph.log"
   else
-    grep -q "fluxctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
-    grep -q "fluxctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
+    grep -q "nbenchctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
+    grep -q "nbenchctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
     grep -q "REVIEW_RECEIPT_WRITTEN" "$log_file" || fail "missing receipt marker in ralph.log"
   fi
 fi

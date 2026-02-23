@@ -12,10 +12,10 @@ Store this as `PLUGIN_ROOT` for use in later steps.
 
 ## Step 1: Initialize .flux/
 
-Use fluxctl init (idempotent - safe to re-run, handles upgrades):
+Use nbenchctl init (idempotent - safe to re-run, handles upgrades):
 
 ```bash
-"${PLUGIN_ROOT}/scripts/fluxctl" init --json
+"${PLUGIN_ROOT}/scripts/nbenchctl" init --json
 ```
 
 This creates/upgrades:
@@ -45,14 +45,14 @@ mkdir -p .flux/bin
 
 ## Step 4: Copy files
 
-**IMPORTANT: Do NOT read fluxctl.py - it's too large. Just copy it.**
+**IMPORTANT: Do NOT read nbenchctl.py - it's too large. Just copy it.**
 
 Copy using Bash `cp` with absolute paths:
 
 ```bash
-cp "${PLUGIN_ROOT}/scripts/fluxctl" .flux/bin/fluxctl
-cp "${PLUGIN_ROOT}/scripts/fluxctl.py" .flux/bin/fluxctl.py
-chmod +x .flux/bin/fluxctl
+cp "${PLUGIN_ROOT}/scripts/nbenchctl" .flux/bin/nbenchctl
+cp "${PLUGIN_ROOT}/scripts/nbenchctl.py" .flux/bin/nbenchctl.py
+chmod +x .flux/bin/nbenchctl
 ```
 
 Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
@@ -98,12 +98,12 @@ HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 
 # Read current config values if they exist
-CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/fluxctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_SCOUT_MODEL=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_SCOUT_MODEL=$("${PLUGIN_ROOT}/scripts/nbenchctl" config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
 ```
 
 Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
@@ -128,12 +128,12 @@ If ANY config values are already set, print a notice before asking questions:
 
 ```
 Current configuration:
-- Memory: <enabled|disabled> (change with: fluxctl config set memory.enabled <true|false>)
-- Plan-Sync: <enabled|disabled> (change with: fluxctl config set planSync.enabled <true|false>)
-- Plan-Sync cross-epic: <enabled|disabled> (change with: fluxctl config set planSync.crossEpic <true|false>)
-- Review backend: <codex|rp|none> (change with: fluxctl config set review.backend <codex|rp|none>)
-- GitHub scout: <enabled|disabled> (change with: fluxctl config set scouts.github <true|false>)
-- Scout model: <model-name> (change with: fluxctl config set scouts.model <model-name>)
+- Memory: <enabled|disabled> (change with: nbenchctl config set memory.enabled <true|false>)
+- Plan-Sync: <enabled|disabled> (change with: nbenchctl config set planSync.enabled <true|false>)
+- Plan-Sync cross-epic: <enabled|disabled> (change with: nbenchctl config set planSync.crossEpic <true|false>)
+- Review backend: <codex|rp|none> (change with: nbenchctl config set review.backend <codex|rp|none>)
+- GitHub scout: <enabled|disabled> (change with: nbenchctl config set scouts.github <true|false>)
+- Scout model: <model-name> (change with: nbenchctl config set scouts.model <model-name>)
 ```
 
 Only include lines for config values that are set. If no config is set, skip this notice.
@@ -151,7 +151,7 @@ Available questions (include only if corresponding config is unset):
   "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
   "options": [
     {"label": "Yes (Recommended)", "description": "Auto-capture pitfalls and conventions from review feedback"},
-    {"label": "No", "description": "Disable with: fluxctl config set memory.enabled false"}
+    {"label": "No", "description": "Disable with: nbenchctl config set memory.enabled false"}
   ],
   "multiSelect": false
 }
@@ -164,7 +164,7 @@ Available questions (include only if corresponding config is unset):
   "question": "Enable plan-sync? (Updates downstream task specs after implementation drift)",
   "options": [
     {"label": "Yes (Recommended)", "description": "Sync task specs when implementation differs from original plan"},
-    {"label": "No", "description": "Disable with: fluxctl config set planSync.enabled false"}
+    {"label": "No", "description": "Disable with: nbenchctl config set planSync.enabled false"}
   ],
   "multiSelect": false
 }
@@ -262,24 +262,24 @@ Use `AskUserQuestion` with the built questions array.
 Only process answers for questions that were asked (config values that were unset). Skip processing for config that was already set.
 
 **Memory** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled false --json`
+- If "Yes": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set memory.enabled true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set memory.enabled false --json`
 
 **Plan-Sync** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.enabled true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.enabled false --json`
+- If "Yes": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set planSync.enabled true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set planSync.enabled false --json`
 
 **Plan-Sync cross-epic** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.crossEpic true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.crossEpic false --json`
+- If "Yes": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set planSync.crossEpic true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set planSync.crossEpic false --json`
 
 **GitHub Scout** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github false --json`
+- If "Yes": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set scouts.github true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set scouts.github false --json`
 
 **Scout Model** (if question was asked):
-- If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
-- If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
+- If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set scouts.model "claude-haiku-4-5" --json`
+- If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/nbenchctl" config set scouts.model "gpt-5.3-codex-spark" --json`
 
 **Review** (if question was asked):
 Map user's answer to config value and persist:
@@ -292,7 +292,7 @@ case "$review_answer" in
   *) REVIEW_BACKEND="none" ;;
 esac
 
-"${PLUGIN_ROOT}/scripts/fluxctl" config set review.backend "$REVIEW_BACKEND" --json
+"${PLUGIN_ROOT}/scripts/nbenchctl" config set review.backend "$REVIEW_BACKEND" --json
 ```
 
 **Docs:**
@@ -313,15 +313,15 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 Flux setup complete!
 
 Installed:
-- .flux/bin/fluxctl (v<VERSION>)
-- .flux/bin/fluxctl.py
+- .flux/bin/nbenchctl (v<VERSION>)
+- .flux/bin/nbenchctl.py
 - .flux/usage.md
 
 To use from command line:
   export PATH=".flux/bin:$PATH"
-  fluxctl --help
+  nbenchctl --help
 
-Configuration (use fluxctl config set to change):
+Configuration (use nbenchctl config set to change):
 - Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
