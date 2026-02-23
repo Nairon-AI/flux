@@ -20,8 +20,32 @@ fi
 
 # Check if jq is available
 if ! command -v jq &> /dev/null; then
-    echo "Error: jq is required for MCP installation"
-    echo "Install with: brew install jq (macOS) or apt install jq (Linux)"
+    echo "Error: jq not found"
+    echo ""
+    echo "jq is required to manage MCP configurations."
+    echo ""
+    echo "Install:"
+    case "$(uname -s)" in
+        Darwin*)
+            echo "  brew install jq"
+            ;;
+        Linux*)
+            if command -v apt &> /dev/null; then
+                echo "  sudo apt install jq"
+            elif command -v dnf &> /dev/null; then
+                echo "  sudo dnf install jq"
+            elif command -v pacman &> /dev/null; then
+                echo "  sudo pacman -S jq"
+            else
+                echo "  # Use your package manager to install jq"
+            fi
+            ;;
+        *)
+            echo "  # See https://jqlang.github.io/jq/download/"
+            ;;
+    esac
+    echo ""
+    echo "Then re-run /nbench:improve"
     exit 1
 fi
 

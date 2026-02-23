@@ -220,13 +220,29 @@ Frustrations detected:
     Example: "<sample context>"
 ```
 
-**Always show friction signals (name + count):**
+**Always show friction signals with descriptions (name + count + what it means):**
 ```
   Friction Signals:
-  • api_hallucination: <count>
-  • lint_errors: <count>
-  • context_forgotten: <count>
+  • api_hallucination: <count> (model used APIs that don't exist)
+  • lint_errors: <count> (lint/format errors recurring)
+  • context_forgotten: <count> (model forgot previously stated context)
+  • shallow_answers: <count> (insufficient depth in responses)
+  • css_issues: <count> (styling/CSS issues)
 ```
+
+Use these labels for each signal:
+- `api_hallucination` → "model used APIs that don't exist"
+- `outdated_docs` → "documentation/version mismatch"
+- `search_needed` → "research or lookup needed"
+- `context_forgotten` → "model forgot previously stated context"
+- `re_explaining` → "user had to repeat requirements"
+- `css_issues` → "styling/CSS issues"
+- `ui_issues` → "UI quality/layout issues"
+- `lint_errors` → "lint/format errors recurring"
+- `ci_failures` → "CI/pipeline failures"
+- `shallow_answers` → "insufficient depth in responses"
+- `edge_case_misses` → "edge cases were missed"
+- `regressions` → "bugs reappeared"
 
 **If no issues found:**
 ```
@@ -263,15 +279,41 @@ Context now contains:
 
 ## Step 6: Fetch Recommendations
 
-Fetch all recommendation files from the database:
+Fetch all recommendation files from the database with offline graceful handling:
 
 ```bash
 # Clone/update recommendations repo (shallow)
 RECS_DIR="${HOME}/.nbench/recommendations"
+OFFLINE_MODE=false
+
 if [ -d "$RECS_DIR/.git" ]; then
-  git -C "$RECS_DIR" pull --ff-only 2>/dev/null
+  # Try to update, but don't fail if offline
+  if ! git -C "$RECS_DIR" pull --ff-only 2>/dev/null; then
+    echo "Note: Could not update recommendations (offline?). Using cached version."
+    OFFLINE_MODE=true
+  fi
 else
-  git clone --depth 1 https://github.com/Nairon-AI/n-bench-recommendations.git "$RECS_DIR" 2>/dev/null
+  # Try to clone
+  if ! git clone --depth 1 https://github.com/Nairon-AI/n-bench-recommendations.git "$RECS_DIR" 2>/dev/null; then
+    # Check if we have a cached version from a previous install
+    if [ -d "$RECS_DIR" ] && [ "$(find "$RECS_DIR" -name "*.yaml" 2>/dev/null | wc -l)" -gt 0 ]; then
+      echo "Note: Could not fetch recommendations (offline?). Using cached version."
+      OFFLINE_MODE=true
+    else
+      echo "Error: Cannot fetch recommendations and no cache exists."
+      echo ""
+      echo "Please connect to the internet and try again, or manually clone:"
+      echo "  git clone https://github.com/Nairon-AI/n-bench-recommendations.git ~/.nbench/recommendations"
+      exit 1
+    fi
+  fi
+fi
+
+# Show offline warning if applicable
+if [ "$OFFLINE_MODE" = "true" ]; then
+  CACHE_DATE=$(stat -f "%Sm" -t "%Y-%m-%d" "$RECS_DIR" 2>/dev/null || stat -c "%y" "$RECS_DIR" 2>/dev/null | cut -d' ' -f1)
+  echo "Using cached recommendations from: $CACHE_DATE"
+  echo ""
 fi
 
 # List all recommendation files

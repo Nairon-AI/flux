@@ -11,21 +11,36 @@
 
 ---
 
+## At a Glance
+
+| | |
+|---|---|
+| **What** | AI collaboration quality benchmark + workflow optimizer |
+| **Who** | Engineers using Claude Code, OpenCode, Cursor, or any AI coding assistant |
+| **When** | You're productive with AI but know you could be better |
+| **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
+| **Not** | A linter, a code review tool, or another AI wrapper |
+
+> *"Are you actually good at working with AI, or are you just typing 'implement this' and hoping for the best?"*
+
+---
+
 ## The Problem
 
-You're using Claude Code, but something's off:
+You're using Claude Code (or Cursor, or Copilot), but something's off:
 
-- There's no structure to your development process
-- You keep re-explaining the same context
-- The agent tries the same broken approach 5 times
-- You discover a tool that would've saved hours—after the fact
-- Requirements drift mid-session - you don't notice
+- **No structure** → You jump straight into code and watch the agent go off the rails
+- **Context amnesia** → You keep re-explaining the same thing every session
+- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
+- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
+- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
+- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
 
 These aren't model failures. They're **process failures**.
 
-Not to mention best practices and new tools are released weekly on X, and you can't keep up.
+Not to mention: best practices and new tools are released weekly on X, and you can't keep up.
 
-All you want is to be as productive as possible without going homeless and finally get a good night's rest.
+All you want is to be as productive as possible, ship quality code, and finally get a good night's rest.
 
 <p align="center">
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
@@ -43,7 +58,7 @@ N-bench gives you a **structured workflow** based on how software is actually bu
 
 <!-- TODO: Add video showing full interview → plan → work → review cycle -->
 <details>
-<summary>📹 Video: The N-bench workflow</summary>
+<summary>Video: The N-bench workflow</summary>
 <p><em>Coming soon</em></p>
 </details>
 
@@ -72,7 +87,7 @@ You should not be manually updating Documentation. Delegate to Agents. Always.
 
 <!-- TODO: Add video showing /nbench:improve detecting friction and recommending tools -->
 <details>
-<summary>📹 Video: Friction detection and recommendations</summary>
+<summary>Video: Friction detection and recommendations</summary>
 <p><em>Coming soon</em></p>
 </details>
 
@@ -90,43 +105,120 @@ Reads your session history, detects frustration patterns, checks what you alread
 
 ---
 
-## Example Output
+## The Recommendations Database
+
+N-bench doesn't just tell you what's wrong—it tells you exactly how to fix it.
+
+### What's In It?
+
+A curated database of **battle-tested solutions** mapped to specific friction patterns:
+
+| Category | Examples |
+|----------|----------|
+| **Skills** | Workflow templates, prompt libraries, phase-specific guidance |
+| **MCP Servers** | Context7 (live docs), Nia (repo research), Linear (project mgmt), Exa (web search) |
+| **Plugins** | AI-specific extensions for VS Code, Cursor, Neovim |
+| **Workflows** | Structured approaches like "clarify-first", "test-driven-prompting" |
+| **Configurations** | Agent settings, context limits, memory management |
+
+### How Matching Works
 
 ```
-Step 1/4: Environment Detection
+Your Session                    Recommendations DB
+─────────────                   ──────────────────
 
-  Repo: my-app (javascript, next, typescript)
-  MCPs: 2 installed (playwright, github)
-  CLI: jq, fzf, eslint
-  Hooks: none    Linter: yes
+┌─────────────────┐            ┌─────────────────────────────────┐
+│ shallow_prompts │───────────►│ prompt-templates skill          │
+│ (3 occurrences) │            │ context-builder workflow        │
+└─────────────────┘            └─────────────────────────────────┘
 
-Step 2/4: Session Analysis (12 sessions, 847 messages)
+┌─────────────────┐            ┌─────────────────────────────────┐
+│ no_docs_lookup  │───────────►│ Context7 MCP (version-aware docs)│
+│ (2 occurrences) │            │ Nia MCP (repo indexing)         │
+└─────────────────┘            └─────────────────────────────────┘
 
-  Friction detected:
-    api_hallucination: 5 (model used APIs that don't exist)
-    lint_errors: 3 (caught in CI, not locally)
-    context_forgotten: 4 (re-explained same thing)
-
-Step 3/4: Recommendations
-
-  Based on your friction:
-
-  1. [MCP] context7 (free)
-     Up-to-date library docs directly from source
-     → Addresses: api_hallucination (5 errors)
-
-  2. [CLI] lefthook (free)
-     Git hooks manager - catch errors before CI
-     → Addresses: lint_errors (3 CI failures)
-
-  3. [MCP] supermemory (free)
-     Persistent memory across sessions
-     → Addresses: context_forgotten (4 re-explanations)
-
-Step 4/4: Install
-
-  Select: [1,2,3] or 'all' or 'skip'
+┌─────────────────┐            ┌─────────────────────────────────┐
+│ blind_acceptance│───────────►│ devil-advocate skill            │
+│ (5 occurrences) │            │ verification-checkpoint workflow│
+└─────────────────┘            └─────────────────────────────────┘
 ```
+
+### What You Actually See
+
+When your agent analyzes your workflow (via `/nbench:improve`), you get something like:
+
+```
+Analyzing 12 sessions from the last 7 days...
+
+Friction Patterns Detected:
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  shallow_prompts (8 occurrences)
+     Prompts lack sufficient context for quality responses.
+     You're making the AI guess instead of telling it what you need.
+
+  no_docs_lookup (5 occurrences)
+     Not consulting documentation before or during implementation.
+     Relying on potentially outdated training data.
+
+  single_attempt (4 occurrences)
+     Accepting first AI response without iteration.
+     First drafts are rarely best drafts—even from AI.
+
+Recommended Improvements:
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Context7 MCP Server
+     ├─ Fetches live, version-specific documentation
+     ├─ Eliminates "AI hallucinated that API" problems
+     └─ Addresses: no_docs_lookup, outdated_context
+
+  2. prompt-templates skill
+     ├─ Pre-built templates for common tasks
+     ├─ Forces context, constraints, and examples
+     └─ Addresses: shallow_prompts, missing_context
+
+  3. clarify-first workflow
+     ├─ Mandatory clarification phase before implementation
+     ├─ Catches requirements gaps early
+     └─ Addresses: no_clarification, shallow_prompts
+
+Would you like me to install any of these?
+```
+
+The agent handles everything. You just say "yes" and it configures your environment.
+
+### The Database is Community-Driven
+
+We don't invent solutions—we curate what actually works:
+
+- **Sourced from top performers**: What do engineers with high scores actually use?
+- **Validated by data**: Recommendations are tracked. If installing X doesn't reduce friction Y, it gets demoted.
+- **Always growing**: New MCPs, skills, and workflows added as the ecosystem evolves.
+
+---
+
+## The Vision
+
+### For Individual Engineers
+
+Get better at AI collaboration through data, not vibes.
+
+> "Your sessions are 40% shallower than top performers. They disagree with AI suggestions 3x more often and spend 2x longer in the clarification phase. Here's what to install to close the gap."
+
+### For Teams
+
+Apples-to-apples comparison across engineers:
+- Who's actually leveraging AI effectively
+- Where the team needs skill development
+- Which workflows produce the highest quality output
+
+### For Engineering Leaders
+
+CTO-level observability:
+- Team benchmarks and improvement trends
+- Quality-of-thinking metrics (not just velocity)
+- Recruiting signals: "This candidate demonstrates sophisticated AI collaboration patterns"
 
 ---
 
@@ -178,7 +270,7 @@ N-bench checks for these during execution and tells you what's missing.
 
 <!-- TODO: Add video showing installation process -->
 <details>
-<summary>📹 Video: Installing N-bench</summary>
+<summary>Video: Installing N-bench</summary>
 <p><em>Coming soon</em></p>
 </details>
 
@@ -218,7 +310,7 @@ After installing, initialize N-bench in your project:
 /nbench:setup
 ```
 
-This creates `.nbench/` in your project, sets up task tracking, and bootstraps `claudeception` into `~/.claude/skills/claudeception` if missing. Run once per project.
+This creates `.nbench/` in your project, sets up task tracking, and bootstraps required skills. Run once per project.
 
 Then run:
 
@@ -234,51 +326,42 @@ Note: first run may take a few seconds while N-bench clones the recommendations 
 - Linux: supported
 - Windows: use WSL (best-effort)
 
-N-bench is local-first. It also provides optional discovery mode (`--discover`) for live external search.
-
-### Dependency Setup
-
-N-bench checks for required tools during execution and tells you what to install when something is missing.
-You can start with `/nbench:setup` and `/nbench:improve` directly.
-
 ---
 
 ## Quick Start
 
 <!-- TODO: Add video showing complete setup to first feature flow -->
 <details>
-<summary>📹 Video: From zero to first feature</summary>
+<summary>Video: From zero to first feature</summary>
 <p><em>Coming soon</em></p>
 </details>
-
-Here's how to use N-bench from install to daily usage:
 
 ### 1. Install & Setup (once)
 
 ```bash
 /plugin install n-bench@nairon-n-bench   # Install plugin
-/nbench:setup                         # Initialize in your project
+/nbench:setup                            # Initialize in your project
 ```
 
 ### 2. Start a Feature
 
 ```bash
 /nbench:interview Add user notifications   # Optional: flesh out requirements
-/nbench:plan Add user notifications         # Break into tasks
+/nbench:plan Add user notifications        # Break into tasks
 ```
 
 ### 3. Build It
 
 ```bash
-/nbench:work fn-1.1                         # Execute first task
-/nbench:work fn-1.2                         # Next task (auto-reloads context)
+/nbench:work fn-1.1                        # Execute first task
+/nbench:work fn-1.2                        # Next task (auto-reloads context)
 # ... continue until done
 ```
 
 ### 4. Find Better Tools (anytime)
 
 ```bash
-/nbench:improve                             # Analyze sessions, get recommendations
+/nbench:improve                            # Analyze sessions, get recommendations
 ```
 
 ---
@@ -287,19 +370,18 @@ Here's how to use N-bench from install to daily usage:
 
 | Command | What it does |
 |---------|--------------|
-| `/nbench:setup` | Optional local install of `nbenchctl` and project docs |
-| `/nbench:improve` | Analyze sessions, detect friction, and recommend improvements |
+| `/nbench:setup` | Initialize N-bench in your project |
+| `/nbench:improve` | Analyze sessions, detect friction, recommend improvements |
 | `/nbench:score` | Compute AI-native capability score from session data |
 | `/nbench:profile` | Export/share/import SDLC profile snapshots |
-| `/nbench:plan <idea|epic>` | Build structured execution plan |
-| `/nbench:work <task|epic>` | Execute tasks with context reload + checks |
-| `/nbench:interview <id|file>` | Quick (default) or deep (`--deep`) requirements interview |
+| `/nbench:plan <idea>` | Build structured execution plan |
+| `/nbench:work <task>` | Execute tasks with context reload + checks |
+| `/nbench:interview <id>` | Quick (default) or deep (`--deep`) requirements interview |
 | `/nbench:prime` | Agent readiness assessment + guided fixes |
 | `/nbench:sync <id>` | Sync downstream task specs after drift |
 | `/nbench:plan-review <epic>` | Carmack-level plan quality review |
 | `/nbench:impl-review` | Carmack-level implementation review |
 | `/nbench:epic-review <epic>` | Verify epic completion against spec |
-| `/nbench:ralph-init` | Scaffold Ralph autonomous harness |
 | `/nbench:uninstall` | Remove N-bench files from project |
 
 For full options and examples, see `docs/commands-reference.md`.
@@ -328,8 +410,6 @@ Each task has clear scope, dependencies, and acceptance criteria. `/nbench:work`
 
 Preferences saved to `.nbench/preferences.json`.
 
-Profile curation state saved to `~/.nbench/profile-state.json`.
-
 ---
 
 ## FAQ
@@ -348,8 +428,6 @@ By default, analysis runs locally. Network access is used to fetch the recommend
 
 If you run `/nbench:improve --discover`, N-bench also sends search queries to Exa/Twitter APIs (using your keys) to find optional community discoveries.
 
-If you run `/nbench:profile`, N-bench can publish a public-anonymous immutable profile snapshot link. Secrets are auto-redacted before publish.
-
 **How does session analysis work?**
 
 N-bench reads your Claude Code JSONL session files and looks for friction patterns:
@@ -360,8 +438,6 @@ N-bench reads your Claude Code JSONL session files and looks for friction patter
 - Agent confusion (apologies, retries)
 
 You're asked for consent before any session files are read.
-
----
 
 ### Recommendations
 
@@ -376,86 +452,25 @@ Matching logic:
 - `ci_failures` → lefthook (pre-commit hooks)
 - Context forgotten → supermemory
 
-**Why am I getting no recommendations?**
-
-Either you have no friction (great!) or:
-- Session analysis was skipped
-- You've dismissed all relevant tools
-- Your setup already covers the gaps
-
-Run `/nbench:improve --detect` to see what N-bench found.
-
-**Can I see why a specific tool was recommended?**
-
-Yes — each recommendation shows the friction signal that triggered it. Example:
-```
-context7 (MCP)
-→ You had 5 api_hallucination errors - context7 provides current docs
-```
-
 **Where do recommendations come from?**
 
-A curated database at [Nairon-AI/n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations). Currently 30+ tools across MCPs, CLI tools, apps, and workflow patterns.
-
-**How do I suggest a tool?**
-
-Open an issue on the [recommendations repo](https://github.com/Nairon-AI/n-bench-recommendations/issues).
+A curated database at [Nairon-AI/n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations). Currently 30+ tools across MCPs, CLI tools, skills, and workflow patterns.
 
 ---
 
-### Profiles
+## Philosophy
 
-**What is `/nbench:profile` for?**
+We believe:
 
-It exports your SDLC setup (MCPs, CLI tools, skills, apps, patterns, model prefs) into an immutable share link teammates can import.
+1. **AI amplifies your skill level, it doesn't replace it.** A mediocre engineer with AI is still mediocre. A great engineer with AI is unstoppable.
 
-**How are skills handled?**
+2. **Disagreement is a feature, not a bug.** The best AI collaborators push back constantly. They treat AI as a smart-but-fallible colleague, not an oracle.
 
-Each export asks for scope: global, project, or both. When using both, skills are de-duped by `name + content hash`.
+3. **Process beats raw talent.** A structured approach to AI collaboration will outperform "vibes-based" prompting every time.
 
-**How are applications handled over time?**
+4. **What gets measured gets improved.** You can't get better at AI collaboration if you can't see what you're doing wrong.
 
-N-bench remembers saved apps. Future exports primarily surface newly detected apps, with an option to re-include previously saved-but-missing apps.
-
-**How does import safety work?**
-
-- Per-item confirmation before install
-- Already installed items skipped by default
-- Cross-OS incompatible items filtered into an unsupported list
-- Manual-only items kept as instructions (not blindly auto-installed)
-
-**Can immutable links be removed?**
-
-They can be tombstoned by owner action, which preserves the link but hides profile contents.
-
----
-
-## Vision: Engineering Observability
-
-Today, N-bench helps individual engineers work more effectively. Tomorrow, it becomes observability for your entire engineering organization.
-
-**What's coming:**
-
-- **Team Dashboard** — See where every engineer is in the SDLC at any moment. Interview, planning, implementing, reviewing—all visible.
-- **Cycle Time Analytics** — Track how long features take from idea to shipped. Identify bottlenecks before they become problems.
-- **Token Usage Monitoring** — Understand AI costs across your engineering department.
-- **Org-Wide Recommendations** — When one engineer discovers a tool that works, roll it out to everyone. No more knowledge silos.
-- **Shared SDLC Evolution** — As the community discovers better workflows, everyone evolves together.
-
-The goal: **every engineer as effective as your best engineer**. No bottlenecks. No one left behind.
-
-N-bench will grow with the industry. The SDLC framework evolves as we collectively learn better ways to build software with AI.
-
-*Interested in early access for your team? [Get in touch](https://github.com/Nairon-AI/n-bench/issues).*
-
----
-
-## Docs
-
-- `docs/commands-reference.md` - full command reference
-- `docs/architecture.md` - command -> skill -> script architecture
-- `docs/recommendation-format.md` - recommendation YAML format guide
-- `docs/troubleshooting.md` - common issues and fixes
+5. **The agent should do the work.** Analysis, recommendations, installation—your AI handles it. You just make decisions.
 
 ---
 
@@ -463,12 +478,35 @@ N-bench will grow with the industry. The SDLC framework evolves as we collective
 
 Join the most AI-native developer community. No hype. No AI slop. Just practical discussions on becoming the strongest developers alive.
 
-AI-slop pull requests are automatically triaged and closed.
-
 [discord.gg/CEQMd6fmXk](https://discord.gg/CEQMd6fmXk)
+
+---
+
+## Docs
+
+- `docs/commands-reference.md` - full command reference
+- `docs/architecture.md` - command → skill → script architecture
+- `docs/recommendation-format.md` - recommendation YAML format guide
+- `docs/troubleshooting.md` - common issues and fixes
+
+---
+
+## Contributing
+
+Contributions welcome! We're building the standard for AI-native development.
+
+- **Friction patterns**: What bad collaboration habits have you seen?
+- **Recommendations**: What tools/skills/MCPs actually improve quality?
+- **Integrations**: Help N-bench work with more AI assistants
 
 ---
 
 ## License
 
 MIT
+
+---
+
+<p align="center">
+  <em>Stop hoping AI makes you better. Start measuring it.</em>
+</p>
