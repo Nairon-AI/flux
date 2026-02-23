@@ -21,7 +21,7 @@
 | **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
 | **Not** | A linter, a code review tool, or another AI wrapper |
 
-> *"Are you actually good at working with AI, or are you just typing 'implement this' and hoping for the best?"*
+> *"Are you actually good at working with AI, or are you just typing 'implement X, make no mistakes' and hoping for the best?"*
 
 ### Platform Compatibility
 
