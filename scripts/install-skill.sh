@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - Skill Installer
+# Flux Improve - Skill Installer
 # Installs skills to ~/.claude/skills/ or project .claude/skills/
 
 set -e
@@ -14,7 +14,7 @@ if [ -z "$NAME" ]; then
     exit 1
 fi
 
-BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 # Determine install location

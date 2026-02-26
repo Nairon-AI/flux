@@ -1,13 +1,13 @@
 <div align="center">
 
-# N-bench
+# Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.0.0-green)](https://github.com/Nairon-AI/n-bench/releases)
+[![Version](https://img.shields.io/badge/version-v1.0.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**Your AI workflow has gaps. N-bench finds them.**
+**Your AI workflow has gaps. Flux finds them.**
 
 </div>
 
@@ -29,10 +29,10 @@
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin marketplace add Nairon-AI/n-bench` |
-| [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/n-bench` |
-| [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh nbench` |
-| [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [n-bench-opencode](https://github.com/Nairon-AI/n-bench-opencode) |
+| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin marketplace add Nairon-AI/flux` |
+| [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
+| [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
+| [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
 
 ---
 
@@ -55,17 +55,17 @@ You're using Claude Code, but something's off:
 
 These aren't model failures. They're **process failures**.
 
-**This is where N-bench comes in.**
+**This is where Flux comes in.**
 
 ---
 
-## What N-bench Does
+## What Flux Does
 
-N-bench is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
+Flux is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
-**N-bench gives you three things:**
+**Flux gives you three things:**
 
 1. **A structured workflow** — Interview → Plan → Build → Review
 2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
@@ -84,41 +84,41 @@ The insight: in the age of agentic development, **you still need a framework**�
 ### Install
 
 ```bash
-/plugin marketplace add Nairon-AI/n-bench
-/plugin install n-bench@nairon-n-bench
+/plugin marketplace add Nairon-AI/flux
+/plugin install flux@nairon-flux
 ```
 
 **Then initialize:**
 ```bash
-/nbench:setup
+/flux:setup
 ```
 
 ### Build a Feature
 
 ```bash
 # 1. Interview — Get requirements clear (~5 min)
-/nbench:interview Add user notifications
+/flux:interview Add user notifications
 
 # 2. Plan — Break into atomic tasks (30-90 min each)
-/nbench:plan Add user notifications
+/flux:plan Add user notifications
 
 # 3. Build — Execute tasks one by one
-/nbench:work fn-1.1
-/nbench:work fn-1.2
+/flux:work fn-1.1
+/flux:work fn-1.2
 
 # 4. Review — Catch issues before they compound
-/nbench:impl-review
-/nbench:epic-review fn-1
+/flux:impl-review
+/flux:epic-review fn-1
 ```
 
 ### Find Better Tools
 
 ```bash
 # Analyze your sessions, get personalized recommendations
-/nbench:improve
+/flux:improve
 
 # Include community discoveries
-/nbench:improve --discover
+/flux:improve --discover
 ```
 
 That's it. Interview → Plan → Build → Review → Improve. Repeat.
@@ -127,9 +127,9 @@ That's it. Interview → Plan → Build → Review → Improve. Repeat.
 
 ---
 
-## How `/nbench:improve` Works
+## How `/flux:improve` Works
 
-N-bench analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help.
+Flux analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help.
 
 ### What It Detects
 
@@ -152,7 +152,7 @@ A curated database of **battle-tested solutions** mapped to your specific fricti
 | **CLI Tools** | Lefthook (git hooks), Beads (task tracking) |
 | **Workflows** | Clarify-first, test-driven-prompting |
 
-Browse or contribute: **[n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations)**
+Browse or contribute: **[flux-recommendations](https://github.com/Nairon-AI/flux-recommendations)**
 
 ### Example Output
 
@@ -212,16 +212,16 @@ CTO-level observability:
 
 | Command | What it does |
 |---------|--------------|
-| `/nbench:setup` | Initialize N-bench in your project |
-| `/nbench:interview <idea>` | Requirements interview (use `--deep` for complex features) |
-| `/nbench:plan <idea>` | Break into atomic tasks |
-| `/nbench:work <task>` | Execute task with context reload |
-| `/nbench:sync <epic>` | Sync specs after drift |
-| `/nbench:impl-review` | Implementation review |
-| `/nbench:epic-review <epic>` | Verify epic completion |
-| `/nbench:improve` | Analyze sessions, recommend tools |
-| `/nbench:score` | Compute AI-native capability score |
-| `/nbench:profile` | Export/share SDLC profile |
+| `/flux:setup` | Initialize Flux in your project |
+| `/flux:interview <idea>` | Requirements interview (use `--deep` for complex features) |
+| `/flux:plan <idea>` | Break into atomic tasks |
+| `/flux:work <task>` | Execute task with context reload |
+| `/flux:sync <epic>` | Sync specs after drift |
+| `/flux:impl-review` | Implementation review |
+| `/flux:epic-review <epic>` | Verify epic completion |
+| `/flux:improve` | Analyze sessions, recommend tools |
+| `/flux:score` | Compute AI-native capability score |
+| `/flux:profile` | Export/share SDLC profile |
 
 Full reference: `docs/commands-reference.md`
 
@@ -235,13 +235,13 @@ Full reference: `docs/commands-reference.md`
 | jq | `brew install jq` / `apt install jq` |
 | git | Usually pre-installed |
 
-N-bench checks for these during execution and tells you what's missing.
+Flux checks for these during execution and tells you what's missing.
 
 ---
 
 ## FAQ
 
-**What data does N-bench read?**
+**What data does Flux read?**
 - Repo structure (package.json, configs)
 - Installed MCPs from `~/.mcp.json`
 - Optionally: Claude Code session files (with consent)
@@ -250,7 +250,7 @@ N-bench checks for these during execution and tells you what's missing.
 Analysis runs locally. Network only used to fetch recommendations repo.
 
 **Where do recommendations come from?**
-[Nairon-AI/n-bench-recommendations](https://github.com/Nairon-AI/n-bench-recommendations) — 30+ curated tools, community-driven.
+[Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) — 30+ curated tools, community-driven.
 
 ---
 
@@ -279,7 +279,7 @@ No hype. No AI slop. Just practical discussions on becoming the strongest develo
 ## Docs
 
 - `docs/commands-reference.md` — Full command reference
-- `docs/architecture.md` — How N-bench works internally
+- `docs/architecture.md` — How Flux works internally
 - `docs/troubleshooting.md` — Common issues and fixes
 
 ---

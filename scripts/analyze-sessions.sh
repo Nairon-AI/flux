@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - Session Analysis Script
+# Flux Improve - Session Analysis Script
 # Analyzes recent Claude Code sessions for pain points and patterns
 # Delegates to parse-sessions.py for full analysis
 

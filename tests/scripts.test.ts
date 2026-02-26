@@ -1,5 +1,5 @@
 /**
- * N-bench Scripts E2E Tests
+ * Flux Scripts E2E Tests
  * 
  * Fast tests that don't require Claude Code.
  * Run: bun test tests/scripts.test.ts
@@ -55,7 +55,7 @@ async function runScriptWithEnv(
   }
 }
 
-describe('N-bench Scripts', () => {
+describe('Flux Scripts', () => {
   
   beforeAll(() => {
     expect(existsSync(FLUX_ROOT)).toBe(true)
@@ -252,16 +252,16 @@ describe('N-bench Scripts', () => {
   })
 })
 
-describe('N-benchctl CLI', () => {
-  const nbenchctl = join(FLUX_ROOT, 'scripts', 'nbenchctl')
+describe('Fluxctl CLI', () => {
+  const fluxctl = join(FLUX_ROOT, 'scripts', 'fluxctl')
   
   test('--help shows usage', async () => {
-    const result = await $`${nbenchctl} --help`.text().catch(e => e.stdout?.toString() || e.message)
+    const result = await $`${fluxctl} --help`.text().catch(e => e.stdout?.toString() || e.message)
     expect(result.toLowerCase()).toMatch(/usage|help|flux|command/i)
   }, SCRIPT_TIMEOUT)
 
-  test('list handles missing .nbench gracefully', async () => {
-    const result = await $`${nbenchctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
+  test('list handles missing .flux gracefully', async () => {
+    const result = await $`${fluxctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
     expect(result).toBeTruthy()
   }, SCRIPT_TIMEOUT)
 })
@@ -491,12 +491,12 @@ describe('Edge Cases', () => {
     const homeDir = `${tmpRoot}/home`
     const workDir = `${tmpRoot}/work`
 
-    await $`mkdir -p ${homeDir}/.claude ${workDir}/.nbench`.quiet()
+    await $`mkdir -p ${homeDir}/.claude ${workDir}/.flux`.quiet()
 
     await $`printf '%s' '{not-json' > ${homeDir}/.mcp.json`.quiet()
     await $`printf '%s' '{still-bad' > ${homeDir}/.claude/settings.json`.quiet()
     await $`printf '%s' '{bad-local' > ${workDir}/.mcp.json`.quiet()
-    await $`printf '%s' '{bad-prefs' > ${workDir}/.nbench/preferences.json`.quiet()
+    await $`printf '%s' '{bad-prefs' > ${workDir}/.flux/preferences.json`.quiet()
 
     const output = await runScriptWithEnv('detect-installed.sh', [], workDir, { HOME: homeDir })
     const parsed = JSON.parse(output)

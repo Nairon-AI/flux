@@ -1,11 +1,11 @@
 #!/bin/bash
-# N-bench Improve - Rollback Installation
+# Flux Improve - Rollback Installation
 # Restores from a snapshot created during installation
 
 set -e
 
 SNAPSHOT_ID="$1"
-SNAPSHOTS_DIR="${HOME}/.nbench/snapshots"
+SNAPSHOTS_DIR="${HOME}/.flux/snapshots"
 
 if [ -z "$SNAPSHOT_ID" ]; then
     echo "Usage: rollback.sh <snapshot_id>"

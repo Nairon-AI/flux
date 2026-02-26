@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - CLI Tool Installer
+# Flux Improve - CLI Tool Installer
 # Installs CLI tools via brew, npm, or direct commands
 
 set -e
@@ -14,7 +14,7 @@ if [ -z "$NAME" ] || [ -z "$INSTALL_CMD" ]; then
     exit 1
 fi
 
-BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 echo "Installing CLI tool: $NAME"
@@ -31,7 +31,7 @@ case "$INSTALL_TYPE" in
             echo "Install Homebrew first:"
             echo "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
             echo ""
-            echo "Then re-run /nbench:improve"
+            echo "Then re-run /flux:improve"
             exit 1
         fi
         ;;
@@ -51,7 +51,7 @@ case "$INSTALL_TYPE" in
                     ;;
             esac
             echo ""
-            echo "Then re-run /nbench:improve"
+            echo "Then re-run /flux:improve"
             exit 1
         fi
         ;;
@@ -62,7 +62,7 @@ case "$INSTALL_TYPE" in
             echo "Install Rust:"
             echo "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
             echo ""
-            echo "Then re-run /nbench:improve"
+            echo "Then re-run /flux:improve"
             exit 1
         fi
         ;;

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unit tests for N-bench recommendation matching engine.
+Unit tests for Flux recommendation matching engine.
 
 Tests that the right recommendations are matched for different user setups.
 Run with: python -m pytest scripts/test_match_recommendations.py -v
@@ -470,7 +470,7 @@ class TestFullMatchingPipeline:
     @pytest.fixture
     def recs_dir(self):
         """Get the recommendations directory."""
-        return os.path.expanduser("~/.nbench/recommendations")
+        return os.path.expanduser("~/.flux/recommendations")
 
     def test_empty_setup_gets_recommendations(self, recs_dir):
         """User with empty setup should get multiple recommendations."""

@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - Context Analysis Script
+# Flux Improve - Context Analysis Script
 # Analyzes user's environment for workflow optimization recommendations
 
 set -e

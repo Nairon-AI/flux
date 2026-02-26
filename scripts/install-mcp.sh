@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - MCP Installer
+# Flux Improve - MCP Installer
 # Installs an MCP server by merging config into ~/.mcp.json
 
 set -e
@@ -10,7 +10,7 @@ set -e
 NAME="$1"
 CONFIG="$2"
 MCP_FILE="${HOME}/.mcp.json"
-BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
 
 if [ -z "$NAME" ] || [ -z "$CONFIG" ]; then
     echo "Usage: install-mcp.sh <name> <config_json>"
@@ -45,7 +45,7 @@ if ! command -v jq &> /dev/null; then
             ;;
     esac
     echo ""
-    echo "Then re-run /nbench:improve"
+    echo "Then re-run /flux:improve"
     exit 1
 fi
 

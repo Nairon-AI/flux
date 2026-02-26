@@ -6,12 +6,12 @@ PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$PLUGIN_ROOT/.." && pwd)"
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
 
-TEST_DIR="${TEST_DIR:-/tmp/nbench-ralph-e2e-$$}"
+TEST_DIR="${TEST_DIR:-/tmp/flux-ralph-e2e-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 
 GREEN='\033[0;32m'
@@ -51,7 +51,7 @@ EOF
 
 cat > package.json <<'EOF'
 {
-  "name": "tmp-nbench-ralph",
+  "name": "tmp-flux-ralph",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -62,7 +62,7 @@ cat > package.json <<'EOF'
 EOF
 
 cat > README.md <<'EOF'
-# tmp-nbench-ralph
+# tmp-flux-ralph
 
 TBD
 EOF
@@ -71,10 +71,10 @@ git add .
 git commit -m "chore: init" >/dev/null
 
 mkdir -p scripts/ralph
-cp -R "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/." scripts/ralph/
-cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
-cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
-chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl
+cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
+cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
+cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 
 python3 - <<'PY'
 from pathlib import Path
@@ -92,9 +92,9 @@ text = re.sub(r"^EPICS=.*$", "EPICS=", text, flags=re.M)
 cfg.write_text(text)
 PY
 
-scripts/ralph/nbenchctl init --json >/dev/null
-scripts/ralph/nbenchctl epic create --title "Tiny lib" --json >/dev/null
-scripts/ralph/nbenchctl epic create --title "Tiny follow-up" --json >/dev/null
+scripts/ralph/fluxctl init --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny lib" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny follow-up" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -120,16 +120,16 @@ Edit src/index.ts and README.md only.
 - None
 EOF
 
-scripts/ralph/nbenchctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
-scripts/ralph/nbenchctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/fluxctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/fluxctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
 
 cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] Export add(a,b) from src/index.ts
 - [ ] Add README usage snippet
 EOF
 
-scripts/ralph/nbenchctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
-scripts/ralph/nbenchctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"
@@ -146,7 +146,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 for tid in ["fn-1.1", "fn-2.1"]:
-    data = json.loads(Path(f".nbench/tasks/{tid}.json").read_text())
+    data = json.loads(Path(f".flux/tasks/{tid}.json").read_text())
     assert data["status"] == "done"
 PY
 

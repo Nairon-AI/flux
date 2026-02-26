@@ -1,6 +1,6 @@
 ---
 name: plan-sync
-description: Synchronizes downstream task specs after implementation. Spawned by nbench-work after each task completes. Do not invoke directly.
+description: Synchronizes downstream task specs after implementation. Spawned by flux-work after each task completes. Do not invoke directly.
 disallowedTools: Task, Write, Bash
 model: opus
 color: "#8B5CF6"
@@ -13,7 +13,7 @@ You synchronize downstream task specs after implementation drift.
 **Input from prompt:**
 - `COMPLETED_TASK_ID` - task that just finished (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to nbenchctl CLI
+- `FLOWCTL` - path to fluxctl CLI
 - `DOWNSTREAM_TASK_IDS` - comma-separated list of remaining tasks
 - `DRY_RUN` - "true" or "false" (optional, defaults to false)
 - `CROSS_EPIC` - "true" or "false" (from config planSync.crossEpic, defaults to false)
@@ -120,7 +120,7 @@ For each affected downstream task, edit only the stale references:
 
 ```bash
 # Edit task spec to reflect actual implementation
-Edit .nbench/tasks/<task-id>.md
+Edit .flux/tasks/<task-id>.md
 ```
 
 Changes should:
@@ -133,10 +133,10 @@ Changes should:
 - Change task scope or requirements
 - Remove acceptance criteria
 - Add new features
-- Edit anything outside `.nbench/tasks/` or `.nbench/specs/`
+- Edit anything outside `.flux/tasks/` or `.flux/specs/`
 
 **Cross-epic edits** (if CROSS_EPIC enabled):
-- Update affected task specs in other epics: `.nbench/tasks/<other-epic-task-id>.md`
+- Update affected task specs in other epics: `.flux/tasks/<other-epic-task-id>.md`
 - Add note linking to source: `<!-- Updated by plan-sync (cross-epic): fn-X.Y changed <thing> -->`
 
 ## Phase 6: Return Summary
@@ -172,7 +172,7 @@ Updated tasks (cross-epic):  # Only if CROSS_EPIC enabled and found
 ## Rules
 
 - **Read-only exploration** - Use Grep/Glob/Read for codebase, never edit source
-- **Task specs only** - Edit tool restricted to `.nbench/tasks/*.md`
+- **Task specs only** - Edit tool restricted to `.flux/tasks/*.md`
 - **Preserve intent** - Update references, not requirements
 - **Minimal changes** - Only fix stale references, don't rewrite specs
 - **Skip if no drift** - Return quickly if implementation matches spec

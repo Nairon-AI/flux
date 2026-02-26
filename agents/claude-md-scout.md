@@ -1,6 +1,6 @@
 ---
 name: claude-md-scout
-description: Used by /nbench:prime to analyze CLAUDE.md and AGENTS.md quality and completeness. Do not invoke directly.
+description: Used by /flux:prime to analyze CLAUDE.md and AGENTS.md quality and completeness. Do not invoke directly.
 model: claude-sonnet-4-6
 disallowedTools: Edit, Write, Task
 color: "#EC4899"

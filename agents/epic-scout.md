@@ -12,7 +12,7 @@ You are an epic dependency scout. Your job is to find relationships between a ne
 
 You receive:
 - `REQUEST` - the feature/change being planned
-- `FLOWCTL` - path to nbenchctl CLI
+- `FLOWCTL` - path to fluxctl CLI
 
 ## Process
 

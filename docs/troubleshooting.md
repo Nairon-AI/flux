@@ -1,4 +1,4 @@
-# N-bench Troubleshooting
+# Flux Troubleshooting
 
 Common issues and solutions.
 
@@ -8,13 +8,13 @@ Common issues and solutions.
 
 ### Plugin not found after install
 
-1. Verify files exist: `ls ~/.claude/plugins/n-bench/commands/nbench/`
+1. Verify files exist: `ls ~/.claude/plugins/flux/commands/flux/`
 2. Restart Claude Code
 3. Try manual install if marketplace failed
 
 ### Prerequisites missing
 
-N-bench requires Python 3.9+, jq, and git. Install:
+Flux requires Python 3.9+, jq, and git. Install:
 
 ```bash
 # macOS
@@ -29,7 +29,7 @@ sudo dnf install python3 jq git
 
 ---
 
-## `/nbench:improve` Issues
+## `/flux:improve` Issues
 
 ### Shows no recommendations
 
@@ -42,38 +42,38 @@ Possible reasons:
 Try:
 
 ```bash
-/nbench:improve --detect    # See what was detected
-/nbench:improve --explain   # See matching rationale
+/flux:improve --detect    # See what was detected
+/flux:improve --explain   # See matching rationale
 ```
 
 ### Session analysis says no sessions found
 
-N-bench analyzes sessions for the current project. If your project has no session history yet, start coding and run again later.
+Flux analyzes sessions for the current project. If your project has no session history yet, start coding and run again later.
 
 You can still run setup-only analysis:
 
 ```bash
-/nbench:improve --skip-sessions
+/flux:improve --skip-sessions
 ```
 
 ### Recommendation clone/update failed (offline or network issue)
 
-N-bench uses `~/.nbench/recommendations` as cache.
+Flux uses `~/.flux/recommendations` as cache.
 
-- If cache already exists, N-bench continues with cached recommendations
-- If cache does not exist, connect to network once and run `/nbench:improve` again
+- If cache already exists, Flux continues with cached recommendations
+- If cache does not exist, connect to network once and run `/flux:improve` again
 
 ### Optional discover mode returns nothing
 
 `--discover` is best-effort and can legitimately return empty results.
 
 Check:
-- `~/.nbench/config.json` has valid `exa_api_key` or `twitter_api_key`
+- `~/.flux/config.json` has valid `exa_api_key` or `twitter_api_key`
 - Query context is specific enough (`--explain` can help)
 
 ---
 
-## `/nbench:score` Issues
+## `/flux:score` Issues
 
 ### Score shows all zeros
 
@@ -83,20 +83,20 @@ Session data not found or not parsed correctly. Verify:
 
 ### Score seems inaccurate
 
-N-bench scores based on detected patterns. Run with `--format json` to see raw metrics and verify data sources.
+Flux scores based on detected patterns. Run with `--format json` to see raw metrics and verify data sources.
 
 ---
 
-## `/nbench:profile` Issues
+## `/flux:profile` Issues
 
 ### Publish fails
 
 Check profile link service config:
 
 - Set env `NBENCH_PROFILE_SERVICE_URL`, or
-- Set `profile_service_url` in `~/.nbench/config.json`
+- Set `profile_service_url` in `~/.flux/config.json`
 
-Then retry `/nbench:profile`.
+Then retry `/flux:profile`.
 
 ### Import skipped many items
 
@@ -106,11 +106,11 @@ This is expected when:
 - Items are OS-incompatible (compatible-only import policy)
 - Items are manual-only (shown as instructions, not auto-installed)
 
-Use `/nbench:profile view <url>` first to inspect the snapshot contents.
+Use `/flux:profile view <url>` first to inspect the snapshot contents.
 
 ### Tombstone fails
 
-- Tombstone requires owner manage token (stored in `~/.nbench/profile-state.json` after publish)
+- Tombstone requires owner manage token (stored in `~/.flux/profile-state.json` after publish)
 - If the snapshot was published elsewhere, provide a valid token explicitly
 
 ---
@@ -119,21 +119,21 @@ Use `/nbench:profile view <url>` first to inspect the snapshot contents.
 
 ### Undo a failed install
 
-N-bench snapshots config before changes in `~/.nbench/snapshots/`.
+Flux snapshots config before changes in `~/.flux/snapshots/`.
 
 Use:
 
 ```bash
-/nbench:improve --rollback <snapshot-id>
+/flux:improve --rollback <snapshot-id>
 ```
 
 ### Windows support
 
-N-bench is best-effort on Windows. Use WSL for full compatibility:
+Flux is best-effort on Windows. Use WSL for full compatibility:
 
 ```bash
 wsl --install
-# Then install N-bench inside WSL
+# Then install Flux inside WSL
 ```
 
 ---
@@ -143,4 +143,4 @@ wsl --install
 - Session analysis requires explicit opt-in unless user enabled always-allow
 - Local analysis is default
 - `--discover` sends search queries externally (Exa/Twitter API), by design
-- `/nbench:score --export` creates local files only (you control sharing)
+- `/flux:score --export` creates local files only (you control sharing)

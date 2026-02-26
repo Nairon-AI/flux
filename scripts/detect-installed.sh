@@ -1,10 +1,10 @@
 #!/bin/bash
-# N-bench Improve - Installed Tools Detection
+# Flux Improve - Installed Tools Detection
 # Detects CLI tools, MCPs, plugins, and applications across platforms
 
 set -e
 
-WARNINGS_FILE="${TMPDIR:-/tmp}/nbench-detect-installed-warnings-$$.txt"
+WARNINGS_FILE="${TMPDIR:-/tmp}/flux-detect-installed-warnings-$$.txt"
 : > "$WARNINGS_FILE"
 
 cleanup() {
@@ -185,9 +185,9 @@ detect_plugins() {
 }
 
 # Load user preferences (dismissed recommendations, alternatives)
-# Uses project-local .nbench/preferences.json (like flow-next uses .flow/)
+# Uses project-local .flux/preferences.json (like flow-next uses .flow/)
 load_preferences() {
-    local prefs_file=".nbench/preferences.json"
+    local prefs_file=".flux/preferences.json"
     
     if [ -f "$prefs_file" ]; then
         if jq -e . "$prefs_file" >/dev/null 2>&1; then

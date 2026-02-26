@@ -1,19 +1,19 @@
 #!/bin/bash
-# N-bench Improve - Plugin Installer
+# Flux Improve - Plugin Installer
 # Installs Claude Code plugins via marketplace
 
 set -e
 
 NAME="$1"
-REPO="$2"  # e.g., "Nairon-AI/n-bench" or marketplace name
+REPO="$2"  # e.g., "Nairon-AI/flux" or marketplace name
 
 if [ -z "$NAME" ]; then
     echo "Usage: install-plugin.sh <name> [repo]"
-    echo "Example: install-plugin.sh nbench Nairon-AI/n-bench"
+    echo "Example: install-plugin.sh flux Nairon-AI/flux"
     exit 1
 fi
 
-BACKUP_DIR="${HOME}/.nbench/snapshots/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 # Backup plugin list

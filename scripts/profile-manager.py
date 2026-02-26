@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""N-bench profile manager for export/import/view workflows."""
+"""Flux profile manager for export/import/view workflows."""
 
 from __future__ import annotations
 
@@ -32,10 +32,10 @@ PLUGIN_ROOT = Path(
     or SCRIPT_DIR.parent
 )
 HOME = Path.home()
-DEFAULT_STATE_PATH = HOME / ".nbench" / "profile-state.json"
-DEFAULT_CONFIG_PATH = HOME / ".nbench" / "config.json"
+DEFAULT_STATE_PATH = HOME / ".flux" / "profile-state.json"
+DEFAULT_CONFIG_PATH = HOME / ".flux" / "config.json"
 DEFAULT_RECS_DIR = Path(
-    os.environ.get("NBENCH_RECS_DIR") or HOME / ".nbench" / "recommendations"
+    os.environ.get("NBENCH_RECS_DIR") or HOME / ".flux" / "recommendations"
 )
 
 ALL_OSES = ["macos", "linux", "windows"]
@@ -973,8 +973,8 @@ def build_profile_snapshot(
 
     snapshot = {
         "schema_version": "1.0",
-        "profile_kind": "nbench-sdlc-profile",
-        "profile_name": profile_name or "N-bench SDLC Profile",
+        "profile_kind": "flux-sdlc-profile",
+        "profile_name": profile_name or "Flux SDLC Profile",
         "created_at": now_iso(),
         "visibility": "public-anonymous",
         "link_policy": {
@@ -1018,7 +1018,7 @@ def resolve_service_url(config: dict[str, Any], explicit: str = "") -> str:
     if conf_url:
         return conf_url.rstrip("/")
     raise RuntimeError(
-        "Profile service URL not configured. Set NBENCH_PROFILE_SERVICE_URL or ~/.nbench/config.json profile_service_url"
+        "Profile service URL not configured. Set NBENCH_PROFILE_SERVICE_URL or ~/.flux/config.json profile_service_url"
     )
 
 
@@ -1034,7 +1034,7 @@ def http_json(
 
     req = urllib.request.Request(url, data=payload, method=method)
     req.add_header("Content-Type", "application/json")
-    req.add_header("User-Agent", "N-benchProfile/1.0")
+    req.add_header("User-Agent", "FluxProfile/1.0")
     if headers:
         for key, value in headers.items():
             req.add_header(key, value)
@@ -1619,7 +1619,7 @@ def cmd_saved_apps(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="N-bench profile export/import manager")
+    parser = argparse.ArgumentParser(description="Flux profile export/import manager")
     sub = parser.add_subparsers(dest="command", required=True)
 
     def add_common_detection_options(cmd: argparse.ArgumentParser) -> None:

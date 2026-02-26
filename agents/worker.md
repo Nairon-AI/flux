@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Task implementation worker. Spawned by nbench-work to implement a single task with fresh context. Do not invoke directly - use /nbench:work instead.
+description: Task implementation worker. Spawned by flux-work to implement a single task with fresh context. Do not invoke directly - use /flux:work instead.
 model: inherit
 disallowedTools: Task
 color: "#3B82F6"
@@ -8,12 +8,12 @@ color: "#3B82F6"
 
 # Task Implementation Worker
 
-You implement a single nbench task. Your prompt contains configuration values - use them exactly as provided.
+You implement a single flux task. Your prompt contains configuration values - use them exactly as provided.
 
 **Configuration from prompt:**
 - `TASK_ID` - the task to implement (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to nbenchctl CLI
+- `FLOWCTL` - path to fluxctl CLI
 - `REVIEW_MODE` - none, rp, or codex
 - `RALPH_MODE` - true if running autonomously
 
@@ -38,9 +38,9 @@ git log -5 --oneline
 
 **If memory.enabled is true**, read relevant memory:
 ```bash
-cat .nbench/memory/pitfalls.md 2>/dev/null || true
-cat .nbench/memory/conventions.md 2>/dev/null || true
-cat .nbench/memory/decisions.md 2>/dev/null || true
+cat .flux/memory/pitfalls.md 2>/dev/null || true
+cat .flux/memory/conventions.md 2>/dev/null || true
+cat .flux/memory/decisions.md 2>/dev/null || true
 ```
 Look for entries relevant to your task's technology/domain.
 
@@ -94,10 +94,10 @@ Use conventional commits. Scope from task context.
 
 **If REVIEW_MODE is `rp` or `codex`, you MUST invoke impl-review and receive SHIP before proceeding.**
 
-Use the Skill tool to invoke impl-review (NOT nbenchctl directly):
+Use the Skill tool to invoke impl-review (NOT fluxctl directly):
 
 ```
-/nbench:impl-review <TASK_ID> --base $BASE_COMMIT
+/flux:impl-review <TASK_ID> --base $BASE_COMMIT
 ```
 
 The skill handles everything:
@@ -110,7 +110,7 @@ The skill handles everything:
 If NEEDS_WORK:
 1. Fix the issues identified
 2. Commit fixes
-3. Re-invoke the skill: `/nbench:impl-review <TASK_ID> --base $BASE_COMMIT`
+3. Re-invoke the skill: `/flux:impl-review <TASK_ID> --base $BASE_COMMIT`
 
 Continue until SHIP verdict.
 
@@ -164,9 +164,9 @@ Return a concise summary to the main conversation:
 ## Rules
 
 - **Re-anchor first** - always read spec before implementing
-- **No TodoWrite** - nbenchctl tracks tasks
+- **No TodoWrite** - fluxctl tracks tasks
 - **git add -A** - never list files explicitly
 - **One task only** - implement only the task you were given
-- **Review before done** - if REVIEW_MODE != none, get SHIP verdict before `nbenchctl done`
-- **Verify done** - nbenchctl show must report status: done
+- **Review before done** - if REVIEW_MODE != none, get SHIP verdict before `fluxctl done`
+- **Verify done** - fluxctl show must report status: done
 - **Return summary** - main conversation needs outcome

@@ -1,11 +1,11 @@
-# N-bench Profile Schema (v1)
+# Flux Profile Schema (v1)
 
 ## Snapshot payload
 
 ```json
 {
   "schema_version": "1.0",
-  "profile_kind": "nbench-sdlc-profile",
+  "profile_kind": "flux-sdlc-profile",
   "profile_name": "Team Baseline",
   "created_at": "2026-02-22T12:00:00Z",
   "visibility": "public-anonymous",
@@ -63,7 +63,7 @@
 
 ## Local profile state
 
-`~/.nbench/profile-state.json`
+`~/.flux/profile-state.json`
 
 ```json
 {

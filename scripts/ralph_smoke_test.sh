@@ -19,7 +19,7 @@ PYTHON_BIN="$(pick_python)"
 [[ -n "$PYTHON_BIN" ]] || { echo "ERROR: python not found (need python3 or python in PATH)" >&2; exit 1; }
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
@@ -53,10 +53,10 @@ git commit -m "chore: init" >/dev/null
 
 scaffold() {
   mkdir -p scripts/ralph
-  cp -R "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/." scripts/ralph/
-  cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
-  cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
-  chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl
+  cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
+  cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
+  cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+  chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 }
 
 write_config() {
@@ -96,7 +96,7 @@ scaffold
 
 echo -e "${YELLOW}--- ralph-init scaffold ---${NC}"
 missing=0
-for f in ralph.sh ralph_once.sh prompt_plan.md prompt_work.md config.env runs/.gitkeep nbenchctl nbenchctl.py .gitignore; do
+for f in ralph.sh ralph_once.sh prompt_plan.md prompt_work.md config.env runs/.gitkeep fluxctl fluxctl.py .gitignore; do
   if [[ ! -f "scripts/ralph/$f" ]]; then
     echo -e "${RED}✗${NC} missing scripts/ralph/$f"
     missing=1
@@ -138,7 +138,7 @@ if [[ "$prompt" == *"Ralph plan gate iteration"* ]]; then
   # Extract epic ID with optional suffix (fn-N or fn-N-xxx)
   epic_id="$(printf '%s\n' "$prompt" | sed -n 's/.*EPIC_ID=\(fn-[0-9][0-9]*\(-[a-z0-9][a-z0-9][a-z0-9]\)\{0,1\}\).*/\1/p' | head -n1)"
   if [[ -n "$epic_id" ]]; then
-    scripts/ralph/nbenchctl epic set-plan-review-status "$epic_id" --status ship --json >/dev/null
+    scripts/ralph/fluxctl epic set-plan-review-status "$epic_id" --status ship --json >/dev/null
   fi
   if [[ "$write_plan" == "1" && -n "${REVIEW_RECEIPT_PATH:-}" ]]; then
     ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -160,8 +160,8 @@ if [[ "$prompt" == *"Ralph work iteration"* ]]; then
     evidence="$(mktemp)"
     printf "ok\n" > "$summary"
     printf '{"commits":[],"tests":[],"prs":[]}' > "$evidence"
-    scripts/ralph/nbenchctl start "$task_id" --json >/dev/null
-    scripts/ralph/nbenchctl done "$task_id" --summary-file "$summary" --evidence-json "$evidence" --json >/dev/null
+    scripts/ralph/fluxctl start "$task_id" --json >/dev/null
+    scripts/ralph/fluxctl done "$task_id" --summary-file "$summary" --evidence-json "$evidence" --json >/dev/null
     rm -f "$summary" "$evidence"
   fi
   if [[ "$write_impl" == "1" && -n "${REVIEW_RECEIPT_PATH:-}" ]]; then
@@ -181,37 +181,37 @@ exit 0
 EOF
 chmod +x "$TEST_DIR/bin/claude"
 
-scripts/ralph/nbenchctl init --json >/dev/null
+scripts/ralph/fluxctl init --json >/dev/null
 
 latest_run_dir() {
   ls -t scripts/ralph/runs | grep -v '^\\.gitkeep$' | head -n 1
 }
 
 echo -e "${YELLOW}--- ralph_once ---${NC}"
-EPIC1_JSON="$(scripts/ralph/nbenchctl epic create --title "Ralph Epic" --json)"
+EPIC1_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic" --json)"
 EPIC1="$(echo "$EPIC1_JSON" | extract_id)"
-scripts/ralph/nbenchctl task create --epic "$EPIC1" --title "Ralph Task" --json >/dev/null
+scripts/ralph/fluxctl task create --epic "$EPIC1" --title "Ralph Task" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph_once.sh >/dev/null
 # Mark plan review done so it doesn't block later tests when REQUIRE_PLAN_REVIEW=1
-scripts/ralph/nbenchctl epic set-plan-review-status "$EPIC1" --status ship --json >/dev/null
+scripts/ralph/fluxctl epic set-plan-review-status "$EPIC1" --status ship --json >/dev/null
 echo -e "${GREEN}✓${NC} ralph_once runs"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- ralph.sh completes epic ---${NC}"
-EPIC2_JSON="$(scripts/ralph/nbenchctl epic create --title "Ralph Epic 2" --json)"
+EPIC2_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 2" --json)"
 EPIC2="$(echo "$EPIC2_JSON" | extract_id)"
-TASK2_1_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC2" --title "Task 1" --json)"
+TASK2_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 1" --json)"
 TASK2_1="$(echo "$TASK2_1_JSON" | extract_id)"
-TASK2_2_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC2" --title "Task 2" --json)"
+TASK2_2_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 2" --json)"
 TASK2_2="$(echo "$TASK2_2_JSON" | extract_id)"
 # Use rp for both to test receipt generation (none skips receipts correctly via fix for #8)
 write_config "rp" "rp" "1" "new" "6" "5" "2"
 STUB_MODE=success STUB_WRITE_RECEIPT=1 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
-# Use nbenchctl show to get merged state (definition + runtime)
+# Use fluxctl show to get merged state (definition + runtime)
 # Note: Definition files don't store status; runtime state is in .git/flow-state/
 for tid in "$TASK2_1" "$TASK2_2"; do
-  status=$(scripts/ralph/nbenchctl show "$tid" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
+  status=$(scripts/ralph/fluxctl show "$tid" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
   if [[ "$status" != "done" ]]; then
     echo "Task $tid status is '$status', expected 'done'" >&2
     exit 1
@@ -258,9 +258,9 @@ else
 fi
 
 echo -e "${YELLOW}--- UI output verification ---${NC}"
-EPIC3_JSON="$(scripts/ralph/nbenchctl epic create --title "UI Test Epic" --json)"
+EPIC3_JSON="$(scripts/ralph/fluxctl epic create --title "UI Test Epic" --json)"
 EPIC3="$(echo "$EPIC3_JSON" | extract_id)"
-scripts/ralph/nbenchctl task create --epic "$EPIC3" --title "UI Test Task" --json >/dev/null
+scripts/ralph/fluxctl task create --epic "$EPIC3" --title "UI Test Task" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 ui_output="$(STUB_MODE=success CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh 2>&1)"
 
@@ -310,13 +310,13 @@ else
 fi
 
 echo -e "${YELLOW}--- ralph.sh backstop ---${NC}"
-EPIC4_JSON="$(scripts/ralph/nbenchctl epic create --title "Ralph Epic 4" --json)"
+EPIC4_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 4" --json)"
 EPIC4="$(echo "$EPIC4_JSON" | extract_id)"
-TASK4_1_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC4" --title "Stuck Task" --json)"
+TASK4_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC4" --title "Stuck Task" --json)"
 TASK4_1="$(echo "$TASK4_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "2"
 STUB_MODE=retry CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
-status=$(scripts/ralph/nbenchctl show "$TASK4_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
+status=$(scripts/ralph/fluxctl show "$TASK4_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
 if [[ "$status" != "blocked" ]]; then
   echo "Task $TASK4_1 status is '$status', expected 'blocked'" >&2
   exit 1
@@ -325,9 +325,9 @@ echo -e "${GREEN}✓${NC} blocks after attempts"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- missing receipt forces retry ---${NC}"
-EPIC5_JSON="$(scripts/ralph/nbenchctl epic create --title "Ralph Epic 5" --json)"
+EPIC5_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 5" --json)"
 EPIC5="$(echo "$EPIC5_JSON" | extract_id)"
-TASK5_1_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC5" --title "Receipt Task" --json)"
+TASK5_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC5" --title "Receipt Task" --json)"
 TASK5_1="$(echo "$TASK5_1_JSON" | extract_id)"
 write_config "none" "rp" "0" "new" "3" "5" "1"
 set +e
@@ -358,16 +358,16 @@ fi
 echo -e "${YELLOW}--- non-zero exit code handling (#11) ---${NC}"
 # Test 1: task done + non-zero exit -> should NOT fail
 # This validates fix for issue #11 where transient errors caused false failures
-EPIC6_JSON="$(scripts/ralph/nbenchctl epic create --title "Exit Code Epic 1" --json)"
+EPIC6_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 1" --json)"
 EPIC6="$(echo "$EPIC6_JSON" | extract_id)"
-TASK6_1_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC6" --title "Done but exit 1" --json)"
+TASK6_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC6" --title "Done but exit 1" --json)"
 TASK6_1="$(echo "$TASK6_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "2"
 set +e
 STUB_MODE=success STUB_EXIT_CODE=1 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null 2>&1
 rc=$?
 set -e
-status=$(scripts/ralph/nbenchctl show "$TASK6_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
+status=$(scripts/ralph/fluxctl show "$TASK6_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
 if [[ "$status" == "done" ]]; then
   echo -e "${GREEN}✓${NC} task done + exit 1 -> task completed (rc=$rc)"
   PASS=$((PASS + 1))
@@ -377,9 +377,9 @@ else
 fi
 
 # Test 2: task NOT done + non-zero exit -> should fail/block
-EPIC7_JSON="$(scripts/ralph/nbenchctl epic create --title "Exit Code Epic 2" --json)"
+EPIC7_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 2" --json)"
 EPIC7="$(echo "$EPIC7_JSON" | extract_id)"
-TASK7_1_JSON="$(scripts/ralph/nbenchctl task create --epic "$EPIC7" --title "Not done and exit 1" --json)"
+TASK7_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC7" --title "Not done and exit 1" --json)"
 TASK7_1="$(echo "$TASK7_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "1"
 set +e
@@ -387,7 +387,7 @@ STUB_MODE=success STUB_EXIT_CODE=1 STUB_SKIP_DONE=1 CLAUDE_BIN="$TEST_DIR/bin/cl
 rc=$?
 set -e
 # Should be blocked because task wasn't done AND exit was non-zero
-status=$(scripts/ralph/nbenchctl show "$TASK7_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
+status=$(scripts/ralph/fluxctl show "$TASK7_1" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
 if [[ "$status" == "blocked" ]]; then
   echo -e "${GREEN}✓${NC} task not done + exit 1 -> blocked (rc=$rc)"
   PASS=$((PASS + 1))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-N-bench Improve - Community discovery for novel workflow optimizations.
+Flux Improve - Community discovery for novel workflow optimizations.
 
 Searches X/Twitter for recent high-signal discussions based on detected friction.
 Priority order:
@@ -26,7 +26,7 @@ from pathlib import Path
 
 EXA_SEARCH_API = "https://api.exa.ai/search"
 TWITTER_SEARCH_API = "https://api.twitterapi.io/twitter/tweet/advanced_search"
-CONFIG_PATH = Path.home() / ".nbench" / "config.json"
+CONFIG_PATH = Path.home() / ".flux" / "config.json"
 
 SIGNAL_QUERY_HINTS = {
     "api_hallucination": ["context7", "docs mcp", "api docs"],
@@ -69,7 +69,7 @@ SECRET_PATTERNS = [
 
 
 def load_config() -> dict:
-    """Load ~/.nbench/config.json if present."""
+    """Load ~/.flux/config.json if present."""
     if not CONFIG_PATH.exists():
         return {}
     try:
@@ -271,7 +271,7 @@ def search_twitter(
     url = f"{TWITTER_SEARCH_API}?{params}"
     req = urllib.request.Request(url)
     req.add_header("X-API-Key", api_key)
-    req.add_header("User-Agent", "N-benchDiscover/1.0")
+    req.add_header("User-Agent", "FluxDiscover/1.0")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -303,7 +303,7 @@ def search_exa(
     req = urllib.request.Request(EXA_SEARCH_API, data=body, method="POST")
     req.add_header("Content-Type", "application/json")
     req.add_header("x-api-key", api_key)
-    req.add_header("User-Agent", "N-benchDiscover/1.0")
+    req.add_header("User-Agent", "FluxDiscover/1.0")
 
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -475,11 +475,11 @@ def discover(context: dict, user_context: str, max_results: int, days: int) -> d
             source = "exa-mcp-suggested"
             reason = (
                 "Exa MCP detected but no API key configured. "
-                "Use the queries below with Exa MCP or add exa_api_key to ~/.nbench/config.json"
+                "Use the queries below with Exa MCP or add exa_api_key to ~/.flux/config.json"
             )
         else:
             reason = (
-                "No exa_api_key or twitter_api_key found in ~/.nbench/config.json. "
+                "No exa_api_key or twitter_api_key found in ~/.flux/config.json. "
                 "Add one key to enable optional community discovery."
             )
     elif not discoveries and attempts:

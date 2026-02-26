@@ -24,12 +24,12 @@ cmd = (data.get("tool_input") or {}).get("command") or ""
 
 # Block direct rp-cli usage
 if "rp-cli" in cmd:
-    print("Ralph mode: use nbenchctl rp wrappers only (no rp-cli).", file=sys.stderr)
+    print("Ralph mode: use fluxctl rp wrappers only (no rp-cli).", file=sys.stderr)
     sys.exit(2)
 
 # Block prep-chat (deprecated)
-if "nbenchctl prep-chat" in cmd:
-    print("Ralph mode: use nbenchctl rp chat-send (no prep-chat).", file=sys.stderr)
+if "fluxctl prep-chat" in cmd:
+    print("Ralph mode: use fluxctl rp chat-send (no prep-chat).", file=sys.stderr)
     sys.exit(2)
 
 try:
@@ -38,8 +38,8 @@ try:
 except Exception:
     tokens = cmd.split()
 
-def token_has_nbenchctl(tok: str) -> bool:
-    return "nbenchctl" in tok
+def token_has_fluxctl(tok: str) -> bool:
+    return "fluxctl" in tok
 
 def flag_value(flag: str):
     for i, tok in enumerate(tokens):
@@ -50,65 +50,65 @@ def flag_value(flag: str):
     return None
 
 # Check for direct builder call (should use setup-review instead)
-if "rp" in tokens and "builder" in tokens and any(token_has_nbenchctl(t) for t in tokens):
+if "rp" in tokens and "builder" in tokens and any(token_has_fluxctl(t) for t in tokens):
     # In Ralph mode, builder should only be called via setup-review
     # If called directly, block it
-    print("Ralph mode: use 'nbenchctl rp setup-review' instead of 'nbenchctl rp builder'.", file=sys.stderr)
+    print("Ralph mode: use 'fluxctl rp setup-review' instead of 'fluxctl rp builder'.", file=sys.stderr)
     print("setup-review handles pick-window + workspace + builder atomically.", file=sys.stderr)
     sys.exit(2)
 
 # Validate pick-window and ensure-workspace also redirect to setup-review
-if "rp" in tokens and ("pick-window" in tokens or "ensure-workspace" in tokens) and any(token_has_nbenchctl(t) for t in tokens):
-    print("Ralph mode: use 'nbenchctl rp setup-review' for atomic window + workspace + builder setup.", file=sys.stderr)
+if "rp" in tokens and ("pick-window" in tokens or "ensure-workspace" in tokens) and any(token_has_fluxctl(t) for t in tokens):
+    print("Ralph mode: use 'fluxctl rp setup-review' for atomic window + workspace + builder setup.", file=sys.stderr)
     sys.exit(2)
 
 # Validate chat-send has required args
-if "rp" in tokens and "chat-send" in tokens and any(token_has_nbenchctl(t) for t in tokens):
+if "rp" in tokens and "chat-send" in tokens and any(token_has_fluxctl(t) for t in tokens):
     window = flag_value("--window")
     tab = flag_value("--tab")
     message_file = flag_value("--message-file")
 
     if not window:
-        print("Ralph mode: nbenchctl rp chat-send requires --window.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp chat-send requires --window.", file=sys.stderr)
         sys.exit(2)
     if not window.isdigit():
-        print("Ralph mode: nbenchctl rp chat-send --window must be numeric.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp chat-send --window must be numeric.", file=sys.stderr)
         sys.exit(2)
     if not tab:
-        print("Ralph mode: nbenchctl rp chat-send requires --tab.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp chat-send requires --tab.", file=sys.stderr)
         sys.exit(2)
     if not message_file:
-        print("Ralph mode: nbenchctl rp chat-send requires --message-file.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp chat-send requires --message-file.", file=sys.stderr)
         sys.exit(2)
 
 # Validate select-add/select-get have required args
-if "rp" in tokens and ("select-add" in tokens or "select-get" in tokens) and any(token_has_nbenchctl(t) for t in tokens):
+if "rp" in tokens and ("select-add" in tokens or "select-get" in tokens) and any(token_has_fluxctl(t) for t in tokens):
     window = flag_value("--window")
     tab = flag_value("--tab")
 
     if not window:
-        print("Ralph mode: nbenchctl rp select-* requires --window.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp select-* requires --window.", file=sys.stderr)
         sys.exit(2)
     if not window.isdigit():
-        print("Ralph mode: nbenchctl rp select-* --window must be numeric.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp select-* --window must be numeric.", file=sys.stderr)
         sys.exit(2)
     if not tab:
-        print("Ralph mode: nbenchctl rp select-* requires --tab.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp select-* requires --tab.", file=sys.stderr)
         sys.exit(2)
 
 # Validate prompt-get/prompt-set have required args
-if "rp" in tokens and ("prompt-get" in tokens or "prompt-set" in tokens) and any(token_has_nbenchctl(t) for t in tokens):
+if "rp" in tokens and ("prompt-get" in tokens or "prompt-set" in tokens) and any(token_has_fluxctl(t) for t in tokens):
     window = flag_value("--window")
     tab = flag_value("--tab")
 
     if not window:
-        print("Ralph mode: nbenchctl rp prompt-* requires --window.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp prompt-* requires --window.", file=sys.stderr)
         sys.exit(2)
     if not window.isdigit():
-        print("Ralph mode: nbenchctl rp prompt-* --window must be numeric.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp prompt-* --window must be numeric.", file=sys.stderr)
         sys.exit(2)
     if not tab:
-        print("Ralph mode: nbenchctl rp prompt-* requires --tab.", file=sys.stderr)
+        print("Ralph mode: fluxctl rp prompt-* requires --tab.", file=sys.stderr)
         sys.exit(2)
 
 sys.exit(0)

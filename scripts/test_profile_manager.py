@@ -31,7 +31,7 @@ def test_redaction_masks_sensitive_values():
 
 
 def test_skill_detection_dedupes_name_and_hash():
-    with tempfile.TemporaryDirectory(prefix="nbench-profile-skills-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="flux-profile-skills-") as tmp:
         root = Path(tmp)
         home = root / "home"
         cwd = root / "repo"
@@ -306,7 +306,7 @@ def test_publish_fetch_tombstone_roundtrip():
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
 
-    with tempfile.TemporaryDirectory(prefix="nbench-profile-service-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="flux-profile-service-") as tmp:
         root = Path(tmp)
         state_file = root / "state.json"
         config_file = root / "config.json"
@@ -384,7 +384,7 @@ def test_install_item_dry_run_outputs_commands():
 
 
 def test_saved_apps_remove_flow():
-    with tempfile.TemporaryDirectory(prefix="nbench-profile-saved-apps-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="flux-profile-saved-apps-") as tmp:
         state_file = Path(tmp) / "state.json"
         state_file.write_text(
             json.dumps(

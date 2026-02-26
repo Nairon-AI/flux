@@ -1,43 +1,43 @@
 # Changelog
 
-All notable changes to N-bench will be documented in this file.
+All notable changes to Flux will be documented in this file.
 
 ## [1.0.0] - 2026-02-23
 
-### Rebrand: Flux → N-bench
+### Rebrand: Flux → Flux
 
-N-bench is the new name. Same workflow engine, now with AI-native capability scoring.
+Flux is the new name. Same workflow engine, now with AI-native capability scoring.
 
 ### Added
 
-- **N-bench Score** (`/nbench:score`) — Compute your AI-native capability score from Claude Code session data
+- **Flux Score** (`/flux:score`) — Compute your AI-native capability score from Claude Code session data
   - 5 dimensions: Interview Depth, Pushback Ratio, Prompt Quality, Iteration Efficiency, Tool Breadth
   - Weighted composite score (0-100) with letter grades (S/A/B/C/D/F)
   - Output formats: table, JSON, YAML
   - Date filtering: `--since`, `--until`
   - Evidence export for recruiting: `--export evidence.yaml`
 
-- **Score Schema** (`docs/n-bench-score-schema.md`) — Full specification of scoring dimensions with SQL queries and evidence format
+- **Score Schema** (`docs/flux-score-schema.md`) — Full specification of scoring dimensions with SQL queries and evidence format
 
-- **Session Analysis Script** (`scripts/nbench-score.py`) — Python implementation based on ccql patterns
+- **Session Analysis Script** (`scripts/flux-score.py`) — Python implementation based on ccql patterns
   - Loads history, transcripts, todos from `~/.claude/projects/`
   - Computes all 5 dimension scores
   - CLI with flexible output options
 
 ### Changed
 
-- All commands renamed: `/flux:*` → `/nbench:*`
-- Plugin name: `flux` → `n-bench`
+- All commands renamed: `/flux:*` → `/flux:*`
+- Plugin name: `flux` → `flux`
 - GitHub repos renamed:
-  - `Nairon-AI/flux` → `Nairon-AI/n-bench`
-  - `Nairon-AI/flux-recommendations` → `Nairon-AI/n-bench-recommendations`
+  - `Nairon-AI/flux` → `Nairon-AI/flux`
+  - `Nairon-AI/flux-recommendations` → `Nairon-AI/flux-recommendations`
 
 ### Migration
 
 If upgrading from Flux:
-1. Uninstall old plugin: `/plugin uninstall nairon-n-bench`
-2. Install N-bench: `/plugin marketplace add Nairon-AI/n-bench`
-3. Commands work the same, just with `/nbench:` prefix
+1. Uninstall old plugin: `/plugin uninstall nairon-flux`
+2. Install Flux: `/plugin marketplace add Nairon-AI/flux`
+3. Commands work the same, just with `/flux:` prefix
 
 ---
 
@@ -63,11 +63,11 @@ If upgrading from Flux:
 
 ### Added
 
-- **Profile workflows** via `/nbench:profile`:
+- **Profile workflows** via `/flux:profile`:
   - export machine setup as immutable public-anonymous snapshots
   - import teammate profiles with compatible-only filtering + per-item consent
   - view snapshots and owner tombstone support
-  - app curation memory (`~/.nbench/profile-state.json`) and skills scope selection (`global|project|both`)
+  - app curation memory (`~/.flux/profile-state.json`) and skills scope selection (`global|project|both`)
 
 - **New script**: `scripts/profile-manager.py`
   - setup detection for MCP/CLI/skills/apps/patterns/model preferences
@@ -80,10 +80,10 @@ If upgrading from Flux:
   - profile coverage in `tests/scripts.test.ts`
   - `docs/profile-command-spec.md`, `docs/profile-schema.md`, `docs/profile-launch-checklist.md`
 
-- **Community discovery mode** for `/nbench:improve`:
+- **Community discovery mode** for `/flux:improve`:
   - `--discover` enables optional live search for novel optimizations from X/Twitter sources
   - Exa-first search with Twitter API fallback
-  - BYOK support via `~/.nbench/config.json` (`exa_api_key`, `twitter_api_key`)
+  - BYOK support via `~/.flux/config.json` (`exa_api_key`, `twitter_api_key`)
 
 - **Explainability mode** for recommendation transparency:
   - `--explain` includes top friction signals and detected gap summary
@@ -108,7 +108,7 @@ If upgrading from Flux:
 
 ### Added
 
-- **Optional user context boost** for `/nbench:improve`:
+- **Optional user context boost** for `/flux:improve`:
   - asks user for short pain-point description
   - maps plain-language frustrations into friction signals
   - significantly improves recommendation precision when provided
@@ -136,7 +136,7 @@ If upgrading from Flux:
 
 ### Changed
 
-- `/nbench:improve` output and docs improved for clarity and FAQ coverage
+- `/flux:improve` output and docs improved for clarity and FAQ coverage
 
 ## [flux 0.5.0] - 2026-02-21
 
@@ -166,7 +166,7 @@ If upgrading from Flux:
 ### Added
 
 - **E2E test suite** — Comprehensive tests using tuistory (Playwright for TUIs):
-  - `tests/scripts.test.ts` — 25 fast tests for all N-bench scripts (detect-installed, analyze-context, manage-preferences, etc.)
+  - `tests/scripts.test.ts` — 25 fast tests for all Flux scripts (detect-installed, analyze-context, manage-preferences, etc.)
   - `tests/claude-commands.test.ts` — 13 tests for Claude Code command invocation
   - Verifies plugin installation, skill loading, and command execution
 
@@ -195,7 +195,7 @@ If upgrading from Flux:
   - Dismiss recommendations you don't want
   - Record alternatives ("I use Otter instead of Granola")
   - "Always allow" session analysis (skip consent prompt)
-  - Stored in `~/.nbench/preferences.json`
+  - Stored in `~/.flux/preferences.json`
 
 - **New command flags**:
   - `--detect` — Show detected installed tools
@@ -218,7 +218,7 @@ If upgrading from Flux:
 
 ### Added
 
-- **`/nbench:improve` command** — Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Fetches recommendations from `Nairon-AI/n-bench-recommendations` database.
+- **`/flux:improve` command** — Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Fetches recommendations from `Nairon-AI/flux-recommendations` database.
 
 - **Session analysis consent flow** — Privacy-first approach using `mcp_question` for explicit user consent before analyzing Claude Code sessions. Displays what data is analyzed and confirms local-only processing.
 
@@ -234,9 +234,9 @@ If upgrading from Flux:
 
 - **Verification script** — `verify-install.sh` confirms installations via command existence, config checks, or MCP connectivity.
 
-- **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.nbench/snapshots/`.
+- **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.flux/snapshots/`.
 
-- **23 recommendations** in n-bench-recommendations database:
+- **23 recommendations** in flux-recommendations database:
   - MCPs (7): context7, exa, linear, supermemory, github, figma, excalidraw
   - CLI tools (6): lefthook, oxlint, beads, biome, jq, fzf
   - Applications (4): wispr-flow, granola, raycast, dia
@@ -253,15 +253,15 @@ If upgrading from Flux:
 
 - **Initial release** — AI-augmented SDLC workflow plugin for Claude Code.
 
-- **`/nbench:plan`** — AI-augmented planning with spec validation and worker subagent architecture.
+- **`/flux:plan`** — AI-augmented planning with spec validation and worker subagent architecture.
 
-- **`/nbench:work`** — Worker subagent execution per task with context isolation.
+- **`/flux:work`** — Worker subagent execution per task with context isolation.
 
-- **`/nbench:prime`** — Codebase health assessment.
+- **`/flux:prime`** — Codebase health assessment.
 
-- **`/nbench:sync`** — State synchronization across sessions.
+- **`/flux:sync`** — State synchronization across sessions.
 
-- **`/nbench:setup`** — Project initialization and configuration.
+- **`/flux:setup`** — Project initialization and configuration.
 
 - **Subagent architecture** — Context isolation per task prevents cross-contamination.
 

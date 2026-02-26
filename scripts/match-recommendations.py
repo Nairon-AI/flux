@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-N-bench Improve - SDLC-Aware Recommendation Engine
+Flux Improve - SDLC-Aware Recommendation Engine
 
 Analyzes workflow gaps across the SDLC and recommends tools that solve
 specific problems. Not spray-and-pray - only recommends what fills real gaps.
@@ -802,7 +802,7 @@ def main():
 
     # Get recommendations directory
     recs_dir = os.environ.get(
-        "NBENCH_RECS_DIR", os.path.expanduser("~/.nbench/recommendations")
+        "NBENCH_RECS_DIR", os.path.expanduser("~/.flux/recommendations")
     )
 
     # Get optional category filter

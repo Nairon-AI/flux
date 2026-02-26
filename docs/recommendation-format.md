@@ -1,8 +1,8 @@
 # Recommendation Format Guide
 
-N-bench recommendations are YAML files stored in `~/.nbench/recommendations`.
+Flux recommendations are YAML files stored in `~/.flux/recommendations`.
 
-Schema reference: `~/.nbench/recommendations/schema.yaml`
+Schema reference: `~/.flux/recommendations/schema.yaml`
 
 ## Required Fields
 

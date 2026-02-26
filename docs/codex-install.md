@@ -1,6 +1,6 @@
 # OpenAI Codex Installation
 
-N-bench works in OpenAI Codex CLI with near-parity to Claude Code. The install script converts Claude Code's plugin system to Codex's multi-agent roles, prompts, and config.
+Flux works in OpenAI Codex CLI with near-parity to Claude Code. The install script converts Claude Code's plugin system to Codex's multi-agent roles, prompts, and config.
 
 ## Requirements
 
@@ -10,27 +10,27 @@ N-bench works in OpenAI Codex CLI with near-parity to Claude Code. The install s
 
 ```bash
 # Clone the repo (one-time)
-git clone https://github.com/Nairon-AI/n-bench.git
-cd n-bench
+git clone https://github.com/Nairon-AI/flux.git
+cd flux
 
 # Run the install script
-./scripts/install-codex.sh nbench
+./scripts/install-codex.sh flux
 ```
 
 > Codex doesn't have a plugin marketplace yet, so installation requires cloning this repo. The script copies everything to `~/.codex/` — you can delete the clone after install (re-clone to update).
 
 ## Command Mapping
 
-Commands use the `/prompts:` prefix in Codex instead of `/nbench:`:
+Commands use the `/prompts:` prefix in Codex instead of `/flux:`:
 
 | Claude Code | Codex |
 |-------------|-------|
-| `/nbench:plan` | `/prompts:plan` |
-| `/nbench:work` | `/prompts:work` |
-| `/nbench:impl-review` | `/prompts:impl-review` |
-| `/nbench:plan-review` | `/prompts:plan-review` |
-| `/nbench:epic-review` | `/prompts:epic-review` |
-| `/nbench:interview` | `/prompts:interview` |
+| `/flux:plan` | `/prompts:plan` |
+| `/flux:work` | `/prompts:work` |
+| `/flux:impl-review` | `/prompts:impl-review` |
+| `/flux:plan-review` | `/prompts:plan-review` |
+| `/flux:epic-review` | `/prompts:epic-review` |
+| `/flux:interview` | `/prompts:interview` |
 
 ## What Works
 
@@ -38,7 +38,7 @@ Commands use the `/prompts:` prefix in Codex instead of `/nbench:`:
 - Multi-agent roles: 20 agents run as parallel Codex threads (up to 12 concurrent)
 - Cross-model reviews (Codex as review backend)
 - Ralph autonomous mode
-- nbenchctl CLI
+- fluxctl CLI
 
 ## Model Mapping (3-tier)
 
@@ -55,7 +55,7 @@ CODEX_MODEL_INTELLIGENT=gpt-5.3-codex \
 CODEX_MODEL_FAST=gpt-5.3-codex-spark \
 CODEX_REASONING_EFFORT=high \
 CODEX_MAX_THREADS=12 \
-./scripts/install-codex.sh nbench
+./scripts/install-codex.sh flux
 ```
 
 ## Per-Project Setup
@@ -63,17 +63,17 @@ CODEX_MAX_THREADS=12 \
 Run in each project:
 
 ```bash
-# Initialize .nbench/ directory
-~/.codex/bin/nbenchctl init
+# Initialize .flux/ directory
+~/.codex/bin/fluxctl init
 
-# Optional: copy nbenchctl locally for project portability
-mkdir -p .nbench/bin
-cp ~/.codex/bin/nbenchctl .nbench/bin/
-cp ~/.codex/bin/nbenchctl.py .nbench/bin/
-chmod +x .nbench/bin/nbenchctl
+# Optional: copy fluxctl locally for project portability
+mkdir -p .flux/bin
+cp ~/.codex/bin/fluxctl .flux/bin/
+cp ~/.codex/bin/fluxctl.py .flux/bin/
+chmod +x .flux/bin/fluxctl
 
 # Optional: configure review backend
-~/.codex/bin/nbenchctl config set review.backend codex
+~/.codex/bin/fluxctl config set review.backend codex
 ```
 
 ## Caveats

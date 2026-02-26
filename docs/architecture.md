@@ -1,11 +1,11 @@
-# N-bench Architecture
+# Flux Architecture
 
-How N-bench executes commands and turns workflow friction into actionable improvements.
+How Flux executes commands and turns workflow friction into actionable improvements.
 
 ## High-Level Flow
 
-1. User runs `/nbench:*` command.
-2. Command file in `commands/nbench/*.md` routes to a skill.
+1. User runs `/flux:*` command.
+2. Command file in `commands/flux/*.md` routes to a skill.
 3. Skill orchestrates scripts in `scripts/`.
 4. Scripts return structured JSON.
 5. Skill presents output and executes selected actions.
@@ -14,13 +14,13 @@ How N-bench executes commands and turns workflow friction into actionable improv
 
 ### Command Layer
 
-- Location: `commands/nbench/`
+- Location: `commands/flux/`
 - Purpose: thin routing layer from command to skill.
 
 Example:
-- `/nbench:improve` -> `skills/nbench-improve/`
-- `/nbench:plan` -> `skills/nbench-plan/`
-- `/nbench:work` -> `skills/nbench-work/`
+- `/flux:improve` -> `skills/flux-improve/`
+- `/flux:plan` -> `skills/flux-plan/`
+- `/flux:work` -> `skills/flux-work/`
 
 ### Skill Layer
 
@@ -43,30 +43,30 @@ Important scripts:
 
 ### Recommendations Database
 
-- Default path: `~/.nbench/recommendations`
-- Source: `https://github.com/Nairon-AI/n-bench-recommendations`
+- Default path: `~/.flux/recommendations`
+- Source: `https://github.com/Nairon-AI/flux-recommendations`
 - Categories: MCPs, CLI tools, skills, applications, workflow patterns, models
 
 ## Data Model
 
 ### Project-Local State
 
-- `.nbench/preferences.json` - dismissed recommendations, alternatives, consent preference
-- `.nbench/` task graph/specs for plan/work workflows
+- `.flux/preferences.json` - dismissed recommendations, alternatives, consent preference
+- `.flux/` task graph/specs for plan/work workflows
 
 ### User-Global State
 
-- `~/.nbench/recommendations` - cloned recommendations database
-- `~/.nbench/last_improve` - timestamp used by periodic nudge
-- `~/.nbench/config.json` - optional BYOK keys (`exa_api_key`, `twitter_api_key`)
-- `~/.nbench/profile-state.json` - saved application curation + published profile tokens
+- `~/.flux/recommendations` - cloned recommendations database
+- `~/.flux/last_improve` - timestamp used by periodic nudge
+- `~/.flux/config.json` - optional BYOK keys (`exa_api_key`, `twitter_api_key`)
+- `~/.flux/profile-state.json` - saved application curation + published profile tokens
 
 ## Privacy Model
 
 - Default behavior is local analysis.
 - Session analysis requires explicit consent unless user enabled always-allow.
-- Optional `/nbench:improve --discover` sends search queries to external providers.
-- `/nbench:profile` publishes public-anonymous snapshots with automatic secret redaction and minimal metadata.
+- Optional `/flux:improve --discover` sends search queries to external providers.
+- `/flux:profile` publishes public-anonymous snapshots with automatic secret redaction and minimal metadata.
 
 ## Reliability Model
 

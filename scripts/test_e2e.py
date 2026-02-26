@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-End Tests for N-bench Improve Pipeline
+End-to-End Tests for Flux Improve Pipeline
 
 Tests the full flow:
 1. parse-sessions.py extracts friction signals from session data
@@ -32,7 +32,7 @@ spec = importlib.util.spec_from_file_location(
 match_recs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(match_recs)
 
-RECS_DIR = os.path.expanduser("~/.nbench/recommendations")
+RECS_DIR = os.path.expanduser("~/.flux/recommendations")
 
 
 def test_friction_pattern_detection():

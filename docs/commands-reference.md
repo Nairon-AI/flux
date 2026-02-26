@@ -1,6 +1,6 @@
-# N-bench Commands Reference
+# Flux Commands Reference
 
-Complete reference for all available `/nbench:*` commands.
+Complete reference for all available `/flux:*` commands.
 
 ---
 
@@ -14,11 +14,11 @@ Complete reference for all available `/nbench:*` commands.
 
 ```bash
 # Marketplace
-/plugin marketplace add Nairon-AI/n-bench
-/plugin install n-bench@nairon-n-bench
+/plugin marketplace add Nairon-AI/flux
+/plugin install flux@nairon-flux
 
 # Manual
-git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
+git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 ```
 
 ---
@@ -27,12 +27,12 @@ git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:setup` | `/nbench:setup` | Optional local setup (installs local `nbenchctl` + project docs) |
-| `/nbench:interview` | `/nbench:interview <epic|task|file|idea>` | Deep requirements interview and refinement |
-| `/nbench:plan` | `/nbench:plan <idea or fn-N>` | Convert request into structured epic + tasks |
-| `/nbench:work` | `/nbench:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
+| `/flux:setup` | `/flux:setup` | Optional local setup (installs local `fluxctl` + project docs) |
+| `/flux:interview` | `/flux:interview <epic|task|file|idea>` | Deep requirements interview and refinement |
+| `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks |
+| `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
 
-### /nbench:setup
+### /flux:setup
 
 <!-- TODO: Add video showing setup flow -->
 <details>
@@ -40,9 +40,9 @@ git clone https://github.com/Nairon-AI/n-bench.git ~/.claude/plugins/n-bench
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes N-bench in your project. Creates `.nbench/` directory structure and bootstraps claudeception skill.
+Initializes Flux in your project. Creates `.flux/` directory structure and bootstraps claudeception skill.
 
-### /nbench:interview
+### /flux:interview
 
 <!-- TODO: Add video showing interview flow -->
 <details>
@@ -52,7 +52,7 @@ Initializes N-bench in your project. Creates `.nbench/` directory structure and 
 
 Gathers requirements through structured questions. Use `--deep` for high-risk features.
 
-### /nbench:plan
+### /flux:plan
 
 <!-- TODO: Add video showing plan creation -->
 <details>
@@ -62,7 +62,7 @@ Gathers requirements through structured questions. Use `--deep` for high-risk fe
 
 Breaks down an idea into atomic tasks with dependencies and acceptance criteria.
 
-### /nbench:work
+### /flux:work
 
 <!-- TODO: Add video showing work execution -->
 <details>
@@ -76,7 +76,7 @@ Executes a task with automatic context reload and drift checks.
 
 ## Improve and Discovery
 
-<!-- TODO: Add video showing /nbench:improve full flow -->
+<!-- TODO: Add video showing /flux:improve full flow -->
 <details>
 <summary>📹 Video: Tool discovery and recommendations</summary>
 <p><em>Coming soon</em></p>
@@ -84,26 +84,26 @@ Executes a task with automatic context reload and drift checks.
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:improve` | `/nbench:improve` | Analyze environment + sessions and recommend improvements |
-| `/nbench:improve --detect` | `/nbench:improve --detect` | Show detected setup only |
-| `/nbench:improve --score` | `/nbench:improve --score` | Show workflow score only |
-| `/nbench:improve --list` | `/nbench:improve --list` | List available recommendations |
-| `/nbench:improve --skip-sessions` | `/nbench:improve --skip-sessions` | Skip session analysis (repo/setup only) |
-| `/nbench:improve --discover` | `/nbench:improve --discover` | Optional live community discovery (Exa/Twitter) |
-| `/nbench:improve --explain` | `/nbench:improve --explain` | Include detailed explainability output |
-| `/nbench:improve --category` | `/nbench:improve --category=<mcp\|cli\|plugin\|skill\|pattern>` | Filter recommendation category |
-| `/nbench:improve --dismiss` | `/nbench:improve --dismiss <name>` | Dismiss recommendation |
-| `/nbench:improve --alternative` | `/nbench:improve --alternative <rec> <alt>` | Store alternative tool |
-| `/nbench:improve --preferences` | `/nbench:improve --preferences` | Show preference state |
-| `/nbench:improve --clear-preferences` | `/nbench:improve --clear-preferences` | Reset recommendation preferences |
-| `/nbench:improve --sessions always` | `/nbench:improve --sessions always` | Always allow session analysis |
-| `/nbench:improve --sessions ask` | `/nbench:improve --sessions ask` | Ask each run for session analysis |
+| `/flux:improve` | `/flux:improve` | Analyze environment + sessions and recommend improvements |
+| `/flux:improve --detect` | `/flux:improve --detect` | Show detected setup only |
+| `/flux:improve --score` | `/flux:improve --score` | Show workflow score only |
+| `/flux:improve --list` | `/flux:improve --list` | List available recommendations |
+| `/flux:improve --skip-sessions` | `/flux:improve --skip-sessions` | Skip session analysis (repo/setup only) |
+| `/flux:improve --discover` | `/flux:improve --discover` | Optional live community discovery (Exa/Twitter) |
+| `/flux:improve --explain` | `/flux:improve --explain` | Include detailed explainability output |
+| `/flux:improve --category` | `/flux:improve --category=<mcp\|cli\|plugin\|skill\|pattern>` | Filter recommendation category |
+| `/flux:improve --dismiss` | `/flux:improve --dismiss <name>` | Dismiss recommendation |
+| `/flux:improve --alternative` | `/flux:improve --alternative <rec> <alt>` | Store alternative tool |
+| `/flux:improve --preferences` | `/flux:improve --preferences` | Show preference state |
+| `/flux:improve --clear-preferences` | `/flux:improve --clear-preferences` | Reset recommendation preferences |
+| `/flux:improve --sessions always` | `/flux:improve --sessions always` | Always allow session analysis |
+| `/flux:improve --sessions ask` | `/flux:improve --sessions ask` | Ask each run for session analysis |
 
 ---
 
-## N-bench Score
+## Flux Score
 
-<!-- TODO: Add video showing /nbench:score output -->
+<!-- TODO: Add video showing /flux:score output -->
 <details>
 <summary>📹 Video: AI-native capability scoring</summary>
 <p><em>Coming soon</em></p>
@@ -111,10 +111,10 @@ Executes a task with automatic context reload and drift checks.
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:score` | `/nbench:score` | Compute AI-native capability score |
-| `/nbench:score --since` | `/nbench:score --since 2026-02-01` | Score from specific date |
-| `/nbench:score --format` | `/nbench:score --format json` | Output as JSON/YAML |
-| `/nbench:score --export` | `/nbench:score --export evidence.yaml` | Export for recruiting
+| `/flux:score` | `/flux:score` | Compute AI-native capability score |
+| `/flux:score --since` | `/flux:score --since 2026-02-01` | Score from specific date |
+| `/flux:score --format` | `/flux:score --format json` | Output as JSON/YAML |
+| `/flux:score --export` | `/flux:score --export evidence.yaml` | Export for recruiting
 
 ---
 
@@ -128,11 +128,11 @@ Executes a task with automatic context reload and drift checks.
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:profile` | `/nbench:profile` | Export current SDLC setup and publish immutable share link |
-| `/nbench:profile export` | `/nbench:profile export [--skills=global\|project\|both]` | Export snapshot with skill-scope selection and app curation memory |
-| `/nbench:profile view` | `/nbench:profile view <url\|id>` | View a published profile snapshot |
-| `/nbench:profile import` | `/nbench:profile import <url\|id>` | Import profile with compatible-only filtering and per-item consent |
-| `/nbench:profile tombstone` | `/nbench:profile tombstone <url\|id>` | Tombstone a previously published immutable link |
+| `/flux:profile` | `/flux:profile` | Export current SDLC setup and publish immutable share link |
+| `/flux:profile export` | `/flux:profile export [--skills=global\|project\|both]` | Export snapshot with skill-scope selection and app curation memory |
+| `/flux:profile view` | `/flux:profile view <url\|id>` | View a published profile snapshot |
+| `/flux:profile import` | `/flux:profile import <url\|id>` | Import profile with compatible-only filtering and per-item consent |
+| `/flux:profile tombstone` | `/flux:profile tombstone <url\|id>` | Tombstone a previously published immutable link |
 
 ---
 
@@ -140,15 +140,15 @@ Executes a task with automatic context reload and drift checks.
 
 <!-- TODO: Add video showing review workflows -->
 <details>
-<summary>📹 Video: Code review with N-bench</summary>
+<summary>📹 Video: Code review with Flux</summary>
 <p><em>Coming soon</em></p>
 </details>
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:plan-review` | `/nbench:plan-review <fn-N> [--review=rp\|codex\|export]` | Review plan quality before execution |
-| `/nbench:impl-review` | `/nbench:impl-review [--review=rp\|codex\|export]` | Review implementation quality |
-| `/nbench:epic-review` | `/nbench:epic-review <fn-N> [--review=rp\|codex\|none]` | Confirm epic completion aligns with spec |
+| `/flux:plan-review` | `/flux:plan-review <fn-N> [--review=rp\|codex\|export]` | Review plan quality before execution |
+| `/flux:impl-review` | `/flux:impl-review [--review=rp\|codex\|export]` | Review implementation quality |
+| `/flux:epic-review` | `/flux:epic-review <fn-N> [--review=rp\|codex\|none]` | Confirm epic completion aligns with spec |
 
 ---
 
@@ -162,10 +162,10 @@ Executes a task with automatic context reload and drift checks.
 
 | Command | Usage | Purpose |
 |---------|-------|---------|
-| `/nbench:prime` | `/nbench:prime [--report-only\|--fix-all\|path]` | Run readiness audit and optional fixes |
-| `/nbench:sync` | `/nbench:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
-| `/nbench:ralph-init` | `/nbench:ralph-init` | Scaffold repo-local Ralph autonomous harness |
-| `/nbench:uninstall` | `/nbench:uninstall` | Remove N-bench project-local files |
+| `/flux:prime` | `/flux:prime [--report-only\|--fix-all\|path]` | Run readiness audit and optional fixes |
+| `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
+| `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
+| `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |
 
 ---
 
@@ -180,12 +180,12 @@ Executes a task with automatic context reload and drift checks.
 </details>
 
 ```bash
-/nbench:interview Add role-based permissions   # Gather requirements
-/nbench:plan Add role-based permissions        # Create tasks
-/nbench:work fn-1.1                            # Execute first task
-/nbench:work fn-1.2                            # Continue...
-/nbench:impl-review --review=codex             # Review implementation
-/nbench:epic-review fn-1                       # Verify completion
+/flux:interview Add role-based permissions   # Gather requirements
+/flux:plan Add role-based permissions        # Create tasks
+/flux:work fn-1.1                            # Execute first task
+/flux:work fn-1.2                            # Continue...
+/flux:impl-review --review=codex             # Review implementation
+/flux:epic-review fn-1                       # Verify completion
 ```
 
 ### Workflow Optimization
@@ -197,23 +197,23 @@ Executes a task with automatic context reload and drift checks.
 </details>
 
 ```bash
-/nbench:improve                    # Analyze and recommend
-/nbench:improve --discover         # Include community discoveries
-/nbench:improve --explain          # See matching rationale
+/flux:improve                    # Analyze and recommend
+/flux:improve --discover         # Include community discoveries
+/flux:improve --explain          # See matching rationale
 ```
 
 ### AI-Native Scoring
 
 <!-- TODO: Add video showing score generation -->
 <details>
-<summary>📹 Video: Generating your N-bench score</summary>
+<summary>📹 Video: Generating your Flux score</summary>
 <p><em>Coming soon</em></p>
 </details>
 
 ```bash
-/nbench:score                      # Full score report
-/nbench:score --since 2026-02-01   # Last month only
-/nbench:score --export resume.yaml # For recruiting
+/flux:score                      # Full score report
+/flux:score --since 2026-02-01   # Last month only
+/flux:score --export resume.yaml # For recruiting
 ```
 
 ### Team Onboarding
@@ -225,6 +225,6 @@ Executes a task with automatic context reload and drift checks.
 </details>
 
 ```bash
-/nbench:profile export             # Generate shareable link
-/nbench:profile import <link>      # Import teammate's setup
+/flux:profile export             # Generate shareable link
+/flux:profile import <link>      # Import teammate's setup
 ```

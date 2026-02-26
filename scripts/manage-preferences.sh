@@ -1,11 +1,11 @@
 #!/bin/bash
-# N-bench Improve - Preferences Management
+# Flux Improve - Preferences Management
 # Manage dismissed recommendations and user alternatives
 
 set -e
 
-# Use project-local .nbench/ directory (like flow-next uses .flow/)
-PREFS_FILE=".nbench/preferences.json"
+# Use project-local .flux/ directory (like flow-next uses .flow/)
+PREFS_FILE=".flux/preferences.json"
 
 # Ensure directory exists
 mkdir -p "$(dirname "$PREFS_FILE")"
@@ -95,7 +95,7 @@ undismiss() {
 # Usage
 usage() {
     cat <<EOF
-N-bench Preferences Manager
+Flux Preferences Manager
 
 Usage:
   $0 dismiss <name>              Don't recommend this again

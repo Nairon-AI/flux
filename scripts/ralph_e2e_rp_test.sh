@@ -5,12 +5,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Safety: never run tests from the main plugin repo
-if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/nbench/.claude-plugin/plugin.json" ]]; then
+if [[ -f "$PWD/.claude-plugin/marketplace.json" ]] || [[ -f "$PWD/plugins/flux/.claude-plugin/plugin.json" ]]; then
   echo "ERROR: refusing to run from main plugin repo. Run from any other directory." >&2
   exit 1
 fi
 
-TEST_DIR="${TEST_DIR:-/tmp/nbench-ralph-e2e-rp-$$}"
+TEST_DIR="${TEST_DIR:-/tmp/flux-ralph-e2e-rp-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 FLOWCTL=""
 
@@ -139,7 +139,7 @@ EOF
 
 cat > package.json <<'EOF'
 {
-  "name": "tmp-nbench-ralph",
+  "name": "tmp-flux-ralph",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -150,7 +150,7 @@ cat > package.json <<'EOF'
 EOF
 
 cat > README.md <<'EOF'
-# tmp-nbench-ralph
+# tmp-flux-ralph
 
 TBD
 EOF
@@ -159,11 +159,11 @@ git add .
 git commit -m "chore: init" >/dev/null
 
 mkdir -p scripts/ralph
-cp -R "$PLUGIN_ROOT/skills/nbench-ralph-init/templates/." scripts/ralph/
-cp "$PLUGIN_ROOT/scripts/nbenchctl.py" scripts/ralph/nbenchctl.py
-cp "$PLUGIN_ROOT/scripts/nbenchctl" scripts/ralph/nbenchctl
-chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/nbenchctl
-FLOWCTL="scripts/ralph/nbenchctl"
+cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
+cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
+cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
+FLOWCTL="scripts/ralph/fluxctl"
 
 python3 - <<'PY'
 from pathlib import Path
@@ -181,19 +181,19 @@ text = re.sub(r"^EPICS=.*$", "EPICS=fn-1,fn-2", text, flags=re.M)
 cfg.write_text(text)
 PY
 
-scripts/ralph/nbenchctl init --json >/dev/null
+scripts/ralph/fluxctl init --json >/dev/null
 
-# Mirror /nbench:setup - add .nbench/bin/ + usage.md + CLAUDE.md
-mkdir -p .nbench/bin
-cp "$PLUGIN_ROOT/scripts/nbenchctl" .nbench/bin/nbenchctl
-cp "$PLUGIN_ROOT/scripts/nbenchctl.py" .nbench/bin/nbenchctl.py
-chmod +x .nbench/bin/nbenchctl
-cp "$PLUGIN_ROOT/skills/nbench-setup/templates/usage.md" .nbench/usage.md
-cat "$PLUGIN_ROOT/skills/nbench-setup/templates/claude-md-snippet.md" > CLAUDE.md
-echo -e "${GREEN}✓${NC} Setup mirrored (.nbench/bin/, usage.md, CLAUDE.md)"
+# Mirror /flux:setup - add .flux/bin/ + usage.md + CLAUDE.md
+mkdir -p .flux/bin
+cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
+cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py
+chmod +x .flux/bin/fluxctl
+cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .flux/usage.md
+cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md
+echo -e "${GREEN}✓${NC} Setup mirrored (.flux/bin/, usage.md, CLAUDE.md)"
 
-scripts/ralph/nbenchctl epic create --title "Tiny lib" --json >/dev/null
-scripts/ralph/nbenchctl epic create --title "Tiny follow-up" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny lib" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny follow-up" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -243,9 +243,9 @@ Edit src/index.ts and README.md only. Repo is source-only (no build step).
 - None
 EOF
 
-scripts/ralph/nbenchctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
-scripts/ralph/nbenchctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
-scripts/ralph/nbenchctl epic set-plan-review-status fn-2 --status ship --json >/dev/null
+scripts/ralph/fluxctl epic set-plan fn-1 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/fluxctl epic set-plan fn-2 --file "$TEST_DIR/epic.md" --json >/dev/null
+scripts/ralph/fluxctl epic set-plan-review-status fn-2 --status ship --json >/dev/null
 
 cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] Export `add(a: number, b: number): number` from `src/index.ts`
@@ -255,8 +255,8 @@ cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] `npm test` passes (smoke only)
 EOF
 
-scripts/ralph/nbenchctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
-scripts/ralph/nbenchctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"
@@ -330,7 +330,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 for tid in ["fn-1.1", "fn-2.1"]:
-    data = json.loads(Path(f".nbench/tasks/{tid}.json").read_text())
+    data = json.loads(Path(f".flux/tasks/{tid}.json").read_text())
     assert data["status"] == "done"
 runs = [p for p in Path("scripts/ralph/runs").iterdir() if p.is_dir() and p.name != ".gitkeep"]
 runs.sort()
@@ -358,12 +358,12 @@ if [[ "${FLOW_RALPH_VERBOSE:-}" == "1" ]]; then
   log_file="scripts/ralph/runs/$run_dir/ralph.log"
   [[ -f "$log_file" ]] || fail "missing verbose log $log_file"
   if command -v rg >/dev/null 2>&1; then
-    rg -q "nbenchctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
-    rg -q "nbenchctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
+    rg -q "fluxctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
+    rg -q "fluxctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
     rg -q "REVIEW_RECEIPT_WRITTEN" "$log_file" || fail "missing receipt marker in ralph.log"
   else
-    grep -q "nbenchctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
-    grep -q "nbenchctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
+    grep -q "fluxctl rp setup-review" "$log_file" || fail "missing setup-review in ralph.log"
+    grep -q "fluxctl rp chat-send" "$log_file" || fail "missing chat-send in ralph.log"
     grep -q "REVIEW_RECEIPT_WRITTEN" "$log_file" || fail "missing receipt marker in ralph.log"
   fi
 fi

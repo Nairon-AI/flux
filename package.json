@@ -1,5 +1,5 @@
 {
-  "name": "n-bench",
+  "name": "flux",
   "version": "1.0.0",
   "description": "AI-native capability benchmarking and structured SDLC workflow for Claude Code",
   "type": "module",

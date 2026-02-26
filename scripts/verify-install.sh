@@ -1,5 +1,5 @@
 #!/bin/bash
-# N-bench Improve - Installation Verification
+# Flux Improve - Installation Verification
 # Verifies that installed tools are working
 
 set -e

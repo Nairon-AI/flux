@@ -1,6 +1,6 @@
 ---
 name: build-scout
-description: Used by /nbench:prime to analyze build system, scripts, and CI configuration. Do not invoke directly.
+description: Used by /flux:prime to analyze build system, scripts, and CI configuration. Do not invoke directly.
 model: claude-sonnet-4-6
 disallowedTools: Edit, Write, Task
 color: "#F59E0B"
