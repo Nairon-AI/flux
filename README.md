@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.5.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.6.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -232,6 +232,29 @@ Target: **95+ strict score** = codebase a senior engineer would respect.
 
 That's it. Scope → Build → Review → Improve → Clean. Repeat.
 
+### Build Persistent Memory
+
+Flux includes a **brain vault** — persistent memory that makes the agent smarter over time. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing).
+
+```bash
+# After a session — capture what was learned
+/flux:reflect
+
+# Weekly — mine past conversations for patterns you missed
+/flux:ruminate
+
+# Monthly — prune stale notes, extract new principles
+/flux:meditate
+```
+
+**What it does:**
+- Mistakes don't repeat (they're captured via `/flux:reflect`)
+- Codebase gotchas persist across sessions
+- Engineering principles ground decisions (16 battle-tested principles included)
+- Past conversations get mined for patterns you missed
+
+The brain vault lives at `brain/` and is Obsidian-compatible. Session start automatically injects the brain index so the agent knows what knowledge is available.
+
 > **You can stop reading here.** Everything below is optional deep-dives.
 
 ---
@@ -331,6 +354,9 @@ CTO-level observability:
 | `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
 | `/flux:desloppify` | Systematic code quality improvement (scan → fix loop) |
 | `/flux:improve` | Analyze sessions, recommend tools |
+| `/flux:reflect` | Capture learnings from current session into brain vault |
+| `/flux:ruminate` | Mine past conversations for uncaptured patterns |
+| `/flux:meditate` | Audit and prune brain vault, extract new principles |
 | `/flux:score` | Compute AI-native capability score |
 | `/flux:profile` | Export/share SDLC profile |
 | `/flux:contribute` | Report bug and auto-create PR to fix Flux |

@@ -1,6 +1,18 @@
 {
-  "description": "Ralph workflow guards - only active when FLOW_RALPH=1 and ralph-init has been run",
+  "description": "Flux workflow hooks: Ralph guards + Brain vault persistence",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/inject-brain.sh\" ] && \"$PLUGIN_ROOT/hooks/inject-brain.sh\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|Execute",
@@ -30,6 +42,16 @@
           {
             "type": "command",
             "command": "[ ! -f scripts/ralph/hooks/ralph-guard.py ] || scripts/ralph/hooks/ralph-guard.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "brain/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/auto-index-brain.sh\" ] && \"$PLUGIN_ROOT/hooks/auto-index-brain.sh\" || true",
             "timeout": 5
           }
         ]
