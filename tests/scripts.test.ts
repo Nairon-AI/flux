@@ -313,7 +313,7 @@ describe('Integration', () => {
     const recommendations = await $`echo ${matchInput} | python3 ${scriptPath}`.env({
       ...process.env,
       CLAUDE_PLUGIN_ROOT: FLUX_ROOT,
-    }).text().catch(e => '[]')
+    }).text().catch(() => '[]')
     
     expect(recommendations).toBeTruthy()
   }, SCRIPT_TIMEOUT * 3)
@@ -432,6 +432,29 @@ describe('analyze-sessions.sh (Session Parser)', () => {
       expect(parsed.projects_analyzed).toBeInstanceOf(Array)
     }
   }, SCRIPT_TIMEOUT)
+})
+
+describe('Skill File Structure', () => {
+  
+  test('flux-scope skill has required files', () => {
+    const skillDir = join(FLUX_ROOT, 'skills', 'flux-scope')
+    expect(existsSync(join(skillDir, 'SKILL.md'))).toBe(true)
+    expect(existsSync(join(skillDir, 'phases.md'))).toBe(true)
+    expect(existsSync(join(skillDir, 'questions.md'))).toBe(true)
+    expect(existsSync(join(skillDir, 'explore.md'))).toBe(true)
+    expect(existsSync(join(skillDir, 'approaches.md'))).toBe(true)
+  })
+
+  test('flux-scope command file exists', () => {
+    const commandFile = join(FLUX_ROOT, 'commands', 'flux', 'scope.md')
+    expect(existsSync(commandFile)).toBe(true)
+  })
+
+  test('flux-plan skill has required files', () => {
+    const skillDir = join(FLUX_ROOT, 'skills', 'flux-plan')
+    expect(existsSync(join(skillDir, 'SKILL.md'))).toBe(true)
+    expect(existsSync(join(skillDir, 'steps.md'))).toBe(true)
+  })
 })
 
 describe('Edge Cases', () => {
