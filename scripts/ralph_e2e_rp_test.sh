@@ -12,7 +12,7 @@ fi
 
 TEST_DIR="${TEST_DIR:-/tmp/flux-ralph-e2e-rp-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
-FLOWCTL=""
+FLUXCTL=""
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -163,7 +163,7 @@ cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
-FLOWCTL="scripts/ralph/fluxctl"
+FLUXCTL="scripts/ralph/fluxctl"
 
 python3 - <<'PY'
 from pathlib import Path
@@ -320,9 +320,9 @@ if [[ "${RP_PREFLIGHT:-0}" == "1" ]]; then
   cat > "$preflight_msg" <<'EOF'
 Smoke preflight: confirm chat pipeline.
 EOF
-  eval "$(retry_cmd "rp setup-review" 180 2 "$FLOWCTL" rp setup-review --repo-root "$REPO_ROOT" --summary "Smoke preflight")"
+  eval "$(retry_cmd "rp setup-review" 180 2 "$FLUXCTL" rp setup-review --repo-root "$REPO_ROOT" --summary "Smoke preflight")"
   [[ -n "$W" && -n "$T" ]] || fail "setup-review failed: W=$W T=$T"
-  retry_cmd "rp chat-send" 180 2 "$FLOWCTL" rp chat-send --window "$W" --tab "$T" --message-file "$preflight_msg" --new-chat --chat-name "Smoke Preflight" >/dev/null
+  retry_cmd "rp chat-send" 180 2 "$FLUXCTL" rp chat-send --window "$W" --tab "$T" --message-file "$preflight_msg" --new-chat --chat-name "Smoke Preflight" >/dev/null
 fi
 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh
 

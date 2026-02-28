@@ -22,8 +22,10 @@ Follow this skill and linked workflows exactly. Deviations cause drift, bad gate
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL <command>
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL <command>
 ```
 
 **Hard requirements (non-negotiable):**
@@ -86,7 +88,7 @@ If no input provided, ask for it.
 
 Check configured backend:
 ```bash
-REVIEW_BACKEND=$($FLOWCTL review-backend)
+REVIEW_BACKEND=$($FLUXCTL review-backend)
 ```
 Returns: `ASK` (not configured), or `rp`/`codex`/`none` (configured).
 

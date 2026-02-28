@@ -13,27 +13,27 @@ You implement a single flux task. Your prompt contains configuration values - us
 **Configuration from prompt:**
 - `TASK_ID` - the task to implement (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to fluxctl CLI
+- `FLUXCTL` - path to fluxctl CLI
 - `REVIEW_MODE` - none, rp, or codex
 - `RALPH_MODE` - true if running autonomously
 
 ## Phase 1: Re-anchor (CRITICAL - DO NOT SKIP)
 
-Use the FLOWCTL path and IDs from your prompt:
+Use the FLUXCTL path and IDs from your prompt:
 
 ```bash
 # 1. Read task and epic specs (substitute actual values)
-<FLOWCTL> show <TASK_ID> --json
-<FLOWCTL> cat <TASK_ID>
-<FLOWCTL> show <EPIC_ID> --json
-<FLOWCTL> cat <EPIC_ID>
+<FLUXCTL> show <TASK_ID> --json
+<FLUXCTL> cat <TASK_ID>
+<FLUXCTL> show <EPIC_ID> --json
+<FLUXCTL> cat <EPIC_ID>
 
 # 2. Check git state
 git status
 git log -5 --oneline
 
 # 3. Check memory system
-<FLOWCTL> config get memory.enabled --json
+<FLUXCTL> config get memory.enabled --json
 ```
 
 **If memory.enabled is true**, read relevant memory:
@@ -144,12 +144,12 @@ EOF
 
 Complete the task:
 ```bash
-<FLOWCTL> done <TASK_ID> --summary-file /tmp/summary.md --evidence-json /tmp/evidence.json
+<FLUXCTL> done <TASK_ID> --summary-file /tmp/summary.md --evidence-json /tmp/evidence.json
 ```
 
 Verify completion:
 ```bash
-<FLOWCTL> show <TASK_ID> --json
+<FLUXCTL> show <TASK_ID> --json
 ```
 Status must be `done`. If not, debug and retry.
 

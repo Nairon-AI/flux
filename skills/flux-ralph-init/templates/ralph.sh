@@ -27,8 +27,8 @@ export PYTHON_BIN
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONFIG="$SCRIPT_DIR/config.env"
-FLOWCTL="$SCRIPT_DIR/fluxctl"
-FLOWCTL_PY="$SCRIPT_DIR/fluxctl.py"
+FLUXCTL="$SCRIPT_DIR/fluxctl"
+FLUXCTL_PY="$SCRIPT_DIR/fluxctl.py"
 
 fail() { echo "ralph: $*" >&2; exit 1; }
 
@@ -56,12 +56,12 @@ log() {
 # Ensure fluxctl is runnable even when NTFS exec bit / shebang handling is flaky on Windows
 ensure_fluxctl_wrapper() {
   # If fluxctl exists and is executable, use it
-  if [[ -f "$FLOWCTL" && -x "$FLOWCTL" ]]; then
+  if [[ -f "$FLUXCTL" && -x "$FLUXCTL" ]]; then
     return 0
   fi
 
   # On Windows or if fluxctl not executable, create a wrapper that calls Python explicitly
-  if [[ -f "$FLOWCTL_PY" ]]; then
+  if [[ -f "$FLUXCTL_PY" ]]; then
     local wrapper="$SCRIPT_DIR/fluxctl-wrapper.sh"
     cat > "$wrapper" <<SH
 #!/usr/bin/env bash
@@ -72,8 +72,8 @@ command -v "\$PY" >/dev/null 2>&1 || PY="python"
 exec "\$PY" "\$DIR/fluxctl.py" "\$@"
 SH
     chmod +x "$wrapper" 2>/dev/null || true
-    FLOWCTL="$wrapper"
-    export FLOWCTL
+    FLUXCTL="$wrapper"
+    export FLUXCTL
     return 0
   fi
 
@@ -257,17 +257,17 @@ ui_iteration() {
   ui ""
   ui "${C_BOLD}${C_CYAN}🔄 Iteration $iter${C_RESET}                                              ${C_DIM}[${elapsed}]${C_RESET}"
   if [[ "$status" == "plan" ]]; then
-    item_json="$("$FLOWCTL" show "$epic" --json 2>/dev/null || true)"
+    item_json="$("$FLUXCTL" show "$epic" --json 2>/dev/null || true)"
     title="$(get_title "$item_json")"
     ui "   ${C_DIM}Epic:${C_RESET} ${C_BOLD}$epic${C_RESET} ${C_DIM}\"$title\"${C_RESET}"
     ui "   ${C_DIM}Phase:${C_RESET} ${C_YELLOW}Planning${C_RESET}"
   elif [[ "$status" == "work" ]]; then
-    item_json="$("$FLOWCTL" show "$task" --json 2>/dev/null || true)"
+    item_json="$("$FLUXCTL" show "$task" --json 2>/dev/null || true)"
     title="$(get_title "$item_json")"
     ui "   ${C_DIM}Task:${C_RESET} ${C_BOLD}$task${C_RESET} ${C_DIM}\"$title\"${C_RESET}"
     ui "   ${C_DIM}Phase:${C_RESET} ${C_MAGENTA}Implementation${C_RESET}"
   elif [[ "$status" == "completion_review" ]]; then
-    item_json="$("$FLOWCTL" show "$epic" --json 2>/dev/null || true)"
+    item_json="$("$FLUXCTL" show "$epic" --json 2>/dev/null || true)"
     title="$(get_title "$item_json")"
     ui "   ${C_DIM}Epic:${C_RESET} ${C_BOLD}$epic${C_RESET} ${C_DIM}\"$title\"${C_RESET}"
     ui "   ${C_DIM}Phase:${C_RESET} ${C_GREEN}Completion Review${C_RESET}"
@@ -368,7 +368,7 @@ ui_waiting() {
 }
 
 [[ -f "$CONFIG" ]] || fail "config file not found: $CONFIG"
-[[ -x "$FLOWCTL" ]] || fail "missing fluxctl"
+[[ -x "$FLUXCTL" ]] || fail "missing fluxctl"
 
 # shellcheck disable=SC1090
 set -a
@@ -766,7 +766,7 @@ PY
 list_open_epics() {
   local tmpfile
   tmpfile="$(mktemp)"
-  "$FLOWCTL" epics --json 2>/dev/null > "$tmpfile"
+  "$FLUXCTL" epics --json 2>/dev/null > "$tmpfile"
   "$PYTHON_BIN" - "$tmpfile" <<'PY'
 import sys, json
 try:
@@ -791,7 +791,7 @@ maybe_close_epics() {
   fi
   [[ -z "$epics" ]] && return 0
   for epic in $epics; do
-    json="$("$FLOWCTL" show "$epic" --json 2>/dev/null || true)"
+    json="$("$FLUXCTL" show "$epic" --json 2>/dev/null || true)"
     [[ -z "$json" ]] && continue
     status="$(json_get status "$json")"
     [[ "$status" == "done" ]] && continue
@@ -809,7 +809,7 @@ maybe_close_epics() {
           continue
         fi
       fi
-      "$FLOWCTL" epic close "$epic" --json >/dev/null 2>&1 || true
+      "$FLUXCTL" epic close "$epic" --json >/dev/null 2>&1 || true
     fi
   done
 }
@@ -891,7 +891,7 @@ while (( iter <= MAX_ITERATIONS )); do
   # This ensures dependent epics become unblocked in the same iteration
   maybe_close_epics
 
-  selector_args=("$FLOWCTL" next --json)
+  selector_args=("$FLUXCTL" next --json)
   [[ -n "$EPICS_FILE" ]] && selector_args+=(--epics-file "$EPICS_FILE")
   [[ "$REQUIRE_PLAN_REVIEW" == "1" ]] && selector_args+=(--require-plan-review)
   [[ "$COMPLETION_REVIEW" != "none" ]] && selector_args+=(--require-completion-review)
@@ -1062,10 +1062,10 @@ Violations break automation and leave the user with incomplete work. Be precise,
       log "missing plan receipt; forcing retry"
       # Delete corrupted/partial receipt so next attempt starts clean
       rm -f "$REVIEW_RECEIPT_PATH" 2>/dev/null || true
-      "$FLOWCTL" epic set-plan-review-status "$epic_id" --status needs_work --json >/dev/null 2>&1 || true
+      "$FLUXCTL" epic set-plan-review-status "$epic_id" --status needs_work --json >/dev/null 2>&1 || true
       force_retry=1
     fi
-    epic_json="$("$FLOWCTL" show "$epic_id" --json 2>/dev/null || true)"
+    epic_json="$("$FLUXCTL" show "$epic_id" --json 2>/dev/null || true)"
     plan_review_status="$(json_get plan_review_status "$epic_json")"
   fi
   completion_review_status=""
@@ -1077,10 +1077,10 @@ Violations break automation and leave the user with incomplete work. Be precise,
       completion_receipt_ok="0"
       # Delete corrupted/partial receipt so next attempt starts clean
       rm -f "$REVIEW_RECEIPT_PATH" 2>/dev/null || true
-      "$FLOWCTL" epic set-completion-review-status "$epic_id" --status needs_work --json >/dev/null 2>&1 || true
+      "$FLUXCTL" epic set-completion-review-status "$epic_id" --status needs_work --json >/dev/null 2>&1 || true
       force_retry=1
     fi
-    epic_json="$("$FLOWCTL" show "$epic_id" --json 2>/dev/null || true)"
+    epic_json="$("$FLUXCTL" show "$epic_id" --json 2>/dev/null || true)"
     completion_review_status="$(json_get completion_review_status "$epic_json")"
     if [[ "$completion_review_status" == "ship" && "$completion_receipt_ok" == "1" ]]; then
       # Completion review passed - epic can now be closed by maybe_close_epics next iteration
@@ -1128,7 +1128,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
   fi
 
   if [[ "$status" == "work" ]]; then
-    task_json="$("$FLOWCTL" show "$task_id" --json 2>/dev/null || true)"
+    task_json="$("$FLUXCTL" show "$task_id" --json 2>/dev/null || true)"
     task_status="$(json_get status "$task_json")"
     if [[ "$task_status" == "done" ]]; then
       if [[ "$impl_receipt_ok" == "0" ]]; then
@@ -1136,7 +1136,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
         # Reset to todo so fluxctl next picks it up again (prevents task jumping)
         echo "ralph: task done but receipt missing; resetting to todo" >> "$iter_log"
         log "task $task_id: resetting done→todo (receipt missing)"
-        if "$FLOWCTL" task reset "$task_id" --json >/dev/null 2>&1; then
+        if "$FLUXCTL" task reset "$task_id" --json >/dev/null 2>&1; then
           task_status="todo"
         else
           # Fatal: if reset fails, we'd silently skip this task forever (task jumping)
@@ -1152,7 +1152,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
           # Task marked done but review said NEEDS_WORK - must retry
           echo "ralph: receipt verdict is NEEDS_WORK; resetting task to todo" >> "$iter_log"
           log "task $task_id: receipt verdict=NEEDS_WORK despite done status; resetting"
-          if "$FLOWCTL" task reset "$task_id" --json >/dev/null 2>&1; then
+          if "$FLUXCTL" task reset "$task_id" --json >/dev/null 2>&1; then
             task_status="todo"
           else
             echo "ralph: FATAL: failed to reset task $task_id; aborting" >> "$iter_log"
@@ -1226,7 +1226,7 @@ Violations break automation and leave the user with incomplete work. Be precise,
           echo "Last output:"
           tail -n 40 "$iter_log" || true
         } > "$reason_file"
-        "$FLOWCTL" block "$task_id" --reason-file "$reason_file" --json || true
+        "$FLUXCTL" block "$task_id" --reason-file "$reason_file" --json || true
         ui_blocked "$task_id"
       fi
     else

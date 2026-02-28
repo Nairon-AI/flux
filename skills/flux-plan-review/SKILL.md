@@ -15,7 +15,9 @@ Conduct a John Carmack-level review of epic plans.
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 ```
 
 ## Backend Selection
@@ -40,7 +42,7 @@ If found, use that backend and skip all other detection.
 
 ```bash
 # Priority: --review flag > env > config
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -61,7 +63,7 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 5. **Re-reviews MUST stay in SAME chat** - omit `--new-chat` after first review
 
 **For codex backend:**
-1. Use `$FLOWCTL codex plan-review` exclusively
+1. Use `$FLUXCTL codex plan-review` exclusively
 2. Pass `--receipt` for session continuity on re-reviews
 3. Parse verdict from command output
 
@@ -84,7 +86,9 @@ Format: `<flow-epic-id> [focus areas]`
 **See [workflow.md](workflow.md) for full details on each backend.**
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -99,7 +103,7 @@ EPIC_ID="${1:-}"
 RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/plan-review-receipt.json}"
 
 # Save checkpoint before review (recovery point if context compacts)
-$FLOWCTL checkpoint save --epic "$EPIC_ID" --json
+$FLUXCTL checkpoint save --epic "$EPIC_ID" --json
 
 # --files: comma-separated CODE files for reviewer context
 # Epic/task specs are auto-included; pass files the plan will CREATE or MODIFY
@@ -111,11 +115,11 @@ $FLOWCTL checkpoint save --epic "$EPIC_ID" --json
 # Or list key files manually:
 CODE_FILES="src/main.py,src/config.py"
 
-$FLOWCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_PATH"
+$FLUXCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_PATH"
 # Output includes VERDICT=SHIP|NEEDS_WORK|MAJOR_RETHINK
 ```
 
-On NEEDS_WORK: fix plan via `$FLOWCTL epic set-plan` AND sync affected task specs via `$FLOWCTL task set-spec`, then re-run (receipt enables session continuity).
+On NEEDS_WORK: fix plan via `$FLUXCTL epic set-plan` AND sync affected task specs via `$FLUXCTL task set-spec`, then re-run (receipt enables session continuity).
 
 **Note**: `codex plan-review` automatically includes task specs in the review prompt.
 
@@ -143,16 +147,16 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 2. **Fix epic spec** (stdin preferred, temp file if content has single quotes):
    ```bash
    # Preferred: stdin heredoc
-   $FLOWCTL epic set-plan <EPIC_ID> --file - --json <<'EOF'
+   $FLUXCTL epic set-plan <EPIC_ID> --file - --json <<'EOF'
    <updated epic spec content>
    EOF
 
    # Or temp file
-   $FLOWCTL epic set-plan <EPIC_ID> --file /tmp/updated-plan.md --json
+   $FLUXCTL epic set-plan <EPIC_ID> --file /tmp/updated-plan.md --json
    ```
 3. **Sync affected task specs** - If epic changes affect task specs, update them:
    ```bash
-   $FLOWCTL task set-spec <TASK_ID> --file - --json <<'EOF'
+   $FLUXCTL task set-spec <TASK_ID> --file - --json <<'EOF'
    <updated task spec content>
    EOF
    ```
@@ -164,12 +168,12 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
    - API signatures or type definitions
 4. **Re-review**:
    - **Codex**: Re-run `fluxctl codex plan-review` (receipt enables context)
-   - **RP**: `$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
+   - **RP**: `$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
 5. **Repeat** until `<verdict>SHIP</verdict>`
 
 **Recovery**: If context compaction occurred during review, restore from checkpoint:
 ```bash
-$FLOWCTL checkpoint restore --epic <EPIC_ID> --json
+$FLUXCTL checkpoint restore --epic <EPIC_ID> --json
 ```
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.

@@ -16,7 +16,7 @@
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 ```
 
 ## Phase 1: Resolve Input
@@ -33,29 +33,29 @@ Detect input type in this order (first match wins):
 ---
 
 **Flow task ID (fn-N-slug.M or legacy fn-N.M/fn-N-xxx.M)** → SINGLE_TASK_MODE:
-- Read task: `$FLOWCTL show <id> --json`
-- Read spec: `$FLOWCTL cat <id>`
-- Get epic from task data for context: `$FLOWCTL show <epic-id> --json && $FLOWCTL cat <epic-id>`
+- Read task: `$FLUXCTL show <id> --json`
+- Read spec: `$FLUXCTL cat <id>`
+- Get epic from task data for context: `$FLUXCTL show <epic-id> --json && $FLUXCTL cat <epic-id>`
 - **This is the only task to execute** — no loop to next task
 
 **Flow epic ID (fn-N-slug or legacy fn-N/fn-N-xxx)** → EPIC_MODE:
-- Read epic: `$FLOWCTL show <id> --json`
-- Read spec: `$FLOWCTL cat <id>`
-- Get first ready task: `$FLOWCTL ready --epic <id> --json`
+- Read epic: `$FLUXCTL show <id> --json`
+- Read spec: `$FLUXCTL cat <id>`
+- Get first ready task: `$FLUXCTL ready --epic <id> --json`
 
 **Spec file start (.md path that exists)**:
 1. Check file exists: `test -f "<path>"` — if not, treat as idea text
-2. Initialize: `$FLOWCTL init --json`
+2. Initialize: `$FLUXCTL init --json`
 3. Read file and extract title from first `# Heading` or use filename
-4. Create epic: `$FLOWCTL epic create --title "<extracted-title>" --json`
-5. Set spec from file: `$FLOWCTL epic set-plan <epic-id> --file <path> --json`
-6. Create single task: `$FLOWCTL task create --epic <epic-id> --title "Implement <title>" --json`
+4. Create epic: `$FLUXCTL epic create --title "<extracted-title>" --json`
+5. Set spec from file: `$FLUXCTL epic set-plan <epic-id> --file <path> --json`
+6. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <title>" --json`
 7. Continue with epic-id
 
 **Spec-less start (idea text)**:
-1. Initialize: `$FLOWCTL init --json`
-2. Create epic: `$FLOWCTL epic create --title "<idea>" --json`
-3. Create single task: `$FLOWCTL task create --epic <epic-id> --title "Implement <idea>" --json`
+1. Initialize: `$FLUXCTL init --json`
+2. Create epic: `$FLUXCTL epic create --title "<idea>" --json`
+3. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <idea>" --json`
 4. Continue with epic-id
 
 ## Phase 2: Apply Branch Choice
@@ -77,7 +77,7 @@ Based on user's answer from setup questions:
 ### 3a. Find Next Task
 
 ```bash
-$FLOWCTL ready --epic <epic-id> --json
+$FLUXCTL ready --epic <epic-id> --json
 ```
 
 If no ready tasks, check for completion review gate (see 3g below).
@@ -85,7 +85,7 @@ If no ready tasks, check for completion review gate (see 3g below).
 ### 3b. Start Task
 
 ```bash
-$FLOWCTL start <task-id> --json
+$FLUXCTL start <task-id> --json
 ```
 
 ### 3c. Spawn Worker
@@ -106,7 +106,7 @@ Implement flux task.
 
 TASK_ID: fn-X.Y
 EPIC_ID: fn-X
-FLOWCTL: /path/to/fluxctl
+FLUXCTL: /path/to/fluxctl
 REVIEW_MODE: none|rp|codex
 RALPH_MODE: true|false
 
@@ -120,7 +120,7 @@ Follow your phases in worker.md exactly.
 After worker returns, verify the task completed:
 
 ```bash
-$FLOWCTL show <task-id> --json
+$FLUXCTL show <task-id> --json
 ```
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
@@ -168,9 +168,9 @@ d) Remove/skip a planned task
 ```
 
 **If user wants changes**:
-- `b` → Show next task spec, ask what to change, update via `$FLOWCTL task set-spec`
-- `c` → Ask for new task details, create via `$FLOWCTL task create`
-- `d` → Ask which task, mark skipped via `$FLOWCTL skip <task-id>`
+- `b` → Show next task spec, ask what to change, update via `$FLUXCTL task set-spec`
+- `c` → Ask for new task details, create via `$FLUXCTL task create`
+- `d` → Ask which task, mark skipped via `$FLUXCTL skip <task-id>`
 
 **If user continues**: Proceed to next task.
 
@@ -185,7 +185,7 @@ Only run plan-sync if the task status is `done` (from step 3d). If not `done`, s
 Check if plan-sync should run:
 
 ```bash
-$FLOWCTL config get planSync.enabled --json
+$FLUXCTL config get planSync.enabled --json
 ```
 
 Skip unless planSync.enabled is explicitly `true` (null/false/missing = skip).
@@ -193,7 +193,7 @@ Skip unless planSync.enabled is explicitly `true` (null/false/missing = skip).
 Get remaining tasks (todo status = not started yet):
 
 ```bash
-$FLOWCTL tasks --epic <epic-id> --status todo --json
+$FLUXCTL tasks --epic <epic-id> --status todo --json
 ```
 
 Skip if empty (no downstream tasks to update).
@@ -201,7 +201,7 @@ Skip if empty (no downstream tasks to update).
 Extract downstream task IDs:
 
 ```bash
-DOWNSTREAM=$($FLOWCTL tasks --epic <epic-id> --status todo --json | jq -r '[.[].id] | join(",")')
+DOWNSTREAM=$($FLUXCTL tasks --epic <epic-id> --status todo --json | jq -r '[.[].id] | join(",")')
 ```
 
 Note: Only sync to `todo` tasks. `in_progress` tasks are already being worked on - updating them mid-flight could cause confusion.
@@ -213,7 +213,7 @@ Sync downstream tasks after implementation.
 
 COMPLETED_TASK_ID: fn-X.Y
 EPIC_ID: fn-X
-FLOWCTL: /path/to/fluxctl
+FLUXCTL: /path/to/fluxctl
 DOWNSTREAM_TASK_IDS: fn-X.3,fn-X.4,fn-X.5
 
 Follow your phases in plan-sync.md exactly.
@@ -236,7 +236,7 @@ When 3a finds no ready tasks, check if completion review is required.
 **Check epic's completion review status directly:**
 
 ```bash
-$FLOWCTL show <epic-id> --json | jq -r '.completion_review_status'
+$FLUXCTL show <epic-id> --json | jq -r '.completion_review_status'
 ```
 
 - If `ship` → review already passed, go to Phase 4
@@ -250,7 +250,7 @@ $FLOWCTL show <epic-id> --json | jq -r '.completion_review_status'
    - Skill runs fix loop internally until SHIP verdict
 
 2. After skill returns with SHIP:
-   - Set status: `$FLOWCTL epic set-completion-review-status <epic-id> --status ship --json`
+   - Set status: `$FLUXCTL epic set-completion-review-status <epic-id> --status ship --json`
    - Go to Phase 4 (Quality)
 
 **Note:** The epic-review skill gets SHIP from the reviewer but does NOT set the status itself. The caller (work skill or Ralph) sets `completion_review_status=ship` after successful review.
@@ -292,8 +292,8 @@ After all tasks complete (or periodically for large epics):
 
 **Verify all tasks done**:
 ```bash
-$FLOWCTL show <epic-id> --json
-$FLOWCTL validate --epic <epic-id> --json
+$FLUXCTL show <epic-id> --json
+$FLUXCTL validate --epic <epic-id> --json
 ```
 
 **Final commit** (if any uncommitted changes):
@@ -313,7 +313,7 @@ Then push + open PR if user wants.
 
 Confirm before ship:
 - All tasks have status "done"
-- `$FLOWCTL validate --epic <id>` passes
+- `$FLUXCTL validate --epic <id>` passes
 - Tests pass
 - Lint/format pass
 - Docs updated if needed

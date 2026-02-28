@@ -62,9 +62,9 @@ cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
 chmod +x scripts/ralph/fluxctl
 
-FLOWCTL="scripts/ralph/fluxctl"
-$FLOWCTL init --json >/dev/null
-$FLOWCTL epic create --title "Tiny lib" --json >/dev/null
+FLUXCTL="scripts/ralph/fluxctl"
+$FLUXCTL init --json >/dev/null
+$FLUXCTL epic create --title "Tiny lib" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -105,7 +105,7 @@ Edit src/index.ts and README.md only. Repo is source-only (no build step).
 - None
 EOF
 
-$FLOWCTL epic set-plan "$EPIC_ID" --file "$TEST_DIR/epic.md" --json >/dev/null
+$FLUXCTL epic set-plan "$EPIC_ID" --file "$TEST_DIR/epic.md" --json >/dev/null
 
 RUN_DIR="scripts/ralph/runs/smoke-plan-review"
 RECEIPT_PATH="$RUN_DIR/receipts/plan-$EPIC_ID.json"

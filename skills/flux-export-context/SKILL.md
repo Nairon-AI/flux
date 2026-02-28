@@ -11,8 +11,10 @@ Build RepoPrompt context and export to a markdown file for use with external LLM
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL <command>
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL <command>
 ```
 
 ## Input
@@ -31,7 +33,9 @@ Examples:
 ## Setup
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -45,8 +49,8 @@ Parse arguments to determine if this is a plan or impl export.
 
 **For plan export:**
 ```bash
-$FLOWCTL show <epic-id> --json
-$FLOWCTL cat <epic-id>
+$FLUXCTL show <epic-id> --json
+$FLUXCTL cat <epic-id>
 ```
 
 **For impl export:**
@@ -59,23 +63,23 @@ git diff main..HEAD --name-only 2>/dev/null || git diff master..HEAD --name-only
 ### Step 3: Setup RepoPrompt
 
 ```bash
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "<summary based on type>" --create)"
+eval "$($FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "<summary based on type>" --create)"
 ```
 
 ### Step 4: Augment Selection
 
 ```bash
-$FLOWCTL rp select-get --window "$W" --tab "$T"
+$FLUXCTL rp select-get --window "$W" --tab "$T"
 
 # Add relevant files
-$FLOWCTL rp select-add --window "$W" --tab "$T" <files>
+$FLUXCTL rp select-add --window "$W" --tab "$T" <files>
 ```
 
 ### Step 5: Build Review Prompt
 
 Get builder's handoff:
 ```bash
-$FLOWCTL rp prompt-get --window "$W" --tab "$T"
+$FLUXCTL rp prompt-get --window "$W" --tab "$T"
 ```
 
 Build combined prompt with review criteria (same as plan-review or impl-review).
@@ -86,14 +90,14 @@ cat > /tmp/export-prompt.md << 'EOF'
 [COMBINED PROMPT WITH REVIEW CRITERIA]
 EOF
 
-$FLOWCTL rp prompt-set --window "$W" --tab "$T" --message-file /tmp/export-prompt.md
+$FLUXCTL rp prompt-set --window "$W" --tab "$T" --message-file /tmp/export-prompt.md
 ```
 
 ### Step 6: Export
 
 ```bash
 OUTPUT_FILE=~/Desktop/review-export-$(date +%Y%m%d-%H%M%S).md
-$FLOWCTL rp prompt-export --window "$W" --tab "$T" --out "$OUTPUT_FILE"
+$FLUXCTL rp prompt-export --window "$W" --tab "$T" --out "$OUTPUT_FILE"
 open "$OUTPUT_FILE"
 ```
 

@@ -15,7 +15,9 @@ Verify that the combined implementation of all epic tasks satisfies the spec req
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 ```
 
 ## Backend Selection
@@ -38,7 +40,7 @@ If found, use that backend and skip all other detection.
 ### Otherwise read from config
 
 ```bash
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -59,7 +61,7 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 5. **Re-reviews MUST stay in SAME chat** - omit `--new-chat` after first review
 
 **For codex backend:**
-1. Use `$FLOWCTL codex completion-review` exclusively
+1. Use `$FLUXCTL codex completion-review` exclusively
 2. Pass `--receipt` for session continuity on re-reviews
 3. Parse verdict from command output
 
@@ -85,7 +87,9 @@ Format: `<epic-id> [--review=rp|codex|none]`
 **See [workflow.md](workflow.md) for full details on each backend.**
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -105,7 +109,7 @@ Run backend detection from SKILL.md above. Then branch:
 ```bash
 RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/completion-review-receipt.json}"
 
-$FLOWCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
+$FLUXCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
 # Output includes VERDICT=SHIP|NEEDS_WORK
 ```
 
@@ -136,7 +140,7 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 3. **Commit fixes** (mandatory before re-review)
 4. **Re-review**:
    - **Codex**: Re-run `fluxctl codex completion-review` (receipt enables context)
-   - **RP**: `$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
+   - **RP**: `$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
 5. **Repeat** until `<verdict>SHIP</verdict>`
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.

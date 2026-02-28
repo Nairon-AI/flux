@@ -18,11 +18,11 @@ Epic completion review verifies spec compliance, NOT code quality. impl-review h
 
 ```bash
 set -e
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -47,7 +47,7 @@ Use when `BACKEND="codex"`.
 
 ```bash
 # EPIC_ID from arguments (e.g., fn-1, fn-22-53k)
-$FLOWCTL show "$EPIC_ID" --json
+$FLUXCTL show "$EPIC_ID" --json
 ```
 
 ### Step 2: Execute Review
@@ -55,7 +55,7 @@ $FLOWCTL show "$EPIC_ID" --json
 ```bash
 RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/completion-review-receipt.json}"
 
-$FLOWCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
+$FLUXCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
 ```
 
 **Output includes `VERDICT=SHIP|NEEDS_WORK`.**
@@ -88,8 +88,8 @@ Use when `BACKEND="rp"`.
 BRANCH="$(git branch --show-current)"
 
 # Get epic spec and task list
-EPIC_SPEC="$($FLOWCTL cat "$EPIC_ID")"
-TASKS_JSON="$($FLOWCTL tasks --epic "$EPIC_ID" --json)"
+EPIC_SPEC="$($FLUXCTL cat "$EPIC_ID")"
+TASKS_JSON="$($FLUXCTL tasks --epic "$EPIC_ID" --json)"
 
 # Get changed files on branch
 DIFF_BASE="main"
@@ -115,7 +115,7 @@ Compose a 1-2 sentence `REVIEW_SUMMARY` for the setup-review command below.
 
 ```bash
 # Atomic: pick-window + builder (uses REVIEW_SUMMARY from Phase 1)
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
+eval "$($FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
 
 # Verify we have W and T
 if [[ -z "${W:-}" || -z "${T:-}" ]]; then
@@ -137,19 +137,19 @@ Builder selects context automatically. Review and add must-haves:
 
 ```bash
 # See what builder selected
-$FLOWCTL rp select-get --window "$W" --tab "$T"
+$FLUXCTL rp select-get --window "$W" --tab "$T"
 
 # Add epic spec
-$FLOWCTL rp select-add --window "$W" --tab "$T" ".flux/specs/$EPIC_ID.md"
+$FLUXCTL rp select-add --window "$W" --tab "$T" ".flux/specs/$EPIC_ID.md"
 
 # Add all task specs
 for task_id in $(echo "$TASKS_JSON" | jq -r '.[].id'); do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" ".flux/tasks/$task_id.md"
+  $FLUXCTL rp select-add --window "$W" --tab "$T" ".flux/tasks/$task_id.md"
 done
 
 # Add ALL changed files
 for f in $CHANGED_FILES; do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" "$f"
+  $FLUXCTL rp select-add --window "$W" --tab "$T" "$f"
 done
 ```
 
@@ -163,7 +163,7 @@ done
 
 Get builder's handoff:
 ```bash
-HANDOFF="$($FLOWCTL rp prompt-get --window "$W" --tab "$T")"
+HANDOFF="$($FLUXCTL rp prompt-get --window "$W" --tab "$T")"
 ```
 
 Write combined prompt:
@@ -245,7 +245,7 @@ EOF
 
 ```bash
 # Send review and capture response
-REVIEW_RESPONSE="$($FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/completion-review-prompt.md --new-chat --chat-name "Epic Review: $EPIC_ID")"
+REVIEW_RESPONSE="$($FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/completion-review-prompt.md --new-chat --chat-name "Epic Review: $EPIC_ID")"
 echo "$REVIEW_RESPONSE"
 
 # Extract verdict tag from response
@@ -314,7 +314,7 @@ If verdict is NEEDS_WORK:
    ```bash
    # Only if fixes created new files not in original selection
    if [[ -n "$NEW_FILES" ]]; then
-     $FLOWCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
+     $FLUXCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
    fi
    ```
 
@@ -329,7 +329,7 @@ If verdict is NEEDS_WORK:
    **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>`
    EOF
 
-   $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
+   $FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
    ```
 6. **Repeat** until SHIP
 
