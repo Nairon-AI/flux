@@ -755,7 +755,7 @@ def format_table(score: NbenchScore) -> str:
     lines = [
         "",
         "═══════════════════════════════════════════════════════════════",
-        f"  N-BENCH SCORE: {score.score}  ({score.grade})",
+        f"  FLUX SCORE: {score.score}  ({score.grade})",
         "═══════════════════════════════════════════════════════════════",
         "",
         f"  Period: {score.period_start} to {score.period_end}",
