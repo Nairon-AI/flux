@@ -6,7 +6,7 @@ Use `fluxctl rp` wrappers only.
 
 ```bash
 # Atomic setup: pick-window + builder
-eval "$($NBENCHCTL rp setup-review --repo-root "$REPO_ROOT" --summary "..." --create)"
+eval "$($FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "..." --create)"
 # Returns: W=<window> T=<tab>
 ```
 

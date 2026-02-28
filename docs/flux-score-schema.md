@@ -303,7 +303,7 @@ flux compare --percentile
 - name: Team Flux report
   run: flux team-report --output report.md
   env:
-    NBENCH_TEAM_KEY: ${{ secrets.NBENCH_KEY }}
+    FLUX_TEAM_KEY: ${{ secrets.FLUX_KEY }}
 ```
 
 ## Roadmap

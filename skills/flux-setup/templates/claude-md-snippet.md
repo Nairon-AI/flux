@@ -1,4 +1,4 @@
-<!-- BEGIN NBENCH -->
+<!-- BEGIN FLUX -->
 ## Flux
 
 This project uses Flux for task tracking. Use `.flux/bin/fluxctl` instead of markdown TODOs or TodoWrite.
@@ -20,4 +20,4 @@ This project uses Flux for task tracking. Use `.flux/bin/fluxctl` instead of mar
 - Re-anchor (re-read spec + status) before every task
 
 **More info:** `.flux/bin/fluxctl --help` or read `.flux/usage.md`
-<!-- END NBENCH -->
+<!-- END FLUX -->

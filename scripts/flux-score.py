@@ -91,7 +91,7 @@ class SessionMetrics:
 
 
 @dataclass
-class NbenchScore:
+class FluxScore:
     period_start: str
     period_end: str
     sessions_analyzed: int
@@ -690,7 +690,7 @@ def identify_strengths_and_growth(dimensions: dict) -> tuple[list[str], list[str
 
 def compute_flux_score(
     data_dir: Path, since: Optional[datetime] = None, until: Optional[datetime] = None
-) -> NbenchScore:
+) -> FluxScore:
     """Compute full Flux score from Claude Code data."""
 
     # Load data
@@ -728,7 +728,7 @@ def compute_flux_score(
     period_start = since.strftime("%Y-%m-%d") if since else "all-time"
     period_end = until.strftime("%Y-%m-%d") if until else "now"
 
-    return NbenchScore(
+    return FluxScore(
         period_start=period_start,
         period_end=period_end,
         sessions_analyzed=len(session_metrics),
@@ -750,7 +750,7 @@ def compute_flux_score(
 # =============================================================================
 
 
-def format_table(score: NbenchScore) -> str:
+def format_table(score: FluxScore) -> str:
     """Format score as ASCII table."""
     lines = [
         "",
@@ -795,12 +795,12 @@ def format_table(score: NbenchScore) -> str:
     return "\n".join(lines)
 
 
-def format_json(score: NbenchScore) -> str:
+def format_json(score: FluxScore) -> str:
     """Format score as JSON."""
     return json.dumps(asdict(score), indent=2)
 
 
-def format_yaml(score: NbenchScore) -> str:
+def format_yaml(score: FluxScore) -> str:
     """Format score as YAML (for evidence export)."""
     data = asdict(score)
     lines = []
