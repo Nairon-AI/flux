@@ -1,15 +1,15 @@
 ---
 name: flux-contribute
-description: Analyze Flux issues and create PRs to fix them. Self-improving feedback loop for the plugin.
+description: Analyze Flux issues, attempt to solve them first, and only create PRs for genuine bugs after verification.
 user-invocable: false
 ---
 
 # Flux Contribute
 
-Create PRs to fix Flux bugs directly from your Claude Code session.
+Rigorous bug analysis and PR creation for Flux. **PRs are a last resort, not a first action.**
 
-**Role**: bug analyzer, PR creator
-**Goal**: fast feedback loop — encounter issue → create PR → merge → upgrade → fixed
+**Role**: debugger first, PR creator second
+**Goal**: solve the user's problem — only create PR if Flux itself is broken
 
 ## Input
 
@@ -22,112 +22,193 @@ Issue description: $ARGUMENTS
 
 ## Workflow
 
-### Step 1: Analyze the Issue
+### Phase 1: Understand the Problem (MANDATORY)
 
-Determine if this is:
-1. **Genuine Flux bug** — Missing file, broken command, incorrect behavior
-2. **Documentation gap** — README unclear, missing examples
-3. **User error** — Not a Flux problem (guide user instead)
-4. **Feature request** — New functionality needed
+**Do NOT skip this phase. Do NOT create a PR yet.**
 
-If user error, explain the correct usage and stop.
+1. **Reproduce the issue** — Run the exact command/workflow that failed
+2. **Read the error** — What specifically went wrong?
+3. **Check user's setup** — Are prerequisites met? Is Flux installed correctly?
 
-### Step 2: Locate the Fix
+Questions to answer:
+- What command was run?
+- What was the expected behavior?
+- What actually happened?
+- What's in the user's `.flux/` directory?
+- Is this a fresh install or upgrade?
+
+### Phase 2: Attempt to Solve WITHOUT a PR
+
+**Try these first before considering a PR:**
+
+1. **User error?** → Guide them to correct usage
+   - Wrong arguments
+   - Missing prerequisites (Python, jq, git)
+   - Didn't run `/flux:setup` first
+   - Using incompatible command combination
+
+2. **Configuration issue?** → Help them fix their config
+   - `.flux/config.json` misconfigured
+   - Environment variables missing
+   - Permissions issue
+
+3. **Known limitation?** → Explain the limitation
+   - Feature not yet implemented
+   - Platform-specific behavior
+   - Edge case not handled
+
+4. **Can be worked around?** → Provide workaround
+   - Alternative command sequence
+   - Manual steps that achieve the goal
+
+**If any of the above solve the problem, STOP HERE. No PR needed.**
+
+### Phase 3: Confirm It's a Genuine Flux Bug
+
+Only proceed if ALL of these are true:
+
+- [ ] User's setup is correct
+- [ ] Command was used correctly  
+- [ ] No workaround exists
+- [ ] The issue is reproducible
+- [ ] The fix requires changing Flux source code
+
+**Ask the user to confirm before proceeding:**
+
+```
+mcp_question({
+  questions: [{
+    header: "Create PR?",
+    question: "I've identified this as a genuine Flux bug that requires a code change. Should I create a PR to fix it?",
+    options: [
+      { label: "Yes, create PR", description: "I'll clone Flux, make the fix, and submit a PR" },
+      { label: "No, let me try something else", description: "I want to investigate more first" },
+      { label: "Just show me the fix", description: "Show what would need to change, I'll handle it" }
+    ]
+  }]
+})
+```
+
+If user says no or wants to see the fix first, provide guidance without creating PR.
+
+### Phase 4: Locate and Plan the Fix
 
 Flux structure:
 ```
 flux/
-├── commands/flux/          # Command definitions
-├── skills/                 # Skill implementations
-├── agents/                 # Scout agents
+├── commands/flux/          # Command entry points (invoke skills)
+├── skills/                 # Skill implementations (the logic)
+│   └── flux-*/SKILL.md     # Main skill file
+│   └── flux-*/workflow.md  # Step-by-step instructions
+├── agents/                 # Scout agents for /flux:prime
 ├── scripts/                # Python/bash utilities
 ├── docs/                   # Documentation
 └── README.md               # Main docs
 ```
 
-Identify which file(s) need changes.
+**Before writing any code:**
+1. Identify the exact file(s) that need changes
+2. Understand WHY the current code is wrong
+3. Plan the minimal fix (smallest change that solves the problem)
+4. Consider edge cases the fix might affect
 
-### Step 3: Create the Fix
+### Phase 5: Implement and TEST the Fix
 
-Clone Flux repo to temp directory if needed:
+Clone Flux repo:
 ```bash
-FLUX_REPO="/tmp/flux-contribution-$(date +%s)"
+FLUX_REPO="/tmp/flux-fix-$(date +%s)"
 gh repo clone Nairon-AI/flux "$FLUX_REPO"
 cd "$FLUX_REPO"
 ```
 
-Create a branch:
+Create branch:
 ```bash
-BRANCH="fix/$(echo "$ISSUE_SUMMARY" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | head -c 50)"
+BRANCH="fix/$(echo "$ISSUE_SLUG" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | head -c 40)"
 git checkout -b "$BRANCH"
 ```
 
-Make the fix using Edit/Write tools.
-
-### Step 4: Commit and Push
-
+Make the fix, then **TEST IT**:
 ```bash
-git add -A
-git commit -m "fix: $ISSUE_SUMMARY"
-git push -u origin "$BRANCH"
+# Run the flux test suite
+bun test
+
+# Or at minimum, verify the specific fix works
+# by checking the changed file makes sense
 ```
 
-### Step 5: Create PR
+**Do NOT proceed if tests fail or fix doesn't work.**
 
+### Phase 6: Create PR (Only After Verification)
+
+Commit:
 ```bash
+git add -A
+git commit -m "fix: $ISSUE_SUMMARY
+
+- Root cause: $ROOT_CAUSE
+- Fix: $WHAT_WAS_CHANGED
+- Tested: $HOW_IT_WAS_VERIFIED"
+```
+
+Push and create PR:
+```bash
+git push -u origin "$BRANCH"
+
 gh pr create \
   --repo Nairon-AI/flux \
   --title "fix: $ISSUE_SUMMARY" \
-  --body "## Issue
+  --body "## Problem
 $ISSUE_DESCRIPTION
 
-## Fix
+## Root Cause
+$ROOT_CAUSE_ANALYSIS
+
+## Solution
 $FIX_DESCRIPTION
 
-## How to Test
-1. Upgrade plugin: \`/plugin marketplace update nairon-flux\`
-2. Verify: $TEST_STEPS
+## Testing
+- [ ] Reproduced the issue before fix
+- [ ] Verified fix resolves the issue
+- [ ] Checked for regressions
+
+## How to Verify
+1. Upgrade: \`/plugin marketplace update nairon-flux\`
+2. Test: $VERIFICATION_STEPS
 
 ---
-*Auto-generated by /flux:contribute*"
+*Created via /flux:contribute*"
 ```
 
-### Step 6: Report to User
+### Phase 7: Report to User
 
 Show:
 - PR URL
-- What was fixed
-- How to upgrade once merged:
-  ```bash
+- Summary of what was fixed and why
+- Next steps:
+  ```
+  Once merged, upgrade with:
   /plugin marketplace update nairon-flux
   ```
 
-## Guardrails
+## Hard Rules
 
-### Only Fix Genuine Issues
-- Don't create PRs for user errors
-- Don't create PRs for feature requests (open issue instead)
-- Verify the fix actually solves the problem
+### NEVER Create PRs For:
+- User errors (guide them instead)
+- Feature requests (open GitHub issue instead)
+- Untested fixes
+- Issues you can't reproduce
+- Problems solved by workarounds
 
-### Keep PRs Focused
+### ALWAYS Before Creating PR:
+- Reproduce the issue
+- Confirm user setup is correct
+- Get explicit user confirmation
+- Test the fix works
+- Keep changes minimal
+
+### PR Quality Standards:
 - One issue per PR
-- Minimal changes
-- Clear commit message
-
-### For External Contributors
-If user doesn't have write access:
-```bash
-gh repo fork Nairon-AI/flux --clone
-# Then create PR from fork
-```
-
-## Quick Fix Mode
-
-For maintainers with write access, skip the temp clone if already in flux repo:
-```bash
-# If current dir is flux repo
-git checkout -b fix/issue-name
-# Make fix
-git push -u origin fix/issue-name
-gh pr create ...
-```
+- Clear root cause analysis
+- Minimal, focused changes
+- Passing tests
+- Verification steps included
