@@ -334,7 +334,7 @@ Tasks: M total | Sizes: Ns S, Nm M
 
 Next steps:
 1) Start work: `/flux:work fn-N-slug`
-2) Refine via interview: `/flux:interview fn-N-slug`
+2) Refine via scope: `/flux:scope fn-N-slug --deep`
 3) Review the plan: `/flux:plan-review fn-N-slug`
 4) Go deeper on specific tasks (tell me which)
 5) Simplify (reduce detail level)

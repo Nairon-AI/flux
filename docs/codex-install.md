@@ -30,7 +30,7 @@ Commands use the `/prompts:` prefix in Codex instead of `/flux:`:
 | `/flux:impl-review` | `/prompts:impl-review` |
 | `/flux:plan-review` | `/prompts:plan-review` |
 | `/flux:epic-review` | `/prompts:epic-review` |
-| `/flux:interview` | `/prompts:interview` |
+| `/flux:scope` | `/prompts:scope` |
 
 ## What Works
 
