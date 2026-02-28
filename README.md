@@ -149,7 +149,33 @@ This is your starting point. It guides you through:
 /flux:improve --discover
 ```
 
-That's it. Scope → Build → Review → Improve. Repeat.
+### Clean Up Your Codebase
+
+```bash
+# Scan and systematically fix code quality issues
+/flux:desloppify
+```
+
+Powered by [desloppify](https://github.com/peteromallet/desloppify) — a codebase quality scanner that combines mechanical detection (dead code, duplication, complexity) with LLM-based subjective review (naming, abstractions, architecture).
+
+**Why it's different:** The scoring system is designed to resist gaming. You can't just suppress warnings — the only way to raise the score is to actually make the code better.
+
+| Tier | What It Catches |
+|------|-----------------|
+| T1 | Auto-fixable: unused imports, debug logs |
+| T2 | Quick manual: unused vars, dead exports |
+| T3 | Judgment calls: near-dupes, single-use abstractions |
+| T4 | Major refactors: god components, mixed concerns |
+
+```bash
+/flux:desloppify scan          # See your score
+/flux:desloppify next          # Get next priority fix
+/flux:desloppify status        # Track progress
+```
+
+Target: **95+ strict score** = codebase a senior engineer would respect.
+
+That's it. Scope → Build → Review → Improve → Clean. Repeat.
 
 > **You can stop reading here.** Everything below is optional deep-dives.
 
