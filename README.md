@@ -288,6 +288,7 @@ CTO-level observability:
 | `/flux:improve` | Analyze sessions, recommend tools |
 | `/flux:score` | Compute AI-native capability score |
 | `/flux:profile` | Export/share SDLC profile |
+| `/flux:contribute` | Report bug and auto-create PR to fix Flux |
 
 Full reference: `docs/commands-reference.md`
 
