@@ -28,9 +28,37 @@ git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 | Command | Usage | Purpose |
 |---------|-------|---------|
 | `/flux:setup` | `/flux:setup` | Optional local setup (installs local `fluxctl` + project docs) |
-| `/flux:interview` | `/flux:interview <epic|task|file|idea>` | Deep requirements interview and refinement |
-| `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks |
+| `/flux:scope` | `/flux:scope <idea> [--deep] [--explore N]` | **Combined requirements + planning** (recommended) |
+| `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks only |
 | `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
+
+### /flux:scope
+
+<!-- TODO: Add video showing scope flow -->
+<details>
+<summary>Video: Scoping a feature</summary>
+<p><em>Coming soon</em></p>
+</details>
+
+**Recommended starting point.** Combines requirements gathering and planning into one command using the Double Diamond process:
+
+1. **Problem Space** (~5 min quick, ~20 min deep)
+   - Explore WHY: core desire, reasoning chain, user perspective
+   - Surface blind spots and risks
+   - Converge to clear problem statement
+
+2. **Solution Space** (~5 min quick, ~25 min deep)
+   - Research codebase patterns
+   - Gap analysis
+   - Create epic with sized tasks
+
+**Usage:**
+```bash
+/flux:scope Add user notifications           # Quick mode (~10 min)
+/flux:scope Add user notifications --deep    # Deep mode (~45 min)
+```
+
+Use `--deep` for high-stakes or ambiguous features.
 
 ### /flux:setup
 
@@ -41,16 +69,6 @@ git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
 </details>
 
 Initializes Flux in your project. Creates `.flux/` directory structure and bootstraps claudeception skill.
-
-### /flux:interview
-
-<!-- TODO: Add video showing interview flow -->
-<details>
-<summary>📹 Video: Interview in action</summary>
-<p><em>Coming soon</em></p>
-</details>
-
-Gathers requirements through structured questions. Use `--deep` for high-risk features.
 
 ### /flux:plan
 
@@ -163,6 +181,7 @@ Executes a task with automatic context reload and drift checks.
 | Command | Usage | Purpose |
 |---------|-------|---------|
 | `/flux:prime` | `/flux:prime [--report-only\|--fix-all\|path]` | Run readiness audit and optional fixes |
+| `/flux:desloppify` | `/flux:desloppify [scan\|status\|next\|plan]` | Systematic codebase quality improvement |
 | `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
 | `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
 | `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |
@@ -175,17 +194,23 @@ Executes a task with automatic context reload and drift checks.
 
 <!-- TODO: Add video showing full feature development flow -->
 <details>
-<summary>📹 Video: Building a feature from scratch</summary>
+<summary>Video: Building a feature from scratch</summary>
 <p><em>Coming soon</em></p>
 </details>
 
+**Recommended (combined scope):**
 ```bash
-/flux:interview Add role-based permissions   # Gather requirements
-/flux:plan Add role-based permissions        # Create tasks
+/flux:scope Add role-based permissions       # Requirements + planning (~10 min)
 /flux:work fn-1.1                            # Execute first task
 /flux:work fn-1.2                            # Continue...
 /flux:impl-review --review=codex             # Review implementation
 /flux:epic-review fn-1                       # Verify completion
+```
+
+**Alternative (plan only, skip interview):**
+```bash
+/flux:plan fn-1                              # Create tasks (~5-15 min)
+/flux:work fn-1.1                            # Execute first task
 ```
 
 ### Workflow Optimization
