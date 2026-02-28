@@ -72,7 +72,7 @@ Comprehensive review of `flux/` and `flux-recommendations/` repos before public 
 | `/flux:setup` | Optional local install of fluxctl CLI |
 | `/flux:sync` | Sync tasks with git |
 | `/flux:prime` | Re-anchor to project context |
-| `/flux:interview` | Requirements gathering |
+| `/flux:scope` | Combined requirements + planning (Double Diamond) |
 | `/flux:epic-review` | Review epic scope |
 | `/flux:plan-review` | Review plan before execution |
 | `/flux:impl-review` | Review implementation |

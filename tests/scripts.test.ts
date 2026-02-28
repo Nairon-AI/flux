@@ -28,8 +28,9 @@ async function runScript(script: string, args: string[] = [], cwd?: string): Pro
   try {
     const result = await $`bash ${scriptPath} ${args}`.env(env).cwd(cwd || FLUX_ROOT).text()
     return result.trim()
-  } catch (e: any) {
-    return e.stdout?.toString() || e.stderr?.toString() || e.message
+  } catch (e: unknown) {
+    const err = e as { stdout?: Buffer; stderr?: Buffer; message?: string }
+    return err.stdout?.toString() || err.stderr?.toString() || err.message || String(e)
   }
 }
 
@@ -50,8 +51,9 @@ async function runScriptWithEnv(
   try {
     const result = await $`bash ${scriptPath} ${args}`.env(env).cwd(cwd || FLUX_ROOT).text()
     return result.trim()
-  } catch (e: any) {
-    return e.stdout?.toString() || e.stderr?.toString() || e.message
+  } catch (e: unknown) {
+    const err = e as { stdout?: Buffer; stderr?: Buffer; message?: string }
+    return err.stdout?.toString() || err.stderr?.toString() || err.message || String(e)
   }
 }
 
