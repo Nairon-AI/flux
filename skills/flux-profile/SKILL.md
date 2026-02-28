@@ -45,3 +45,24 @@ Supported options:
 ## Workflow
 
 Follow `workflow.md` exactly.
+
+## Future: Universe Sync
+
+When cloud component launches, `/flux:profile` will gain a `sync` mode:
+
+```bash
+/flux:profile sync              # Push profile to Universe portal
+/flux:profile sync --public     # Include public metrics
+```
+
+**Public data (opt-in):**
+- Session count, token usage
+- Tools and MCPs in use
+- Activity timestamps
+
+**Private data (dashboard only):**
+- AI-native score (5 dimensions)
+- Detailed radar chart
+- Improvement trends
+
+Auth will use Universe accounts. ETA: Q2 2026.
