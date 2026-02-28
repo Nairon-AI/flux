@@ -308,6 +308,13 @@ Analysis runs locally. Network only used to fetch recommendations repo.
 **Where do recommendations come from?**
 [Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) — 30+ curated tools, community-driven.
 
+**Can I use Flux with Beads?**
+Not recommended. Both are task tracking systems — Flux uses `.flux/` + `fluxctl`, Beads uses `.beads/` + `bd`. Having both in your AGENTS.md will confuse the agent about which to use. Pick one:
+- **Flux** if you want the full workflow (scope → plan → work → review)
+- **Beads** if you just want lightweight issue tracking
+
+If migrating from Beads: remove the beads section from AGENTS.md and run `/flux:setup`.
+
 ---
 
 ## Philosophy
