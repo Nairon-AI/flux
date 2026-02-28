@@ -67,7 +67,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 **Flux gives you three things:**
 
-1. **A structured workflow** — Interview → Plan → Build → Review
+1. **A structured workflow** — Scope → Build → Review (Double Diamond process)
 2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
 3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
 
@@ -96,20 +96,48 @@ The insight: in the age of agentic development, **you still need a framework**�
 ### Build a Feature
 
 ```bash
-# 1. Interview — Get requirements clear (~5 min)
-/flux:interview Add user notifications
+# 1. Scope — Understand problem + create plan
+/flux:scope Add user notifications
 
-# 2. Plan — Break into atomic tasks (30-90 min each)
-/flux:plan Add user notifications
-
-# 3. Build — Execute tasks one by one
+# 2. Build — Execute tasks one by one
 /flux:work fn-1.1
 /flux:work fn-1.2
 
-# 4. Review — Catch issues before they compound
+# 3. Review — Catch issues before they compound
 /flux:impl-review
 /flux:epic-review fn-1
 ```
+
+#### `/flux:scope` — The Double Diamond
+
+This is your starting point. It guides you through:
+
+1. **Problem Space** — WHY are we building this?
+   - Core desire, reasoning validation, user perspective
+   - Surface blind spots and risks
+   - Converge to clear problem statement
+
+2. **Solution Space** — HOW should we build it?
+   - Research codebase patterns
+   - Create epic with sized tasks
+
+**Modes:**
+```bash
+/flux:scope Add notifications          # Quick (~10 min) - MVP focus
+/flux:scope Add notifications --deep   # Deep (~45 min) - thorough scoping
+/flux:scope Add notifications --explore 3  # Generate 3 competing approaches
+```
+
+`--explore` scaffolds multiple approaches in parallel (git worktrees), generates previews, and lets you compare before committing to one.
+
+<details>
+<summary>Alternative: Skip interview, plan only</summary>
+
+```bash
+# If you already have a clear spec:
+/flux:plan fn-1                          # ~5-15 min
+```
+</details>
 
 ### Find Better Tools
 
@@ -121,7 +149,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 /flux:improve --discover
 ```
 
-That's it. Interview → Plan → Build → Review → Improve. Repeat.
+That's it. Scope → Build → Review → Improve. Repeat.
 
 > **You can stop reading here.** Everything below is optional deep-dives.
 
@@ -213,12 +241,14 @@ CTO-level observability:
 | Command | What it does |
 |---------|--------------|
 | `/flux:setup` | Initialize Flux in your project |
-| `/flux:interview <idea>` | Requirements interview (use `--deep` for complex features) |
-| `/flux:plan <idea>` | Break into atomic tasks |
+| `/flux:scope <idea>` | **Double Diamond scoping** — interview + plan (`--deep`, `--explore N`) |
+| `/flux:plan <idea>` | Create tasks only (skip problem space interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |
 | `/flux:impl-review` | Implementation review |
 | `/flux:epic-review <epic>` | Verify epic completion |
+| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
+| `/flux:desloppify` | Systematic code quality improvement (scan → fix loop) |
 | `/flux:improve` | Analyze sessions, recommend tools |
 | `/flux:score` | Compute AI-native capability score |
 | `/flux:profile` | Export/share SDLC profile |
