@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.1.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.2.1-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -102,6 +102,14 @@ Guide me step by step.
 ```bash
 /flux:setup
 ```
+
+### Updating
+
+```bash
+/plugin marketplace update nairon-flux
+```
+
+**Important:** After updating, **restart Claude Code** (or start a new session). Plugins are loaded at session start and cached—updates won't take effect until you restart.
 
 ### Build a Feature
 
