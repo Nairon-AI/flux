@@ -37,23 +37,73 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json` (Claud
 
 **If no `setup_version`:** continue (first-time setup)
 
-## Step 3: Create .flux/bin/
+## Step 3: Ask Installation Scope (FIRST)
 
+**Before creating directories, ask where to install:**
+
+Check if scope is already configured:
 ```bash
-mkdir -p .flux/bin
+CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
 ```
 
-## Step 4: Copy files
+If not set, use the question tool to ask:
+```json
+{
+  "header": "Install Scope",
+  "question": "Where should Flux be installed?",
+  "options": [
+    {"label": "Project (Recommended)", "description": "Install in .flux/ - isolated to this project, committed to git"},
+    {"label": "User", "description": "Install in ~/.flux/ - shared scripts across all projects, project data stays local"},
+    {"label": "Global", "description": "Install in /usr/local/flux/ - system-wide for all users (requires sudo)"}
+  ]
+}
+```
+
+**Set paths based on answer:**
+- **Project**: `BIN_ROOT=".flux/bin"`, `CONFIG_ROOT=".flux"`
+- **User**: `BIN_ROOT="$HOME/.flux/bin"`, `CONFIG_ROOT=".flux"` (scripts shared, epics/tasks local)
+- **Global**: `BIN_ROOT="/usr/local/flux/bin"`, `CONFIG_ROOT=".flux"`
+
+Persist the choice:
+```bash
+"${PLUGIN_ROOT}/scripts/fluxctl" config set install.scope "<project|user|global>" --json
+```
+
+## Step 4: Create directories and copy files
 
 **IMPORTANT: Do NOT read fluxctl.py - it's too large. Just copy it.**
 
-Copy using Bash `cp` with absolute paths:
+Based on the scope from Step 3:
 
+**Project scope (default):**
 ```bash
+mkdir -p .flux/bin
 cp "${PLUGIN_ROOT}/scripts/fluxctl" .flux/bin/fluxctl
 cp "${PLUGIN_ROOT}/scripts/fluxctl.py" .flux/bin/fluxctl.py
 chmod +x .flux/bin/fluxctl
 ```
+
+**User scope:**
+```bash
+mkdir -p ~/.flux/bin
+cp "${PLUGIN_ROOT}/scripts/fluxctl" ~/.flux/bin/fluxctl
+cp "${PLUGIN_ROOT}/scripts/fluxctl.py" ~/.flux/bin/fluxctl.py
+chmod +x ~/.flux/bin/fluxctl
+# Also create local .flux/ for project data
+mkdir -p .flux
+```
+Note: Tell user to add `~/.flux/bin` to their PATH.
+
+**Global scope:**
+```bash
+sudo mkdir -p /usr/local/flux/bin
+sudo cp "${PLUGIN_ROOT}/scripts/fluxctl" /usr/local/flux/bin/fluxctl
+sudo cp "${PLUGIN_ROOT}/scripts/fluxctl.py" /usr/local/flux/bin/fluxctl.py
+sudo chmod +x /usr/local/flux/bin/fluxctl
+# Also create local .flux/ for project data
+mkdir -p .flux
+```
+Note: `/usr/local/flux/bin` is typically already in PATH on most systems.
 
 Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
 
@@ -98,6 +148,7 @@ HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 
 # Read current config values if they exist
+CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/fluxctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
@@ -128,6 +179,7 @@ If ANY config values are already set, print a notice before asking questions:
 
 ```
 Current configuration:
+- Install scope: <project|user|global> (change with: fluxctl config set install.scope <project|user|global>)
 - Memory: <enabled|disabled> (change with: fluxctl config set memory.enabled <true|false>)
 - Plan-Sync: <enabled|disabled> (change with: fluxctl config set planSync.enabled <true|false>)
 - Plan-Sync cross-epic: <enabled|disabled> (change with: fluxctl config set planSync.crossEpic <true|false>)
@@ -141,6 +193,42 @@ Only include lines for config values that are set. If no config is set, skip thi
 ### 6d: Build questions list
 
 Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
+
+**Installation Scope question** (always ask FIRST if not already configured):
+
+Check if scope is already set:
+```bash
+CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
+```
+
+If CURRENT_SCOPE is empty, include this question FIRST:
+```json
+{
+  "header": "Install Scope",
+  "question": "Where should Flux be installed?",
+  "options": [
+    {"label": "Project (Recommended)", "description": "Install in .flux/ - isolated to this project, committed to git"},
+    {"label": "User", "description": "Install in ~/.flux/ - shared config across all projects, project data stays local"},
+    {"label": "Global", "description": "Install in /usr/local/flux/ - system-wide for all users (requires sudo)"}
+  ],
+  "multiSelect": false
+}
+```
+
+**Process scope answer immediately** (before other questions):
+- If "Project": Set `INSTALL_ROOT=".flux"` and `CONFIG_ROOT=".flux"`
+- If "User": Set `INSTALL_ROOT="$HOME/.flux"` and `CONFIG_ROOT=".flux"` (scripts shared, data local)
+- If "Global": Set `INSTALL_ROOT="/usr/local/flux"` and `CONFIG_ROOT=".flux"`
+
+Then persist:
+```bash
+"${PLUGIN_ROOT}/scripts/fluxctl" config set install.scope "<project|user|global>" --json
+```
+
+**Adjust Steps 3-4 based on scope:**
+- **Project scope**: `mkdir -p .flux/bin` and copy scripts there
+- **User scope**: `mkdir -p ~/.flux/bin` and copy scripts there, add to PATH hint
+- **Global scope**: `sudo mkdir -p /usr/local/flux/bin` and copy scripts there
 
 Available questions (include only if corresponding config is unset):
 
@@ -312,16 +400,27 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 ```
 Flux setup complete!
 
+Installation scope: <project|user|global>
+
 Installed:
-- .flux/bin/fluxctl (v<VERSION>)
-- .flux/bin/fluxctl.py
+- <BIN_ROOT>/fluxctl (v<VERSION>)
+- <BIN_ROOT>/fluxctl.py
 - .flux/usage.md
 
 To use from command line:
+  # Project scope:
   export PATH=".flux/bin:$PATH"
+  
+  # User scope:
+  export PATH="$HOME/.flux/bin:$PATH"  # Add to ~/.bashrc or ~/.zshrc
+  
+  # Global scope:
+  # Already in PATH (/usr/local/flux/bin)
+  
   fluxctl --help
 
 Configuration (use fluxctl config set to change):
+- Install scope: <project|user|global>
 - Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
