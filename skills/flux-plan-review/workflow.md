@@ -14,11 +14,11 @@ The reviewer model only sees selected files. RepoPrompt's Builder discovers cont
 
 ```bash
 set -e
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -44,7 +44,7 @@ Use when `BACKEND="codex"`.
 **Before review** (protects against context compaction):
 ```bash
 EPIC_ID="${1:-}"
-$FLOWCTL checkpoint save --epic "$EPIC_ID" --json
+$FLUXCTL checkpoint save --epic "$EPIC_ID" --json
 ```
 
 ### Step 1: Execute Review
@@ -57,7 +57,7 @@ RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/plan-review-receipt.json}"
 # Read epic spec to identify affected paths, then list key files
 CODE_FILES="src/main.py,src/config.py"  # Customize per epic
 
-$FLOWCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_PATH"
+$FLUXCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_PATH"
 ```
 
 **Output includes `VERDICT=SHIP|NEEDS_WORK|MAJOR_RETHINK`.**
@@ -66,16 +66,16 @@ $FLOWCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_
 
 ```bash
 # Based on verdict
-$FLOWCTL epic set-plan-review-status "$EPIC_ID" --status ship --json
+$FLUXCTL epic set-plan-review-status "$EPIC_ID" --status ship --json
 # OR
-$FLOWCTL epic set-plan-review-status "$EPIC_ID" --status needs_work --json
+$FLUXCTL epic set-plan-review-status "$EPIC_ID" --status needs_work --json
 ```
 
 ### Step 3: Handle Verdict
 
 If `VERDICT=NEEDS_WORK`:
 1. Parse issues from output
-2. Fix plan via `$FLOWCTL epic set-plan`
+2. Fix plan via `$FLUXCTL epic set-plan`
 3. Re-run step 1 (receipt enables session continuity)
 4. Repeat until SHIP
 
@@ -96,17 +96,17 @@ Use when `BACKEND="rp"`.
 
 **If Flow issue:**
 ```bash
-$FLOWCTL show <id> --json
-$FLOWCTL cat <id>
+$FLUXCTL show <id> --json
+$FLUXCTL cat <id>
 ```
 
 Save output for inclusion in review prompt. Compose a 1-2 sentence `REVIEW_SUMMARY` for the setup-review command below.
 
 **Save checkpoint** (protects against context compaction during review):
 ```bash
-$FLOWCTL checkpoint save --epic <id> --json
+$FLUXCTL checkpoint save --epic <id> --json
 ```
-This creates `.flux/.checkpoint-<id>.json` with full state. If compaction occurs during review-fix cycles, restore with `$FLOWCTL checkpoint restore --epic <id>`.
+This creates `.flux/.checkpoint-<id>.json` with full state. If compaction occurs during review-fix cycles, restore with `$FLUXCTL checkpoint restore --epic <id>`.
 
 ---
 
@@ -116,7 +116,7 @@ This creates `.flux/.checkpoint-<id>.json` with full state. If compaction occurs
 
 ```bash
 # Atomic: pick-window + builder (uses REVIEW_SUMMARY from Phase 1)
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
+eval "$($FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
 
 # Verify we have W and T
 if [[ -z "${W:-}" || -z "${T:-}" ]]; then
@@ -138,18 +138,18 @@ Builder selects context automatically. Review and add must-haves:
 
 ```bash
 # See what builder selected
-$FLOWCTL rp select-get --window "$W" --tab "$T"
+$FLUXCTL rp select-get --window "$W" --tab "$T"
 
 # Always add the epic spec
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flux/specs/<epic-id>.md
+$FLUXCTL rp select-add --window "$W" --tab "$T" .flux/specs/<epic-id>.md
 
 # Always add ALL task specs for this epic
 for task_spec in .flux/tasks/${EPIC_ID}.*.md; do
-  [[ -f "$task_spec" ]] && $FLOWCTL rp select-add --window "$W" --tab "$T" "$task_spec"
+  [[ -f "$task_spec" ]] && $FLUXCTL rp select-add --window "$W" --tab "$T" "$task_spec"
 done
 
 # Add PRD/architecture docs if found
-$FLOWCTL rp select-add --window "$W" --tab "$T" docs/prd.md
+$FLUXCTL rp select-add --window "$W" --tab "$T" docs/prd.md
 ```
 
 **Why this matters:** Chat only sees selected files. Reviewer needs both epic spec AND task specs to check for consistency.
@@ -162,7 +162,7 @@ $FLOWCTL rp select-add --window "$W" --tab "$T" docs/prd.md
 
 Get builder's handoff:
 ```bash
-HANDOFF="$($FLOWCTL rp prompt-get --window "$W" --tab "$T")"
+HANDOFF="$($FLUXCTL rp prompt-get --window "$W" --tab "$T")"
 ```
 
 Write combined prompt:
@@ -231,7 +231,7 @@ EOF
 ### Send to RepoPrompt
 
 ```bash
-$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Plan Review: <EPIC_ID>"
+$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Plan Review: <EPIC_ID>"
 ```
 
 **WAIT** for response. Takes 1-5+ minutes.
@@ -258,10 +258,10 @@ fi
 Extract verdict from response, then:
 ```bash
 # If SHIP
-$FLOWCTL epic set-plan-review-status <EPIC_ID> --status ship --json
+$FLUXCTL epic set-plan-review-status <EPIC_ID> --status ship --json
 
 # If NEEDS_WORK or MAJOR_RETHINK
-$FLOWCTL epic set-plan-review-status <EPIC_ID> --status needs_work --json
+$FLUXCTL epic set-plan-review-status <EPIC_ID> --status needs_work --json
 ```
 
 If no verdict tag, output `<promise>RETRY</promise>` and stop.
@@ -281,23 +281,23 @@ If verdict is NEEDS_WORK:
 3. **Update epic spec in fluxctl** (MANDATORY before re-review):
    ```bash
    # Option A: stdin heredoc (preferred, no temp file)
-   $FLOWCTL epic set-plan <EPIC_ID> --file - --json <<'EOF'
+   $FLUXCTL epic set-plan <EPIC_ID> --file - --json <<'EOF'
    <updated epic spec content>
    EOF
 
    # Option B: temp file (if content has single quotes)
-   $FLOWCTL epic set-plan <EPIC_ID> --file /tmp/updated-plan.md --json
+   $FLUXCTL epic set-plan <EPIC_ID> --file /tmp/updated-plan.md --json
    ```
    **If you skip this step and re-review with same content, reviewer will return NEEDS_WORK again.**
 
    **Recovery**: If context compaction occurred, restore from checkpoint first:
    ```bash
-   $FLOWCTL checkpoint restore --epic <EPIC_ID> --json
+   $FLUXCTL checkpoint restore --epic <EPIC_ID> --json
    ```
 
 4. **Sync affected task specs** - If epic changes affect task specs, update them:
    ```bash
-   $FLOWCTL task set-spec <TASK_ID> --file - --json <<'EOF'
+   $FLUXCTL task set-spec <TASK_ID> --file - --json <<'EOF'
    <updated task spec content>
    EOF
    ```
@@ -315,7 +315,7 @@ If verdict is NEEDS_WORK:
    ```bash
    # Only if fixes created new files not in original selection
    if [[ -n "$NEW_FILES" ]]; then
-     $FLOWCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
+     $FLUXCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
    fi
    ```
 
@@ -330,7 +330,7 @@ If verdict is NEEDS_WORK:
    **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF
 
-   $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
+   $FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
    ```
 6. **Repeat** until Ship
 

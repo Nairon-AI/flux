@@ -14,11 +14,11 @@ The reviewer model only sees selected files. RepoPrompt's Builder discovers cont
 
 ```bash
 set -e
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -61,7 +61,7 @@ git log ${DIFF_BASE}..HEAD --oneline
 ```bash
 RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/impl-review-receipt.json}"
 
-$FLOWCTL codex impl-review "$TASK_ID" --base "$DIFF_BASE" --receipt "$RECEIPT_PATH"
+$FLUXCTL codex impl-review "$TASK_ID" --base "$DIFF_BASE" --receipt "$RECEIPT_PATH"
 ```
 
 **Output includes `VERDICT=SHIP|NEEDS_WORK|MAJOR_RETHINK`.**
@@ -123,7 +123,7 @@ Compose a 1-2 sentence `REVIEW_SUMMARY` describing the changes for the setup-rev
 
 ```bash
 # Atomic: pick-window + builder (uses REVIEW_SUMMARY from Phase 1)
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
+eval "$($FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "$REVIEW_SUMMARY" --create)"
 
 # Verify we have W and T
 if [[ -z "${W:-}" || -z "${T:-}" ]]; then
@@ -145,15 +145,15 @@ Builder selects context automatically. Review and add must-haves:
 
 ```bash
 # See what builder selected
-$FLOWCTL rp select-get --window "$W" --tab "$T"
+$FLUXCTL rp select-get --window "$W" --tab "$T"
 
 # Add ALL changed files
 for f in $CHANGED_FILES; do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" "$f"
+  $FLUXCTL rp select-add --window "$W" --tab "$T" "$f"
 done
 
 # Add task spec if known
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flux/specs/<task-id>.md
+$FLUXCTL rp select-add --window "$W" --tab "$T" .flux/specs/<task-id>.md
 ```
 
 **Why this matters:** Chat only sees selected files.
@@ -166,7 +166,7 @@ $FLOWCTL rp select-add --window "$W" --tab "$T" .flux/specs/<task-id>.md
 
 Get builder's handoff:
 ```bash
-HANDOFF="$($FLOWCTL rp prompt-get --window "$W" --tab "$T")"
+HANDOFF="$($FLUXCTL rp prompt-get --window "$W" --tab "$T")"
 ```
 
 Write combined prompt:
@@ -241,7 +241,7 @@ EOF
 ### Send to RepoPrompt
 
 ```bash
-$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Impl Review: $BRANCH"
+$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Impl Review: $BRANCH"
 ```
 
 **WAIT** for response. Takes 1-5+ minutes.
@@ -294,7 +294,7 @@ If verdict is NEEDS_WORK:
    ```bash
    # Only if fixes created new files not in original selection
    if [[ -n "$NEW_FILES" ]]; then
-     $FLOWCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
+     $FLUXCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
    fi
    ```
 
@@ -309,7 +309,7 @@ If verdict is NEEDS_WORK:
    **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF
 
-   $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
+   $FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
    ```
 6. **Repeat** until Ship
 

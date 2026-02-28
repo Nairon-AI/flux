@@ -14,8 +14,10 @@ Follow this skill and linked workflows exactly. Deviations cause drift, bad gate
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL <command>
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL <command>
 ```
 
 ## Pre-check: Local setup version
@@ -24,8 +26,8 @@ If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
 SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
 # Portable: Claude Code uses .claude-plugin, Factory Droid uses .factory-plugin
-PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.claude-plugin/plugin.json"
-[[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.factory-plugin/plugin.json"
+PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
+[[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${PLUGIN_ROOT}/.factory-plugin/plugin.json"
 PLUGIN_VER=$(jq -r '.version' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
 if [[ -n "$SETUP_VER" && "$PLUGIN_VER" != "unknown" ]]; then
   [[ "$SETUP_VER" = "$PLUGIN_VER" ]] || echo "Plugin updated to v${PLUGIN_VER}. Run /flux:setup to refresh local scripts (current: v${SETUP_VER})."
@@ -96,7 +98,7 @@ If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences.
 
 Check configured backend:
 ```bash
-REVIEW_BACKEND=$($FLOWCTL review-backend)
+REVIEW_BACKEND=$($FLUXCTL review-backend)
 ```
 Returns: `ASK` (not configured), or `rp`/`codex`/`none` (configured).
 

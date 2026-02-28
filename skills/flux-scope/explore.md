@@ -330,24 +330,24 @@ git worktree remove .flux/explore/approach-c --force
 
 ```bash
 # Initialize exploration after approach selection (Step 6.5)
-$FLOWCTL explore init --epic <epic-id> \
+$FLUXCTL explore init --epic <epic-id> \
   --approaches "a:Modal wizard,b:Side panel,c:Full page" \
   --json
 
 # Record worktree paths (Step 6.6)
-$FLOWCTL explore set-worktrees --epic <epic-id> \
+$FLUXCTL explore set-worktrees --epic <epic-id> \
   --worktree "a:.flux/explore/approach-a" \
   --worktree "b:.flux/explore/approach-b" \
   --json
 
 # Record scaffold results (Step 6.7)
-$FLOWCTL explore set-results --epic <epic-id> \
+$FLUXCTL explore set-results --epic <epic-id> \
   --result 'a:{"status":"success","effort":"M","files":["src/Modal.tsx"]}' \
   --result 'b:{"status":"partial","effort":"S"}' \
   --json
 
 # Record previews (Step 6.8)
-$FLOWCTL explore set-previews --epic <epic-id> \
+$FLUXCTL explore set-previews --epic <epic-id> \
   --preview "a:.flux/explore/previews/approach-a.png" \
   --preview "b:.flux/explore/previews/approach-b.html" \
   --json
@@ -357,35 +357,35 @@ $FLOWCTL explore set-previews --epic <epic-id> \
 
 ```bash
 # List active explorations
-$FLOWCTL explore list --json
+$FLUXCTL explore list --json
 
 # Get exploration status
-$FLOWCTL explore status <epic-id> --json
+$FLUXCTL explore status <epic-id> --json
 # Returns: approaches, worktrees, results, previews, selected
 
 # Show comparison data
-$FLOWCTL explore compare <epic-id> --json
+$FLUXCTL explore compare <epic-id> --json
 ```
 
 ### Selection & Completion
 
 ```bash
 # Pick winning approach (Step 6.10)
-$FLOWCTL explore pick <epic-id> --approach a --json
+$FLUXCTL explore pick <epic-id> --approach a --json
 # Marks approach as selected, prepares for merge
 
 # Create hybrid from multiple approaches
-$FLOWCTL explore hybrid <epic-id> \
+$FLUXCTL explore hybrid <epic-id> \
   --from a,c \
   --spec "Modal flow from A, persistent panel from C" \
   --json
 
 # Merge winner to main branch
-$FLOWCTL explore merge <epic-id> --json
+$FLUXCTL explore merge <epic-id> --json
 # Merges selected approach branch, creates epic/tasks from scaffold
 
 # Cleanup after selection (Step 6.11)
-$FLOWCTL explore cleanup <epic-id> --json
+$FLUXCTL explore cleanup <epic-id> --json
 # Removes non-selected worktrees, optionally deletes branches
 ```
 
@@ -393,10 +393,10 @@ $FLOWCTL explore cleanup <epic-id> --json
 
 ```bash
 # Resume interrupted exploration
-$FLOWCTL explore resume <epic-id> --json
+$FLUXCTL explore resume <epic-id> --json
 
 # Discard exploration entirely
-$FLOWCTL explore discard <epic-id> --json
+$FLUXCTL explore discard <epic-id> --json
 # Removes all worktrees, branches, and exploration state
 ```
 

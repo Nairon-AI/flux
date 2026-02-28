@@ -31,8 +31,10 @@ PROBLEM SPACE                    SOLUTION SPACE
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL <command>
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL <command>
 ```
 
 **Agent Compatibility**: This skill works across Claude Code, OpenCode, and Codex. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
@@ -48,11 +50,13 @@ $FLOWCTL <command>
 If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
 SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
-PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.claude-plugin/plugin.json"
-[[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/.factory-plugin/plugin.json"
+PLUGIN_ROOT="${PLUGIN_ROOT}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
+[ -f "$PLUGIN_JSON" ] || PLUGIN_JSON="${PLUGIN_ROOT}/.factory-plugin/plugin.json"
 PLUGIN_VER=$(jq -r '.version' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
-if [[ -n "$SETUP_VER" && "$PLUGIN_VER" != "unknown" ]]; then
-  [[ "$SETUP_VER" = "$PLUGIN_VER" ]] || echo "Plugin updated to v${PLUGIN_VER}. Run /flux:setup to refresh local scripts (current: v${SETUP_VER})."
+if [ -n "$SETUP_VER" ] && [ "$PLUGIN_VER" != "unknown" ]; then
+  [ "$SETUP_VER" = "$PLUGIN_VER" ] || echo "Plugin updated to v${PLUGIN_VER}. Run /flux:setup to refresh local scripts (current: v${SETUP_VER})."
 fi
 ```
 Continue regardless (non-blocking).
@@ -93,8 +97,10 @@ SCOPE_MODE = "--deep" in arguments ? "deep" : "quick"
 ## Setup
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL init --json
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL init --json
 ```
 
 ---
@@ -331,7 +337,7 @@ Use the question tool with options:
 Store approach metadata for later reference:
 
 ```bash
-$FLOWCTL explore init --epic <epic-id> --approaches "a:Modal wizard,b:Side panel" --json
+$FLUXCTL explore init --epic <epic-id> --approaches "a:Modal wizard,b:Side panel" --json
 ```
 
 This captures:
@@ -405,7 +411,7 @@ echo "Created worktree: $WORKTREE (branch: $BRANCH)"
 ### 6.6.5: Record Worktree State
 
 ```bash
-$FLOWCTL explore set-worktrees --epic <epic-id> \
+$FLUXCTL explore set-worktrees --epic <epic-id> \
   --worktree "a:.flux/explore/approach-a" \
   --worktree "b:.flux/explore/approach-b" \
   --json
@@ -510,7 +516,7 @@ If all approaches fail:
 ### 6.7.4: Save Scaffold Results
 
 ```bash
-$FLOWCTL explore set-results --epic <epic-id> \
+$FLUXCTL explore set-results --epic <epic-id> \
   --result 'a:{"status":"success","effort":"M"}' \
   --result 'b:{"status":"partial","effort":"S"}' \
   --json
@@ -653,7 +659,7 @@ Choose strategy based on environment:
 ### 6.8.6: Record Previews
 
 ```bash
-$FLOWCTL explore set-previews --epic <epic-id> \
+$FLUXCTL explore set-previews --epic <epic-id> \
   --preview "a:.flux/explore/previews/approach-a.png:screenshot" \
   --preview "b:.flux/explore/previews/approach-b.png:screenshot" \
   --preview "c:.flux/explore/previews/approach-c.txt:ascii" \
@@ -678,7 +684,7 @@ Present all approaches side-by-side with their previews.
 ### 6.9.1: Gather Comparison Data
 
 ```bash
-$FLOWCTL explore compare <epic-id> --json
+$FLUXCTL explore compare <epic-id> --json
 ```
 
 Returns:
@@ -794,7 +800,7 @@ The user selected a single approach as the winner.
 
 ```bash
 # 1. Record the selection
-$FLOWCTL explore pick <epic-id> --approach a --json
+$FLUXCTL explore pick <epic-id> --approach a --json
 
 # 2. Get winning worktree path
 WINNER_WORKTREE=".flux/explore/approach-a"
@@ -910,7 +916,7 @@ Options:
 **Workflow:**
 ```bash
 # 1. Record discard decision
-$FLOWCTL explore discard <epic-id> --reason "User requested different directions" --json
+$FLUXCTL explore discard <epic-id> --reason "User requested different directions" --json
 
 # 2. Cleanup all worktrees
 git worktree remove .flux/explore/approach-a --force
@@ -931,7 +937,7 @@ git branch -D explore/<epic-id>/approach-c
 After any selection, capture why:
 
 ```bash
-$FLOWCTL explore set-decision <epic-id> \
+$FLUXCTL explore set-decision <epic-id> \
   --selected "a" \
   --rationale "Modal wizard chosen for familiar UX pattern. Team prefers proven patterns for first iteration." \
   --rejected "b:too limited for complex forms,c:screen space concerns on small monitors" \
@@ -1001,7 +1007,7 @@ rm -rf .flux/explore/previews
 rmdir .flux/explore 2>/dev/null || true
 
 # Record cleanup completion
-$FLOWCTL explore cleanup <epic-id> --json
+$FLUXCTL explore cleanup <epic-id> --json
 ```
 
 ### 6.11.5: Verify Clean State
@@ -1023,13 +1029,13 @@ git status --short
 Create the epic with the problem statement:
 
 ```bash
-$FLOWCTL epic create --title "<Short title from problem statement>" --json
+$FLUXCTL epic create --title "<Short title from problem statement>" --json
 ```
 
 Write the problem space findings to the epic spec:
 
 ```bash
-$FLOWCTL epic set-plan <epic-id> --file - --json <<'EOF'
+$FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
 # <Epic Title>
 
 ## Problem Statement
@@ -1063,13 +1069,13 @@ This shapes what the research and plan need to cover.
 
 **Check configuration:**
 ```bash
-$FLOWCTL config get memory.enabled --json
-$FLOWCTL config get scouts.github --json
+$FLUXCTL config get memory.enabled --json
+$FLUXCTL config get scouts.github --json
 ```
 
 **Set epic branch:**
 ```bash
-$FLOWCTL epic set-branch <epic-id> --branch "<epic-id>" --json
+$FLUXCTL epic set-branch <epic-id> --branch "<epic-id>" --json
 ```
 
 **Run scouts in parallel** (same as flux-plan):
@@ -1108,7 +1114,7 @@ If epic-scout found dependencies on other epics, set them:
 
 ```bash
 # For each dependency found:
-$FLOWCTL epic add-dep <this-epic-id> <dependency-epic-id> --json
+$FLUXCTL epic add-dep <this-epic-id> <dependency-epic-id> --json
 ```
 
 Report at end of planning:
@@ -1131,11 +1137,11 @@ Create tasks under the epic:
 
 ```bash
 # Create tasks with dependencies
-$FLOWCTL task create --epic <epic-id> --title "<Task title>" --json
-$FLOWCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1> --json
+$FLUXCTL task create --epic <epic-id> --title "<Task title>" --json
+$FLUXCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1> --json
 
 # Set task specs
-$FLOWCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+$FLUXCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
 ```
 
 **Task spec content** (NO implementation code):
@@ -1160,7 +1166,7 @@ $FLOWCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/ac
 Update epic with full scope and acceptance:
 
 ```bash
-$FLOWCTL epic set-plan <epic-id> --file - --json <<'EOF'
+$FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
 # <Epic Title>
 
 ## Problem Statement
@@ -1191,7 +1197,7 @@ EOF
 ## Step 12: Validate
 
 ```bash
-$FLOWCTL validate --epic <epic-id> --json
+$FLUXCTL validate --epic <epic-id> --json
 ```
 
 Fix any errors before completing.

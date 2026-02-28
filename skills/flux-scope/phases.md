@@ -163,8 +163,8 @@ The scarce resource has always been clarity — knowing what to build, defining 
 
 After DEFINE, create the epic immediately:
 ```bash
-$FLOWCTL epic create --title "<from problem statement>" --json
-$FLOWCTL epic set-plan <id> --file - <<'EOF'
+$FLUXCTL epic create --title "<from problem statement>" --json
+$FLUXCTL epic set-plan <id> --file - <<'EOF'
 # Problem Statement
 <one sentence>
 

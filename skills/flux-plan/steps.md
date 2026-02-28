@@ -64,20 +64,20 @@ List expected files in each task's `**Files:**` field. If multiple tasks must to
 
 ```bash
 # Get fluxctl path
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 
 # Ensure .flow exists
-$FLOWCTL init --json
+$FLUXCTL init --json
 ```
 
 ## Step 1: Fast research (parallel)
 
-**If input is a Flow ID** (fn-N-slug or fn-N-slug.M, including legacy fn-N/fn-N-xxx): First fetch it with `$FLOWCTL show <id> --json` and `$FLOWCTL cat <id>` to get the request context.
+**If input is a Flow ID** (fn-N-slug or fn-N-slug.M, including legacy fn-N/fn-N-xxx): First fetch it with `$FLUXCTL show <id> --json` and `$FLUXCTL cat <id>` to get the request context.
 
 **Check if memory and github-scout are enabled:**
 ```bash
-$FLOWCTL config get memory.enabled --json
-$FLOWCTL config get scouts.github --json
+$FLUXCTL config get memory.enabled --json
+$FLUXCTL config get scouts.github --json
 ```
 
 **Based on user's choice in SKILL.md setup:**
@@ -178,7 +178,7 @@ Default to standard unless complexity demands more or less.
 1. If epic ID (fn-N-slug or legacy fn-N/fn-N-xxx):
    ```bash
    # Use stdin heredoc (no temp file needed)
-   $FLOWCTL epic set-plan <id> --file - --json <<'EOF'
+   $FLUXCTL epic set-plan <id> --file - --json <<'EOF'
    <plan content here>
    EOF
    ```
@@ -188,21 +188,21 @@ Default to standard unless complexity demands more or less.
    ```bash
    # Combined set-spec: description + acceptance in one call
    # Write to temp files only if content has single quotes
-   $FLOWCTL task set-spec <id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+   $FLUXCTL task set-spec <id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
    ```
 
 **Route B - Input was text (new idea)**:
 
 1. Create epic:
    ```bash
-   $FLOWCTL epic create --title "<Short title>" --json
+   $FLUXCTL epic create --title "<Short title>" --json
    ```
    This returns the epic ID (e.g., fn-1-add-oauth).
 
 2. Set epic branch_name (deterministic):
    - Default: use epic ID (e.g., fn-1-add-oauth)
    ```bash
-   $FLOWCTL epic set-branch <epic-id> --branch "<epic-id>" --json
+   $FLUXCTL epic set-branch <epic-id> --branch "<epic-id>" --json
    ```
    - If user specified a branch, use that instead.
 
@@ -210,7 +210,7 @@ Default to standard unless complexity demands more or less.
    ```bash
    # Include: Overview, Scope, Approach, Quick commands (REQUIRED), Acceptance, References
    # Add mermaid diagram if data model or architecture changes
-   $FLOWCTL epic set-plan <epic-id> --file - --json <<'EOF'
+   $FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
    # Epic Title
 
    ## Overview
@@ -231,7 +231,7 @@ Default to standard unless complexity demands more or less.
    If epic-scout found dependencies, set them automatically:
    ```bash
    # For each dependency found by epic-scout:
-   $FLOWCTL epic add-dep <new-epic-id> <dependency-epic-id> --json
+   $FLUXCTL epic add-dep <new-epic-id> <dependency-epic-id> --json
    ```
 
    Report findings at end of planning (no user prompt needed):
@@ -244,10 +244,10 @@ Default to standard unless complexity demands more or less.
 5. Create child tasks:
    ```bash
    # Task with no dependencies:
-   $FLOWCTL task create --epic <epic-id> --title "<Task title>" --json
+   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --json
 
    # Task with dependencies (use --deps for inline dependency declaration):
-   $FLOWCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1>,<dep2> --json
+   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1>,<dep2> --json
    ```
 
    **TIP**: Use `--deps` to declare dependencies inline when creating tasks. Tasks must exist before being referenced, so create in dependency order.
@@ -256,7 +256,7 @@ Default to standard unless complexity demands more or less.
    ```bash
    # For each task - single call sets both sections
    # Write description and acceptance to temp files, then:
-   $FLOWCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+   $FLUXCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
    ```
 
    **Task spec content** (remember: NO implementation code):
@@ -287,21 +287,21 @@ Default to standard unless complexity demands more or less.
    ```bash
    # Syntax: dep add <dependent-task> <dependency-task>
    # "task B depends on task A" → dep add B A
-   $FLOWCTL dep add fn-N.2 fn-N.1 --json
+   $FLUXCTL dep add fn-N.2 fn-N.1 --json
    ```
 
    Use `dep add` when you need to add dependencies to existing tasks or fix missed dependencies.
 
 8. Output current state:
    ```bash
-   $FLOWCTL show <epic-id> --json
-   $FLOWCTL cat <epic-id>
+   $FLUXCTL show <epic-id> --json
+   $FLUXCTL cat <epic-id>
    ```
 
 ## Step 6: Validate
 
 ```bash
-$FLOWCTL validate --epic <epic-id> --json
+$FLUXCTL validate --epic <epic-id> --json
 ```
 
 Fix any errors before proceeding.
@@ -313,8 +313,8 @@ If user chose "Yes" to review in SKILL.md setup question:
 2. If review returns "Needs Work" or "Major Rethink":
    - **Re-anchor EVERY iteration** (do not skip):
      ```bash
-     $FLOWCTL show <epic-id> --json
-     $FLOWCTL cat <epic-id>
+     $FLUXCTL show <epic-id> --json
+     $FLUXCTL cat <epic-id>
      ```
    - **Immediately fix the issues** (do NOT ask for confirmation — user already consented)
    - Re-run `/flux:plan-review`

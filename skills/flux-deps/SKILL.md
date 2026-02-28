@@ -10,8 +10,10 @@ Visualize epic dependencies, blocking chains, and execution phases.
 ## Setup
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .flux/ exists" || echo "ERROR: run $FLOWCTL init"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .flux/ exists" || echo "ERROR: run $FLUXCTL init"
 command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew install jq"
 ```
 
@@ -20,14 +22,16 @@ command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew in
 Build a consolidated view of all epics with their dependencies:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Get all epic IDs
-epic_ids=$($FLOWCTL epics --json | jq -r '.epics[].id')
+epic_ids=$($FLUXCTL epics --json | jq -r '.epics[].id')
 
 # For each epic, get full details including dependencies
 for id in $epic_ids; do
-  $FLOWCTL show "$id" --json | jq -c '{
+  $FLUXCTL show "$id" --json | jq -c '{
     id: .id,
     title: .title,
     status: .status,
@@ -42,11 +46,13 @@ done
 Determine which epics are ready vs blocked (pure jq, works on any shell):
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Collect all epic data with deps
-epics_json=$($FLOWCTL epics --json | jq -r '.epics[].id' | while read id; do
-  $FLOWCTL show "$id" --json | jq -c '{id: .id, title: .title, status: .status, deps: (.depends_on_epics // [])}'
+epics_json=$($FLUXCTL epics --json | jq -r '.epics[].id' | while read id; do
+  $FLUXCTL show "$id" --json | jq -c '{id: .id, title: .title, status: .status, deps: (.depends_on_epics // [])}'
 done | jq -s '.')
 
 # Compute blocking status
@@ -74,11 +80,13 @@ echo "$epics_json" | jq -r '
 Group epics into parallel execution phases:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Collect all epic data
-epics_json=$($FLOWCTL epics --json | jq -r '.epics[].id' | while read id; do
-  $FLOWCTL show "$id" --json | jq -c '{id: .id, title: .title, status: .status, deps: (.depends_on_epics // [])}'
+epics_json=$($FLUXCTL epics --json | jq -r '.epics[].id' | while read id; do
+  $FLUXCTL show "$id" --json | jq -c '{id: .id, title: .title, status: .status, deps: (.depends_on_epics // [])}'
 done | jq -s '.')
 
 # Phase assignment algorithm (run in jq for reliability)
@@ -144,8 +152,10 @@ fn-1-add-auth → fn-2-add-oauth → fn-3-user-profile (3 phases)
 For a fast dependency check:
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
-$FLOWCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \(.title) [\(.status)]"'
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \(.title) [\(.status)]"'
 ```
 
 ## When to Use

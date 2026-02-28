@@ -7,7 +7,7 @@
 #   - Skills:    plugins/<plugin>/skills/*     → ~/.codex/skills/
 #   - Agents:    plugins/<plugin>/agents/*     → ~/.codex/agents/ (as .toml role configs)
 #   - Prompts:   plugins/<plugin>/commands/*   → ~/.codex/prompts/
-#   - CLI tools: flowctl, flowctl.py           → ~/.codex/bin/
+#   - CLI tools: fluxctl, fluxctl.py           → ~/.codex/bin/
 #   - Scripts:   worktree.sh, etc.             → ~/.codex/scripts/
 #   - Templates: ralph-init templates          → ~/.codex/templates/
 #   - Config:    config.toml agent entries     → ~/.codex/config.toml (merged)
@@ -111,10 +111,10 @@ patch_for_codex() {
     local file="$1"
     if [ -f "$file" ]; then
         sed -i.bak \
-            -e 's|\${CLAUDE_PLUGIN_ROOT}/scripts/flowctl|~/.codex/bin/flowctl|g' \
-            -e 's|\${PLUGIN_ROOT}/scripts/flowctl|~/.codex/bin/flowctl|g' \
-            -e 's|"\${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"|"$HOME/.codex/bin/flowctl"|g' \
-            -e 's|"\${PLUGIN_ROOT}/scripts/flowctl"|"$HOME/.codex/bin/flowctl"|g' \
+            -e 's|\${CLAUDE_PLUGIN_ROOT}/scripts/fluxctl|~/.codex/bin/fluxctl|g' \
+            -e 's|\${PLUGIN_ROOT}/scripts/fluxctl|~/.codex/bin/fluxctl|g' \
+            -e 's|"\${CLAUDE_PLUGIN_ROOT}/scripts/fluxctl"|"$HOME/.codex/bin/fluxctl"|g' \
+            -e 's|"\${PLUGIN_ROOT}/scripts/fluxctl"|"$HOME/.codex/bin/fluxctl"|g' \
             -e 's|\${CLAUDE_PLUGIN_ROOT}/scripts/|~/.codex/bin/|g' \
             -e 's|\${CLAUDE_PLUGIN_ROOT}/skills/flow-next-ralph-init/templates|~/.codex/templates/flow-next-ralph-init|g' \
             -e 's|\${CLAUDE_PLUGIN_ROOT}/skills/flow-next-worktree-kit/scripts|~/.codex/scripts|g' \
@@ -425,7 +425,7 @@ Use the **worker** agent role to implement the task. The worker gets fresh conte
 - Implementation
 - Committing
 - Review cycles (if enabled)
-- Completing the task (flowctl done)
+- Completing the task (fluxctl done)
 
 **Invoke the worker:**
 
@@ -433,7 +433,7 @@ Use the **worker** agent role to implement the task. The worker gets fresh conte
 
 TASK_ID: fn-X.Y
 EPIC_ID: fn-X
-FLOWCTL: $FLOWCTL
+FLUXCTL: $FLUXCTL
 REVIEW_MODE: none|rp|codex
 RALPH_MODE: true|false
 
@@ -546,7 +546,7 @@ patch_rp_review_skills_for_codex() {
 3. **Run commands directly and WAIT** - Do NOT use background jobs. Just run the command and wait:
    ```bash
    # Run setup-review - takes 5-15 minutes, just wait
-   $FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "..."
+   $FLUXCTL rp setup-review --repo-root "$REPO_ROOT" --summary "..."
    # You will see file paths printed as it indexes - this is progress, not errors
    ```
 
@@ -589,18 +589,18 @@ WARNINGEOF
 # ====================
 # Install CLI tools (flow-next only)
 # ====================
-HAS_FLOWCTL=false
-if [ -f "$PLUGIN_DIR/scripts/flowctl" ]; then
+HAS_FLUXCTL=false
+if [ -f "$PLUGIN_DIR/scripts/fluxctl" ]; then
     echo -e "${BLUE}Installing CLI tools...${NC}"
-    cp "$PLUGIN_DIR/scripts/flowctl" "$CODEX_DIR/bin/"
-    chmod +x "$CODEX_DIR/bin/flowctl"
-    echo -e "  ${GREEN}✓${NC} flowctl"
-    HAS_FLOWCTL=true
+    cp "$PLUGIN_DIR/scripts/fluxctl" "$CODEX_DIR/bin/"
+    chmod +x "$CODEX_DIR/bin/fluxctl"
+    echo -e "  ${GREEN}✓${NC} fluxctl"
+    HAS_FLUXCTL=true
 fi
 
-if [ -f "$PLUGIN_DIR/scripts/flowctl.py" ]; then
-    cp "$PLUGIN_DIR/scripts/flowctl.py" "$CODEX_DIR/bin/"
-    echo -e "  ${GREEN}✓${NC} flowctl.py"
+if [ -f "$PLUGIN_DIR/scripts/fluxctl.py" ]; then
+    cp "$PLUGIN_DIR/scripts/fluxctl.py" "$CODEX_DIR/bin/"
+    echo -e "  ${GREEN}✓${NC} fluxctl.py"
 fi
 
 # ====================
@@ -732,9 +732,9 @@ echo -e "${GREEN}Done!${NC} $PLUGIN installed to ~/.codex (multi-agent mode)"
 echo
 echo -e "${BLUE}Directory structure:${NC}"
 echo "  ~/.codex/"
-if [ "$HAS_FLOWCTL" = true ]; then
-echo "  ├── bin/flowctl          # CLI tool"
-echo "  ├── bin/flowctl.py"
+if [ "$HAS_FLUXCTL" = true ]; then
+echo "  ├── bin/fluxctl          # CLI tool"
+echo "  ├── bin/fluxctl.py"
 fi
 echo "  ├── skills/              # Skill definitions"
 echo "  ├── prompts/             # Command prompts"
@@ -763,12 +763,12 @@ echo "  • Scouts run as parallel multi-agent threads during planning"
 echo "  • Worker agent handles task implementation with fresh context"
 echo "  • Reviews are MANDATORY - run /flow-next:impl-review after each task"
 echo "  • Run /flow-next:epic-review when all tasks in an epic are done"
-if [ "$HAS_FLOWCTL" = true ]; then
-echo "  • Run 'flowctl --help' via ~/.codex/bin/flowctl"
+if [ "$HAS_FLUXCTL" = true ]; then
+echo "  • Run 'fluxctl --help' via ~/.codex/bin/fluxctl"
 fi
 echo
 echo -e "${BLUE}Quick start:${NC}"
-if [ "$HAS_FLOWCTL" = true ]; then
+if [ "$HAS_FLUXCTL" = true ]; then
 echo "  1. Add ~/.codex/bin to PATH (optional)"
 echo "  2. Use /$PLUGIN:plan to create a plan"
 echo "  3. Use /$PLUGIN:work to execute tasks"

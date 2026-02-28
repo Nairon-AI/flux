@@ -174,7 +174,7 @@ def handle_pre_tool_use(data: dict) -> None:
     # Block direct codex calls (must use fluxctl codex wrappers)
     if re.search(r"\bcodex\b", command):
         # Allow fluxctl codex wrappers
-        is_wrapper = re.search(r"fluxctl\s+codex|FLOWCTL.*codex", command)
+        is_wrapper = re.search(r"fluxctl\s+codex|FLUXCTL.*codex", command)
         if not is_wrapper:
             # Block direct codex usage
             if re.search(r"\bcodex\s+exec\b", command):
@@ -217,7 +217,7 @@ def handle_pre_tool_use(data: dict) -> None:
             )
 
     # Enforce fluxctl done requires --evidence-json and --summary-file
-    if " done " in command and ("fluxctl" in command or "FLOWCTL" in command):
+    if " done " in command and ("fluxctl" in command or "FLUXCTL" in command):
         # Skip if it's just "fluxctl done --help" or similar
         if not re.search(r"--help|-h", command):
             if not re.search(r"--evidence-json|--evidence", command):
@@ -373,9 +373,9 @@ def handle_post_tool_use(data: dict) -> None:
     # - fluxctl.py done <task>
     # - .flux/bin/fluxctl done <task>
     # - scripts/ralph/fluxctl done <task>
-    # - $FLOWCTL done <task>
-    # - "$FLOWCTL" done <task>
-    if " done " in command and ("fluxctl" in command or "FLOWCTL" in command):
+    # - $FLUXCTL done <task>
+    # - "$FLUXCTL" done <task>
+    if " done " in command and ("fluxctl" in command or "FLUXCTL" in command):
         # Debug logging
         with Path("/tmp/ralph-guard-debug.log").open("a") as f:
             f.write(f"  -> fluxctl done detected in: {command[:100]}...\n")

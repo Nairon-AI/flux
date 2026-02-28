@@ -15,7 +15,9 @@ Conduct a John Carmack-level review of implementation changes on the current bra
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 ```
 
 ## Backend Selection
@@ -39,7 +41,7 @@ If found, use that backend and skip all other detection.
 ### Otherwise read from config
 
 ```bash
-BACKEND=$($FLOWCTL review-backend)
+BACKEND=$($FLUXCTL review-backend)
 
 if [[ "$BACKEND" == "ASK" ]]; then
   echo "Error: No review backend configured."
@@ -60,7 +62,7 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 5. **Re-reviews MUST stay in SAME chat** - omit `--new-chat` after first review
 
 **For codex backend:**
-1. Use `$FLOWCTL codex impl-review` exclusively
+1. Use `$FLUXCTL codex impl-review` exclusively
 2. Pass `--receipt` for session continuity on re-reviews
 3. Parse verdict from command output
 
@@ -91,7 +93,9 @@ Format: `[task ID] [--base <commit>] [focus areas]`
 **See [workflow.md](workflow.md) for full details on each backend.**
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -115,9 +119,9 @@ RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/impl-review-receipt.json}"
 
 # Use BASE_COMMIT if provided, else fall back to main
 if [[ -n "$BASE_COMMIT" ]]; then
-  $FLOWCTL codex impl-review "$TASK_ID" --base "$BASE_COMMIT" --receipt "$RECEIPT_PATH"
+  $FLUXCTL codex impl-review "$TASK_ID" --base "$BASE_COMMIT" --receipt "$RECEIPT_PATH"
 else
-  $FLOWCTL codex impl-review "$TASK_ID" --base main --receipt "$RECEIPT_PATH"
+  $FLUXCTL codex impl-review "$TASK_ID" --base main --receipt "$RECEIPT_PATH"
 fi
 # Output includes VERDICT=SHIP|NEEDS_WORK|MAJOR_RETHINK
 ```
@@ -149,7 +153,7 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 3. **Commit fixes** (mandatory before re-review)
 4. **Re-review**:
    - **Codex**: Re-run `fluxctl codex impl-review` (receipt enables context)
-   - **RP**: `$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
+   - **RP**: `$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
 5. **Repeat** until `<verdict>SHIP</verdict>`
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.

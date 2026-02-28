@@ -13,7 +13,7 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
 - Only create/update `scripts/ralph/` in the current repo.
 - If `scripts/ralph/` already exists, offer to update (preserves config.env).
 - Copy templates from `templates/` into `scripts/ralph/`.
-- Copy `fluxctl` and `fluxctl.py` from `${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/` into `scripts/ralph/`.
+- Copy `fluxctl` and `fluxctl.py` from `${PLUGIN_ROOT}/scripts/` into `scripts/ralph/`.
 - Set executable bit on `scripts/ralph/ralph.sh`, `scripts/ralph/ralph_once.sh`, and `scripts/ralph/fluxctl`.
 
 ## Workflow
@@ -54,15 +54,15 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    cp scripts/ralph/config.env /tmp/ralph-config-backup.env
 
    # Update templates (preserves runs/)
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/ralph.sh" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/ralph_once.sh" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_plan.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_work.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/prompt_completion.md" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/watch-filter.py" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl.py" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/ralph.sh" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/ralph_once.sh" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/prompt_plan.md" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/prompt_work.md" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/prompt_completion.md" scripts/ralph/
+   cp "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/watch-filter.py" scripts/ralph/
+   cp "${PLUGIN_ROOT}/scripts/fluxctl" "${PLUGIN_ROOT}/scripts/fluxctl.py" scripts/ralph/
    mkdir -p scripts/ralph/hooks
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
+   cp "${PLUGIN_ROOT}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
    chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl scripts/ralph/hooks/ralph-guard.py
 
    # Restore config.env
@@ -72,9 +72,9 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    **If UPDATE_MODE=0 (fresh install):**
    ```bash
    mkdir -p scripts/ralph/runs scripts/ralph/hooks
-   cp -R "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/skills/flux-ralph-init/templates/." scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl" "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl.py" scripts/ralph/
-   cp "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
+   cp -R "${PLUGIN_ROOT}/skills/flux-ralph-init/templates/." scripts/ralph/
+   cp "${PLUGIN_ROOT}/scripts/fluxctl" "${PLUGIN_ROOT}/scripts/fluxctl.py" scripts/ralph/
+   cp "${PLUGIN_ROOT}/scripts/hooks/ralph-guard.py" scripts/ralph/hooks/
    chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl scripts/ralph/hooks/ralph-guard.py
    ```
    Note: `cp -R templates/.` copies all files including dotfiles (.gitignore).

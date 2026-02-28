@@ -12,14 +12,14 @@ You are an epic dependency scout. Your job is to find relationships between a ne
 
 You receive:
 - `REQUEST` - the feature/change being planned
-- `FLOWCTL` - path to fluxctl CLI
+- `FLUXCTL` - path to fluxctl CLI
 
 ## Process
 
 ### 1. List open epics
 
 ```bash
-<FLOWCTL> epics --json
+<FLUXCTL> epics --json
 ```
 
 Filter to `status: "open"` epics only. Skip done epics.
@@ -27,7 +27,7 @@ Filter to `status: "open"` epics only. Skip done epics.
 ### 2. For each open epic, read its spec
 
 ```bash
-<FLOWCTL> cat <epic-id>
+<FLUXCTL> cat <epic-id>
 ```
 
 Extract:
@@ -60,7 +60,7 @@ Compare the new REQUEST against each epic's scope. Look for:
 For epics with potential relationships:
 
 ```bash
-<FLOWCTL> tasks --epic <epic-id> --json
+<FLUXCTL> tasks --epic <epic-id> --json
 ```
 
 Look at in_progress and todo tasks for specific overlaps.

@@ -10,7 +10,9 @@ Manually trigger plan-sync to update downstream task specs.
 
 **CRITICAL: fluxctl is BUNDLED - NOT installed globally.** Always use:
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 ```
 
 ## Input
@@ -26,7 +28,9 @@ Format: `<id> [--dry-run]`
 ### Step 1: Parse Arguments
 
 ```bash
-FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
@@ -54,7 +58,7 @@ If `.flux/` missing, output error and stop.
 ### Step 3: Validate ID Exists
 
 ```bash
-$FLOWCTL show <ID> --json
+$FLUXCTL show <ID> --json
 ```
 
 If command fails:
@@ -71,14 +75,14 @@ Stop on failure.
 EPIC=$(echo "<task-id>" | sed 's/\.[0-9]*$//')
 
 # Get all tasks in epic
-$FLOWCTL tasks --epic "$EPIC" --json
+$FLUXCTL tasks --epic "$EPIC" --json
 ```
 
 Filter to `status: todo` or `status: blocked`. Exclude the source task itself.
 
 **For epic ID input:**
 ```bash
-$FLOWCTL tasks --epic "<epic-id>" --json
+$FLUXCTL tasks --epic "<epic-id>" --json
 ```
 
 1. First, find a **source task** to anchor drift detection (agent requires `COMPLETED_TASK_ID`):
@@ -102,7 +106,7 @@ Build context and spawn via Task tool:
 Sync task specs from <source> to downstream tasks.
 
 COMPLETED_TASK_ID: <source task id - the input task, or selected source for epic mode>
-FLOWCTL: ${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl
+FLUXCTL: ${PLUGIN_ROOT}/scripts/fluxctl
 EPIC_ID: <epic id>
 DOWNSTREAM_TASK_IDS: <comma-separated list from step 4>
 DRY_RUN: <true|false>

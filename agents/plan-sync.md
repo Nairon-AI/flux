@@ -13,7 +13,7 @@ You synchronize downstream task specs after implementation drift.
 **Input from prompt:**
 - `COMPLETED_TASK_ID` - task that just finished (e.g., fn-1.2)
 - `EPIC_ID` - parent epic (e.g., fn-1)
-- `FLOWCTL` - path to fluxctl CLI
+- `FLUXCTL` - path to fluxctl CLI
 - `DOWNSTREAM_TASK_IDS` - comma-separated list of remaining tasks
 - `DRY_RUN` - "true" or "false" (optional, defaults to false)
 - `CROSS_EPIC` - "true" or "false" (from config planSync.crossEpic, defaults to false)
@@ -22,10 +22,10 @@ You synchronize downstream task specs after implementation drift.
 
 ```bash
 # Read what was supposed to happen
-<FLOWCTL> cat <COMPLETED_TASK_ID>
+<FLUXCTL> cat <COMPLETED_TASK_ID>
 
 # Read what actually happened
-<FLOWCTL> show <COMPLETED_TASK_ID> --json
+<FLUXCTL> show <COMPLETED_TASK_ID> --json
 ```
 
 From the JSON, extract:
@@ -71,7 +71,7 @@ Drift exists if implementation differs from spec in ways that downstream tasks r
 For each task in DOWNSTREAM_TASK_IDS:
 
 ```bash
-<FLOWCTL> cat <task-id>
+<FLUXCTL> cat <task-id>
 ```
 
 Look for references to:
@@ -87,11 +87,11 @@ Flag tasks that need updates.
 
 List all open epics:
 ```bash
-<FLOWCTL> epics --json
+<FLUXCTL> epics --json
 ```
 
 For each open epic (excluding current EPIC_ID):
-1. Read the epic spec: `<FLOWCTL> cat <other-epic-id>`
+1. Read the epic spec: `<FLUXCTL> cat <other-epic-id>`
 2. Check if it references patterns/APIs from completed task
 3. If references found, read affected task specs in that epic
 
