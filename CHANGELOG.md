@@ -2,6 +2,39 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.6.0] - 2026-03-01
+
+### Added
+
+- **Brain Vault** — Persistent memory system that makes the agent smarter over time
+  - Obsidian-compatible markdown vault at `brain/`
+  - 16 battle-tested engineering principles included as starter content
+  - Session-start hook auto-injects brain index for context
+  - Auto-index hook maintains `brain/index.md` when files change
+
+- **`/flux:reflect`** — Capture learnings from current session
+  - Scans conversation for mistakes, corrections, and knowledge gained
+  - Routes learnings to brain, skills, or structural enforcement
+  - Run at end of sessions or after corrections
+
+- **`/flux:ruminate`** — Mine past Claude Code conversations
+  - Extracts uncaptured patterns from conversation history
+  - Cross-references with existing brain content
+  - Filters by frequency and impact
+
+- **`/flux:meditate`** — Audit and evolve the brain vault
+  - Prunes outdated/redundant notes
+  - Discovers cross-cutting principles from patterns
+  - Reviews skills for structural encoding opportunities
+
+- **`flux-brain` skill** — Conventions for reading/writing brain files
+
+### Credits
+
+Brain vault system adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto](https://github.com/poteto).
+
+---
+
 ## [1.0.0] - 2026-02-23
 
 ### Rebrand: Flux → Flux
