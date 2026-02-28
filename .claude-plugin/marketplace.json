@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "AI-augmented SDLC workflow plugin for Claude Code.",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "flux",
       "description": "Structure your AI coding sessions. Plan first, work second. Zero external dependencies.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "NaironAI",
         "url": "https://nairon.ai"
