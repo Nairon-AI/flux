@@ -387,6 +387,19 @@ If migrating from Beads: remove the beads section from AGENTS.md and run `/flux:
 
 ---
 
+## Feature Roadmap
+
+Upcoming enhancements to core commands:
+
+| Command | Enhancement | Description |
+|---------|-------------|-------------|
+| `/flux:work` | Git worktree support | Isolate task work in separate worktrees for parallel development and clean rollbacks |
+| `/flux:scope` | Transcript ingestion | Ingest meeting transcripts, auto-detect affected issues, ask clarifying questions, update task details |
+
+Want to contribute? Check out the [issues](https://github.com/Nairon-AI/flux/issues) or join the [Discord](https://discord.gg/CEQMd6fmXk).
+
+---
+
 ## Roadmap: Universe Integration
 
 Flux will sync to [Nairon Universe](https://nairon.ai/universe) — a public portal for AI-native engineers.
