@@ -75,13 +75,23 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ## Quick Start
 
-<!-- TODO: Add video showing complete setup to first feature flow -->
-<details>
-<summary>Video: From zero to first feature</summary>
-<p><em>Coming soon</em></p>
-</details>
+### Option 1: Let Claude Guide You (Recommended)
 
-### Install
+Copy this into Claude Code and let it walk you through setup:
+
+```
+I want to install and set up Flux for structured AI development.
+The plugin is at: https://github.com/Nairon-AI/flux
+
+Help me:
+1. Install the plugin
+2. Run /flux:setup to initialize
+3. Explain the core workflow (scope → build → review)
+
+Guide me step by step.
+```
+
+### Option 2: Manual Install
 
 ```bash
 /plugin marketplace add Nairon-AI/flux
@@ -328,6 +338,31 @@ If migrating from Beads: remove the beads section from AGENTS.md and run `/flux:
 4. **What gets measured gets improved.** You can't fix what you can't see.
 
 5. **The agent should do the work.** Analysis, installation—AI handles it. You decide.
+
+---
+
+## Roadmap: Universe Integration
+
+Flux will sync to [Nairon Universe](https://nairon.ai/universe) — a public portal for AI-native engineers.
+
+**Public Profile (visible to others):**
+| Data | Example |
+|------|---------|
+| Sessions | "350 sessions with Claude Code" |
+| Tokens | "15M tokens used this month" |
+| Tools | MCP servers, skills, CLI tools you use |
+| Activity | Recent projects, contributions |
+
+**Private Dashboard (for you):**
+| Data | What It Shows |
+|------|---------------|
+| AI-Native Score | Your grade across 5 dimensions |
+| Radar Chart | Interview depth, pushback ratio, prompt quality, iteration efficiency |
+| Trends | How you're improving over time |
+
+**Why this matters:** When you follow an engineer on Universe, you can see exactly what tools they use and how they work with AI. No more guessing — just copy what works.
+
+*Status: Coming Q2 2026. Auth will use Universe accounts.*
 
 ---
 
