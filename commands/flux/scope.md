@@ -1,7 +1,7 @@
 ---
 name: flux:scope
-description: Combined requirements gathering and planning. Uses Double Diamond process (Problem Space → Solution Space). Default is quick mode (~10 min). Use --deep for thorough scoping (~45 min).
-argument-hint: "<feature description or spec file> [--deep]"
+description: Combined requirements gathering and planning. Uses Double Diamond process (Problem Space → Solution Space). Default is quick mode (~10 min). Use --deep for thorough scoping (~45 min). Use --linear or LIN-123 to pull context from Linear.
+argument-hint: "<feature description or spec file> [--deep] [--linear | LIN-123]"
 ---
 
 # IMPORTANT: This command MUST invoke the skill `flux-scope`
@@ -13,6 +13,8 @@ The ONLY purpose of this command is to call the `flux-scope` skill. You MUST use
 **Modes:**
 - Default: Quick mode (~10 min, MVP-focused discovery + short plan)
 - `--deep`: Thorough mode (~45 min, full discovery + detailed plan)
+- `--linear`: Connect to Linear MCP, browse teams/projects, select issue to scope
+- `LIN-123`: Directly scope a specific Linear issue (shorthand for --linear)
 
 **Process:**
 1. Problem Space: Discover why → Define problem statement

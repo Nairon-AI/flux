@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.2.1-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.3.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -148,6 +148,39 @@ This is your starting point. It guides you through:
 
 `--explore` scaffolds multiple approaches in parallel (git worktrees), generates previews, and lets you compare before committing to one.
 
+### Linear Integration (Optional)
+
+Connect Flux to Linear for team workflows. Pull issue context directly into scoping:
+
+```bash
+/flux:scope --linear              # Browse teams/projects, select issue
+/flux:scope LIN-42                # Scope specific Linear issue
+/flux:scope PROJ-123 --deep       # Deep scope with Linear context
+```
+
+**What it does:**
+1. Checks if Linear MCP is available (guides setup if not)
+2. Lists teams → projects → issues for selection
+3. Pulls issue title, description, labels, priority, relations
+4. Pre-populates Problem Space interview with Linear context
+5. Stores Linear issue ID in `.flux/epics/<id>/linear.json` for future sync
+
+**Setup:** Requires [Linear MCP](https://github.com/anthropics/linear-mcp). Add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/linear-mcp"],
+      "env": { "LINEAR_API_KEY": "your-api-key" }
+    }
+  }
+}
+```
+
+Get API key: Linear → Settings → API → Personal API Keys
+
 <details>
 <summary>Alternative: Skip interview, plan only</summary>
 
@@ -285,7 +318,7 @@ CTO-level observability:
 | Command | What it does |
 |---------|--------------|
 | `/flux:setup` | Initialize Flux in your project |
-| `/flux:scope <idea>` | **Double Diamond scoping** — interview + plan (`--deep`, `--explore N`) |
+| `/flux:scope <idea>` | **Double Diamond scoping** — interview + plan (`--deep`, `--explore N`, `--linear`) |
 | `/flux:plan <idea>` | Create tasks only (skip problem space interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |

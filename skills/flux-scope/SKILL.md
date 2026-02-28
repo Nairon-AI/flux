@@ -71,11 +71,14 @@ Full request: $ARGUMENTS
 **Options**:
 - `--quick` (default): MVP-focused, ~10 min total
 - `--deep`: Thorough scoping, ~45 min total
-- `--explore [N]`: Generate N approaches (default 3), scaffold each, compare visually
+- `--explore [N]`: Generate N approaches (default 3), scaffold each in parallel, compare visually
+- `--linear`: Connect to Linear MCP, browse teams/projects, select issue to scope
+- `LIN-123` (or any `XXX-123` pattern): Directly scope a specific Linear issue
 
 Accepts:
 - Feature/bug description in natural language
 - File path to spec document
+- Linear issue identifier (e.g., `LIN-123`, `PROJ-456`)
 
 Examples:
 - `/flux:scope Add OAuth login for users`
@@ -83,6 +86,9 @@ Examples:
 - `/flux:scope docs/feature-spec.md`
 - `/flux:scope Add permissions system --explore 4`
 - `/flux:scope Add dashboard --explore --deep`
+- `/flux:scope --linear` — Browse Linear, select issue to scope
+- `/flux:scope LIN-42` — Scope Linear issue LIN-42 directly
+- `/flux:scope PROJ-123 --deep` — Deep scope Linear issue PROJ-123
 
 If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentences."
 
@@ -91,6 +97,195 @@ If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentence
 Parse arguments for `--deep` flag. Default is quick mode.
 
 ```
+SCOPE_MODE = "--deep" in arguments ? "deep" : "quick"
+```
+
+## Detect Linear Mode
+
+Check for `--linear` flag or Linear issue ID pattern (e.g., `LIN-123`, `PROJ-456`).
+
+```
+LINEAR_MODE = "--linear" in arguments
+LINEAR_ISSUE_ID = extract pattern matching /[A-Z]+-\d+/ from arguments
+```
+
+If `LINEAR_ISSUE_ID` is found, set `LINEAR_MODE = true`.
+
+---
+
+# LINEAR INTEGRATION (if --linear or issue ID detected)
+
+If `LINEAR_MODE` is true, follow this flow before Problem Space interview.
+
+## Step 0.1: Check Linear MCP Availability
+
+Check if Linear MCP tools are available:
+
+```
+Try calling: mcp_linear_list_teams (with limit: 1)
+```
+
+**If Linear MCP is available**: Continue to Step 0.2
+**If Linear MCP is NOT available**: Show installation guidance and ask user:
+
+```
+Linear MCP is not connected. To use Linear integration:
+
+1. Install the Linear MCP server:
+   - Add to your MCP configuration (~/.mcp.json or Claude settings)
+   - Get API key from Linear: Settings → API → Personal API Keys
+
+2. Configuration example:
+   {
+     "mcpServers": {
+       "linear": {
+         "command": "npx",
+         "args": ["-y", "@anthropics/linear-mcp"],
+         "env": {
+           "LINEAR_API_KEY": "your-api-key"
+         }
+       }
+     }
+   }
+
+3. Restart Claude Code after adding the MCP server.
+
+Options:
+- Continue without Linear (describe feature manually)
+- Exit and set up Linear first
+```
+
+Use question tool to let user choose.
+
+## Step 0.2: Direct Issue Lookup (if LINEAR_ISSUE_ID provided)
+
+If user provided a specific issue ID (e.g., `LIN-42`):
+
+```
+Call: mcp_linear_get_issue(id: LINEAR_ISSUE_ID, includeRelations: true)
+```
+
+**If found**: Skip to Step 0.5 with the issue data
+**If not found**: Report error, fall back to browse mode (Step 0.3)
+
+## Step 0.3: List Linear Teams
+
+```
+Call: mcp_linear_list_teams(limit: 50)
+```
+
+Present teams to user:
+
+```
+Select a Linear team:
+
+1. Engineering (ENG) — 45 members
+2. Product (PROD) — 12 members
+3. Design (DES) — 8 members
+
+Which team? (or type team name)
+```
+
+Use question tool with team options.
+
+## Step 0.4: List Projects and Issues
+
+After team selection, list projects:
+
+```
+Call: mcp_linear_list_projects(team: selected_team_id, limit: 20, includeArchived: false)
+```
+
+Present projects, then list issues:
+
+```
+Call: mcp_linear_list_issues(
+  team: selected_team_id,
+  project: selected_project (optional),
+  state: "backlog,todo,in_progress",
+  limit: 25
+)
+```
+
+Present issues to user:
+
+```
+Select an issue to scope:
+
+1. [ENG-142] Add OAuth login — Backlog, High priority
+2. [ENG-138] Fix notification delay — In Progress, Urgent
+3. [ENG-135] Refactor auth service — Todo, Medium priority
+...
+
+Which issue? (number or issue ID)
+```
+
+Use question tool with issue options.
+
+## Step 0.5: Pull Issue Details
+
+Once issue is selected, fetch full details:
+
+```
+Call: mcp_linear_get_issue(
+  id: selected_issue_id,
+  includeRelations: true,
+  includeCustomerNeeds: true
+)
+```
+
+Extract and structure:
+- **Title**: Issue title
+- **Description**: Full markdown description
+- **Labels**: Array of label names
+- **Priority**: 0-4 (Urgent to Low)
+- **Assignee**: Who's assigned
+- **State**: Current workflow state
+- **Parent**: Parent issue if sub-issue
+- **Blocking/Blocked by**: Related issues
+- **Customer needs**: If any linked
+
+## Step 0.6: Store Linear Context
+
+Save Linear issue ID for later sync:
+
+```bash
+EPIC_ID="<will be created in Step 7>"
+mkdir -p .flux/epics
+echo '{"linear_issue_id": "ENG-142", "synced_at": "2026-02-28T12:00:00Z"}' > .flux/linear-pending.json
+```
+
+After epic creation (Step 7), move to epic directory:
+
+```bash
+mv .flux/linear-pending.json ".flux/epics/${EPIC_ID}/linear.json"
+```
+
+## Step 0.7: Pre-populate Problem Space
+
+Use Linear issue data to pre-fill interview context:
+
+```
+Based on Linear issue [ENG-142]:
+
+Title: Add OAuth login
+Description: Users need to log in via Google/GitHub OAuth...
+Priority: High
+Labels: auth, security, user-facing
+
+I'll use this as the starting point for scoping. The Problem Space interview
+will validate and expand on this context.
+
+Proceed with scoping? (The interview will confirm/refine the problem statement)
+```
+
+**Then continue to Phase 1: Problem Space** with Linear context pre-loaded.
+
+The interview questions should reference the Linear description:
+- "The Linear issue mentions [X]. Is that the core need, or is there something deeper?"
+- "Who requested this issue? What triggered it?"
+
+---
 SCOPE_MODE = "--deep" in arguments ? "deep" : "quick"
 ```
 
