@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.3.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.4.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -150,36 +150,43 @@ This is your starting point. It guides you through:
 
 ### Linear Integration (Optional)
 
-Connect Flux to Linear for team workflows. Pull issue context directly into scoping:
+Connect Flux to Linear for team workflows. Select a Linear project, scope it with Double Diamond, and create tasks directly in Linear.
 
 ```bash
-/flux:scope --linear              # Browse teams/projects, select issue
+/flux:scope --linear              # Browse teams → projects, select one to scope
 /flux:scope LIN-42                # Scope specific Linear issue
 /flux:scope PROJ-123 --deep       # Deep scope with Linear context
 ```
 
 **What it does:**
 1. Checks if Linear MCP is available (guides setup if not)
-2. Lists teams → projects → issues for selection
-3. Pulls issue title, description, labels, priority, relations
-4. Pre-populates Problem Space interview with Linear context
-5. Stores Linear issue ID in `.flux/epics/<id>/linear.json` for future sync
+2. Lists teams → projects (Linear project = Flux epic)
+3. Pulls project description, milestones, existing issues
+4. Runs Double Diamond scoping with Linear context
+5. Creates tasks in Linear with proper dependencies
+6. Stores mapping in `.flux/epics/<id>/linear.json`
 
-**Setup:** Requires [Linear MCP](https://github.com/anthropics/linear-mcp). Add to your MCP config:
+**Setup:** Requires [Linear MCP](https://linear.app/docs/mcp).
 
+**Claude Code:**
+```bash
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
+```
+Then run `/mcp` in your session to authenticate.
+
+**Other clients (Cursor, VS Code, Windsurf):**
 ```json
 {
   "mcpServers": {
     "linear": {
       "command": "npx",
-      "args": ["-y", "@anthropics/linear-mcp"],
-      "env": { "LINEAR_API_KEY": "your-api-key" }
+      "args": ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
     }
   }
 }
 ```
 
-Get API key: Linear → Settings → API → Personal API Keys
+Full setup guide: https://linear.app/docs/mcp
 
 <details>
 <summary>Alternative: Skip interview, plan only</summary>
