@@ -126,29 +126,27 @@ Try calling: mcp_linear_list_teams (with limit: 1)
 ```
 
 **If Linear MCP is available**: Continue to Step 0.2
-**If Linear MCP is NOT available**: Show installation guidance and ask user:
+**If Linear MCP is NOT available**: Show installation guidance:
 
 ```
-Linear MCP is not connected. To use Linear integration:
+Linear MCP is not connected. Setup instructions:
 
-1. Install the Linear MCP server:
-   - Add to your MCP configuration (~/.mcp.json or Claude settings)
-   - Get API key from Linear: Settings → API → Personal API Keys
+**Claude Code:**
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
 
-2. Configuration example:
-   {
-     "mcpServers": {
-       "linear": {
-         "command": "npx",
-         "args": ["-y", "@anthropics/linear-mcp"],
-         "env": {
-           "LINEAR_API_KEY": "your-api-key"
-         }
-       }
-     }
-   }
+Then run /mcp in your session to authenticate with Linear.
 
-3. Restart Claude Code after adding the MCP server.
+**Other clients (Cursor, VS Code, etc.):**
+{
+  "mcpServers": {
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
+    }
+  }
+}
+
+Full setup guide: https://linear.app/docs/mcp
 
 Options:
 - Continue without Linear (describe feature manually)
@@ -165,7 +163,7 @@ If user provided a specific issue ID (e.g., `LIN-42`):
 Call: mcp_linear_get_issue(id: LINEAR_ISSUE_ID, includeRelations: true)
 ```
 
-**If found**: Skip to Step 0.5 with the issue data
+**If found**: This issue becomes the "project" to scope. Skip to Step 0.5.
 **If not found**: Report error, fall back to browse mode (Step 0.3)
 
 ## Step 0.3: List Linear Teams
@@ -174,116 +172,132 @@ Call: mcp_linear_get_issue(id: LINEAR_ISSUE_ID, includeRelations: true)
 Call: mcp_linear_list_teams(limit: 50)
 ```
 
-Present teams to user:
+Use question tool to present teams:
 
 ```
-Select a Linear team:
-
-1. Engineering (ENG) — 45 members
-2. Product (PROD) — 12 members
-3. Design (DES) — 8 members
-
-Which team? (or type team name)
+header: "Select Team"
+question: "Which Linear team?"
+options:
+  - label: "Engineering (ENG)"
+    description: "45 members"
+  - label: "Product (PROD)"
+    description: "12 members"
+  ...
 ```
 
-Use question tool with team options.
-
-## Step 0.4: List Projects and Issues
+## Step 0.4: List Projects (Linear Project = Flux Epic)
 
 After team selection, list projects:
 
 ```
-Call: mcp_linear_list_projects(team: selected_team_id, limit: 20, includeArchived: false)
+Call: mcp_linear_list_projects(team: selected_team_id, limit: 30, includeArchived: false)
 ```
 
-Present projects, then list issues:
+**IMPORTANT**: A Linear **Project** maps to a Flux **Epic**. The user selects which project they want to scope and break down into tasks.
+
+Use question tool:
 
 ```
-Call: mcp_linear_list_issues(
-  team: selected_team_id,
-  project: selected_project (optional),
-  state: "backlog,todo,in_progress",
-  limit: 25
+header: "Select Project"
+question: "Which project do you want to scope? (This will become a Flux epic with tasks)"
+options:
+  - label: "User Authentication"
+    description: "5 issues, 40% complete, High priority"
+  - label: "Dashboard Redesign"
+    description: "12 issues, 10% complete, Medium priority"
+  - label: "API v2 Migration"
+    description: "8 issues, 0% complete, Urgent"
+  ...
+```
+
+## Step 0.5: Pull Project Details
+
+Once project is selected, fetch full details:
+
+```
+Call: mcp_linear_get_project(
+  query: selected_project_id,
+  includeMembers: true,
+  includeMilestones: true,
+  includeResources: true
 )
 ```
 
-Present issues to user:
+Also fetch existing issues in the project:
 
 ```
-Select an issue to scope:
-
-1. [ENG-142] Add OAuth login — Backlog, High priority
-2. [ENG-138] Fix notification delay — In Progress, Urgent
-3. [ENG-135] Refactor auth service — Todo, Medium priority
-...
-
-Which issue? (number or issue ID)
-```
-
-Use question tool with issue options.
-
-## Step 0.5: Pull Issue Details
-
-Once issue is selected, fetch full details:
-
-```
-Call: mcp_linear_get_issue(
-  id: selected_issue_id,
-  includeRelations: true,
-  includeCustomerNeeds: true
+Call: mcp_linear_list_issues(
+  project: selected_project_id,
+  limit: 50,
+  includeArchived: false
 )
 ```
 
 Extract and structure:
-- **Title**: Issue title
+- **Project Name**: Title of the project
 - **Description**: Full markdown description
-- **Labels**: Array of label names
+- **State**: planned, started, paused, completed, canceled
 - **Priority**: 0-4 (Urgent to Low)
-- **Assignee**: Who's assigned
-- **State**: Current workflow state
-- **Parent**: Parent issue if sub-issue
-- **Blocking/Blocked by**: Related issues
-- **Customer needs**: If any linked
+- **Lead**: Project lead
+- **Milestones**: Any defined milestones
+- **Existing Issues**: Issues already created in this project
+- **Target Date**: Deadline if set
+- **Progress**: Completion percentage
 
 ## Step 0.6: Store Linear Context
 
-Save Linear issue ID for later sync:
+Save Linear project ID for later task creation:
 
 ```bash
-EPIC_ID="<will be created in Step 7>"
-mkdir -p .flux/epics
-echo '{"linear_issue_id": "ENG-142", "synced_at": "2026-02-28T12:00:00Z"}' > .flux/linear-pending.json
+mkdir -p .flux/linear
+cat > .flux/linear/pending-scope.json << 'EOF'
+{
+  "linear_project_id": "PROJECT_UUID",
+  "linear_project_slug": "user-authentication",
+  "linear_team_id": "TEAM_UUID",
+  "linear_team_key": "ENG",
+  "existing_issues": ["ENG-142", "ENG-143"],
+  "scoped_at": "2026-02-28T12:00:00Z"
+}
+EOF
 ```
 
 After epic creation (Step 7), move to epic directory:
 
 ```bash
-mv .flux/linear-pending.json ".flux/epics/${EPIC_ID}/linear.json"
+mv .flux/linear/pending-scope.json ".flux/epics/${EPIC_ID}/linear.json"
 ```
 
 ## Step 0.7: Pre-populate Problem Space
 
-Use Linear issue data to pre-fill interview context:
+Use Linear project data to pre-fill interview context:
 
 ```
-Based on Linear issue [ENG-142]:
+Based on Linear project "User Authentication":
 
-Title: Add OAuth login
-Description: Users need to log in via Google/GitHub OAuth...
+Description: Implement OAuth2 login with Google and GitHub providers...
 Priority: High
-Labels: auth, security, user-facing
+Lead: @john
+Milestones: MVP (Mar 15), Full Release (Apr 1)
+Existing issues: 5 (ENG-140 through ENG-144)
 
-I'll use this as the starting point for scoping. The Problem Space interview
-will validate and expand on this context.
+I'll use this as the starting point for scoping. The Double Diamond interview
+will validate, expand, and potentially restructure the project breakdown.
 
-Proceed with scoping? (The interview will confirm/refine the problem statement)
+The goal is to:
+1. Understand the problem deeply (Problem Space)
+2. Create well-structured tasks with dependencies
+3. Push those tasks back to Linear when done
+
+Proceed with scoping?
 ```
 
 **Then continue to Phase 1: Problem Space** with Linear context pre-loaded.
 
-The interview questions should reference the Linear description:
-- "The Linear issue mentions [X]. Is that the core need, or is there something deeper?"
-- "Who requested this issue? What triggered it?"
+The interview questions should reference the Linear project:
+- "The project description mentions [X]. Is that the core need, or is there something deeper?"
+- "Who requested this project? What's the business driver?"
+- "Are the existing 5 issues the right breakdown, or do we need to restructure?"
 
 ---
 SCOPE_MODE = "--deep" in arguments ? "deep" : "quick"
@@ -1399,6 +1413,90 @@ Fix any errors before completing.
 
 ---
 
+# LINEAR TASK CREATION (if Linear mode)
+
+If `LINEAR_MODE` is true, create tasks in Linear after local epic/tasks are created.
+
+## Step 13: Create Linear Issues
+
+For each task created in `.flux/`, create a corresponding Linear issue:
+
+```
+For each task in $FLUXCTL tasks --epic <epic-id> --json:
+  Call: mcp_linear_save_issue(
+    title: task.title,
+    description: task.description + "\n\n---\nFlux Task: " + task.id,
+    team: LINEAR_TEAM_ID (from Step 0.6),
+    project: LINEAR_PROJECT_ID (from Step 0.6),
+    priority: map_priority(task.priority),  # 0=None, 1=Urgent, 2=High, 3=Normal, 4=Low
+    labels: ["flux-managed"],
+    state: "backlog"
+  )
+  
+  Store mapping: task.id → linear_issue_id
+```
+
+**Priority mapping:**
+- Flux P0 → Linear 1 (Urgent)
+- Flux P1 → Linear 2 (High)
+- Flux P2 → Linear 3 (Normal)
+- Flux P3 → Linear 4 (Low)
+- Flux P4 → Linear 4 (Low)
+
+## Step 14: Create Linear Dependencies
+
+After all issues are created, set up blocking relationships:
+
+```
+For each dependency in $FLUXCTL deps --epic <epic-id> --json:
+  blocked_issue = linear_issue_map[dependency.blocked_by]
+  blocking_issue = linear_issue_map[dependency.task_id]
+  
+  Call: mcp_linear_save_issue(
+    id: blocking_issue,
+    blockedBy: [blocked_issue]
+  )
+```
+
+## Step 15: Update Linear Mapping
+
+Store the full mapping for future sync:
+
+```bash
+cat > ".flux/epics/${EPIC_ID}/linear.json" << 'EOF'
+{
+  "linear_project_id": "PROJECT_UUID",
+  "linear_team_id": "TEAM_UUID",
+  "linear_team_key": "ENG",
+  "task_mapping": {
+    "fn-1.1": "ENG-150",
+    "fn-1.2": "ENG-151",
+    "fn-1.3": "ENG-152"
+  },
+  "synced_at": "2026-02-28T14:30:00Z",
+  "sync_direction": "flux_to_linear"
+}
+EOF
+```
+
+## Step 16: Report Linear Sync
+
+```
+Linear sync complete:
+
+Project: User Authentication
+Created issues:
+  - ENG-150: Set up OAuth2 provider config (blocked by: none)
+  - ENG-151: Implement Google OAuth flow (blocked by: ENG-150)
+  - ENG-152: Implement GitHub OAuth flow (blocked by: ENG-150)
+  - ENG-153: Add auth token refresh logic (blocked by: ENG-151, ENG-152)
+  - ENG-154: Write integration tests (blocked by: ENG-153)
+
+View in Linear: https://linear.app/team/ENG/project/user-authentication
+```
+
+---
+
 ## Completion
 
 Show summary:
@@ -1416,6 +1514,40 @@ Next steps:
 2) Review the plan: /flux:plan-review <epic-id>
 3) Deep dive on specific tasks: /flux:scope <task-id> --deep
 ```
+
+**If Linear mode was used**, also show:
+```
+Linear: Synced to project "User Authentication"
+Issues created: ENG-150 through ENG-154
+View: https://linear.app/team/ENG/project/user-authentication
+```
+
+---
+
+## Update Check (End of Command)
+
+**ALWAYS run at the very end of /flux:scope execution:**
+
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
+UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
+LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
+REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
+```
+
+**If update available**, append to output:
+
+```
+---
+Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
+Run: /plugin marketplace update nairon-flux
+Then restart Claude Code for changes to take effect.
+---
+```
+
+**If no update**: Show nothing (silent).
 
 ## Philosophy
 
