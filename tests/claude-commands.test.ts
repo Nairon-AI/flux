@@ -18,7 +18,7 @@
  * Run: bun test tests/claude-commands.test.ts --timeout 180000
  */
 
-import { test, expect, describe, afterEach, afterAll } from 'bun:test'
+import { test, expect, describe, afterAll } from 'bun:test'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { $ } from 'bun'
@@ -272,6 +272,40 @@ describe('Flux Commands Invocation', () => {
     await Bun.sleep(5000)
     
     await $`${TUISTORY} -s ${session} type "/flux:sync"`.quiet()
+    await $`${TUISTORY} -s ${session} press enter`.quiet()
+    await Bun.sleep(8000)
+    
+    const snapshot = await $`${TUISTORY} -s ${session} snapshot --trim`.text().catch(() => '')
+    await $`${TUISTORY} -s ${session} close`.quiet().catch(() => {})
+    
+    expect(snapshot).not.toContain('Unknown skill')
+    expect(snapshot.length).toBeGreaterThan(500)
+  }, 30000)
+
+  test('/flux:scope starts executing', async () => {
+    const session = `flux-test-scope-${Date.now()}`
+    
+    await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
+    await Bun.sleep(5000)
+    
+    await $`${TUISTORY} -s ${session} type "/flux:scope"`.quiet()
+    await $`${TUISTORY} -s ${session} press enter`.quiet()
+    await Bun.sleep(8000)
+    
+    const snapshot = await $`${TUISTORY} -s ${session} snapshot --trim`.text().catch(() => '')
+    await $`${TUISTORY} -s ${session} close`.quiet().catch(() => {})
+    
+    expect(snapshot).not.toContain('Unknown skill')
+    expect(snapshot.length).toBeGreaterThan(500)
+  }, 30000)
+
+  test('/flux:scope starts executing', async () => {
+    const session = `flux-test-scope-${Date.now()}`
+    
+    await $`${TUISTORY} launch "claude" -s ${session} --cols 150 --rows 45`.quiet()
+    await Bun.sleep(5000)
+    
+    await $`${TUISTORY} -s ${session} type "/flux:scope"`.quiet()
     await $`${TUISTORY} -s ${session} press enter`.quiet()
     await Bun.sleep(8000)
     
