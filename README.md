@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.4.1-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.4.2-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -75,33 +75,28 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ## Quick Start
 
-### Option 1: Let Claude Guide You (Recommended)
-
-Copy this into Claude Code and let it walk you through setup:
-
-```
-I want to install and set up Flux for structured AI development.
-The plugin is at: https://github.com/Nairon-AI/flux
-
-Help me:
-1. Install the plugin
-2. Run /flux:setup to initialize
-3. Explain the core workflow (scope → build → review)
-
-Guide me step by step.
-```
-
-### Option 2: Manual Install
+### Step 1: Install the Plugin
 
 ```bash
 /plugin marketplace add Nairon-AI/flux
 /plugin install flux@nairon-flux
 ```
 
-**Then initialize:**
+### Step 2: Restart Claude Code
+
+**Important:** Plugins are cached at session start. After installing:
+
+1. Exit this session (`/exit` or Ctrl+C)
+2. Restart Claude Code (run `claude` again, or use `claude --resume` to continue)
+3. The Flux commands will now be available
+
+### Step 3: Initialize (in new session)
+
 ```bash
 /flux:setup
 ```
+
+This scaffolds Flux config in your project.
 
 ### Updating
 
@@ -109,7 +104,9 @@ Guide me step by step.
 /plugin marketplace update nairon-flux
 ```
 
-**Important:** After updating, **restart Claude Code** (or start a new session). Plugins are loaded at session start and cached—updates won't take effect until you restart.
+Then **restart Claude Code** for changes to take effect.
+
+> **Note for AI agents:** Do NOT try to run `/flux:setup` or any Flux commands immediately after installation. The plugin won't be available until the user restarts their session. Install the plugin, then tell the user to restart and run `/flux:setup` in the new session.
 
 ### Build a Feature
 
