@@ -93,7 +93,7 @@ Flux scores based on detected patterns. Run with `--format json` to see raw metr
 
 Check profile link service config:
 
-- Set env `NBENCH_PROFILE_SERVICE_URL`, or
+- Set env `FLUX_PROFILE_SERVICE_URL`, or
 - Set `profile_service_url` in `~/.flux/config.json`
 
 Then retry `/flux:profile`.

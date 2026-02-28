@@ -802,11 +802,11 @@ def main():
 
     # Get recommendations directory
     recs_dir = os.environ.get(
-        "NBENCH_RECS_DIR", os.path.expanduser("~/.flux/recommendations")
+        "FLUX_RECS_DIR", os.path.expanduser("~/.flux/recommendations")
     )
 
     # Get optional category filter
-    filter_category = os.environ.get("NBENCH_FILTER_CATEGORY")
+    filter_category = os.environ.get("FLUX_FILTER_CATEGORY")
 
     # Match recommendations with user context
     results = match_recommendations(

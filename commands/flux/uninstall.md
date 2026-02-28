@@ -45,7 +45,7 @@ fi
 
 ## Clean up docs (AI can do this)
 
-For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN NBENCH -->` and `<!-- END NBENCH -->` (inclusive). This is safe for the AI to execute.
+For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). This is safe for the AI to execute.
 
 ## Report
 

@@ -131,7 +131,7 @@ PUBLISHED=$(python3 "$PROFILE_SCRIPT" publish --input-file /tmp/flux-profile-exp
 ```
 
 If publish fails due missing service URL, configure one of:
-- env `NBENCH_PROFILE_SERVICE_URL`
+- env `FLUX_PROFILE_SERVICE_URL`
 - `~/.flux/config.json` key `profile_service_url`
 
 Show:

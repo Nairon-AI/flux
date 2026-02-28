@@ -114,7 +114,7 @@ Read the template from [templates/claude-md-snippet.md](templates/claude-md-snip
 
 For each of CLAUDE.md and AGENTS.md:
 1. Check if file exists
-2. If exists, check if `<!-- BEGIN NBENCH -->` marker exists
+2. If exists, check if `<!-- BEGIN FLUX -->` marker exists
 3. If marker exists, extract content between markers and compare with template
 
 Determine status for each file:
@@ -298,7 +298,7 @@ esac
 **Docs:**
 For each chosen file (CLAUDE.md and/or AGENTS.md):
 1. Read the file (create if doesn't exist)
-2. If marker exists: replace everything between `<!-- BEGIN NBENCH -->` and `<!-- END NBENCH -->` (inclusive)
+2. If marker exists: replace everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive)
 3. If no marker: append the snippet from [templates/claude-md-snippet.md](templates/claude-md-snippet.md)
 
 **Star:**
@@ -336,6 +336,6 @@ Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
-- Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END NBENCH --> block from docs
+- Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```
