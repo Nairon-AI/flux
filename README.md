@@ -65,19 +65,17 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ### Step 1: Install
 
-Run this slash command in Claude Code:
+Paste this into Claude Code:
 
 ```
-/plugin marketplace add Nairon-AI/flux
+Install the Flux plugin by running this slash command:
+
+/plugin add https://github.com/Nairon-AI/flux
+
+After running it, explain the core Flux workflow (scope → build → review).
 ```
 
-Or paste this prompt and let Claude handle it:
-
-```
-Install the Flux plugin by running the slash command: /plugin marketplace add Nairon-AI/flux
-
-Then explain the core workflow (scope → build → review).
-```
+> **Note:** `/plugin add` is a slash command — type it directly in Claude Code, don't run it in bash.
 
 ### Step 2: Setup
 
