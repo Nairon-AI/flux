@@ -57,7 +57,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 1. **A structured workflow** — Scope → Build → Review
 2. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
-3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
+3. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
 
 ---
 
