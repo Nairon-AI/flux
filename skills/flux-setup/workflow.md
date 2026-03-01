@@ -125,6 +125,48 @@ If clone fails, continue setup and print this manual fallback command:
 git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudeception
 ```
 
+## Step 4c: Install recommended MCP servers
+
+Install Context7 (library documentation) and Exa (web search) MCP servers if not already installed.
+
+**Check if already installed:**
+
+```bash
+# Check for existing MCP servers
+HAVE_CONTEXT7=$(claude mcp list 2>/dev/null | grep -q "context7" && echo 1 || echo 0)
+HAVE_EXA=$(claude mcp list 2>/dev/null | grep -q "exa" && echo 1 || echo 0)
+```
+
+**Install Context7 if missing:**
+
+Context7 provides up-to-date, version-specific library documentation directly in prompts. Eliminates hallucinated APIs and outdated code examples.
+
+```bash
+if [ "$HAVE_CONTEXT7" = "0" ]; then
+  claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>/dev/null || true
+  echo "Installed: Context7 MCP (library documentation)"
+fi
+```
+
+**Install Exa if missing:**
+
+Exa provides fast, accurate web search optimized for AI. Enables real-time research during coding sessions.
+
+```bash
+if [ "$HAVE_EXA" = "0" ]; then
+  claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
+  echo "Installed: Exa MCP (web search)"
+fi
+```
+
+If installation fails (e.g., `claude` CLI not available), continue setup and note in summary:
+
+```
+MCP servers (install manually if needed):
+  claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user
+  claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
+```
+
 ## Step 5: Update meta.json
 
 Read current `.flux/meta.json`, add/update these fields (preserve all others):
@@ -407,6 +449,10 @@ Installed:
 - <BIN_ROOT>/fluxctl.py
 - .flux/usage.md
 
+MCP servers (user scope):
+- Context7: library documentation (https://mcp.context7.com/mcp)
+- Exa: web search (https://mcp.exa.ai/mcp)
+
 To use from command line:
   # Project scope:
   export PATH=".flux/bin:$PATH"
@@ -435,6 +481,7 @@ Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
+- MCP servers: Context7 + Exa installed at user scope (available in all projects)
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```
