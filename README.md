@@ -56,7 +56,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 **Flux gives you three things:**
 
 1. **A structured workflow** — Scope → Build → Review
-2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
+2. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
 3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
 
 ---
