@@ -125,35 +125,93 @@ If clone fails, continue setup and print this manual fallback command:
 git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudeception
 ```
 
-## Step 4c: Install recommended MCP servers
+## Step 4c: Install recommended MCP servers (Optional)
 
-Install Context7 (library documentation) and Exa (web search) MCP servers if not already installed.
+Flux recommends MCP servers that enhance your AI development workflow. Installation is **optional** — users can skip or select which ones to install.
 
-**Check if already installed:**
+### Available MCP Servers
+
+<!-- 
+  TO ADD A NEW MCP SERVER:
+  1. Add entry to the RECOMMENDED_MCPS table below
+  2. Add option to the question in "Ask which to install"
+  3. Add installation logic in "Install selected servers"
+  4. Add API key question if applicable
+-->
+
+| ID | Name | Benefit | Free Tier | API Key URL |
+|----|------|---------|-----------|-------------|
+| `context7` | Context7 | **No more hallucinated APIs** — fetches up-to-date, version-specific library docs directly into your prompt | Yes | context7.com/dashboard |
+| `exa` | Exa | **Fastest AI web search** — real-time research without leaving your session, 10x better than browser search | Yes | exa.ai |
+
+### Check what's already installed
 
 ```bash
-# Check for existing MCP servers
-HAVE_CONTEXT7=$(claude mcp list 2>/dev/null | grep -q "context7" && echo 1 || echo 0)
-HAVE_EXA=$(claude mcp list 2>/dev/null | grep -q "exa" && echo 1 || echo 0)
+MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
+HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -q "context7" && echo 1 || echo 0)
+HAVE_EXA=$(echo "$MCP_LIST" | grep -q "exa" && echo 1 || echo 0)
 ```
 
-**Ask about API keys (use question tool):**
+### Ask which to install
+
+Build options dynamically based on what's NOT already installed. Use the question tool:
 
 ```json
 {
-  "header": "MCP API Keys",
-  "question": "Flux installs Context7 (library docs) and Exa (web search) MCP servers. Both work without API keys, but keys unlock higher rate limits. Add API keys?",
+  "header": "MCP Servers",
+  "question": "Flux recommends these MCP servers to supercharge your workflow. Which would you like to install?",
+  "multiple": true,
   "options": [
-    {"label": "Skip (Recommended)", "description": "Use free tier for both. You can add keys later."},
-    {"label": "Add Context7 key", "description": "Get from context7.com/dashboard — higher rate limits"},
-    {"label": "Add Exa key", "description": "Get from exa.ai — higher rate limits"},
-    {"label": "Add both keys", "description": "Configure both Context7 and Exa API keys"}
+    {"label": "Context7", "description": "No more hallucinated APIs — up-to-date library docs in every prompt (free)"},
+    {"label": "Exa", "description": "Fastest AI web search — real-time research without leaving your session (free)"},
+    {"label": "Skip all", "description": "Don't install any MCP servers"}
   ]
 }
 ```
 
-**If user wants to add Context7 key:**
+**Notes for building options:**
+- Only show servers that are NOT already installed
+- If a server is already installed, skip it silently
+- If ALL servers are already installed, skip this question entirely and print: "Recommended MCP servers already installed."
 
+### Install selected servers
+
+For each selected server, install it. If user selected "Skip all", skip this section.
+
+**Context7:**
+```bash
+claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>/dev/null || true
+```
+
+**Exa:**
+```bash
+claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
+```
+
+### Ask about API keys (only for installed servers)
+
+Only ask this if user installed at least one server:
+
+```json
+{
+  "header": "API Keys (Optional)",
+  "question": "MCP servers work without API keys, but keys unlock higher rate limits. Add any API keys?",
+  "multiple": true,
+  "options": [
+    {"label": "Context7 key", "description": "Get free key from context7.com/dashboard"},
+    {"label": "Exa key", "description": "Get free key from exa.ai"},
+    {"label": "Skip", "description": "Use free tier (can add keys later)"}
+  ]
+}
+```
+
+**Only show options for servers that were just installed.**
+
+### Configure API keys
+
+For each selected API key, ask for the value and reconfigure:
+
+**Context7 API key:**
 ```json
 {
   "header": "Context7 API Key",
@@ -162,15 +220,13 @@ HAVE_EXA=$(claude mcp list 2>/dev/null | grep -q "exa" && echo 1 || echo 0)
 }
 ```
 
-Store the key and use it in the installation command:
-
+Then reconfigure with the key:
 ```bash
-# With API key
-claude mcp add context7 -s user -e CONTEXT7_API_KEY="<user_provided_key>" -- npx -y @upstash/context7-mcp 2>/dev/null || true
+claude mcp remove context7 2>/dev/null || true
+claude mcp add context7 -s user -e CONTEXT7_API_KEY="<user_provided_key>" -- npx -y @upstash/context7-mcp
 ```
 
-**If user wants to add Exa key:**
-
+**Exa API key:**
 ```json
 {
   "header": "Exa API Key",
@@ -179,47 +235,27 @@ claude mcp add context7 -s user -e CONTEXT7_API_KEY="<user_provided_key>" -- npx
 }
 ```
 
-Store the key and use it in the installation command:
-
+Then reconfigure with the key:
 ```bash
-# With API key
-claude mcp add exa -s user -e EXA_API_KEY="<user_provided_key>" -- npx -y exa-mcp-server 2>/dev/null || true
+claude mcp remove exa 2>/dev/null || true
+claude mcp add exa -s user -e EXA_API_KEY="<user_provided_key>" -- npx -y exa-mcp-server
 ```
 
-**Install without API keys (default):**
+### Track installed servers
 
-Context7 provides up-to-date, version-specific library documentation directly in prompts. Eliminates hallucinated APIs and outdated code examples.
+Store which servers were installed for the summary:
+- `INSTALLED_MCPS` — list of server names installed in this session
+- `CONFIGURED_KEYS` — list of servers with API keys configured
 
-```bash
-if [ "$HAVE_CONTEXT7" = "0" ]; then
-  # Remote URL version (no API key)
-  claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>/dev/null || true
-  echo "Installed: Context7 MCP (library documentation)"
-fi
-```
+### Manual fallback
 
-Exa provides fast, accurate web search optimized for AI. Enables real-time research during coding sessions.
-
-```bash
-if [ "$HAVE_EXA" = "0" ]; then
-  # Remote URL version (no API key)
-  claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
-  echo "Installed: Exa MCP (web search)"
-fi
-```
-
-If installation fails (e.g., `claude` CLI not available), continue setup and note in summary:
+If `claude` CLI is not available, print manual instructions:
 
 ```
-MCP servers (install manually if needed):
+MCP servers (install manually):
   claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user
   claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
 ```
-
-**Notes:**
-- API keys are stored securely in Claude Code's MCP configuration
-- Users can add/change keys later with: `claude mcp remove <name> && claude mcp add ...`
-- Free tier works well for most users; keys mainly help with rate limits
 
 ## Step 5: Update meta.json
 
@@ -502,11 +538,30 @@ Installed:
 - <BIN_ROOT>/fluxctl (v<VERSION>)
 - <BIN_ROOT>/fluxctl.py
 - .flux/usage.md
+```
 
-MCP servers (user scope):
-- Context7: library documentation (https://mcp.context7.com/mcp)
-- Exa: web search (https://mcp.exa.ai/mcp)
+**MCP servers section** (only show if any were installed or already existed):
 
+```
+MCP servers:
+- Context7: <installed | installed + API key | already installed | skipped>
+- Exa: <installed | installed + API key | already installed | skipped>
+```
+
+Use `INSTALLED_MCPS` and `CONFIGURED_KEYS` from Step 4c to determine status:
+- "installed" — installed this session without API key
+- "installed + API key" — installed this session with API key configured
+- "already installed" — was already present before setup
+- "skipped" — user chose not to install
+
+If all were skipped, show:
+```
+MCP servers: skipped (install later with /flux:setup or manually)
+```
+
+Continue summary:
+
+```
 To use from command line:
   # Project scope:
   export PATH=".flux/bin:$PATH"
@@ -535,7 +590,7 @@ Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
-- MCP servers: Context7 + Exa installed at user scope (available in all projects)
+- MCP servers installed at user scope are available in all projects
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```

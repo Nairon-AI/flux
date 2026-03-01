@@ -14,9 +14,9 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
 - Other AI agents (Codex, Cursor, etc.) can read instructions from CLAUDE.md/AGENTS.md
 - Works without Claude Code plugin installed
 - Installs `claudeception` by default (if missing) for continuous learning
-- Installs recommended MCP servers:
-  - **Context7** — up-to-date library documentation (no more hallucinated APIs)
-  - **Exa** — fast, accurate web search for real-time research
+- **Optional** recommended MCP servers (user chooses which to install):
+  - **Context7** — no more hallucinated APIs, up-to-date library docs in every prompt
+  - **Exa** — fastest AI web search, real-time research without leaving your session
 
 ## Workflow
 
