@@ -137,23 +137,72 @@ HAVE_CONTEXT7=$(claude mcp list 2>/dev/null | grep -q "context7" && echo 1 || ec
 HAVE_EXA=$(claude mcp list 2>/dev/null | grep -q "exa" && echo 1 || echo 0)
 ```
 
-**Install Context7 if missing:**
+**Ask about API keys (use question tool):**
+
+```json
+{
+  "header": "MCP API Keys",
+  "question": "Flux installs Context7 (library docs) and Exa (web search) MCP servers. Both work without API keys, but keys unlock higher rate limits. Add API keys?",
+  "options": [
+    {"label": "Skip (Recommended)", "description": "Use free tier for both. You can add keys later."},
+    {"label": "Add Context7 key", "description": "Get from context7.com/dashboard — higher rate limits"},
+    {"label": "Add Exa key", "description": "Get from exa.ai — higher rate limits"},
+    {"label": "Add both keys", "description": "Configure both Context7 and Exa API keys"}
+  ]
+}
+```
+
+**If user wants to add Context7 key:**
+
+```json
+{
+  "header": "Context7 API Key",
+  "question": "Enter your Context7 API key (from context7.com/dashboard):",
+  "options": []
+}
+```
+
+Store the key and use it in the installation command:
+
+```bash
+# With API key
+claude mcp add context7 -s user -e CONTEXT7_API_KEY="<user_provided_key>" -- npx -y @upstash/context7-mcp 2>/dev/null || true
+```
+
+**If user wants to add Exa key:**
+
+```json
+{
+  "header": "Exa API Key",
+  "question": "Enter your Exa API key (from exa.ai):",
+  "options": []
+}
+```
+
+Store the key and use it in the installation command:
+
+```bash
+# With API key
+claude mcp add exa -s user -e EXA_API_KEY="<user_provided_key>" -- npx -y exa-mcp-server 2>/dev/null || true
+```
+
+**Install without API keys (default):**
 
 Context7 provides up-to-date, version-specific library documentation directly in prompts. Eliminates hallucinated APIs and outdated code examples.
 
 ```bash
 if [ "$HAVE_CONTEXT7" = "0" ]; then
+  # Remote URL version (no API key)
   claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>/dev/null || true
   echo "Installed: Context7 MCP (library documentation)"
 fi
 ```
 
-**Install Exa if missing:**
-
 Exa provides fast, accurate web search optimized for AI. Enables real-time research during coding sessions.
 
 ```bash
 if [ "$HAVE_EXA" = "0" ]; then
+  # Remote URL version (no API key)
   claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
   echo "Installed: Exa MCP (web search)"
 fi
@@ -166,6 +215,11 @@ MCP servers (install manually if needed):
   claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user
   claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
 ```
+
+**Notes:**
+- API keys are stored securely in Claude Code's MCP configuration
+- Users can add/change keys later with: `claude mcp remove <name> && claude mcp add ...`
+- Free tier works well for most users; keys mainly help with rate limits
 
 ## Step 5: Update meta.json
 
