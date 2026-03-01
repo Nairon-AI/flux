@@ -55,7 +55,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 **Flux gives you three things:**
 
-1. **A structured workflow** — Scope → Build → Review (Double Diamond process)
+1. **A structured workflow** — Scope → Build → Review
 2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
 3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
 
@@ -109,6 +109,16 @@ Then execute and review:
 ```
 
 **That's the core loop: Scope → Build → Review.** Repeat for every feature.
+
+### Step 4: Optimize Your Workflow
+
+Once you've been using Flux for a while, run:
+
+```bash
+/flux:improve
+```
+
+This analyzes your sessions to detect friction patterns (shallow prompts, blind acceptance, no docs lookup) and recommends specific tools, MCPs, and workflow changes to close the gaps.
 
 ### When to Use Each Command
 
