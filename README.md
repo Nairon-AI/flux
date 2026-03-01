@@ -13,18 +13,6 @@
 
 ---
 
-## At a Glance
-
-| | |
-|---|---|
-| **What** | AI collaboration quality benchmark + workflow optimizer |
-| **Who** | Engineers using AI coding agents (CTOs soon) |
-| **When** | You think you're productive with AI but know you could be better |
-| **Goal** | Measure how intelligently you collaborate with AI, then fix the gaps |
-| **Not** | A linter, a code review tool, or another AI wrapper |
-
-> *"Are you actually good at working with AI, or are you just typing 'implement X, make no mistakes' and hoping for the best?"*
-
 ### Platform Compatibility
 
 | Platform | Status | Install |
@@ -33,6 +21,43 @@
 | [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
 | [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
+
+---
+
+## The Problem
+
+You're using Claude Code, but something's off:
+
+- **No structure** → You jump straight into code and watch the agent go off the rails
+- **Context amnesia** → You keep re-explaining the same thing every session
+- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
+- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
+- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
+- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
+- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
+
+<p align="center">
+  <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
+</p>
+
+
+These aren't model failures. They're **process failures**.
+
+**This is where Flux comes in.**
+
+---
+
+## What Flux Does
+
+Flux is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
+
+The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
+
+**Flux gives you three things:**
+
+1. **A structured workflow** — Scope → Build → Review (Double Diamond process)
+2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
+3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
 
 ---
 
@@ -103,93 +128,6 @@ Then execute and review:
 - Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
 
 ---
-
-## The Problem
-
-You're using Claude Code, but something's off:
-
-- **No structure** → You jump straight into code and watch the agent go off the rails
-- **Context amnesia** → You keep re-explaining the same thing every session
-- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
-- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
-- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
-- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
-- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
-
-<p align="center">
-  <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
-</p>
-
-
-These aren't model failures. They're **process failures**.
-
-**This is where Flux comes in.**
-
----
-
-## What Flux Does
-
-Flux is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
-
-The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
-
-**Flux gives you three things:**
-
-1. **A structured workflow** — Scope → Build → Review (Double Diamond process)
-2. **Continuous improvement** — Analyze your sessions, detect friction, recommend fixes
-3. **Observability** — Tap into your sessions to see if you're blindly accepting or intelligently pushing back
-
----
-
-## Quick Start
-
-### Step 1: Install the Plugin
-
-```bash
-/plugin marketplace add Nairon-AI/flux
-/plugin install flux@nairon-flux
-```
-
-### Step 2: Restart Claude Code
-
-**Important:** Plugins are cached at session start. After installing:
-
-1. Exit this session (`/exit` or Ctrl+C)
-2. Restart Claude Code (run `claude` again, or use `claude --resume` to continue)
-3. The Flux commands will now be available
-
-### Step 3: Initialize (in new session)
-
-```bash
-/flux:setup
-```
-
-This scaffolds Flux config in your project.
-
-### Updating
-
-```bash
-/plugin marketplace update nairon-flux
-```
-
-Then **restart Claude Code** for changes to take effect.
-
-> **Note for AI agents:** Do NOT try to run `/flux:setup` or any Flux commands immediately after installation. The plugin won't be available until the user restarts their session. Install the plugin, then tell the user to restart and run `/flux:setup` in the new session.
-
-### Build a Feature
-
-```bash
-# 1. Scope — Understand problem + create plan
-/flux:scope Add user notifications
-
-# 2. Build — Execute tasks one by one
-/flux:work fn-1.1
-/flux:work fn-1.2
-
-# 3. Review — Catch issues before they compound
-/flux:impl-review
-/flux:epic-review fn-1
-```
 
 #### `/flux:scope` — The Double Diamond
 
