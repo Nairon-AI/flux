@@ -2,6 +2,44 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.7.0] - 2026-03-01
+
+### Added
+
+- **STRIDE Security Analysis** — Comprehensive security scanning and threat modeling
+  - Generate STRIDE-based threat models for your codebase
+  - Scan code changes for vulnerabilities (SQL injection, XSS, IDOR, etc.)
+  - Validate findings for exploitability with proof-of-concept generation
+  - Filter false positives automatically with confidence scoring
+
+- **`/flux:threat-model`** — Generate security threat model
+  - Analyzes repository architecture and data flows
+  - Creates `.flux/threat-model.md` with STRIDE analysis
+  - Generates `.flux/security-config.json` for severity thresholds
+  - Includes vulnerability pattern library for your tech stack
+
+- **`/flux:security-scan`** — Scan code changes for vulnerabilities
+  - PR review, commit range, staged changes, or full repository
+  - STRIDE-based analysis (Spoofing, Tampering, Repudiation, Information Disclosure, DoS, Elevation of Privilege)
+  - CWE mapping and severity classification
+
+- **`/flux:security-review`** — Comprehensive security review
+  - Combines scanning with validation
+  - Generates validated findings with exploitation paths
+  - Filters false positives based on context
+
+- **`/flux:vuln-validate`** — Validate security findings
+  - Reachability analysis (can attackers reach this code?)
+  - Control flow tracing (can they control the input?)
+  - Proof-of-concept generation
+  - CVSS 3.1 scoring
+
+### Credits
+
+Security skills adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins).
+
+---
+
 ## [1.6.0] - 2026-03-01
 
 ### Added

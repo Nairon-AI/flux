@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.6.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.7.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -255,6 +255,31 @@ Flux includes a **brain vault** — persistent memory that makes the agent smart
 
 The brain vault lives at `brain/` and is Obsidian-compatible. Session start automatically injects the brain index so the agent knows what knowledge is available.
 
+### Secure by Design
+
+Flux includes **STRIDE-based security analysis** to catch vulnerabilities during scoping and review. Adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins).
+
+```bash
+# Generate threat model for your codebase
+/flux:threat-model
+
+# Scan code changes for vulnerabilities
+/flux:security-scan PR #123
+
+# Full security review with validation
+/flux:security-review --mode full
+```
+
+**What it catches:**
+- SQL injection, XSS, command injection (Tampering)
+- Authentication bypass, session hijacking (Spoofing)
+- IDOR, hardcoded secrets, data leaks (Information Disclosure)
+- Missing auth checks, privilege escalation (Elevation of Privilege)
+- Missing rate limits, resource exhaustion (Denial of Service)
+- Missing audit logs (Repudiation)
+
+Security findings are validated for exploitability with proof-of-concept generation. False positives are filtered automatically.
+
 > **You can stop reading here.** Everything below is optional deep-dives.
 
 ---
@@ -357,6 +382,10 @@ CTO-level observability:
 | `/flux:reflect` | Capture learnings from current session into brain vault |
 | `/flux:ruminate` | Mine past conversations for uncaptured patterns |
 | `/flux:meditate` | Audit and prune brain vault, extract new principles |
+| `/flux:threat-model` | Generate STRIDE-based security threat model |
+| `/flux:security-scan` | Scan code changes for security vulnerabilities |
+| `/flux:security-review` | Comprehensive security review with STRIDE analysis |
+| `/flux:vuln-validate` | Validate findings and generate proof-of-concept |
 | `/flux:score` | Compute AI-native capability score |
 | `/flux:profile` | Export/share SDLC profile |
 | `/flux:contribute` | Report bug and auto-create PR to fix Flux |
