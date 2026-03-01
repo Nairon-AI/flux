@@ -132,51 +132,152 @@ Flux recommends MCP servers that enhance your AI development workflow. Installat
 ### Available MCP Servers
 
 <!-- 
-  TO ADD A NEW MCP SERVER:
+  TO ADD A NEW MCP/SKILL/TOOL:
   1. Add entry to the RECOMMENDED_MCPS table below
-  2. Add option to the question in "Ask which to install"
-  3. Add installation logic in "Install selected servers"
-  4. Add API key question if applicable
+  2. Add conflict detection in "Detect conflicts"
+  3. Add option to the question in "Ask which to install"
+  4. Add installation logic in "Install selected servers"
+  5. Add API key question if applicable (for MCPs with optional keys)
 -->
 
-| ID | Name | Benefit | Free Tier | API Key URL |
-|----|------|---------|-----------|-------------|
-| `context7` | Context7 | **No more hallucinated APIs** — fetches up-to-date, version-specific library docs directly into your prompt | Yes | context7.com/dashboard |
-| `exa` | Exa | **Fastest AI web search** — real-time research without leaving your session, 10x better than browser search | Yes | exa.ai |
+| ID | Name | Category | Benefit | Free | Install Command |
+|----|------|----------|---------|------|-----------------|
+| `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | `claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user` |
+| `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | `claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user` |
+| `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | `claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github` |
+| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | `claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user` |
 
-### Check what's already installed
+### Conflict Detection
+
+Before offering to install, detect potential conflicts with existing tools:
 
 ```bash
+# Get installed MCPs
 MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
-HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -q "context7" && echo 1 || echo 0)
-HAVE_EXA=$(echo "$MCP_LIST" | grep -q "exa" && echo 1 || echo 0)
+
+# Check each recommended MCP
+HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qi "context7" && echo 1 || echo 0)
+HAVE_EXA=$(echo "$MCP_LIST" | grep -qi "exa" && echo 1 || echo 0)
+HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qi "github" && echo 1 || echo 0)
+HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qi "supermemory" && echo 1 || echo 0)
+
+# Detect conflicting/similar tools
+# Search category conflicts
+HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qi "perplexity" && echo 1 || echo 0)
+HAVE_TAVILY=$(echo "$MCP_LIST" | grep -qi "tavily" && echo 1 || echo 0)
+HAVE_BRAVE=$(echo "$MCP_LIST" | grep -qi "brave" && echo 1 || echo 0)
+HAVE_SERPER=$(echo "$MCP_LIST" | grep -qi "serper" && echo 1 || echo 0)
+
+# Memory category conflicts
+HAVE_MEM0=$(echo "$MCP_LIST" | grep -qi "mem0" && echo 1 || echo 0)
+HAVE_LANGMEM=$(echo "$MCP_LIST" | grep -qi "langmem\|langchain.*memory" && echo 1 || echo 0)
+
+# Docs category conflicts  
+HAVE_DEVDOCS=$(echo "$MCP_LIST" | grep -qi "devdocs" && echo 1 || echo 0)
+
+# GitHub conflicts (check for gh CLI too)
+HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
 ```
 
-### Ask which to install
+### Build installation options with conflict awareness
 
-Build options dynamically based on what's NOT already installed. Use the question tool:
+For each recommended MCP, determine its status and any conflicts:
+
+**Status types:**
+- `installed` — Already installed, skip
+- `available` — Not installed, no conflicts, offer to install
+- `conflict` — Not installed, but similar tool exists, ask how to handle
+
+### Ask which to install (with conflict handling)
+
+Build the question dynamically. For items with conflicts, explain the situation:
 
 ```json
 {
   "header": "MCP Servers",
-  "question": "Flux recommends these MCP servers to supercharge your workflow. Which would you like to install?",
+  "question": "Flux recommends these free MCP servers. Which would you like to install?",
   "multiple": true,
   "options": [
-    {"label": "Context7", "description": "No more hallucinated APIs — up-to-date library docs in every prompt (free)"},
-    {"label": "Exa", "description": "Fastest AI web search — real-time research without leaving your session (free)"},
-    {"label": "Skip all", "description": "Don't install any MCP servers"}
+    // Only include options for MCPs not already installed
   ]
 }
 ```
 
-**Notes for building options:**
-- Only show servers that are NOT already installed
-- If a server is already installed, skip it silently
-- If ALL servers are already installed, skip this question entirely and print: "Recommended MCP servers already installed."
+**Option templates:**
+
+For **available** MCPs (no conflict):
+```json
+{"label": "Context7", "description": "No more hallucinated APIs — up-to-date library docs (free)"}
+{"label": "Exa", "description": "Fastest AI web search — real-time research (free)"}
+{"label": "GitHub", "description": "PRs, issues, actions without leaving Claude (free)"}
+{"label": "Supermemory", "description": "Never re-explain context — persistent memory (free)"}
+```
+
+For MCPs with **conflicts**, use a separate question per conflict:
+
+**Example: Exa conflicts with existing Perplexity:**
+```json
+{
+  "header": "Search MCP Conflict",
+  "question": "You have Perplexity MCP installed. Exa is faster and optimized for AI. How to proceed?",
+  "options": [
+    {"label": "Keep Perplexity", "description": "Don't install Exa, keep your current setup"},
+    {"label": "Switch to Exa", "description": "Remove Perplexity, install Exa (recommended for speed)"},
+    {"label": "Keep both", "description": "Install Exa alongside Perplexity (may cause duplicate results)"},
+    {"label": "Skip", "description": "Decide later"}
+  ]
+}
+```
+
+**Example: Supermemory conflicts with mem0:**
+```json
+{
+  "header": "Memory MCP Conflict",
+  "question": "You have mem0 installed. Supermemory offers cross-app sync and knowledge graphs. How to proceed?",
+  "options": [
+    {"label": "Keep mem0", "description": "Don't install Supermemory"},
+    {"label": "Switch to Supermemory", "description": "Remove mem0, install Supermemory"},
+    {"label": "Keep both", "description": "Use both memory systems (may duplicate memories)"},
+    {"label": "Skip", "description": "Decide later"}
+  ]
+}
+```
+
+**Example: GitHub MCP when gh CLI exists:**
+```json
+{
+  "header": "GitHub Integration",
+  "question": "You have gh CLI installed. GitHub MCP adds richer integration (browse code, manage PRs via Claude). How to proceed?",
+  "options": [
+    {"label": "Add GitHub MCP", "description": "Install alongside gh CLI (recommended, they complement each other)"},
+    {"label": "Skip", "description": "Keep using gh CLI only"}
+  ]
+}
+```
+
+**Always include skip option:**
+```json
+{"label": "Skip all", "description": "Don't install any MCP servers"}
+```
+
+### Process conflict resolutions
+
+Based on user's choice:
+
+- **Keep existing**: Do nothing for that category
+- **Switch**: Remove old MCP, install new one
+- **Keep both**: Install new one without removing old
+- **Skip**: Do nothing
+
+```bash
+# Example: Switch from Perplexity to Exa
+claude mcp remove perplexity -s user 2>/dev/null || true
+claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
+```
 
 ### Install selected servers
 
-For each selected server, install it. If user selected "Skip all", skip this section.
+For each selected server (that passed conflict resolution), install it:
 
 **Context7:**
 ```bash
@@ -188,73 +289,86 @@ claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>
 claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
 ```
 
-### Ask about API keys (only for installed servers)
+**GitHub:**
+```bash
+# Requires GITHUB_PERSONAL_ACCESS_TOKEN - ask user if they want to configure
+claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github 2>/dev/null || true
+```
 
-Only ask this if user installed at least one server:
+**Supermemory:**
+```bash
+claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user 2>/dev/null || true
+```
 
+### Ask about API keys / tokens (only for installed servers that need them)
+
+Only ask for servers that were just installed AND benefit from keys:
+
+**GitHub Personal Access Token (required for private repos):**
 ```json
 {
-  "header": "API Keys (Optional)",
-  "question": "MCP servers work without API keys, but keys unlock higher rate limits. Add any API keys?",
-  "multiple": true,
+  "header": "GitHub Token (Optional)",
+  "question": "GitHub MCP works with public repos. For private repos, add a Personal Access Token?",
   "options": [
-    {"label": "Context7 key", "description": "Get free key from context7.com/dashboard"},
-    {"label": "Exa key", "description": "Get free key from exa.ai"},
-    {"label": "Skip", "description": "Use free tier (can add keys later)"}
+    {"label": "Add token", "description": "Configure PAT for private repo access (get from github.com/settings/tokens)"},
+    {"label": "Skip", "description": "Use public repos only (can add token later)"}
   ]
 }
 ```
 
-**Only show options for servers that were just installed.**
-
-### Configure API keys
-
-For each selected API key, ask for the value and reconfigure:
-
-**Context7 API key:**
+If user chooses to add token:
 ```json
 {
-  "header": "Context7 API Key",
-  "question": "Enter your Context7 API key (from context7.com/dashboard):",
+  "header": "GitHub PAT",
+  "question": "Enter your GitHub Personal Access Token (from github.com/settings/tokens with 'repo' scope):",
   "options": []
 }
 ```
 
-Then reconfigure with the key:
+Then reconfigure:
 ```bash
-claude mcp remove context7 2>/dev/null || true
-claude mcp add context7 -s user -e CONTEXT7_API_KEY="<user_provided_key>" -- npx -y @upstash/context7-mcp
+claude mcp remove github 2>/dev/null || true
+claude mcp add github -s user -e GITHUB_PERSONAL_ACCESS_TOKEN="<user_provided_token>" -- npx -y @modelcontextprotocol/server-github
 ```
 
-**Exa API key:**
+**Context7 / Exa / Supermemory API keys:**
+
+These work without keys but keys unlock higher rate limits. Only ask if user installed them:
+
 ```json
 {
-  "header": "Exa API Key",
-  "question": "Enter your Exa API key (from exa.ai):",
-  "options": []
+  "header": "API Keys (Optional)",
+  "question": "These MCPs work without API keys, but keys unlock higher rate limits. Add any?",
+  "multiple": true,
+  "options": [
+    // Only show options for MCPs that were just installed
+    {"label": "Context7 key", "description": "Higher rate limits (free key from context7.com/dashboard)"},
+    {"label": "Exa key", "description": "Higher rate limits (free key from exa.ai)"},
+    {"label": "Supermemory key", "description": "Higher rate limits (free key from supermemory.ai)"},
+    {"label": "Skip", "description": "Use free tier for all (can add keys later)"}
+  ]
 }
 ```
 
-Then reconfigure with the key:
-```bash
-claude mcp remove exa 2>/dev/null || true
-claude mcp add exa -s user -e EXA_API_KEY="<user_provided_key>" -- npx -y exa-mcp-server
-```
+### Track installation results
 
-### Track installed servers
-
-Store which servers were installed for the summary:
-- `INSTALLED_MCPS` — list of server names installed in this session
-- `CONFIGURED_KEYS` — list of servers with API keys configured
+Store for summary:
+- `INSTALLED_MCPS` — list of MCP names installed this session
+- `REMOVED_MCPS` — list of MCPs removed due to switch
+- `CONFIGURED_TOKENS` — list of MCPs with tokens/keys configured
+- `SKIPPED_MCPS` — list of MCPs user chose to skip
+- `CONFLICTS_RESOLVED` — list of conflict resolutions made
 
 ### Manual fallback
 
 If `claude` CLI is not available, print manual instructions:
 
 ```
-MCP servers (install manually):
+MCP servers (install manually with Claude Code):
   claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user
   claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
+  claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user
+  claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github
 ```
 
 ## Step 5: Update meta.json
@@ -540,19 +654,29 @@ Installed:
 - .flux/usage.md
 ```
 
-**MCP servers section** (only show if any were installed or already existed):
+**MCP servers section** (only show if any were installed, removed, or already existed):
 
 ```
 MCP servers:
-- Context7: <installed | installed + API key | already installed | skipped>
-- Exa: <installed | installed + API key | already installed | skipped>
+- Context7: <installed | installed + key | already installed | skipped>
+- Exa: <installed | installed + key | already installed | skipped>
+- GitHub: <installed | installed + token | already installed | skipped>
+- Supermemory: <installed | installed + key | already installed | skipped>
 ```
 
-Use `INSTALLED_MCPS` and `CONFIGURED_KEYS` from Step 4c to determine status:
-- "installed" — installed this session without API key
-- "installed + API key" — installed this session with API key configured
+Use tracking variables from Step 4c to determine status:
+- "installed" — installed this session without API key/token
+- "installed + key/token" — installed this session with credentials configured
 - "already installed" — was already present before setup
 - "skipped" — user chose not to install
+- "switched from X" — replaced existing tool X with this one
+
+**If conflicts were resolved, show:**
+```
+Conflicts resolved:
+- Switched from Perplexity to Exa (faster, AI-optimized)
+- Kept mem0 alongside Supermemory
+```
 
 If all were skipped, show:
 ```
