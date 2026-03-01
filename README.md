@@ -38,6 +38,8 @@
 
 ## Recommended Installation
 
+### Step 1: Install
+
 Paste this into Claude Code:
 
 ```
@@ -47,7 +49,58 @@ The plugin is at: https://github.com/Nairon-AI/flux
 Help me install the plugin and explain the core workflow (scope → build → review).
 ```
 
-After installation, **restart Claude Code** (plugins load at session start), then run `/flux:setup` in your new session.
+### Step 2: Setup
+
+After installation, **restart Claude Code** (plugins load at session start), then run:
+
+```bash
+/flux:setup
+```
+
+This scaffolds `.flux/` in your project and configures your preferences.
+
+### Step 3: Build Your First Feature
+
+Once setup completes, you're ready. Start with:
+
+```bash
+/flux:scope Add user notifications
+```
+
+This runs the **Double Diamond** process:
+1. **Problem Space** — Flux interviews you: *What are we really solving? Who's affected? What are the risks?*
+2. **Solution Space** — Researches your codebase, then creates a sized epic with tasks (e.g., `fn-1.1`, `fn-1.2`)
+
+Then execute and review:
+
+```bash
+/flux:work fn-1.1          # Execute first task with full context
+/flux:work fn-1.2          # Next task
+
+/flux:impl-review          # Review implementation before moving on
+/flux:epic-review fn-1     # Verify the epic is complete
+```
+
+**That's the core loop: Scope → Build → Review.** Repeat for every feature.
+
+### When to Use Each Command
+
+| Situation | Command |
+|-----------|---------|
+| Starting a new feature or bug fix | `/flux:scope <description>` |
+| Ready to work on a task | `/flux:work <task-id>` |
+| Finished some code, want a sanity check | `/flux:impl-review` |
+| Finished all tasks in an epic | `/flux:epic-review <epic-id>` |
+| End of session, want to capture learnings | `/flux:reflect` |
+| Codebase feels messy | `/flux:desloppify` |
+| Need to understand a new codebase | `/flux:prime` |
+| Want tool recommendations based on your patterns | `/flux:improve` |
+
+### Stuck?
+
+- Run `/flux:help` for command reference
+- Check `.flux/usage.md` in your project
+- Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
 
 ---
 
