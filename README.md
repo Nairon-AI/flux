@@ -36,6 +36,21 @@
 
 ---
 
+## Recommended Installation
+
+Paste this into Claude Code:
+
+```
+I want to install Flux for structured AI development.
+The plugin is at: https://github.com/Nairon-AI/flux
+
+Help me install the plugin and explain the core workflow (scope → build → review).
+```
+
+After installation, **restart Claude Code** (plugins load at session start), then run `/flux:setup` in your new session.
+
+---
+
 ## The Problem
 
 You're using Claude Code, but something's off:
