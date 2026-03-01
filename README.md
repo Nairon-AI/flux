@@ -72,6 +72,8 @@ I want to install Flux for structured AI development.
 The plugin is at: https://github.com/Nairon-AI/flux
 
 Help me install the plugin and explain the core workflow (scope → build → review).
+
+See its README for installation instructions
 ```
 
 ### Step 2: Setup
