@@ -120,7 +120,7 @@ Then execute and review:
 | Finished all tasks in an epic | `/flux:epic-review <epic-id>` |
 | End of session, want to capture learnings | `/flux:reflect` |
 | Codebase feels messy | `/flux:desloppify` |
-| Need to understand a new codebase | `/flux:prime` |
+| Audit codebase for agent readiness | `/flux:prime` |
 | Want tool recommendations based on your patterns | `/flux:improve` |
 
 ### Stuck?
