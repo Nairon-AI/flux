@@ -72,7 +72,11 @@ Install the Flux plugin by running this slash command:
 
 /plugin add https://github.com/Nairon-AI/flux
 
-After running it, explain the core Flux workflow (scope → build → review).
+After running it, explain these 4 core commands:
+1. /flux:scope <idea> — Start any feature with structured scoping
+2. /flux:work <task-id> — Execute tasks with full context
+3. /flux:impl-review — Review before moving on
+4. /flux:improve — Analyze sessions and recommend workflow optimizations
 ```
 
 > **Note:** `/plugin add` is a slash command — type it directly in Claude Code, don't run it in bash.
