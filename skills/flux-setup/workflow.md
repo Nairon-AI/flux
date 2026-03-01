@@ -371,6 +371,335 @@ MCP servers (install manually with Claude Code):
   claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github
 ```
 
+## Step 4d: Install recommended desktop applications (Optional)
+
+Flux recommends productivity applications that enhance AI-augmented development. Installation is **optional** — users can skip or select which ones to install.
+
+### Detect OS FIRST
+
+**CRITICAL: Detect OS before showing any options. Only offer apps compatible with the user's OS.**
+
+```bash
+# Detect OS - run this FIRST
+OS_TYPE="unknown"
+case "$(uname -s)" in
+  Darwin*) OS_TYPE="macos" ;;
+  Linux*)  OS_TYPE="linux" ;;
+  MINGW*|MSYS*|CYGWIN*) OS_TYPE="windows" ;;
+esac
+
+echo "Detected OS: $OS_TYPE"
+```
+
+### Available Desktop Applications (by OS)
+
+<!-- 
+  TO ADD A NEW APPLICATION:
+  1. Add entry to the RECOMMENDED_APPS table below
+  2. Add OS check in "Detect OS and conflicts"
+  3. Add conflict detection for that category
+  4. Add option to the question
+  5. Add installation logic
+-->
+
+| ID | Name | macOS | Linux | Windows | Benefit | Free | Install |
+|----|------|-------|-------|---------|---------|------|---------|
+| `raycast` | Raycast | Yes | No | No | **Launcher on steroids** — AI, snippets, clipboard history | Freemium | `brew install --cask raycast` |
+| `ghostty` | Ghostty | Yes | Yes | No | **Fast terminal** — GPU-accelerated, split-pane workflows | Yes | `brew install --cask ghostty` |
+| `wispr-flow` | Wispr Flow | Yes | No | No | **Voice-to-text 4x faster** — dictate anywhere | Freemium | Manual download |
+| `granola` | Granola | Yes | No | Yes | **AI meeting notes** — no bot joins calls | Freemium | Manual download |
+
+### OS Compatibility Matrix
+
+```
+macOS:   Raycast, Ghostty, Wispr Flow, Granola (all 4)
+Linux:   Ghostty only
+Windows: Granola only
+```
+
+### Detect conflicts (only for compatible apps)
+
+```bash
+# Only run conflict detection for apps compatible with current OS
+
+if [ "$OS_TYPE" = "macos" ]; then
+  # Launcher category (Raycast conflicts) - macOS only
+  HAVE_ALFRED=$([ -d "/Applications/Alfred 5.app" ] || [ -d "/Applications/Alfred 4.app" ] && echo 1 || echo 0)
+  HAVE_LAUNCHBAR=$([ -d "/Applications/LaunchBar.app" ] && echo 1 || echo 0)
+  
+  # Voice dictation category (Wispr Flow) - macOS only
+  HAVE_TALON=$([ -d "/Applications/Talon.app" ] && echo 1 || echo 0)
+  
+  # Check if already installed - macOS
+  HAVE_RAYCAST=$([ -d "/Applications/Raycast.app" ] && echo 1 || echo 0)
+  HAVE_WISPR=$([ -d "/Applications/Wispr Flow.app" ] && echo 1 || echo 0)
+fi
+
+if [ "$OS_TYPE" = "macos" ] || [ "$OS_TYPE" = "linux" ]; then
+  # Terminal category (Ghostty conflicts) - macOS and Linux
+  HAVE_ITERM=$([ -d "/Applications/iTerm.app" ] && echo 1 || echo 0)
+  HAVE_WARP=$([ -d "/Applications/Warp.app" ] && echo 1 || echo 0)
+  HAVE_ALACRITTY=$([ -d "/Applications/Alacritty.app" ] || which alacritty >/dev/null 2>&1 && echo 1 || echo 0)
+  HAVE_KITTY=$([ -d "/Applications/kitty.app" ] || which kitty >/dev/null 2>&1 && echo 1 || echo 0)
+  
+  # Check if already installed
+  HAVE_GHOSTTY=$([ -d "/Applications/Ghostty.app" ] || which ghostty >/dev/null 2>&1 && echo 1 || echo 0)
+fi
+
+if [ "$OS_TYPE" = "macos" ] || [ "$OS_TYPE" = "windows" ]; then
+  # Meeting notes category (Granola) - macOS and Windows
+  HAVE_OTTER=$([ -d "/Applications/Otter.app" ] && echo 1 || echo 0)
+  HAVE_FATHOM=$([ -d "/Applications/Fathom.app" ] && echo 1 || echo 0)
+  
+  # Check if already installed
+  HAVE_GRANOLA=$([ -d "/Applications/Granola.app" ] && echo 1 || echo 0)
+fi
+```
+
+### Build options based on OS
+
+**IMPORTANT: Only include apps compatible with detected OS. Skip this entire step if no apps are compatible.**
+
+### Ask which to install (OS-specific questions)
+
+**For macOS users** (all 4 apps available):
+
+```json
+{
+  "header": "Desktop Apps (macOS)",
+  "question": "Flux recommends these productivity apps. Which would you like to install?",
+  "multiple": true,
+  "options": [
+    // Only include apps NOT already installed
+    {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
+    {"label": "Ghostty", "description": "Fast GPU terminal with split panes for parallel agents (free)"},
+    {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
+    {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
+  ]
+}
+```
+
+**For Linux users** (only Ghostty):
+
+```json
+{
+  "header": "Desktop Apps (Linux)",
+  "question": "Flux recommends Ghostty terminal for Linux. Install it?",
+  "options": [
+    {"label": "Yes, install Ghostty", "description": "Fast GPU terminal with split panes (free, open-source)"},
+    {"label": "Skip", "description": "Keep current terminal setup"}
+  ]
+}
+```
+
+**For Windows users** (only Granola):
+
+```json
+{
+  "header": "Desktop Apps (Windows)", 
+  "question": "Flux recommends Granola for meeting notes on Windows. Install it?",
+  "options": [
+    {"label": "Yes, install Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"},
+    {"label": "Skip", "description": "Skip desktop apps"}
+  ]
+}
+```
+
+**If OS is unknown or no compatible apps:**
+Skip desktop apps section entirely and note in summary: "Desktop apps: skipped (unsupported OS)"
+
+### Handle conflicts with separate questions
+
+**Example: Raycast conflicts with Alfred:**
+```json
+{
+  "header": "Launcher Conflict",
+  "question": "You have Alfred installed. Raycast offers similar features plus built-in AI. How to proceed?",
+  "options": [
+    {"label": "Keep Alfred", "description": "Don't install Raycast, keep your current setup"},
+    {"label": "Try Raycast", "description": "Install Raycast alongside Alfred (can switch later)"},
+    {"label": "Skip", "description": "Decide later"}
+  ]
+}
+```
+
+**Example: Ghostty conflicts with iTerm:**
+```json
+{
+  "header": "Terminal Conflict",
+  "question": "You have iTerm installed. Ghostty is faster with better split-pane focus. How to proceed?",
+  "options": [
+    {"label": "Keep iTerm", "description": "Don't install Ghostty"},
+    {"label": "Try Ghostty", "description": "Install alongside iTerm (can switch later)"},
+    {"label": "Skip", "description": "Decide later"}
+  ]
+}
+```
+
+**Example: Ghostty conflicts with Warp:**
+```json
+{
+  "header": "Terminal Conflict",
+  "question": "You have Warp installed. Ghostty is simpler with better split-pane workflows. How to proceed?",
+  "options": [
+    {"label": "Keep Warp", "description": "Don't install Ghostty (Warp has its own AI features)"},
+    {"label": "Try Ghostty", "description": "Install alongside Warp (can switch later)"},
+    {"label": "Skip", "description": "Decide later"}
+  ]
+}
+```
+
+### Install selected applications
+
+**Raycast (macOS only):**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  brew install --cask raycast 2>/dev/null || {
+    echo "Install manually: https://raycast.com"
+  }
+fi
+```
+
+**Ghostty (macOS/Linux):**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  brew install --cask ghostty 2>/dev/null || {
+    echo "Install manually: https://ghostty.org"
+  }
+elif [ "$OS_TYPE" = "linux" ]; then
+  # Check package manager
+  if which apt-get >/dev/null 2>&1; then
+    echo "Install from: https://ghostty.org/docs/install/linux"
+  elif which pacman >/dev/null 2>&1; then
+    echo "Install: pacman -S ghostty"
+  else
+    echo "Install manually: https://ghostty.org"
+  fi
+fi
+```
+
+**Wispr Flow (macOS/iOS - manual):**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  echo "Download Wispr Flow: https://www.wispr.ai"
+  open "https://www.wispr.ai" 2>/dev/null || true
+fi
+```
+
+**Granola (macOS/Windows/iOS - manual):**
+```bash
+echo "Download Granola: https://www.granola.ai"
+open "https://www.granola.ai" 2>/dev/null || true
+```
+
+### Track installation results
+
+Store for summary:
+- `INSTALLED_APPS` — list of apps installed this session
+- `SKIPPED_APPS` — list of apps user chose to skip
+- `CONFLICTS_APPS` — list of app conflicts and resolutions
+
+## Step 4e: Install recommended CLI tools (Optional)
+
+Flux recommends CLI tools that complement the AI development workflow.
+
+**Note:** This step uses `OS_TYPE` detected in Step 4d. CLI tools work on all platforms.
+
+### Available CLI Tools
+
+<!-- 
+  TO ADD A NEW CLI TOOL:
+  1. Add entry to the RECOMMENDED_CLI table below
+  2. Add detection check
+  3. Add option to the question
+  4. Add installation logic
+-->
+
+| ID | Name | Benefit | Free | Install (macOS) | Install (Linux) |
+|----|------|---------|------|-----------------|-----------------|
+| `gh` | GitHub CLI | **PRs, issues, releases from terminal** — no browser context switching | Yes | `brew install gh` | `sudo apt install gh` |
+
+### Detect existing tools
+
+```bash
+# Check if tools already installed
+HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
+
+# gh CLI complements (not conflicts with) GitHub MCP
+# If user installed GitHub MCP in step 4c, recommend gh CLI as complement
+```
+
+### Ask which to install
+
+Only show tools not already installed:
+
+```json
+{
+  "header": "CLI Tools",
+  "question": "Flux recommends these CLI tools. Which would you like to install?",
+  "multiple": true,
+  "options": [
+    // Only include tools not already installed
+  ]
+}
+```
+
+**Option templates:**
+```json
+{"label": "GitHub CLI (gh)", "description": "PRs, issues, releases from terminal — complements GitHub MCP (free)"}
+```
+
+**If GitHub MCP was installed in step 4c, mention the synergy:**
+```json
+{
+  "header": "CLI Tools",
+  "question": "You installed GitHub MCP. The gh CLI complements it for terminal workflows. Install it?",
+  "options": [
+    {"label": "Yes, install gh", "description": "Create PRs, triage issues from terminal (free, open-source)"},
+    {"label": "Skip", "description": "Use GitHub MCP only"}
+  ]
+}
+```
+
+**If gh is already installed:**
+Skip this question or show "already installed" in summary.
+
+### Install selected tools
+
+**GitHub CLI:**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  brew install gh 2>/dev/null || {
+    echo "Install manually: https://cli.github.com"
+  }
+elif [ "$OS_TYPE" = "linux" ]; then
+  if which apt-get >/dev/null 2>&1; then
+    sudo apt install gh 2>/dev/null || {
+      echo "Install: https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+    }
+  elif which pacman >/dev/null 2>&1; then
+    sudo pacman -S github-cli 2>/dev/null || true
+  elif which dnf >/dev/null 2>&1; then
+    sudo dnf install gh 2>/dev/null || true
+  else
+    echo "Install manually: https://cli.github.com"
+  fi
+elif [ "$OS_TYPE" = "windows" ]; then
+  echo "Install: winget install --id GitHub.cli"
+fi
+
+# Prompt for authentication if installed
+if which gh >/dev/null 2>&1; then
+  echo "Run 'gh auth login' to authenticate with GitHub"
+fi
+```
+
+### Track installation results
+
+Store for summary:
+- `INSTALLED_CLI` — list of CLI tools installed this session
+- `SKIPPED_CLI` — list of CLI tools user chose to skip
+
 ## Step 5: Update meta.json
 
 Read current `.flux/meta.json`, add/update these fields (preserve all others):
@@ -683,6 +1012,35 @@ If all were skipped, show:
 MCP servers: skipped (install later with /flux:setup or manually)
 ```
 
+**Desktop applications section** (only show if OS had compatible apps):
+
+```
+Desktop applications (<OS_TYPE>):
+- Raycast: <installed | already installed | skipped | conflict: kept Alfred>
+- Ghostty: <installed | already installed | skipped | conflict: kept iTerm>
+- Wispr Flow: <installed | already installed | skipped>
+- Granola: <installed | already installed | skipped>
+```
+
+Use tracking variables from Step 4d to determine status. Only show apps compatible with user's OS:
+- macOS: show all 4 apps
+- Linux: show only Ghostty
+- Windows: show only Granola
+
+If OS was unsupported or user skipped all:
+```
+Desktop applications: skipped (<reason>)
+```
+
+**CLI tools section** (only show if any were offered):
+
+```
+CLI tools:
+- GitHub CLI (gh): <installed | already installed | skipped>
+```
+
+Use tracking variables from Step 4e. If gh was already installed before setup, show "already installed".
+
 Continue summary:
 
 ```
@@ -715,6 +1073,7 @@ Notes:
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
 - MCP servers installed at user scope are available in all projects
+- Desktop apps and CLI tools are optional productivity boosters
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```
