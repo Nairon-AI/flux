@@ -65,7 +65,13 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ### Step 1: Install
 
-Paste this into Claude Code:
+**Option A:** Run this slash command directly in Claude Code:
+
+```
+/plugin add https://github.com/Nairon-AI/flux
+```
+
+**Option B:** Paste this prompt and let the agent guide you:
 
 ```
 I want to install Flux for structured AI development.
@@ -75,7 +81,7 @@ Help me install and setup the plugin.
 
 Then explain the core workflow (scope → build → review).
 
-See its README for installation instructions.
+The install command is: /plugin add https://github.com/Nairon-AI/flux
 
 Guide me on anything I need to do manually and do the rest automatically.
 ```
