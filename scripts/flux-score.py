@@ -23,11 +23,15 @@ import json
 import os
 import re
 import sys
+import time
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+
+DEFAULT_UNIVERSE_API_URL = "https://universe.naironai.com"
+FLUX_SOURCE_VERSION = "0.1.0"
 
 # =============================================================================
 # DATA MODELS
@@ -701,6 +705,21 @@ def compute_flux_score(
     # Compute session metrics
     session_metrics = compute_session_metrics(transcripts)
 
+    # Estimate total tokens from transcript content
+    total_text_chars = 0
+    for entry in transcripts:
+        if entry.content:
+            total_text_chars += len(entry.content)
+        if entry.tool_input:
+            total_text_chars += len(json.dumps(entry.tool_input))
+        if entry.tool_output:
+            total_text_chars += len(
+                json.dumps(entry.tool_output)
+                if isinstance(entry.tool_output, dict)
+                else str(entry.tool_output)
+            )
+    estimated_tokens = total_text_chars // 4
+
     # Compute dimensions
     dimensions = compute_dimension_scores(session_metrics, todos)
 
@@ -722,6 +741,7 @@ def compute_flux_score(
         "tools_used": list(
             set().union(*(m.tools_used for m in session_metrics.values()))
         ),
+        "estimated_tokens": estimated_tokens,
     }
 
     # Period
@@ -833,6 +853,105 @@ def format_yaml(score: FluxScore) -> str:
 # =============================================================================
 
 
+def sync_to_universe(score: FluxScore) -> bool:
+    """Sync score data to Universe. Returns True on success, False otherwise."""
+    from urllib.error import HTTPError, URLError
+    from urllib.request import Request, urlopen
+
+    def acquire_sync_lock(lock_path: Path, stale_after_seconds: int = 120) -> int | None:
+        """Acquire an exclusive lock file for sync.
+
+        Returns an open fd on success, None if another sync is active.
+        """
+
+        def _try_create() -> int | None:
+            try:
+                return os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            except FileExistsError:
+                return None
+
+        lock_fd = _try_create()
+        if lock_fd is not None:
+            return lock_fd
+
+        try:
+            age = time.time() - lock_path.stat().st_mtime
+            if age > stale_after_seconds:
+                lock_path.unlink(missing_ok=True)
+                return _try_create()
+        except OSError:
+            return None
+
+        return None
+
+    # Load auth
+    flux_dir = Path.home() / ".flux"
+    auth_file = flux_dir / "universe-auth.json"
+    if not auth_file.exists():
+        return False
+
+    try:
+        with open(auth_file, "r") as f:
+            auth = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return False
+
+    token = auth.get("accessToken")
+    if not token:
+        return False
+
+    # Resolve API URL
+    api_url = os.environ.get("FLUX_UNIVERSE_API_URL", "").rstrip("/")
+    if not api_url:
+        config_file = Path.home() / ".flux" / "config.json"
+        if config_file.exists():
+            try:
+                with open(config_file, "r") as f:
+                    config = json.load(f)
+                api_url = config.get("universe_api_url", "").rstrip("/")
+            except (json.JSONDecodeError, OSError):
+                pass
+    if not api_url:
+        api_url = DEFAULT_UNIVERSE_API_URL
+
+    # Build payload
+    tools_used = sorted(score.raw_metrics.get("tools_used", []))
+    payload = json.dumps({
+        "sessionsCount": score.sessions_analyzed,
+        "totalTokens": score.raw_metrics.get("estimated_tokens", 0),
+        "toolsUsed": tools_used,
+        "sentAt": int(time.time() * 1000),
+        "sourceVersion": FLUX_SOURCE_VERSION,
+    }).encode("utf-8")
+
+    req = Request(
+        f"{api_url}/api/flux/sync",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+        method="POST",
+    )
+
+    lock_path = flux_dir / ".universe-sync.lock"
+    lock_fd = acquire_sync_lock(lock_path)
+    if lock_fd is None:
+        return False
+
+    try:
+        with urlopen(req, timeout=3) as resp:
+            return 200 <= resp.status < 300
+    except (HTTPError, URLError, OSError):
+        return False
+    finally:
+        try:
+            os.close(lock_fd)
+        except OSError:
+            pass
+        lock_path.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Compute Flux AI-native capability score from Claude Code data",
@@ -897,6 +1016,13 @@ Examples:
         print(f"Score exported to {args.export}")
     else:
         print(output)
+
+    # Background sync to Universe (silent — never affects score output)
+    try:
+        if sync_to_universe(score):
+            print("↑ Synced to Universe")
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
