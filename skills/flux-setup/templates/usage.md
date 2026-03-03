@@ -90,7 +90,22 @@ Runtime state (status, assignee, etc.) is stored in `.git/flow-state/`, shared a
 
 Migration is optional — existing repos work without changes.
 
+## Troubleshooting
+
+If Flux commands fail, return "Unknown skill", or behave unexpectedly:
+
+1. **Consult the official README first**: https://github.com/Nairon-AI/flux#troubleshooting
+2. **Follow the documented fixes exactly** — do not guess or improvise
+3. **If fixes don't work**, create a GitHub issue: https://github.com/Nairon-AI/flux/issues
+
+Common fixes:
+- "Unknown skill" → Check `~/.claude/settings.json` has `"flux@nairon-flux": true` in `enabledPlugins`
+- Stale commands → Clear cache: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+- After any fix → Restart Claude Code and run `/flux:setup` again
+
 ## More Info
 
-- Human docs: https://github.com/Nairon-AI/flux/blob/main/plugins/flux/docs/fluxctl.md
+- Official README: https://github.com/Nairon-AI/flux
+- Troubleshooting guide: https://github.com/Nairon-AI/flux#troubleshooting
 - CLI reference: `.flux/bin/fluxctl --help`
+- Report issues: https://github.com/Nairon-AI/flux/issues

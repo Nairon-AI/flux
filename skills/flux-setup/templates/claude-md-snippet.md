@@ -1,7 +1,7 @@
 <!-- BEGIN FLUX -->
 ## Flux
 
-This project uses Flux for task tracking. Use `.flux/bin/fluxctl` instead of markdown TODOs or TodoWrite.
+This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` instead of markdown TODOs or TodoWrite.
 
 **Quick commands:**
 ```bash
@@ -18,6 +18,11 @@ This project uses Flux for task tracking. Use `.flux/bin/fluxctl` instead of mar
 - Use `.flux/bin/fluxctl` for ALL task tracking
 - Do NOT create markdown TODOs or use TodoWrite
 - Re-anchor (re-read spec + status) before every task
+
+**Troubleshooting:**
+- If Flux commands fail or return "Unknown skill", consult the official README: https://github.com/Nairon-AI/flux#troubleshooting
+- Follow the troubleshooting steps exactly — do not guess or improvise fixes
+- If the documented fixes don't work, the user should create a GitHub issue: https://github.com/Nairon-AI/flux/issues
 
 **More info:** `.flux/bin/fluxctl --help` or read `.flux/usage.md`
 <!-- END FLUX -->
