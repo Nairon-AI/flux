@@ -1,0 +1,130 @@
+name: PR Requirements Check
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  check-requirements:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Requirements
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const author = pr.user.login;
+            
+            // Skip for maintainers
+            const maintainers = ['Obaidur-Rahmaan', 'naaboromern'];
+            if (maintainers.includes(author)) {
+              console.log('PR from maintainer, skipping requirements check');
+              return;
+            }
+            
+            const requirements = {
+              conversationHistory: {
+                name: 'Conversation History',
+                patterns: [
+                  /conversation history/i,
+                  /chat history/i,
+                  /ai conversation/i,
+                  /gist\.github/i,
+                  /paste\.gg/i,
+                  /pastebin/i
+                ],
+                missing: '- [ ] Link to exported AI conversation history'
+              },
+              demoVideo: {
+                name: 'Demo Video',
+                patterns: [
+                  /demo video/i,
+                  /loom\.com/i,
+                  /youtube\.com/i,
+                  /youtu\.be/i,
+                  /\.gif/i,
+                  /screen recording/i
+                ],
+                missing: '- [ ] Demo video showing the change working'
+              },
+              socialPost: {
+                name: 'Social Post',
+                patterns: [
+                  /social post/i,
+                  /twitter\.com/i,
+                  /x\.com/i,
+                  /linkedin\.com/i,
+                  /bsky\.app/i,
+                  /threads\.net/i
+                ],
+                missing: '- [ ] Social media post about this contribution'
+              }
+            };
+            
+            const missing = [];
+            
+            for (const [key, req] of Object.entries(requirements)) {
+              const found = req.patterns.some(pattern => pattern.test(body));
+              if (!found) {
+                missing.push(req);
+              }
+            }
+            
+            if (missing.length > 0) {
+              // Add label
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['needs-requirements']
+              });
+              
+              // Post comment
+              const missingList = missing.map(m => m.missing).join('\n');
+              const comment = `## Missing Contribution Requirements
+
+            Thanks for your PR! However, it's missing some required items from our [Contributing Guidelines](https://github.com/Nairon-AI/flux/blob/main/CONTRIBUTING.md).
+
+            **Missing:**
+            ${missingList}
+
+            ### What you need to do:
+
+            1. **Conversation History**: Export and link the AI conversation(s) you used to build this
+            2. **Demo Video**: Record a Loom/YouTube video showing the change working
+            3. **Social Post**: Post about your contribution on Twitter/LinkedIn/Bluesky and link it
+
+            Edit your PR description to add these items. PRs without all requirements will be automatically closed after 48 hours.
+
+            ---
+            *This is an automated message. See [CONTRIBUTING.md](https://github.com/Nairon-AI/flux/blob/main/CONTRIBUTING.md) for details.*`;
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: comment
+              });
+              
+              console.log(`PR #${pr.number} missing requirements: ${missing.map(m => m.name).join(', ')}`);
+            } else {
+              // Remove label if it exists and all requirements are met
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  name: 'needs-requirements'
+                });
+              } catch (e) {
+                // Label might not exist, that's fine
+              }
+              
+              console.log(`PR #${pr.number} meets all requirements`);
+            }
