@@ -17,7 +17,7 @@
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux` |
+| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@v1.8.0` |
 | [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
 | [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
@@ -70,8 +70,10 @@ The insight: in the age of agentic development, **you still need a framework**�
 **Option A:** Run this slash command directly in Claude Code:
 
 ```
-/plugin add https://github.com/Nairon-AI/flux
+/plugin add https://github.com/Nairon-AI/flux@v1.8.0
 ```
+
+> **Note:** If you have an older version cached, clear it first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
 
 **Option B:** Paste this prompt and let the agent guide you:
 
@@ -83,7 +85,7 @@ Help me install and setup the plugin.
 
 Then explain the core workflow (scope → build → review).
 
-The install command is: /plugin add https://github.com/Nairon-AI/flux
+The install command is: /plugin add https://github.com/Nairon-AI/flux@v1.8.0
 
 Guide me on anything I need to do manually and do the rest automatically.
 ```
