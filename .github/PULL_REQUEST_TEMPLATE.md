@@ -25,7 +25,7 @@ Twitter/X, LinkedIn, Bluesky, or Threads. Tag @naaboromern.
 
 ## Checklist
 
-- [ ] I used AI to build this
+- [ ] I used Flux to build this (`/flux:scope`, `/flux:work`, etc.)
 - [ ] I exported and linked my conversation history above
 - [ ] I included a demo video above
 - [ ] I posted to social media and linked it above
