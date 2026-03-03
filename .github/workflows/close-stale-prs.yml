@@ -1,0 +1,78 @@
+name: Close Stale PRs
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  close-stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PRs missing requirements for 48+ hours
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+            
+            const now = new Date();
+            const hoursThreshold = 48;
+            
+            for (const pr of prs) {
+              // Check if PR has needs-requirements label
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number
+              });
+              
+              const hasNeedsRequirements = labels.some(l => l.name === 'needs-requirements');
+              
+              if (!hasNeedsRequirements) continue;
+              
+              // Check how long ago it was opened/last edited
+              const createdAt = new Date(pr.created_at);
+              const hoursSinceCreated = (now - createdAt) / (1000 * 60 * 60);
+              
+              if (hoursSinceCreated >= hoursThreshold) {
+                // Close the PR
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  state: 'closed'
+                });
+                
+                // Add comment explaining why
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: `## PR Automatically Closed
+
+            This PR was automatically closed because it didn't meet our [contribution requirements](https://github.com/Nairon-AI/flux/blob/main/CONTRIBUTING.md) within 48 hours.
+
+            **Required items:**
+            - [ ] Exported AI conversation history
+            - [ ] Demo video
+            - [ ] Social media post
+
+            If you'd like to reopen this PR, please update the description with all required items and comment to request a review.
+
+            ---
+            *This is an automated message.*`
+                });
+                
+                console.log(`Closed PR #${pr.number} - missing requirements for ${Math.round(hoursSinceCreated)} hours`);
+              }
+            }
