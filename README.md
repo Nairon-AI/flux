@@ -147,47 +147,188 @@ This analyzes your sessions to detect friction patterns (shallow prompts, blind 
 | Audit codebase for agent readiness | `/flux:prime` |
 | Want tool recommendations based on your patterns | `/flux:improve` |
 
-### Stuck?
-
-- Run `/flux:help` for command reference
-- Check `.flux/usage.md` in your project
-- Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
-
 ### Troubleshooting
 
-**"Unknown skill: flux:setup"**
+> **AI Agents**: If you're Claude Code debugging a Flux installation issue, follow this guide step-by-step. Do not guess — these are the verified fixes.
 
-The plugin is registered but not enabled. This happens when the install flow fails silently. Fix:
+---
+
+#### Problem: "Unknown skill: flux:setup"
+
+**Cause**: The plugin is registered in `installed_plugins.json` but NOT enabled in `settings.json`. This happens when the install flow silently fails to add the `enabledPlugins` entry.
+
+**Fix**:
 
 ```bash
-# Check if flux is in your enabled plugins
-cat ~/.claude/settings.json | grep flux
+# Step 1: Check if flux is enabled
+cat ~/.claude/settings.json | grep -A2 enabledPlugins
 
-# If not present, add it manually:
+# Step 2: If "flux@nairon-flux" is NOT listed, add it manually
 # Open ~/.claude/settings.json and add to "enabledPlugins":
-# "flux@nairon-flux": true
+"flux@nairon-flux": true
+
+# Step 3: Restart Claude Code
 ```
 
-Then restart Claude Code.
+If the file is hard to edit, run this (backup first):
+```bash
+# Backup
+cp ~/.claude/settings.json ~/.claude/settings.json.backup
 
-**Commands still not working after enabling?**
+# Add flux to enabledPlugins (requires jq)
+jq '.enabledPlugins["flux@nairon-flux"] = true' ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
+```
+
+---
+
+#### Problem: Commands still not working after enabling
+
+**Cause**: Corrupted or stale cache from a previous install attempt.
+
+**Fix**:
 
 ```bash
-# Clear the plugin cache and reinstall
+# Step 1: Clear ALL flux-related caches
 rm -rf ~/.claude/plugins/cache/nairon-flux
 rm -rf ~/.claude/plugins/marketplaces/nairon-flux
 
-# Restart Claude Code, then:
+# Step 2: Restart Claude Code completely (not just the session)
+
+# Step 3: Reinstall
 /plugin add https://github.com/Nairon-AI/flux@latest
+
+# Step 4: Restart Claude Code again (plugins load at session start)
+
+# Step 5: Run setup
+/flux:setup
 ```
 
-**Version mismatch / old commands?**
+---
+
+#### Problem: Old version / missing new commands
+
+**Cause**: Claude Code caches plugins aggressively. Even after updating, you might have an old version.
+
+**Fix**:
 
 ```bash
-# Force clear cache for fresh install
+# Step 1: Check current cached version
+ls ~/.claude/plugins/cache/nairon-flux/flux/
+
+# Step 2: Clear cache
 rm -rf ~/.claude/plugins/cache/nairon-flux
-# Restart Claude Code and reinstall with explicit version tag
+
+# Step 3: Restart Claude Code and reinstall
+/plugin add https://github.com/Nairon-AI/flux@latest
+
+# Step 4: Verify new version loaded
+/flux:status
 ```
+
+---
+
+#### Problem: Plugin shows in /plugin list but commands don't autocomplete
+
+**Cause**: Plugin loaded but skills/commands not registered. Usually a restart issue.
+
+**Fix**:
+
+```bash
+# Step 1: Fully quit Claude Code (not just close window)
+# On Mac: Cmd+Q or right-click dock icon → Quit
+
+# Step 2: Reopen Claude Code
+
+# Step 3: Test
+/flux:setup
+```
+
+---
+
+#### Problem: "/plugin add" opens Discover tab instead of installing
+
+**Cause**: This is Claude Code's default behavior for marketplace URLs.
+
+**Fix**: This is expected. From the Discover tab:
+1. Find "flux" in the list
+2. Click Install
+3. Restart Claude Code
+4. Run `/flux:setup`
+
+Or use the manual install method above (clear cache + reinstall).
+
+---
+
+#### Problem: Permission errors or "access denied"
+
+**Cause**: File permission issues in the plugins directory.
+
+**Fix**:
+
+```bash
+# Fix permissions
+chmod -R u+rw ~/.claude/plugins/
+
+# Then clear and reinstall
+rm -rf ~/.claude/plugins/cache/nairon-flux
+rm -rf ~/.claude/plugins/marketplaces/nairon-flux
+```
+
+---
+
+#### Problem: Commands work but .flux/ directory not created
+
+**Cause**: `/flux:setup` wasn't run, or it failed silently.
+
+**Fix**:
+
+```bash
+# Run setup explicitly
+/flux:setup
+
+# If that fails, create manually and re-run
+mkdir -p .flux
+/flux:setup
+```
+
+---
+
+#### Nuclear Option: Complete Reset
+
+If nothing else works:
+
+```bash
+# Step 1: Remove ALL flux data
+rm -rf ~/.claude/plugins/cache/nairon-flux
+rm -rf ~/.claude/plugins/marketplaces/nairon-flux
+
+# Step 2: Remove from installed plugins list
+# Edit ~/.claude/plugins/installed_plugins.json
+# Remove any entries containing "nairon-flux" or "flux"
+
+# Step 3: Remove from enabled plugins
+# Edit ~/.claude/settings.json
+# Remove "flux@nairon-flux" from "enabledPlugins"
+
+# Step 4: Restart Claude Code
+
+# Step 5: Fresh install
+/plugin add https://github.com/Nairon-AI/flux@latest
+
+# Step 6: Restart Claude Code
+
+# Step 7: Verify
+/flux:setup
+```
+
+---
+
+#### Still stuck?
+
+1. Run `/flux:help` for command reference
+2. Check `.flux/usage.md` in your project
+3. Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
+4. Open an issue: [GitHub Issues](https://github.com/Nairon-AI/flux/issues)
 
 ---
 
