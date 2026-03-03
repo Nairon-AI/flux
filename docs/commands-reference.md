@@ -136,6 +136,18 @@ Executes a task with automatic context reload and drift checks.
 
 ---
 
+## Universe Auth
+
+| Command | Usage | Purpose |
+|---------|-------|---------|
+| `/flux:login` | `/flux:login` | Connect Flux to Universe via device flow |
+| `/flux:logout` | `/flux:logout` | Remove local Universe token on this machine |
+| `/flux:status` | `/flux:status [--format json]` | Show connected/disconnected auth state |
+
+`/flux:login` also runs an immediate score pass after successful auth so Universe receives the first stats snapshot without waiting for a separate `/flux:score`.
+
+---
+
 ## Profiles
 
 <!-- TODO: Add video showing profile export/import -->
