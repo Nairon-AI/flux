@@ -10,7 +10,7 @@ Connect your local Flux install to Universe using device authentication.
 
 ## Usage
 
-Run the auth script from the plugin root:
+Run login, then run score once to seed initial Universe stats sync:
 
 ```bash
 # Detect plugin root (Claude Code doesn't always set CLAUDE_PLUGIN_ROOT)
@@ -21,6 +21,13 @@ if [ -z "$PLUGIN_ROOT" ]; then
 fi
 
 python3 "${PLUGIN_ROOT}/scripts/flux-auth.py" login
+LOGIN_EXIT=$?
+if [ $LOGIN_EXIT -ne 0 ]; then
+  exit $LOGIN_EXIT
+fi
+
+echo "Running first score + sync..."
+python3 "${PLUGIN_ROOT}/scripts/flux-score.py"
 ```
 
 ## What happens
@@ -29,3 +36,4 @@ python3 "${PLUGIN_ROOT}/scripts/flux-auth.py" login
 2. Flux opens your browser to Universe sign-in
 3. You approve access in browser
 4. Flux saves a local `flux_` token for automatic sync
+5. Flux runs one score pass immediately so Universe receives first stats snapshot
