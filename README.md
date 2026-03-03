@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.8.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.9.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -17,7 +17,7 @@
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@v1.8.0` |
+| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@v1.9.0` |
 | [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
 | [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
@@ -70,7 +70,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 **Option A:** Run this slash command directly in Claude Code:
 
 ```
-/plugin add https://github.com/Nairon-AI/flux@v1.8.0
+/plugin add https://github.com/Nairon-AI/flux@v1.9.0
 ```
 
 > **Note:** If you have an older version cached, clear it first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
@@ -85,7 +85,7 @@ Help me install and setup the plugin.
 
 Then explain the core workflow (scope → build → review).
 
-The install command is: /plugin add https://github.com/Nairon-AI/flux@v1.8.0
+The install command is: /plugin add https://github.com/Nairon-AI/flux@v1.9.0
 
 Guide me on anything I need to do manually and do the rest automatically.
 ```
@@ -152,6 +152,42 @@ This analyzes your sessions to detect friction patterns (shallow prompts, blind 
 - Run `/flux:help` for command reference
 - Check `.flux/usage.md` in your project
 - Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
+
+### Troubleshooting
+
+**"Unknown skill: flux:setup"**
+
+The plugin is registered but not enabled. This happens when the install flow fails silently. Fix:
+
+```bash
+# Check if flux is in your enabled plugins
+cat ~/.claude/settings.json | grep flux
+
+# If not present, add it manually:
+# Open ~/.claude/settings.json and add to "enabledPlugins":
+# "flux@nairon-flux": true
+```
+
+Then restart Claude Code.
+
+**Commands still not working after enabling?**
+
+```bash
+# Clear the plugin cache and reinstall
+rm -rf ~/.claude/plugins/cache/nairon-flux
+rm -rf ~/.claude/plugins/marketplaces/nairon-flux
+
+# Restart Claude Code, then:
+/plugin add https://github.com/Nairon-AI/flux@v1.9.0
+```
+
+**Version mismatch / old commands?**
+
+```bash
+# Force clear cache for fresh install
+rm -rf ~/.claude/plugins/cache/nairon-flux
+# Restart Claude Code and reinstall with explicit version tag
+```
 
 ---
 

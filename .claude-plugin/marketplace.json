@@ -1,25 +1,24 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "nairon-flux",
+  "description": "AI-augmented SDLC workflow plugin for Claude Code.",
   "owner": {
     "name": "NaironAI",
     "url": "https://github.com/Nairon-AI"
-  },
-  "metadata": {
-    "description": "AI-augmented SDLC workflow plugin for Claude Code.",
-    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "flux",
       "description": "Structure your AI coding sessions. Plan first, work second. Zero external dependencies.",
-      "version": "1.5.0",
+      "version": "1.9.0",
       "author": {
         "name": "NaironAI",
         "url": "https://nairon.ai"
       },
       "homepage": "https://github.com/Nairon-AI/flux",
       "tags": ["workflow", "planning", "sdlc", "claude-code"],
-      "source": "./"
+      "source": "./",
+      "category": "development"
     }
   ]
 }

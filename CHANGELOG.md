@@ -2,6 +2,43 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.0] - 2026-03-03
+
+### Added
+
+- **Universe Authentication** — Connect Flux to your Universe profile
+  - `/flux:login` — Device flow authentication for Universe sync
+  - `/flux:logout` — Disconnect from Universe on this machine
+  - `/flux:status` — Check connection state and auth status
+  - Initial score sync runs automatically after first login
+
+### Fixed
+
+- **Plugin Installation** — Fixed silent enable failure during `/plugin add`
+  - Added `$schema` and `category` fields to marketplace.json (required by Claude Code)
+  - Synchronized version numbers across all config files
+  - Added troubleshooting section to README for edge cases
+
+### Changed
+
+- Commands reference updated with auth commands documentation
+
+### Contributors
+
+- [@Lukaeric14](https://github.com/Lukaeric14) — Universe auth commands and score sync
+
+---
+
+## [1.8.0] - 2026-03-02
+
+### Fixed
+
+- Install command documentation updated to use `/plugin add` (not `/install`)
+- Added explicit version tag `@v1.8.0` to install commands
+- Added cache clearing instructions for version upgrades
+
+---
+
 ## [1.7.0] - 2026-03-01
 
 ### Added
