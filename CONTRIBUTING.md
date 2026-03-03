@@ -4,9 +4,9 @@ We welcome contributions, but we have **strict requirements** designed to filter
 
 ## The Rules
 
-### 1. You MUST use AI
+### 1. You MUST use Flux
 
-We're building tools for AI-native development. If you're not using AI to build your contribution, you're not dogfooding the product. Use Claude Code, Cursor, Copilot, or any AI coding tool.
+You must use Flux to help build Flux. Dogfood the product. Run `/flux:scope` to plan your feature, `/flux:work` to execute tasks, `/flux:impl-review` to check your work. If you're not using Flux to contribute to Flux, you're not a real contributor.
 
 ### 2. You MUST export and link your conversation history
 
@@ -59,7 +59,7 @@ Your PR description must include:
 [Link to your social media post about this contribution]
 
 ## Checklist
-- [ ] I used AI to build this
+- [ ] I used Flux to build this
 - [ ] I exported and linked my conversation history
 - [ ] I included a demo video
 - [ ] I posted to social media and linked it above
@@ -92,12 +92,14 @@ If these requirements feel too high, this project isn't for you. If you genuinel
 
 ## Getting Started
 
-1. Fork the repo
+1. Fork the repo and install Flux (`/plugin add https://github.com/Nairon-AI/flux@latest`)
 2. Create a feature branch
-3. Use Flux itself (`/flux:scope`, `/flux:work`) to plan and implement your change
-4. Record your demo
-5. Post to social
-6. Submit your PR with all requirements
+3. Run `/flux:scope` to plan your feature or fix
+4. Run `/flux:work` to execute each task
+5. Run `/flux:impl-review` to verify your work
+6. Record your demo video
+7. Post to social media
+8. Submit your PR with all requirements
 
 ## Questions?
 
