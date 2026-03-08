@@ -89,7 +89,7 @@ Then explain the core workflow (scope → build → review).
 
 The install command is: /plugin add https://github.com/Nairon-AI/flux@latest
 
-Do NOT run /plugin add in bash. Ask me to run it in Claude chat and continue automatically after I confirm.
+Do NOT run /plugin add in bash. I will run that slash command directly in this Claude chat and reply "done"; then continue automatically.
 
 Guide me on anything I need to do manually and do the rest automatically.
 ```
