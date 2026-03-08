@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.0-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.9.1-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -66,6 +66,8 @@ The insight: in the age of agentic development, **you still need a framework**�
 ### Step 1: Install
 
 > **⚠️ IMPORTANT:** The install command is `/plugin add` (NOT `/install`). Type it exactly as shown below.
+>
+> Slash commands run in Claude Code chat input, not in a terminal shell. Do **not** run `/plugin add` via Bash.
 
 **Option A:** Run this slash command directly in Claude Code:
 
@@ -87,8 +89,23 @@ Then explain the core workflow (scope → build → review).
 
 The install command is: /plugin add https://github.com/Nairon-AI/flux@latest
 
+Do NOT run /plugin add in bash. Ask me to run it in Claude chat and continue automatically after I confirm.
+
 Guide me on anything I need to do manually and do the rest automatically.
 ```
+
+### Upgrading (Existing Users)
+
+Use the same command as install (always targets latest):
+
+```
+/plugin add https://github.com/Nairon-AI/flux@latest
+```
+
+Then:
+1. Restart Claude Code fully
+2. Run `/flux:setup` to refresh local scripts/docs
+3. Continue with `/flux:scope` or `/flux:work`
 
 ### Step 2: Setup
 
@@ -178,6 +195,21 @@ cp ~/.claude/settings.json ~/.claude/settings.json.backup
 # Add flux to enabledPlugins (requires jq)
 jq '.enabledPlugins["flux@nairon-flux"] = true' ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
 ```
+
+---
+
+#### Problem: Agent tried to run `/plugin add` in bash (or `claude` inside Claude Code)
+
+**Cause**: `/plugin` is a Claude Code slash command, not a shell command. Running `claude ...` inside an active Claude Code session is blocked (nested session).
+
+**Fix**:
+
+1. Run this directly in Claude Code chat input:
+   ```
+   /plugin add https://github.com/Nairon-AI/flux@latest
+   ```
+2. Restart Claude Code fully.
+3. Run `/flux:setup`.
 
 ---
 
@@ -375,10 +407,14 @@ Connect Flux to Linear for team workflows. Select a Linear project, scope it wit
 **Setup:** Requires [Linear MCP](https://linear.app/docs/mcp).
 
 **Claude Code:**
+- In chat, run `/mcp`
+- Add server URL: `https://mcp.linear.app/mcp`
+- Authenticate in the MCP dialog
+
+If you prefer CLI, run this in an external terminal (not inside an active Claude Code chat session):
 ```bash
 claude mcp add --transport http linear-server https://mcp.linear.app/mcp
 ```
-Then run `/mcp` in your session to authenticate.
 
 **Other clients (Cursor, VS Code, Windsurf):**
 ```json

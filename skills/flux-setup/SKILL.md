@@ -30,6 +30,7 @@ Read [workflow.md](workflow.md) and follow each step in order.
 - **Fully optional** - standard plugin usage works without local setup
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
+- In active Claude Code sessions, configure MCPs via `~/.claude/settings.json` updates (do not invoke nested `claude` CLI commands)
 
 ---
 
@@ -51,7 +52,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin marketplace update nairon-flux
+Run: /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
