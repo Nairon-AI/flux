@@ -14,7 +14,7 @@ UPDATE_INFO=$("${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}/scripts/version-check
 
 If `update_available` is true, print once at the start:
 ```
-📦 Flux update available (vLOCAL → vREMOTE). Run: /plugin marketplace update nairon-flux
+📦 Flux update available (vLOCAL → vREMOTE). Run: /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
 Then continue with the command. Do NOT block or prompt - just inform.

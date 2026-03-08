@@ -209,7 +209,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin marketplace update nairon-flux
+Run: /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

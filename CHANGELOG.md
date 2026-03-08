@@ -2,6 +2,26 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.1] - 2026-03-08
+
+### Fixed
+
+- **Safe upgrade path unified** — all update prompts now use `/plugin add https://github.com/Nairon-AI/flux@latest`
+  - Prevents stale guidance from older `/plugin marketplace update ...` instructions
+  - Keeps upgrade behavior consistent with install behavior
+
+- **Nested session install failures in setup guidance** — `/flux:setup` MCP setup instructions now avoid nested `claude` CLI calls
+  - Uses `~/.claude/settings.json` MCP updates as the in-session-safe path
+  - Documents `/mcp` UI flow and external-terminal fallback for `claude mcp add`
+
+- **Plugin helper install output** — `scripts/install-plugin.sh` now always emits `/plugin add ...@latest` guidance
+  - Normalizes owner/repo and URL inputs
+  - Explicitly tells users to run slash commands in Claude chat input (not bash)
+
+### Changed
+
+- Version synchronized to `1.9.1` across package metadata and Claude plugin manifests
+
 ## [1.9.0] - 2026-03-03
 
 ### Added

@@ -129,6 +129,14 @@ git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudecep
 
 Flux recommends MCP servers that enhance your AI development workflow. Installation is **optional** — users can skip or select which ones to install.
 
+### Critical execution rule
+
+Do **NOT** run `claude ...` CLI commands from inside `/flux:setup`.
+
+Why: `/flux:setup` runs inside an active Claude Code session, and nested `claude` invocations fail with "cannot be launched inside another Claude Code session".
+
+Use direct config updates to `~/.claude/settings.json` (preferred), then tell the user to restart Claude Code.
+
 ### Available MCP Servers
 
 <!-- 
@@ -140,43 +148,69 @@ Flux recommends MCP servers that enhance your AI development workflow. Installat
   5. Add API key question if applicable (for MCPs with optional keys)
 -->
 
-| ID | Name | Category | Benefit | Free | Install Command |
-|----|------|----------|---------|------|-----------------|
-| `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | `claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user` |
-| `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | `claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user` |
-| `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | `claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github` |
-| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | `claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user` |
+| ID | Name | Category | Benefit | Free | Install Method |
+|----|------|----------|---------|------|----------------|
+| `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | Add `mcpServers.context7` to `~/.claude/settings.json` |
+| `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `~/.claude/settings.json` |
+| `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `~/.claude/settings.json` |
+| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | Add `mcpServers.supermemory` to `~/.claude/settings.json` |
 
 ### Conflict Detection
 
 Before offering to install, detect potential conflicts with existing tools:
 
 ```bash
-# Get installed MCPs
-MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
+SETTINGS_FILE="$HOME/.claude/settings.json"
+GLOBAL_MCP_FILE="$HOME/.mcp.json"
+PROJECT_MCP_FILE=".mcp.json"
+
+list_mcp_names() {
+  local file="$1"
+  [ -f "$file" ] || return 0
+  jq -r '.mcpServers // {} | if type == "object" then keys[] else empty end' "$file" 2>/dev/null || true
+}
+
+MCP_LIST=$(
+  {
+    list_mcp_names "$SETTINGS_FILE"
+    list_mcp_names "$GLOBAL_MCP_FILE"
+    list_mcp_names "$PROJECT_MCP_FILE"
+  } | tr '[:upper:]' '[:lower:]' | sort -u
+)
 
 # Check each recommended MCP
-HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qi "context7" && echo 1 || echo 0)
-HAVE_EXA=$(echo "$MCP_LIST" | grep -qi "exa" && echo 1 || echo 0)
-HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qi "github" && echo 1 || echo 0)
-HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qi "supermemory" && echo 1 || echo 0)
+HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qx "context7" && echo 1 || echo 0)
+HAVE_EXA=$(echo "$MCP_LIST" | grep -qx "exa" && echo 1 || echo 0)
+HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qx "github" && echo 1 || echo 0)
+HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qx "supermemory" && echo 1 || echo 0)
 
 # Detect conflicting/similar tools
-# Search category conflicts
-HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qi "perplexity" && echo 1 || echo 0)
-HAVE_TAVILY=$(echo "$MCP_LIST" | grep -qi "tavily" && echo 1 || echo 0)
-HAVE_BRAVE=$(echo "$MCP_LIST" | grep -qi "brave" && echo 1 || echo 0)
-HAVE_SERPER=$(echo "$MCP_LIST" | grep -qi "serper" && echo 1 || echo 0)
+HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qx "perplexity" && echo 1 || echo 0)
+HAVE_TAVILY=$(echo "$MCP_LIST" | grep -qx "tavily" && echo 1 || echo 0)
+HAVE_BRAVE=$(echo "$MCP_LIST" | grep -qx "brave" && echo 1 || echo 0)
+HAVE_SERPER=$(echo "$MCP_LIST" | grep -qx "serper" && echo 1 || echo 0)
 
 # Memory category conflicts
-HAVE_MEM0=$(echo "$MCP_LIST" | grep -qi "mem0" && echo 1 || echo 0)
-HAVE_LANGMEM=$(echo "$MCP_LIST" | grep -qi "langmem\|langchain.*memory" && echo 1 || echo 0)
+HAVE_MEM0=$(echo "$MCP_LIST" | grep -qx "mem0" && echo 1 || echo 0)
+HAVE_LANGMEM=$(echo "$MCP_LIST" | grep -Eiq "^langmem$|langchain.*memory" && echo 1 || echo 0)
 
-# Docs category conflicts  
-HAVE_DEVDOCS=$(echo "$MCP_LIST" | grep -qi "devdocs" && echo 1 || echo 0)
+# Docs category conflicts
+HAVE_DEVDOCS=$(echo "$MCP_LIST" | grep -qx "devdocs" && echo 1 || echo 0)
 
 # GitHub conflicts (check for gh CLI too)
 HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
+```
+
+Before writing MCP settings, ensure settings file exists and is valid JSON:
+
+```bash
+mkdir -p "$HOME/.claude"
+[ -f "$SETTINGS_FILE" ] || printf '{"mcpServers":{}}\n' > "$SETTINGS_FILE"
+
+if ! jq -e . "$SETTINGS_FILE" >/dev/null 2>&1; then
+  cp "$SETTINGS_FILE" "$SETTINGS_FILE.bak.$(date +%Y%m%d-%H%M%S)"
+  printf '{"mcpServers":{}}\n' > "$SETTINGS_FILE"
+fi
 ```
 
 ### Build installation options with conflict awareness
@@ -271,8 +305,8 @@ Based on user's choice:
 
 ```bash
 # Example: Switch from Perplexity to Exa
-claude mcp remove perplexity -s user 2>/dev/null || true
-claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | del(.mcpServers.perplexity) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 ### Install selected servers
@@ -281,23 +315,27 @@ For each selected server (that passed conflict resolution), install it:
 
 **Context7:**
 ```bash
-claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user 2>/dev/null || true
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.context7 = {"type":"http","url":"https://mcp.context7.com/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 **Exa:**
 ```bash
-claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user 2>/dev/null || true
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 **GitHub:**
 ```bash
 # Requires GITHUB_PERSONAL_ACCESS_TOKEN - ask user if they want to configure
-claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github 2>/dev/null || true
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 **Supermemory:**
 ```bash
-claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user 2>/dev/null || true
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.supermemory = {"type":"http","url":"https://mcp.supermemory.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 ### Ask about API keys / tokens (only for installed servers that need them)
@@ -327,8 +365,8 @@ If user chooses to add token:
 
 Then reconfigure:
 ```bash
-claude mcp remove github 2>/dev/null || true
-claude mcp add github -s user -e GITHUB_PERSONAL_ACCESS_TOKEN="<user_provided_token>" -- npx -y @modelcontextprotocol/server-github
+tmp=$(mktemp)
+jq --arg token "<user_provided_token>" '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":$token}}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
 **Context7 / Exa / Supermemory API keys:**
@@ -361,14 +399,17 @@ Store for summary:
 
 ### Manual fallback
 
-If `claude` CLI is not available, print manual instructions:
+If settings are not writable or `jq` is missing, print manual instructions:
 
 ```
-MCP servers (install manually with Claude Code):
-  claude mcp add --transport http context7 https://mcp.context7.com/mcp -s user
-  claude mcp add --transport http exa https://mcp.exa.ai/mcp -s user
-  claude mcp add --transport http supermemory https://mcp.supermemory.ai/mcp -s user
-  claude mcp add github -s user -- npx -y @modelcontextprotocol/server-github
+MCP servers (install manually in Claude Code):
+  1. Run /mcp in chat
+  2. Add these servers:
+     - context7: https://mcp.context7.com/mcp
+     - exa: https://mcp.exa.ai/mcp
+     - supermemory: https://mcp.supermemory.ai/mcp
+     - github: npx -y @modelcontextprotocol/server-github
+  3. Restart Claude Code
 ```
 
 ## Step 4d: Install recommended desktop applications (Optional)

@@ -132,9 +132,12 @@ Try calling: mcp_linear_list_teams (with limit: 1)
 Linear MCP is not connected. Setup instructions:
 
 **Claude Code:**
-claude mcp add --transport http linear-server https://mcp.linear.app/mcp
+- Run /mcp in chat
+- Add server URL: https://mcp.linear.app/mcp
+- Authenticate in the MCP dialog
 
-Then run /mcp in your session to authenticate with Linear.
+If you prefer CLI, run this in an external terminal (not inside an active Claude Code session):
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
 
 **Other clients (Cursor, VS Code, etc.):**
 {
@@ -1542,7 +1545,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin marketplace update nairon-flux
+Run: /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

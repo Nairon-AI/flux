@@ -1,14 +1,14 @@
 #!/bin/bash
 # Flux Improve - Plugin Installer
-# Installs Claude Code plugins via marketplace
+# Prints Claude Code slash-command install instructions
 
 set -e
 
 NAME="$1"
-REPO="$2"  # e.g., "Nairon-AI/flux" or marketplace name
+REPO="$2"  # e.g., "Nairon-AI/flux" or full GitHub URL
 
 if [ -z "$NAME" ]; then
-    echo "Usage: install-plugin.sh <name> [repo]"
+    echo "Usage: install-plugin.sh <name> [repo_or_url]"
     echo "Example: install-plugin.sh flux Nairon-AI/flux"
     exit 1
 fi
@@ -21,26 +21,40 @@ if [ -d "${HOME}/.claude/plugins" ]; then
     ls "${HOME}/.claude/plugins/cache" 2>/dev/null > "$BACKUP_DIR/plugins.txt" || true
 fi
 
-echo "Installing plugin: $NAME"
+echo "Preparing install instructions for plugin: $NAME"
 echo ""
 
-# Check if this is a marketplace plugin or direct repo
-if [ -n "$REPO" ]; then
-    echo "To install this plugin, run in Claude Code:"
-    echo ""
-    echo "  /plugin marketplace add $REPO"
-    echo "  /plugin install $NAME"
-    echo ""
-    INSTALL_CMD="/plugin marketplace add $REPO && /plugin install $NAME"
+TARGET="${REPO:-$NAME}"
+
+# Normalize install source for /plugin add
+# Supported inputs:
+# - owner/repo
+# - owner/repo@tag
+# - https://github.com/owner/repo
+# - https://github.com/owner/repo@tag
+if [[ "$TARGET" =~ ^https?:// ]]; then
+    SOURCE="$TARGET"
+elif [[ "$TARGET" =~ ^github\.com/ ]]; then
+    SOURCE="https://$TARGET"
+elif [[ "$TARGET" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+(@[^[:space:]]+)?$ ]]; then
+    SOURCE="https://github.com/$TARGET"
 else
-    echo "To install this plugin, run in Claude Code:"
-    echo ""
-    echo "  /plugin install $NAME"
-    echo ""
-    INSTALL_CMD="/plugin install $NAME"
+    SOURCE="$TARGET"
 fi
 
-echo "Note: Plugin installation must be done within Claude Code"
+if [[ "$SOURCE" == https://github.com/* ]] && [[ "$SOURCE" != *@* ]]; then
+    SOURCE="${SOURCE}@latest"
+fi
+
+INSTALL_CMD="/plugin add $SOURCE"
+
+echo "Run this slash command directly in Claude Code input (NOT in bash):"
+echo ""
+echo "  $INSTALL_CMD"
+echo ""
+echo "Then fully restart Claude Code so the plugin loads at session start."
+
+echo "Note: Slash commands must be run in Claude Code chat, not a shell."
 
 # Output JSON result
 cat <<EOF
@@ -49,8 +63,9 @@ cat <<EOF
   "name": "$NAME",
   "repo": "${REPO:-null}",
   "install_command": "$INSTALL_CMD",
+  "install_source": "$SOURCE",
   "backup_dir": "$BACKUP_DIR",
   "manual": true,
-  "instructions": "Run the install command in Claude Code"
+  "instructions": "Run the slash command in Claude Code chat input and restart Claude Code"
 }
 EOF

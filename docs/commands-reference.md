@@ -13,13 +13,11 @@ Complete reference for all available `/flux:*` commands.
 </details>
 
 ```bash
-# Marketplace
-/plugin marketplace add Nairon-AI/flux
-/plugin install flux@nairon-flux
-
-# Manual
-git clone https://github.com/Nairon-AI/flux.git ~/.claude/plugins/flux
+# Claude Code (recommended)
+/plugin add https://github.com/Nairon-AI/flux@latest
 ```
+
+Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code chat input, not in your terminal.
 
 ---
 
