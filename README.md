@@ -61,61 +61,63 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ---
 
-## Recommended Installation
+## Install Flux
 
-### Step 1: Install
+> **⚠️ IMPORTANT:** Run slash commands in Claude Code chat input, not terminal bash.
 
-> **⚠️ IMPORTANT:** Run slash commands in Claude Code chat input, not in terminal bash.
+### Agent-driven path (recommended)
 
-**Recommended (most reliable in Claude Code):**
+```
+Help me install Flux in this Claude Code session.
+
+Ask me to run one slash command at a time in chat and wait for "done":
+1) /plugin marketplace add https://github.com/Nairon-AI/flux
+2) /plugin install flux@nairon-flux
+
+If Flux is already installed, skip install and continue.
+Then run /flux:setup, complete setup questions, and explain:
+/flux:scope -> /flux:work -> /flux:impl-review.
+
+After /flux:setup succeeds, tell me to fully restart Claude Code and wait for my "done".
+Do the rest automatically.
+```
+
+Who does what:
+- **You:** run slash commands in chat and restart Claude Code when asked.
+- **Agent:** handles setup workflow and verification.
+
+### Manual path
+
+Run:
 
 ```
 /plugin marketplace add https://github.com/Nairon-AI/flux
 /plugin install flux@nairon-flux
 ```
 
-If you already added the marketplace before, only run:
+If the marketplace is already configured, run only:
 
 ```
 /plugin install flux@nairon-flux
 ```
 
-**Alternative fast path (single command):**
+Alternative fast path:
 
 ```
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-If `/plugin add ...` opens Discover and shows "Add a marketplace first", switch to the two-command flow above.
+If `/plugin add ...` opens Discover and says "Add a marketplace first", use the two-command flow above.
 
-**Agent-guided prompt (copy/paste):**
+Then:
+1. Restart Claude Code fully.
+2. Run `/flux:setup` (required final setup step).
 
-```
-Help me install Flux inside this Claude Code session.
+After `/flux:setup` succeeds, restart Claude Code once before using Flux commands.
 
-Ask me to run one slash command at a time in chat and wait for my "done":
-1) /plugin marketplace add https://github.com/Nairon-AI/flux
-2) /plugin install flux@nairon-flux
+### Upgrade Flux (existing users)
 
-If Flux is already installed, skip install and continue.
-Then run /flux:setup, complete setup questions, and explain the core loop:
-/flux:scope -> /flux:work -> /flux:impl-review.
-
-After /flux:setup succeeds, tell me to fully restart Claude Code once and wait for my "done".
-
-Do the rest automatically.
-```
-
-### Claude Code Agent Execution Rules
-
-- **Human runs in chat input:** `/plugin marketplace add ...` and `/plugin install ...` (or `/plugin add ...@latest`), any UI auth steps (for example `/mcp` sign-in dialogs), and the post-setup Claude Code restart.
-- **Agent runs automatically:** repository checks, shell commands, config/file updates, and the full `/flux:setup` workflow after install is confirmed.
-- **Agent must not do:** run plugin slash commands in bash, run `claude plugin ...` from inside an active Claude Code session, or stop after saying "installed" without setup.
-- **Completion criteria:** install confirmed, `/flux:setup` completed, user explicitly told to restart Claude Code and user confirms done, and core workflow commands explained (`/flux:scope -> /flux:work -> /flux:impl-review`).
-
-### Upgrading (Existing Users)
-
-Use either of these commands:
+Use either:
 
 ```
 /plugin update flux@nairon-flux
@@ -127,14 +129,29 @@ or:
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-Then:
-1. Restart Claude Code fully
-2. Run `/flux:setup` to refresh local scripts/docs
-3. Continue with `/flux:scope` or `/flux:work`
+Then restart Claude Code and run `/flux:setup`.
 
-### Uninstalling (Complete Removal)
+## Uninstall Flux (complete removal)
 
-If you want Flux fully removed from Claude Code and local artifacts:
+### Agent-driven path (recommended)
+
+```
+Help me completely uninstall Flux from this machine.
+
+Ask me to run one slash command at a time in Claude chat and wait for "done":
+1) /plugin uninstall flux@nairon-flux
+2) /plugin marketplace remove nairon-flux
+
+Then clean local artifacts:
+- ~/.claude/plugins/cache/nairon-flux
+- ~/.claude/plugins/marketplaces/nairon-flux
+- ./.flux in this repository
+- ask before removing ~/.flux (full machine cleanup)
+
+Finally, confirm Flux is gone and tell me to restart Claude Code once.
+```
+
+### Manual path
 
 Run in Claude Code chat input:
 
@@ -143,7 +160,7 @@ Run in Claude Code chat input:
 /plugin marketplace remove nairon-flux
 ```
 
-If uninstall says plugin not found, try:
+If uninstall says plugin not found:
 
 ```
 /plugin uninstall flux
@@ -156,7 +173,7 @@ Then run terminal cleanup:
 rm -rf ~/.claude/plugins/cache/nairon-flux
 rm -rf ~/.claude/plugins/marketplaces/nairon-flux
 
-# Current project artifacts created by /flux:setup
+# Current project artifacts created by /flux:setup (run from project root)
 rm -rf .flux
 
 # Optional: remove user-level Flux data (all projects)
@@ -165,37 +182,17 @@ rm -rf ~/.flux
 
 Restart Claude Code and verify Flux is gone from `/plugin list`.
 
-**Agent-guided uninstall prompt (copy/paste):**
+### Setup (if not already run)
 
-```
-Help me completely uninstall Flux from this machine.
-
-Ask me to run these slash commands in Claude chat input and wait for "done" after each:
-1) /plugin uninstall flux@nairon-flux
-2) /plugin marketplace remove nairon-flux
-
-Then automatically clean local artifacts:
-- remove ~/.claude/plugins/cache/nairon-flux
-- remove ~/.claude/plugins/marketplaces/nairon-flux
-- remove ./.flux in this repository
-- ask me whether to remove ~/.flux too (recommended for full uninstall)
-
-Finally confirm Flux is gone and tell me to restart Claude Code once.
-```
-
-### Step 2: Setup
-
-After installation, **restart Claude Code** (plugins load at session start), then run:
+If setup has not been run yet, run:
 
 ```bash
 /flux:setup
 ```
 
-This scaffolds `.flux/` in your project and configures your preferences.
+This scaffolds `.flux/` in your project and configures your preferences. After it finishes successfully, restart Claude Code once before using Flux commands.
 
-When `/flux:setup` finishes successfully, the user should restart Claude Code once before using Flux commands.
-
-### Step 3: Build Your First Feature
+### Build Your First Feature
 
 Once setup completes, you're ready. Start with:
 
@@ -219,7 +216,7 @@ Then execute and review:
 
 **That's the core loop: Scope → Build → Review.** Repeat for every feature.
 
-### Step 4: Optimize Your Workflow
+### Optimize Your Workflow
 
 Once you've been using Flux for a while, run:
 
