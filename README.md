@@ -65,54 +65,63 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 ### Step 1: Install
 
-> **⚠️ IMPORTANT:** The install command is `/plugin add` (NOT `/install`). Type it exactly as shown below.
->
-> Slash commands run in Claude Code chat input, not in a terminal shell. Do **not** run `/plugin add` via Bash.
+> **⚠️ IMPORTANT:** Run slash commands in Claude Code chat input, not in terminal bash.
 
-**Option A:** Run this slash command directly in Claude Code:
+**Recommended (most reliable in Claude Code):**
+
+```
+/plugin marketplace add https://github.com/Nairon-AI/flux
+/plugin install flux@nairon-flux
+```
+
+If you already added the marketplace before, only run:
+
+```
+/plugin install flux@nairon-flux
+```
+
+**Alternative fast path (single command):**
 
 ```
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-> **Note:** If you have an older version cached, clear it first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+If `/plugin add ...` opens Discover and shows "Add a marketplace first", switch to the two-command flow above.
 
-**Option B:** Paste this prompt and let the agent guide you:
+**Agent-guided prompt (copy/paste):**
 
 ```
-I want to install Flux for structured AI development.
-The plugin is at: https://github.com/Nairon-AI/flux
+Help me install Flux inside this Claude Code session.
 
-Help me install and setup the plugin.
+Ask me to run one slash command at a time in chat and wait for my "done":
+1) /plugin marketplace add https://github.com/Nairon-AI/flux
+2) /plugin install flux@nairon-flux
 
-Then explain the core workflow (scope → build → review).
+If Flux is already installed, skip install and continue.
+Then run /flux:setup, complete setup questions, and explain the core loop:
+/flux:scope -> /flux:work -> /flux:impl-review.
 
-The install command is: /plugin add https://github.com/Nairon-AI/flux@latest
+After /flux:setup succeeds, tell me to fully restart Claude Code once and wait for my "done".
 
-Do NOT run /plugin add in bash or via `claude plugin add` inside this active Claude session.
-When a manual slash command is needed, ask me to run exactly:
-/plugin add https://github.com/Nairon-AI/flux@latest
-I will run it in this Claude chat and reply "done".
-
-After I reply "done", continue automatically:
-1) Verify Flux commands are available.
-2) Run /flux:setup (or load the flux-setup skill and execute setup workflow).
-3) If setup is unavailable, tell me to restart Claude Code once, then continue setup.
-4) After /flux:setup completes successfully, tell me (the user) to fully restart Claude Code once and wait for my "done" before continuing.
-
-Guide me on anything I need to do manually and do the rest automatically.
+Do the rest automatically.
 ```
 
 ### Claude Code Agent Execution Rules
 
-- **Human runs in chat input:** `/plugin add ...`, any UI auth steps (for example `/mcp` sign-in dialogs), and the post-setup Claude Code restart.
+- **Human runs in chat input:** `/plugin marketplace add ...` and `/plugin install ...` (or `/plugin add ...@latest`), any UI auth steps (for example `/mcp` sign-in dialogs), and the post-setup Claude Code restart.
 - **Agent runs automatically:** repository checks, shell commands, config/file updates, and the full `/flux:setup` workflow after install is confirmed.
-- **Agent must not do:** run `/plugin add` in bash, run `claude plugin add` from inside an active Claude Code session, or stop after saying "installed" without setup.
+- **Agent must not do:** run plugin slash commands in bash, run `claude plugin ...` from inside an active Claude Code session, or stop after saying "installed" without setup.
 - **Completion criteria:** install confirmed, `/flux:setup` completed, user explicitly told to restart Claude Code and user confirms done, and core workflow commands explained (`/flux:scope -> /flux:work -> /flux:impl-review`).
 
 ### Upgrading (Existing Users)
 
-Use the same command as install (always targets latest):
+Use either of these commands:
+
+```
+/plugin update flux@nairon-flux
+```
+
+or:
 
 ```
 /plugin add https://github.com/Nairon-AI/flux@latest
@@ -297,11 +306,11 @@ rm -rf ~/.claude/plugins/cache/nairon-flux
 
 #### Problem: "/plugin add" opens Discover tab instead of installing
 
-**Cause**: This is Claude Code's default behavior for marketplace URLs.
+**Cause**: On some Claude Code versions, URL installs open Discover. If no marketplace is configured yet, Discover may show "Add a marketplace first." 
 
-**Fix**: This is expected. From the Discover tab:
-1. Find "flux" in the list
-2. Click Install
+**Fix** (most reliable):
+1. Run `/plugin marketplace add https://github.com/Nairon-AI/flux`
+2. Run `/plugin install flux@nairon-flux`
 3. Restart Claude Code
 4. Run `/flux:setup`
 
