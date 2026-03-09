@@ -63,6 +63,12 @@ detect_cli_tools() {
     
     # Task tracking
     cmd_exists bd && tools+=("beads")
+
+    # Agent workflow automation
+    cmd_exists agent-browser && tools+=("agent-browser")
+    if cmd_exists continues || cmd_exists cont; then
+        tools+=("cli-continues")
+    fi
     
     # Package managers
     cmd_exists bun && tools+=("bun")
