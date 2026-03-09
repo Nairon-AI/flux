@@ -2,6 +2,24 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.2] - 2026-03-10
+
+### Added
+
+- Expanded `/flux:setup` optional install packs for agentic workflows:
+  - MCP: Firecrawl
+  - CLI: jq, fzf, Lefthook, Agent Browser, CLI Continues
+  - Skills: Cartographer, UI Skills, Taste Skill, Semver Changelog, Agent Skills (Vercel), Adversarial Spec, Trail of Bits Skills, X Research Skill
+
+### Improved
+
+- `/flux:setup` now includes richer install prompts with clearer benefits, optional API key handling for Firecrawl, and broader setup summaries.
+- Installed-tool detection now recognizes `agent-browser` and `cli-continues`.
+
+### Changed
+
+- Version synchronized to `1.9.2` across package metadata and Claude plugin manifests.
+
 ## [1.9.1] - 2026-03-08
 
 ### Fixed
