@@ -69,6 +69,7 @@ detect_cli_tools() {
     if cmd_exists continues || cmd_exists cont; then
         tools+=("cli-continues")
     fi
+    cmd_exists agentmap && tools+=("agentmap")
     
     # Package managers
     cmd_exists bun && tools+=("bun")
@@ -84,6 +85,7 @@ detect_macos_apps() {
     
     # Check /Applications
     [ -d "/Applications/Raycast.app" ] && apps+=("raycast")
+    [ -d "/Applications/Superset.app" ] && apps+=("superset")
     [ -d "/Applications/Granola.app" ] && apps+=("granola")
     [ -d "/Applications/Wispr Flow.app" ] && apps+=("wispr-flow")
     [ -d "/Applications/Dia.app" ] && apps+=("dia")
@@ -101,6 +103,7 @@ detect_macos_apps() {
     
     # Check ~/Applications too
     [ -d "$HOME/Applications/Raycast.app" ] && apps+=("raycast")
+    [ -d "$HOME/Applications/Superset.app" ] && apps+=("superset")
     [ -d "$HOME/Applications/Granola.app" ] && apps+=("granola")
     
     # Deduplicate

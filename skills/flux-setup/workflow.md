@@ -480,13 +480,14 @@ echo "Detected OS: $OS_TYPE"
 |----|------|-------|-------|---------|---------|------|---------|
 | `raycast` | Raycast | Yes | No | No | **Launcher on steroids** — AI, snippets, clipboard history | Freemium | `brew install --cask raycast` |
 | `ghostty` | Ghostty | Yes | Yes | No | **Fast terminal** — GPU-accelerated, split-pane workflows | Yes | `brew install --cask ghostty` |
+| `superset` | Superset | Yes | No | No | **Primary orchestrator for parallel Claude sessions** — git worktree workspace manager | Yes | `brew install --cask superset` |
 | `wispr-flow` | Wispr Flow | Yes | No | No | **Voice-to-text 4x faster** — dictate anywhere | Freemium | Manual download |
 | `granola` | Granola | Yes | No | Yes | **AI meeting notes** — no bot joins calls | Freemium | Manual download |
 
 ### OS Compatibility Matrix
 
 ```
-macOS:   Raycast, Ghostty, Wispr Flow, Granola (all 4)
+macOS:   Raycast, Ghostty, Superset, Wispr Flow, Granola (all 5)
 Linux:   Ghostty only
 Windows: Granola only
 ```
@@ -506,6 +507,7 @@ if [ "$OS_TYPE" = "macos" ]; then
   
   # Check if already installed - macOS
   HAVE_RAYCAST=$([ -d "/Applications/Raycast.app" ] && echo 1 || echo 0)
+  HAVE_SUPERSET=$([ -d "/Applications/Superset.app" ] && echo 1 || echo 0)
   HAVE_WISPR=$([ -d "/Applications/Wispr Flow.app" ] && echo 1 || echo 0)
 fi
 
@@ -536,7 +538,7 @@ fi
 
 ### Ask which to install (OS-specific questions)
 
-**For macOS users** (all 4 apps available):
+**For macOS users** (all 5 apps available):
 
 ```json
 {
@@ -547,6 +549,7 @@ fi
     // Only include apps NOT already installed
     {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
     {"label": "Ghostty", "description": "Fast GPU terminal with split panes for parallel agents (free)"},
+    {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Claude Code sessions using git worktrees (free)"},
     {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
     {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
   ]
@@ -652,6 +655,16 @@ elif [ "$OS_TYPE" = "linux" ]; then
 fi
 ```
 
+**Superset (macOS only, recommended orchestrator):**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  brew install --cask superset 2>/dev/null || {
+    echo "Download Superset: https://github.com/superset-sh/superset/releases/latest/download/Superset-arm64.dmg"
+    open "https://superset.sh" 2>/dev/null || true
+  }
+fi
+```
+
 **Wispr Flow (macOS/iOS - manual):**
 ```bash
 if [ "$OS_TYPE" = "macos" ]; then
@@ -689,14 +702,15 @@ Flux recommends CLI tools that complement the AI development workflow.
   4. Add installation logic
 -->
 
-| ID | Name | Benefit | Free | Install (macOS) | Install (Linux) |
-|----|------|---------|------|-----------------|-----------------|
-| `gh` | GitHub CLI | **PRs, issues, releases from terminal** — no browser context switching | Yes | `brew install gh` | `sudo apt install gh` |
-| `jq` | jq | **JSON plumbing for agent scripts** — parse API/config output quickly | Yes | `brew install jq` | `sudo apt install jq` |
-| `fzf` | fzf | **Fuzzy finder for shell + git navigation** — faster local workflows | Yes | `brew install fzf` | `sudo apt install fzf` |
-| `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` |
-| `agent-browser` | Agent Browser | **Browser automation for coding agents** — UI QA and reproducible evidence | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` |
-| `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` |
+| ID | Name | Benefit | Free | Install (macOS) | Install (Linux) | Install (Windows) |
+|----|------|---------|------|-----------------|-----------------|-------------------|
+| `gh` | GitHub CLI | **PRs, issues, releases from terminal** — no browser context switching | Yes | `brew install gh` | `sudo apt install gh` | `winget install --id GitHub.cli` |
+| `jq` | jq | **JSON plumbing for agent scripts** — parse API/config output quickly | Yes | `brew install jq` | `sudo apt install jq` | `winget install --id jqlang.jq` |
+| `fzf` | fzf | **Fuzzy finder for shell + git navigation** — faster local workflows | Yes | `brew install fzf` | `sudo apt install fzf` | `winget install --id junegunn.fzf` |
+| `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` | `npm i -g lefthook` |
+| `agent-browser` | Agent Browser | **Browser automation for coding agents** — UI QA and reproducible evidence | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
+| `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
+| `agentmap` | Agentmap | **Codebase map for agents** — inject file-purpose tree at session start | Yes | `npm i -g agentmap` | `npm i -g agentmap` | `npm i -g agentmap` |
 
 ### Detect existing tools
 
@@ -708,13 +722,21 @@ HAVE_FZF_CLI=$(which fzf >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
+HAVE_AGENTMAP_CLI=$(which agentmap >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_WINGET=$(which winget >/dev/null 2>&1 && echo 1 || echo 0)
 
 # gh CLI complements (not conflicts with) GitHub MCP
 # If user installed GitHub MCP in step 4c, recommend gh CLI as complement
 ```
 
 ### Ask which to install
+
+Build recommendations by platform so users only see installable options for their machine:
+
+- macOS: recommend brew-based tools plus npm-based tools when `npm` exists
+- Windows: recommend winget-based tools when `winget` exists, plus npm-based tools when `npm` exists
+- If `npm` is missing, do not offer npm-only tools and print: `Install Node.js first: https://nodejs.org`
 
 Only show tools not already installed:
 
@@ -738,6 +760,7 @@ INSTALL_FZF=0
 INSTALL_LEFTHOOK=0
 INSTALL_AGENT_BROWSER=0
 INSTALL_CONTINUES=0
+INSTALL_AGENTMAP=0
 
 # Set each to 1 if selected by user
 ```
@@ -750,6 +773,7 @@ INSTALL_CONTINUES=0
 {"label": "Lefthook", "description": "Fast pre-commit hooks to catch issues before CI (free)"}
 {"label": "Agent Browser", "description": "Headless browser automation CLI for agent-driven QA (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
+{"label": "Agentmap", "description": "Generate codebase map for faster agent navigation and context handoff (free)"}
 ```
 
 **If GitHub MCP was installed in step 4c, mention the synergy:**
@@ -789,7 +813,13 @@ if [ "$INSTALL_GH" = "1" ]; then
       echo "Install manually: https://cli.github.com"
     fi
   elif [ "$OS_TYPE" = "windows" ]; then
-    echo "Install: winget install --id GitHub.cli"
+    if which winget >/dev/null 2>&1; then
+      winget install --id GitHub.cli --exact --accept-package-agreements --accept-source-agreements 2>/dev/null || {
+        echo "Install manually: https://cli.github.com"
+      }
+    else
+      echo "Install manually: https://cli.github.com"
+    fi
   else
     echo "Install manually: https://cli.github.com"
   fi
@@ -815,7 +845,13 @@ if [ "$INSTALL_JQ" = "1" ]; then
       sudo dnf install jq 2>/dev/null || true
     fi
   elif [ "$OS_TYPE" = "windows" ]; then
-    echo "Install: winget install --id jqlang.jq"
+    if which winget >/dev/null 2>&1; then
+      winget install --id jqlang.jq --exact --accept-package-agreements --accept-source-agreements 2>/dev/null || {
+        echo "Install manually: https://jqlang.github.io/jq/download/"
+      }
+    else
+      echo "Install manually: https://jqlang.github.io/jq/download/"
+    fi
   fi
 fi
 ```
@@ -834,17 +870,24 @@ if [ "$INSTALL_FZF" = "1" ]; then
       sudo dnf install fzf 2>/dev/null || true
     fi
   elif [ "$OS_TYPE" = "windows" ]; then
-    echo "Install: winget install --id junegunn.fzf"
+    if which winget >/dev/null 2>&1; then
+      winget install --id junegunn.fzf --exact --accept-package-agreements --accept-source-agreements 2>/dev/null || {
+        echo "Install manually: https://github.com/junegunn/fzf"
+      }
+    else
+      echo "Install manually: https://github.com/junegunn/fzf"
+    fi
   fi
 fi
 ```
 
-**Lefthook / Agent Browser / CLI Continues (Node-based):**
+**Lefthook / Agent Browser / CLI Continues / Agentmap (Node-based):**
 ```bash
 if which npm >/dev/null 2>&1; then
   [ "$INSTALL_LEFTHOOK" = "1" ] && npm i -g lefthook 2>/dev/null || true
   [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
+  [ "$INSTALL_AGENTMAP" = "1" ] && npm i -g agentmap 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
@@ -1329,12 +1372,13 @@ MCP servers: skipped (install later with /flux:setup or manually)
 Desktop applications (<OS_TYPE>):
 - Raycast: <installed | already installed | skipped | conflict: kept Alfred>
 - Ghostty: <installed | already installed | skipped | conflict: kept iTerm>
+- Superset: <installed | already installed | skipped>
 - Wispr Flow: <installed | already installed | skipped>
 - Granola: <installed | already installed | skipped>
 ```
 
 Use tracking variables from Step 4d to determine status. Only show apps compatible with user's OS:
-- macOS: show all 4 apps
+- macOS: show all 5 apps
 - Linux: show only Ghostty
 - Windows: show only Granola
 
@@ -1353,6 +1397,7 @@ CLI tools:
 - Lefthook: <installed | already installed | skipped>
 - Agent Browser: <installed | already installed | skipped>
 - CLI Continues: <installed | already installed | skipped>
+- Agentmap: <installed | already installed | skipped>
 ```
 
 Use tracking variables from Step 4e. If gh was already installed before setup, show "already installed".
@@ -1410,3 +1455,7 @@ Notes:
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs
 - This setup is optional - plugin works without it
 ```
+
+### Final reminder (always print at the end)
+
+- **From now on, use Superset as your primary orchestrator for parallel Claude Code workflows using git worktrees.**
