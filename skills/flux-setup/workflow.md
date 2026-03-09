@@ -154,6 +154,7 @@ Use direct config updates to `~/.claude/settings.json` (preferred), then tell th
 | `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `~/.claude/settings.json` |
 | `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `~/.claude/settings.json` |
 | `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | Add `mcpServers.supermemory` to `~/.claude/settings.json` |
+| `firecrawl` | Firecrawl | search | **Clean markdown + PDF parsing for agents** — crawl and scrape hard websites | Freemium | Add `mcpServers.firecrawl` to `~/.claude/settings.json` |
 
 ### Conflict Detection
 
@@ -183,6 +184,7 @@ HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qx "context7" && echo 1 || echo 0)
 HAVE_EXA=$(echo "$MCP_LIST" | grep -qx "exa" && echo 1 || echo 0)
 HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qx "github" && echo 1 || echo 0)
 HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qx "supermemory" && echo 1 || echo 0)
+HAVE_FIRECRAWL=$(echo "$MCP_LIST" | grep -qx "firecrawl" && echo 1 || echo 0)
 
 # Detect conflicting/similar tools
 HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qx "perplexity" && echo 1 || echo 0)
@@ -229,7 +231,7 @@ Build the question dynamically. For items with conflicts, explain the situation:
 ```json
 {
   "header": "MCP Servers",
-  "question": "Flux recommends these free MCP servers. Which would you like to install?",
+  "question": "Flux recommends these MCP servers. Which would you like to install?",
   "multiple": true,
   "options": [
     // Only include options for MCPs not already installed
@@ -245,6 +247,7 @@ For **available** MCPs (no conflict):
 {"label": "Exa", "description": "Fastest AI web search — real-time research (free)"}
 {"label": "GitHub", "description": "PRs, issues, actions without leaving Claude (free)"}
 {"label": "Supermemory", "description": "Never re-explain context — persistent memory (free)"}
+{"label": "Firecrawl", "description": "Scrape websites/PDFs into clean markdown for agents (freemium)"}
 ```
 
 For MCPs with **conflicts**, use a separate question per conflict:
@@ -338,6 +341,12 @@ tmp=$(mktemp)
 jq '.mcpServers = (.mcpServers // {}) | .mcpServers.supermemory = {"type":"http","url":"https://mcp.supermemory.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
+**Firecrawl:**
+```bash
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.firecrawl = {"command":"npx","args":["-y","firecrawl-mcp"]}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+```
+
 ### Ask about API keys / tokens (only for installed servers that need them)
 
 Only ask for servers that were just installed AND benefit from keys:
@@ -369,7 +378,7 @@ tmp=$(mktemp)
 jq --arg token "<user_provided_token>" '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":$token}}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
 ```
 
-**Context7 / Exa / Supermemory API keys:**
+**Context7 / Exa / Supermemory / Firecrawl API keys:**
 
 These work without keys but keys unlock higher rate limits. Only ask if user installed them:
 
@@ -383,9 +392,32 @@ These work without keys but keys unlock higher rate limits. Only ask if user ins
     {"label": "Context7 key", "description": "Higher rate limits (free key from context7.com/dashboard)"},
     {"label": "Exa key", "description": "Higher rate limits (free key from exa.ai)"},
     {"label": "Supermemory key", "description": "Higher rate limits (free key from supermemory.ai)"},
+    {"label": "Firecrawl key", "description": "Required for higher quotas (free tier at firecrawl.dev)"},
     {"label": "Skip", "description": "Use free tier for all (can add keys later)"}
   ]
 }
+```
+
+If user selects any key option, ask for each selected key value and patch `~/.claude/settings.json`:
+
+```bash
+# Example helper to set one env key on an MCP server
+set_mcp_env_key() {
+  local server="$1"
+  local env_key="$2"
+  local env_val="$3"
+  local tmp
+  tmp=$(mktemp)
+  jq --arg s "$server" --arg k "$env_key" --arg v "$env_val" \
+    '.mcpServers = (.mcpServers // {}) | .mcpServers[$s] = ((.mcpServers[$s] // {}) + {env: ((.mcpServers[$s].env // {}) + {($k): $v})})' \
+    "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+}
+
+# Call based on user selections:
+# set_mcp_env_key "exa" "EXA_API_KEY" "<user_provided_exa_key>"
+# set_mcp_env_key "supermemory" "SUPERMEMORY_API_KEY" "<user_provided_supermemory_key>"
+# set_mcp_env_key "firecrawl" "FIRECRAWL_API_KEY" "<user_provided_firecrawl_key>"
+# Context7 key support may vary by provider release; skip if no documented env var.
 ```
 
 ### Track installation results
@@ -408,6 +440,7 @@ MCP servers (install manually in Claude Code):
      - context7: https://mcp.context7.com/mcp
      - exa: https://mcp.exa.ai/mcp
      - supermemory: https://mcp.supermemory.ai/mcp
+     - firecrawl: npx -y firecrawl-mcp
      - github: npx -y @modelcontextprotocol/server-github
   3. Restart Claude Code
 ```
@@ -659,12 +692,23 @@ Flux recommends CLI tools that complement the AI development workflow.
 | ID | Name | Benefit | Free | Install (macOS) | Install (Linux) |
 |----|------|---------|------|-----------------|-----------------|
 | `gh` | GitHub CLI | **PRs, issues, releases from terminal** — no browser context switching | Yes | `brew install gh` | `sudo apt install gh` |
+| `jq` | jq | **JSON plumbing for agent scripts** — parse API/config output quickly | Yes | `brew install jq` | `sudo apt install jq` |
+| `fzf` | fzf | **Fuzzy finder for shell + git navigation** — faster local workflows | Yes | `brew install fzf` | `sudo apt install fzf` |
+| `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` |
+| `agent-browser` | Agent Browser | **Browser automation for coding agents** — UI QA and reproducible evidence | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` |
+| `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` |
 
 ### Detect existing tools
 
 ```bash
 # Check if tools already installed
 HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_JQ_CLI=$(which jq >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_FZF_CLI=$(which fzf >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
+HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
 
 # gh CLI complements (not conflicts with) GitHub MCP
 # If user installed GitHub MCP in step 4c, recommend gh CLI as complement
@@ -685,9 +729,27 @@ Only show tools not already installed:
 }
 ```
 
+Map selected CLI options to install flags:
+
+```bash
+INSTALL_GH=0
+INSTALL_JQ=0
+INSTALL_FZF=0
+INSTALL_LEFTHOOK=0
+INSTALL_AGENT_BROWSER=0
+INSTALL_CONTINUES=0
+
+# Set each to 1 if selected by user
+```
+
 **Option templates:**
 ```json
 {"label": "GitHub CLI (gh)", "description": "PRs, issues, releases from terminal — complements GitHub MCP (free)"}
+{"label": "jq", "description": "JSON parsing for scripts and API output (free)"}
+{"label": "fzf", "description": "Fuzzy finder for terminal, history, and git navigation (free)"}
+{"label": "Lefthook", "description": "Fast pre-commit hooks to catch issues before CI (free)"}
+{"label": "Agent Browser", "description": "Headless browser automation CLI for agent-driven QA (free)"}
+{"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
 ```
 
 **If GitHub MCP was installed in step 4c, mention the synergy:**
@@ -702,36 +764,89 @@ Only show tools not already installed:
 }
 ```
 
-**If gh is already installed:**
-Skip this question or show "already installed" in summary.
+**If all tools are already installed:**
+Skip this question and show "already installed" in summary.
 
 ### Install selected tools
 
 **GitHub CLI:**
 ```bash
-if [ "$OS_TYPE" = "macos" ]; then
-  brew install gh 2>/dev/null || {
-    echo "Install manually: https://cli.github.com"
-  }
-elif [ "$OS_TYPE" = "linux" ]; then
-  if which apt-get >/dev/null 2>&1; then
-    sudo apt install gh 2>/dev/null || {
-      echo "Install: https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+if [ "$INSTALL_GH" = "1" ]; then
+  if [ "$OS_TYPE" = "macos" ]; then
+    brew install gh 2>/dev/null || {
+      echo "Install manually: https://cli.github.com"
     }
-  elif which pacman >/dev/null 2>&1; then
-    sudo pacman -S github-cli 2>/dev/null || true
-  elif which dnf >/dev/null 2>&1; then
-    sudo dnf install gh 2>/dev/null || true
+  elif [ "$OS_TYPE" = "linux" ]; then
+    if which apt-get >/dev/null 2>&1; then
+      sudo apt install gh 2>/dev/null || {
+        echo "Install: https://github.com/cli/cli/blob/trunk/docs/install_linux.md"
+      }
+    elif which pacman >/dev/null 2>&1; then
+      sudo pacman -S github-cli 2>/dev/null || true
+    elif which dnf >/dev/null 2>&1; then
+      sudo dnf install gh 2>/dev/null || true
+    else
+      echo "Install manually: https://cli.github.com"
+    fi
+  elif [ "$OS_TYPE" = "windows" ]; then
+    echo "Install: winget install --id GitHub.cli"
   else
     echo "Install manually: https://cli.github.com"
   fi
-elif [ "$OS_TYPE" = "windows" ]; then
-  echo "Install: winget install --id GitHub.cli"
-fi
 
-# Prompt for authentication if installed
-if which gh >/dev/null 2>&1; then
-  echo "Run 'gh auth login' to authenticate with GitHub"
+  # Prompt for authentication if installed
+  if which gh >/dev/null 2>&1; then
+    echo "Run 'gh auth login' to authenticate with GitHub"
+  fi
+fi
+```
+
+**jq:**
+```bash
+if [ "$INSTALL_JQ" = "1" ]; then
+  if [ "$OS_TYPE" = "macos" ]; then
+    brew install jq 2>/dev/null || echo "Install manually: https://jqlang.github.io/jq/"
+  elif [ "$OS_TYPE" = "linux" ]; then
+    if which apt-get >/dev/null 2>&1; then
+      sudo apt install jq 2>/dev/null || echo "Install manually: https://jqlang.github.io/jq/download/"
+    elif which pacman >/dev/null 2>&1; then
+      sudo pacman -S jq 2>/dev/null || true
+    elif which dnf >/dev/null 2>&1; then
+      sudo dnf install jq 2>/dev/null || true
+    fi
+  elif [ "$OS_TYPE" = "windows" ]; then
+    echo "Install: winget install --id jqlang.jq"
+  fi
+fi
+```
+
+**fzf:**
+```bash
+if [ "$INSTALL_FZF" = "1" ]; then
+  if [ "$OS_TYPE" = "macos" ]; then
+    brew install fzf 2>/dev/null || echo "Install manually: https://github.com/junegunn/fzf"
+  elif [ "$OS_TYPE" = "linux" ]; then
+    if which apt-get >/dev/null 2>&1; then
+      sudo apt install fzf 2>/dev/null || echo "Install manually: https://github.com/junegunn/fzf"
+    elif which pacman >/dev/null 2>&1; then
+      sudo pacman -S fzf 2>/dev/null || true
+    elif which dnf >/dev/null 2>&1; then
+      sudo dnf install fzf 2>/dev/null || true
+    fi
+  elif [ "$OS_TYPE" = "windows" ]; then
+    echo "Install: winget install --id junegunn.fzf"
+  fi
+fi
+```
+
+**Lefthook / Agent Browser / CLI Continues (Node-based):**
+```bash
+if which npm >/dev/null 2>&1; then
+  [ "$INSTALL_LEFTHOOK" = "1" ] && npm i -g lefthook 2>/dev/null || true
+  [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
+  [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
+else
+  echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
 ```
 
@@ -740,6 +855,160 @@ fi
 Store for summary:
 - `INSTALLED_CLI` — list of CLI tools installed this session
 - `SKIPPED_CLI` — list of CLI tools user chose to skip
+
+## Step 4f: Install optional agent skills (Optional)
+
+Offer lightweight, generally useful agent skills that improve onboarding and execution quality across most repos.
+
+### Available skills
+
+| ID | Name | Benefit | Install |
+|----|------|---------|---------|
+| `cartographer` | Cartographer | **Parallel codebase mapping** — faster architecture understanding in large repos | `git clone https://github.com/kingbootoshi/cartographer.git ~/.claude/skills/cartographer` |
+| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx skills add ibelick/ui-skills` |
+| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
+| `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
+| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git ~/.claude/skills/agent-skills-vercel` |
+| `adversarial-spec` | Adversarial Spec | **Stronger specs before coding** — expose requirement gaps early | `git clone https://github.com/zscole/adversarial-spec.git ~/.claude/skills/adversarial-spec` |
+| `trailofbits-skills` | Trail of Bits Skills | **Security workflow pack** — practical security checks for AI loops | `git clone https://github.com/trailofbits/skills.git ~/.claude/skills/trailofbits-skills` |
+| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git ~/.claude/skills/x-research-skill` |
+
+### Detect existing skills
+
+```bash
+HAVE_CARTOGRAPHER=$([ -d "$HOME/.claude/skills/cartographer" ] && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -d "$HOME/.claude/skills/ui-skills" ] || [ -d "$HOME/.claude/skills/baseline-ui" ]) && echo 1 || echo 0)
+HAVE_TASTE_SKILL=$([ -f "$HOME/.claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
+HAVE_SEMVER_CHANGELOG=$(([ -d "$HOME/.claude/skills/semver-changelog" ] || [ -d "$HOME/.claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
+HAVE_AGENT_SKILLS_VERCEL=$([ -d "$HOME/.claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
+HAVE_ADVERSARIAL_SPEC=$([ -d "$HOME/.claude/skills/adversarial-spec" ] && echo 1 || echo 0)
+HAVE_TRAILOFBITS_SKILLS=$([ -d "$HOME/.claude/skills/trailofbits-skills" ] && echo 1 || echo 0)
+HAVE_X_RESEARCH_SKILL=$([ -d "$HOME/.claude/skills/x-research-skill" ] && echo 1 || echo 0)
+HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
+```
+
+### Ask which skills to install
+
+```json
+{
+  "header": "Agent Skills",
+  "question": "Flux can install optional agent skills. Which would you like?",
+  "multiple": true,
+  "options": [
+    {"label": "Cartographer", "description": "Map architecture with parallel subagents (free, open-source)"},
+    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design"},
+    {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
+    {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
+    {"label": "Agent Skills (Vercel)", "description": "Install a broad catalog of production-ready agent skills"},
+    {"label": "Adversarial Spec", "description": "Improve requirement quality before implementation"},
+    {"label": "Trail of Bits Skills", "description": "Add security-focused skill workflows"},
+    {"label": "X Research Skill", "description": "Summarize high-signal X threads for research"},
+    {"label": "Skip", "description": "No additional skills"}
+  ]
+}
+```
+
+Map selected skill options to install flags:
+
+```bash
+INSTALL_CARTOGRAPHER=0
+INSTALL_UI_SKILLS=0
+INSTALL_TASTE_SKILL=0
+INSTALL_SEMVER_CHANGELOG=0
+INSTALL_AGENT_SKILLS_VERCEL=0
+INSTALL_ADVERSARIAL_SPEC=0
+INSTALL_TRAILOFBITS_SKILLS=0
+INSTALL_X_RESEARCH_SKILL=0
+
+# Set each to 1 if selected by user
+```
+
+### Install selected skills
+
+```bash
+if [ "$INSTALL_CARTOGRAPHER" = "1" ]; then
+  if [ -d "$HOME/.claude/skills/cartographer" ]; then
+    git -C "$HOME/.claude/skills/cartographer" pull --ff-only 2>/dev/null || true
+  else
+    git clone --depth 1 https://github.com/kingbootoshi/cartographer.git "$HOME/.claude/skills/cartographer" 2>/dev/null || {
+      echo "Install manually: https://github.com/kingbootoshi/cartographer"
+    }
+  fi
+fi
+
+if [ "$INSTALL_UI_SKILLS" = "1" ]; then
+  if which npx >/dev/null 2>&1; then
+    npx skills add ibelick/ui-skills 2>/dev/null || {
+      echo "Install manually: https://github.com/ibelick/ui-skills"
+    }
+  else
+    echo "npx not found. Install manually: https://github.com/ibelick/ui-skills"
+  fi
+fi
+
+if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
+  mkdir -p "$HOME/.claude/skills/taste-skill"
+  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/SKILL.md -o "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
+    echo "Install manually: https://github.com/Leonxlnx/taste-skill"
+  }
+fi
+
+if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
+  if which npx >/dev/null 2>&1; then
+    npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog 2>/dev/null || {
+      echo "Install manually: https://skills.sh/prulloac/agent-skills/semver-changelog"
+    }
+  else
+    echo "npx not found. Install manually: https://skills.sh/prulloac/agent-skills/semver-changelog"
+  fi
+fi
+
+if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
+  if [ -d "$HOME/.claude/skills/agent-skills-vercel" ]; then
+    git -C "$HOME/.claude/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
+  else
+    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git "$HOME/.claude/skills/agent-skills-vercel" 2>/dev/null || {
+      echo "Install manually: https://github.com/vercel-labs/agent-skills"
+    }
+  fi
+fi
+
+if [ "$INSTALL_ADVERSARIAL_SPEC" = "1" ]; then
+  if [ -d "$HOME/.claude/skills/adversarial-spec" ]; then
+    git -C "$HOME/.claude/skills/adversarial-spec" pull --ff-only 2>/dev/null || true
+  else
+    git clone --depth 1 https://github.com/zscole/adversarial-spec.git "$HOME/.claude/skills/adversarial-spec" 2>/dev/null || {
+      echo "Install manually: https://github.com/zscole/adversarial-spec"
+    }
+  fi
+fi
+
+if [ "$INSTALL_TRAILOFBITS_SKILLS" = "1" ]; then
+  if [ -d "$HOME/.claude/skills/trailofbits-skills" ]; then
+    git -C "$HOME/.claude/skills/trailofbits-skills" pull --ff-only 2>/dev/null || true
+  else
+    git clone --depth 1 https://github.com/trailofbits/skills.git "$HOME/.claude/skills/trailofbits-skills" 2>/dev/null || {
+      echo "Install manually: https://github.com/trailofbits/skills"
+    }
+  fi
+fi
+
+if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
+  if [ -d "$HOME/.claude/skills/x-research-skill" ]; then
+    git -C "$HOME/.claude/skills/x-research-skill" pull --ff-only 2>/dev/null || true
+  else
+    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git "$HOME/.claude/skills/x-research-skill" 2>/dev/null || {
+      echo "Install manually: https://github.com/rohunvora/x-research-skill"
+    }
+  fi
+fi
+```
+
+### Track installation results
+
+Store for summary:
+- `INSTALLED_SKILLS` — list of skills installed this session
+- `SKIPPED_SKILLS` — list of skills user chose to skip
 
 ## Step 5: Update meta.json
 
@@ -1032,6 +1301,7 @@ MCP servers:
 - Exa: <installed | installed + key | already installed | skipped>
 - GitHub: <installed | installed + token | already installed | skipped>
 - Supermemory: <installed | installed + key | already installed | skipped>
+- Firecrawl: <installed | installed + key | already installed | skipped>
 ```
 
 Use tracking variables from Step 4c to determine status:
@@ -1078,9 +1348,30 @@ Desktop applications: skipped (<reason>)
 ```
 CLI tools:
 - GitHub CLI (gh): <installed | already installed | skipped>
+- jq: <installed | already installed | skipped>
+- fzf: <installed | already installed | skipped>
+- Lefthook: <installed | already installed | skipped>
+- Agent Browser: <installed | already installed | skipped>
+- CLI Continues: <installed | already installed | skipped>
 ```
 
 Use tracking variables from Step 4e. If gh was already installed before setup, show "already installed".
+
+**Agent skills section** (only show if offered):
+
+```
+Agent skills:
+- Cartographer: <installed | already installed | skipped>
+- UI Skills: <installed | already installed | skipped>
+- Taste Skill: <installed | already installed | skipped>
+- Semver Changelog: <installed | already installed | skipped>
+- Agent Skills (Vercel): <installed | already installed | skipped>
+- Adversarial Spec: <installed | already installed | skipped>
+- Trail of Bits Skills: <installed | already installed | skipped>
+- X Research Skill: <installed | already installed | skipped>
+```
+
+Use tracking variables from Step 4f.
 
 Continue summary:
 
@@ -1113,6 +1404,7 @@ Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
+- Optional agent skills can be installed/updated via /flux:setup
 - MCP servers installed at user scope are available in all projects
 - Desktop apps and CLI tools are optional productivity boosters
 - Uninstall (run manually): rm -rf .flux/bin .flux/usage.md and remove <!-- BEGIN/END FLUX --> block from docs

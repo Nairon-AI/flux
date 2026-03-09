@@ -19,6 +19,23 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Exa** — fastest AI web search, real-time research without leaving your session
   - **GitHub** — PRs, issues, actions directly in Claude, no context switching
   - **Supermemory** — never re-explain context, persistent memory across sessions
+- **Optional** additional MCP:
+  - **Firecrawl** — scrape websites and parse PDFs into LLM-ready markdown
+- **Optional** recommended CLI tools:
+  - **jq** — JSON parsing for scripts and API output
+  - **fzf** — fuzzy finder for terminal workflows
+  - **Lefthook** — fast pre-commit hooks
+  - **Agent Browser** — browser automation CLI for agent-driven UI QA
+  - **CLI Continues** — resume/switch session context across agent CLIs
+- **Optional** additional agent skill:
+  - **Cartographer** — parallel codebase mapping for faster onboarding
+  - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
+  - **Taste Skill** — anti-generic design taste layer for better UI generation
+  - **Semver Changelog** — automated semantic changelog/release-note hygiene
+  - **Agent Skills (Vercel)** — broad reusable skills catalog
+  - **Adversarial Spec** — stronger requirement quality before implementation
+  - **Trail of Bits Skills** — security-focused workflows for AI coding loops
+  - **X Research Skill** — structured X/Twitter research and summarization
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
 
 ## Workflow
