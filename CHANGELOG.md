@@ -8,13 +8,15 @@ All notable changes to Flux will be documented in this file.
 
 - Expanded `/flux:setup` optional install packs for agentic workflows:
   - MCP: Firecrawl
-  - CLI: jq, fzf, Lefthook, Agent Browser, CLI Continues
+  - CLI: jq, fzf, Lefthook, Agent Browser, CLI Continues, Agentmap
+  - Desktop orchestrator: Superset (macOS only)
   - Skills: Cartographer, UI Skills, Taste Skill, Semver Changelog, Agent Skills (Vercel), Adversarial Spec, Trail of Bits Skills, X Research Skill
 
 ### Improved
 
-- `/flux:setup` now includes richer install prompts with clearer benefits, optional API key handling for Firecrawl, and broader setup summaries.
-- Installed-tool detection now recognizes `agent-browser` and `cli-continues`.
+- `/flux:setup` now includes richer install prompts with clearer benefits, optional API key handling for Firecrawl, broader setup summaries, and platform-aware recommendations for installable tools.
+- `/flux:setup` now ends with an explicit Superset orchestrator reminder for parallel Claude Code workflows.
+- Installed-tool detection now recognizes `agent-browser`, `cli-continues`, `agentmap`, and Superset.app on macOS.
 
 ### Changed
 
