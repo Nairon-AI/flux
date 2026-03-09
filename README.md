@@ -132,6 +132,57 @@ Then:
 2. Run `/flux:setup` to refresh local scripts/docs
 3. Continue with `/flux:scope` or `/flux:work`
 
+### Uninstalling (Complete Removal)
+
+If you want Flux fully removed from Claude Code and local artifacts:
+
+Run in Claude Code chat input:
+
+```
+/plugin uninstall flux@nairon-flux
+/plugin marketplace remove nairon-flux
+```
+
+If uninstall says plugin not found, try:
+
+```
+/plugin uninstall flux
+```
+
+Then run terminal cleanup:
+
+```bash
+# Claude plugin cache and marketplace metadata
+rm -rf ~/.claude/plugins/cache/nairon-flux
+rm -rf ~/.claude/plugins/marketplaces/nairon-flux
+
+# Current project artifacts created by /flux:setup
+rm -rf .flux
+
+# Optional: remove user-level Flux data (all projects)
+rm -rf ~/.flux
+```
+
+Restart Claude Code and verify Flux is gone from `/plugin list`.
+
+**Agent-guided uninstall prompt (copy/paste):**
+
+```
+Help me completely uninstall Flux from this machine.
+
+Ask me to run these slash commands in Claude chat input and wait for "done" after each:
+1) /plugin uninstall flux@nairon-flux
+2) /plugin marketplace remove nairon-flux
+
+Then automatically clean local artifacts:
+- remove ~/.claude/plugins/cache/nairon-flux
+- remove ~/.claude/plugins/marketplaces/nairon-flux
+- remove ./.flux in this repository
+- ask me whether to remove ~/.flux too (recommended for full uninstall)
+
+Finally confirm Flux is gone and tell me to restart Claude Code once.
+```
+
 ### Step 2: Setup
 
 After installation, **restart Claude Code** (plugins load at session start), then run:
