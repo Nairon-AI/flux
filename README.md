@@ -98,16 +98,17 @@ After I reply "done", continue automatically:
 1) Verify Flux commands are available.
 2) Run /flux:setup (or load the flux-setup skill and execute setup workflow).
 3) If setup is unavailable, tell me to restart Claude Code once, then continue setup.
+4) After /flux:setup completes successfully, tell me (the user) to fully restart Claude Code once and wait for my "done" before continuing.
 
 Guide me on anything I need to do manually and do the rest automatically.
 ```
 
 ### Claude Code Agent Execution Rules
 
-- **Human runs in chat input:** `/plugin add ...` and any UI auth steps (for example `/mcp` sign-in dialogs).
+- **Human runs in chat input:** `/plugin add ...`, any UI auth steps (for example `/mcp` sign-in dialogs), and the post-setup Claude Code restart.
 - **Agent runs automatically:** repository checks, shell commands, config/file updates, and the full `/flux:setup` workflow after install is confirmed.
 - **Agent must not do:** run `/plugin add` in bash, run `claude plugin add` from inside an active Claude Code session, or stop after saying "installed" without setup.
-- **Completion criteria:** install confirmed, `/flux:setup` completed, and core workflow commands explained (`/flux:scope -> /flux:work -> /flux:impl-review`).
+- **Completion criteria:** install confirmed, `/flux:setup` completed, user explicitly told to restart Claude Code and user confirms done, and core workflow commands explained (`/flux:scope -> /flux:work -> /flux:impl-review`).
 
 ### Upgrading (Existing Users)
 
@@ -132,18 +133,7 @@ After installation, **restart Claude Code** (plugins load at session start), the
 
 This scaffolds `.flux/` in your project and configures your preferences.
 
-### Project-Only Install Smoke Test (Local)
-
-Want to verify Flux installs only inside one local repo? Use a throwaway test repo:
-
-1. Create test repo on desktop (for example `~/Desktop/flux-install-smoke-test`)
-2. Open it in Claude Code
-3. Run `/plugin add https://github.com/Nairon-AI/flux@latest`
-4. Run `/flux:setup` and choose **Project** install scope
-5. Verify only that repo now contains `.flux/` (for example `.flux/bin/fluxctl`, `.flux/meta.json`, `.flux/usage.md`)
-6. Delete the test repo when done
-
-This is the safest way to validate project-scoped setup end-to-end before onboarding a real codebase.
+When `/flux:setup` finishes successfully, the user should restart Claude Code once before using Flux commands.
 
 ### Step 3: Build Your First Feature
 
