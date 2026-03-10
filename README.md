@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.2-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.9.3-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -55,7 +55,7 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 **Flux gives you three things:**
 
-1. **A structured workflow** — Scope → Build → Review
+1. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
 2. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
 3. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
 
@@ -75,8 +75,11 @@ Ask me to run one slash command at a time in chat and wait for "done":
 2) /plugin install flux@nairon-flux
 
 If Flux is already installed, skip install and continue.
-Then run /flux:setup, complete setup questions, and explain:
-/flux:scope -> /flux:work -> /flux:impl-review.
+Then run /flux:setup and complete setup questions.
+After restart, guide me through:
+1) /flux:prime first (agent-readiness + inefficiency audit)
+2) /flux:scope -> /flux:work -> /flux:impl-review -> /flux:improve
+3) /flux:reflect at the end of each session
 
 After /flux:setup succeeds, tell me to fully restart Claude Code and wait for my "done".
 Do the rest automatically.
@@ -114,6 +117,7 @@ Then:
 2. Run `/flux:setup` (required final setup step).
 
 After `/flux:setup` succeeds, restart Claude Code once before using Flux commands.
+Then run `/flux:prime` first to audit agent readiness and workflow inefficiencies before starting new work.
 
 ### Upgrade Flux (existing users)
 
@@ -199,7 +203,17 @@ This scaffolds `.flux/` in your project and configures your preferences. After i
 
 These are optional, but recommended when relevant to your workflow.
 
-### Build Your First Feature
+### Prime Then Build
+
+First run:
+
+```bash
+/flux:prime
+```
+
+`/flux:prime` audits your codebase for agent readiness, finds inefficiencies, and surfaces what to improve before you start feature work.
+
+Then start your first feature:
 
 Once setup completes, you're ready. Start with:
 
@@ -218,10 +232,14 @@ Then execute and review:
 /flux:work fn-1.2          # Next task
 
 /flux:impl-review          # Review implementation before moving on
+/flux:improve              # Find workflow improvements from recent patterns
 /flux:epic-review fn-1     # Verify the epic is complete
+
+# End of session
+/flux:reflect              # Capture learnings into memory/brain vault
 ```
 
-**That's the core loop: Scope → Build → Review.** Repeat for every feature.
+**Core pattern:** Prime once -> Scope -> Build -> Review -> Improve. End each session with Reflect.
 
 ### Optimize Your Workflow
 
@@ -231,7 +249,14 @@ Once you've been using Flux for a while, run:
 /flux:improve
 ```
 
-This analyzes your sessions to detect friction patterns (shallow prompts, blind acceptance, no docs lookup) and recommends specific tools, MCPs, and workflow changes to close the gaps.
+This analyzes your environment + sessions to detect inefficiencies and recommends concrete workflow upgrades.
+
+It can break down:
+- what you do most frequently,
+- what should become skills,
+- what should become plugins,
+- what should become autonomous agents,
+- what belongs in `CLAUDE.md`.
 
 ### When to Use Each Command
 
@@ -557,7 +582,7 @@ Powered by [desloppify](https://github.com/peteromallet/desloppify) — a codeba
 
 Target: **95+ strict score** = codebase a senior engineer would respect.
 
-That's it. Scope → Build → Review → Improve → Clean. Repeat.
+That's it. Prime once, then Scope -> Build -> Review -> Improve. End sessions with Reflect. Keep the codebase clean. Repeat.
 
 ### Build Persistent Memory
 

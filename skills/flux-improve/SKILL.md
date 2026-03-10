@@ -17,8 +17,16 @@ This skill:
 4. Optionally analyzes session history for pain points (with consent)
 5. Fetches recommendations from `nairon-ai/flux-recommendations`
 6. Uses AI to match relevant recommendations to user's context
-7. Presents recommendations with impact ranking
-8. Handles installation and verification
+7. Presents a behavioral breakdown (frequent patterns + upgrade opportunities)
+8. Presents recommendations with impact ranking
+9. Handles installation and verification
+
+Behavioral breakdown includes:
+- What you do most frequently
+- What should become skills (reusable workflows)
+- What should become plugins (standalone tools)
+- What should become agents (autonomous subagents)
+- What belongs in `CLAUDE.md` (project-level instructions)
 
 ## User Context (Optional but Powerful)
 

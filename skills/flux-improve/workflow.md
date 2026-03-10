@@ -403,6 +403,26 @@ Step 3: Recommendations
 Based on your environment and session analysis, here's what would help:
 ```
 
+### Behavioral Breakdown (always show)
+
+Before listing recommendations, print a short breakdown using session insights + repo context:
+
+```
+Behavioral Breakdown
+
+- What you do most frequently: <top recurring tools/actions/workflows>
+- What should become skills: <repeated multi-step workflows worth codifying>
+- What should become plugins: <repeated standalone tooling opportunities>
+- What should become agents: <autonomous subagent candidates>
+- What belongs in CLAUDE.md: <repeat project-level instructions>
+```
+
+Guidance:
+- Use concrete examples from `session_insights.tool_usage`, `error_patterns`, and `knowledge_gaps`.
+- Keep each line specific and actionable (not generic advice).
+- If session analysis is disabled or sparse, say so explicitly and still provide best-effort suggestions from environment context.
+- If data is too limited, print: `Not enough signal yet - run /flux:reflect at end of sessions, then rerun /flux:improve.`
+
 **Group recommendations by WHY they're recommended:**
 
 ### Session-Driven Recommendations (if any)

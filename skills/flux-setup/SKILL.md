@@ -40,8 +40,6 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Agent Skills (Vercel)** — broad reusable skills catalog
-  - **Adversarial Spec** — stronger requirement quality before implementation
-  - **Trail of Bits Skills** — security-focused workflows for AI coding loops
   - **X Research Skill** — structured X/Twitter research and summarization
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
 
@@ -55,6 +53,8 @@ Read [workflow.md](workflow.md) and follow each step in order.
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
 - In active Claude Code sessions, configure MCPs via `~/.claude/settings.json` updates (do not invoke nested `claude` CLI commands)
+- After setup + restart, run `/flux:prime` first before feature work
+- After implementation/review, run `/flux:reflect` at session end
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: flux:improve
-description: Analyze your environment and recommend workflow optimizations
+description: Analyze sessions/environment, surface inefficiencies, and recommend workflow optimizations
 argument-hint: "[--skip-sessions] [--discover] [--explain] [--category=mcp|cli|plugin|skill|pattern]"
 ---
 

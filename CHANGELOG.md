@@ -2,6 +2,29 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.3] - 2026-03-10
+
+### Added
+
+- Post-setup guidance now explicitly starts with `/flux:prime` before feature execution.
+- End-of-session guidance now explicitly includes `/flux:reflect` after review/improvement.
+- `/flux:improve` guidance now calls out high-signal breakdown outputs:
+  - what you do most frequently,
+  - what should become skills/plugins/agents,
+  - what belongs in `CLAUDE.md`.
+
+### Improved
+
+- Core workflow messaging now consistently reflects:
+  - `Prime -> Scope -> Work -> Impl-Review -> Improve`
+  - `Reflect` at end of session.
+- `/flux:setup` final reminder now prints the full sequence (`/flux:prime`, core loop, `/flux:reflect`) plus Superset orchestrator guidance.
+- `/flux:setup` skill menu no longer includes Adversarial Spec or Trail of Bits Skills.
+
+### Changed
+
+- Version synchronized to `1.9.3` across package metadata and Claude plugin manifests.
+
 ## [1.9.2] - 2026-03-10
 
 ### Added

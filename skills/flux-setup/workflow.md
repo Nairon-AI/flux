@@ -919,8 +919,6 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 | `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
 | `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git ~/.claude/skills/agent-skills-vercel` |
-| `adversarial-spec` | Adversarial Spec | **Stronger specs before coding** — expose requirement gaps early | `git clone https://github.com/zscole/adversarial-spec.git ~/.claude/skills/adversarial-spec` |
-| `trailofbits-skills` | Trail of Bits Skills | **Security workflow pack** — practical security checks for AI loops | `git clone https://github.com/trailofbits/skills.git ~/.claude/skills/trailofbits-skills` |
 | `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git ~/.claude/skills/x-research-skill` |
 
 ### Detect existing skills
@@ -931,8 +929,6 @@ HAVE_UI_SKILLS=$(([ -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] || [ -f "$H
 HAVE_TASTE_SKILL=$([ -f "$HOME/.claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
 HAVE_SEMVER_CHANGELOG=$(([ -d "$HOME/.claude/skills/semver-changelog" ] || [ -d "$HOME/.claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
 HAVE_AGENT_SKILLS_VERCEL=$([ -d "$HOME/.claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
-HAVE_ADVERSARIAL_SPEC=$([ -d "$HOME/.claude/skills/adversarial-spec" ] && echo 1 || echo 0)
-HAVE_TRAILOFBITS_SKILLS=$([ -d "$HOME/.claude/skills/trailofbits-skills" ] && echo 1 || echo 0)
 HAVE_X_RESEARCH_SKILL=$([ -d "$HOME/.claude/skills/x-research-skill" ] && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
@@ -951,8 +947,6 @@ HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
     {"label": "Agent Skills (Vercel)", "description": "Install a broad catalog of production-ready agent skills"},
-    {"label": "Adversarial Spec", "description": "Improve requirement quality before implementation"},
-    {"label": "Trail of Bits Skills", "description": "Add security-focused skill workflows"},
     {"label": "X Research Skill", "description": "Summarize high-signal X threads for research"},
     {"label": "Skip", "description": "No additional skills"}
   ]
@@ -967,8 +961,6 @@ INSTALL_UI_SKILLS=0
 INSTALL_TASTE_SKILL=0
 INSTALL_SEMVER_CHANGELOG=0
 INSTALL_AGENT_SKILLS_VERCEL=0
-INSTALL_ADVERSARIAL_SPEC=0
-INSTALL_TRAILOFBITS_SKILLS=0
 INSTALL_X_RESEARCH_SKILL=0
 
 # Set each to 1 if selected by user
@@ -1036,26 +1028,6 @@ if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
   fi
 fi
 
-if [ "$INSTALL_ADVERSARIAL_SPEC" = "1" ]; then
-  if [ -d "$HOME/.claude/skills/adversarial-spec" ]; then
-    git -C "$HOME/.claude/skills/adversarial-spec" pull --ff-only 2>/dev/null || true
-  else
-    git clone --depth 1 https://github.com/zscole/adversarial-spec.git "$HOME/.claude/skills/adversarial-spec" 2>/dev/null || {
-      echo "Install manually: https://github.com/zscole/adversarial-spec"
-    }
-  fi
-fi
-
-if [ "$INSTALL_TRAILOFBITS_SKILLS" = "1" ]; then
-  if [ -d "$HOME/.claude/skills/trailofbits-skills" ]; then
-    git -C "$HOME/.claude/skills/trailofbits-skills" pull --ff-only 2>/dev/null || true
-  else
-    git clone --depth 1 https://github.com/trailofbits/skills.git "$HOME/.claude/skills/trailofbits-skills" 2>/dev/null || {
-      echo "Install manually: https://github.com/trailofbits/skills"
-    }
-  fi
-fi
-
 if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
   if [ -d "$HOME/.claude/skills/x-research-skill" ]; then
     git -C "$HOME/.claude/skills/x-research-skill" pull --ff-only 2>/dev/null || true
@@ -1076,8 +1048,6 @@ After running installs, verify each selected skill path exists before marking su
 - Cartographer: `$HOME/.claude/skills/cartographer` directory
 - Semver Changelog: `$HOME/.claude/skills/semver-changelog` or `$HOME/.claude/skills/semantic-version-changelog-generator`
 - Agent Skills (Vercel): `$HOME/.claude/skills/agent-skills-vercel` directory
-- Adversarial Spec: `$HOME/.claude/skills/adversarial-spec` directory
-- Trail of Bits Skills: `$HOME/.claude/skills/trailofbits-skills` directory
 - X Research Skill: `$HOME/.claude/skills/x-research-skill` directory
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
@@ -1446,8 +1416,6 @@ Agent skills:
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
 - Agent Skills (Vercel): <installed | already installed | skipped | failed>
-- Adversarial Spec: <installed | already installed | skipped | failed>
-- Trail of Bits Skills: <installed | already installed | skipped | failed>
 - X Research Skill: <installed | already installed | skipped | failed>
 ```
 
@@ -1482,6 +1450,7 @@ Documentation updated:
 
 Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
+- First command after setup + restart: /flux:prime (audits agent readiness and inefficiencies)
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
 - Optional agent skills can be installed/updated via /flux:setup
@@ -1493,4 +1462,7 @@ Notes:
 
 ### Final reminder (always print at the end)
 
+- **After restart, run /flux:prime first** (agent-readiness and inefficiency audit).
+- **Core loop: /flux:scope -> /flux:work -> /flux:impl-review -> /flux:improve** (`/flux:improve` finds ways to improve your agent workflow over time).
+- **End each session with /flux:reflect** (capture what you learned so the system improves over time).
 - **From now on, use Superset as your primary orchestrator for parallel Claude Code workflows using git worktrees.**
