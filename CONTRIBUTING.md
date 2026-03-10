@@ -39,7 +39,7 @@ Help us with visibility. Before your PR can be merged, you must post about your 
 - Bluesky
 - Threads
 
-Include a link to the PR and tag [@naaboromern](https://x.com/naaboromern). Add the link to your social post in the PR description.
+Include a link to the PR and tag [@_7obaid_](https://x.com/_7obaid_). Add the link to your social post in the PR description.
 
 ## PR Template
 
@@ -89,17 +89,6 @@ We want contributors who:
 - Are willing to help spread the word
 
 If these requirements feel too high, this project isn't for you. If you genuinely care about building great developer tools, welcome aboard.
-
-## Getting Started
-
-1. Fork the repo and install Flux (`/plugin add https://github.com/Nairon-AI/flux@latest`)
-2. Create a feature branch
-3. Run `/flux:scope` to plan your feature or fix
-4. Run `/flux:work` to execute each task
-5. Run `/flux:impl-review` to verify your work
-6. Record your demo video
-7. Post to social media
-8. Submit your PR with all requirements
 
 ## Questions?
 
