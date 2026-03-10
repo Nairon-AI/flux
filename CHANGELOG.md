@@ -16,6 +16,8 @@ All notable changes to Flux will be documented in this file.
 
 - `/flux:setup` now includes richer install prompts with clearer benefits, optional API key handling for Firecrawl, broader setup summaries, and platform-aware recommendations for installable tools.
 - `/flux:setup` now ends with an explicit Superset orchestrator reminder for parallel Claude Code workflows.
+- `/flux:setup` desktop apps step now explicitly runs on supported OS and surfaces productivity app recommendations (Superset, Raycast, Ghostty, Wispr Flow, Granola) without silent skipping.
+- `/flux:setup` skill installs now use non-interactive UI Skills install flow and corrected Taste Skill source path, with explicit post-install verification + failed status reporting.
 - Installed-tool detection now recognizes `agent-browser`, `cli-continues`, `agentmap`, and Superset.app on macOS.
 
 ### Changed

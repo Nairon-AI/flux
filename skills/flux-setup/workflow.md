@@ -536,6 +536,13 @@ fi
 
 **IMPORTANT: Only include apps compatible with detected OS. Skip this entire step if no apps are compatible.**
 
+**REQUIRED behavior:** Always execute this desktop-apps step before CLI tools/skills on supported OS (`macos`, `linux`, `windows`). Do not silently skip it.
+
+If all compatible apps are already installed, print an explicit status line and continue:
+```
+Desktop apps already installed: <comma-separated list>
+```
+
 ### Ask which to install (OS-specific questions)
 
 **For macOS users** (all 5 apps available):
@@ -547,9 +554,9 @@ fi
   "multiple": true,
   "options": [
     // Only include apps NOT already installed
+    {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Claude Code sessions using git worktrees (free)"},
     {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
     {"label": "Ghostty", "description": "Fast GPU terminal with split panes for parallel agents (free)"},
-    {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Claude Code sessions using git worktrees (free)"},
     {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
     {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
   ]
@@ -908,8 +915,8 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
 | `cartographer` | Cartographer | **Parallel codebase mapping** — faster architecture understanding in large repos | `git clone https://github.com/kingbootoshi/cartographer.git ~/.claude/skills/cartographer` |
-| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx skills add ibelick/ui-skills` |
-| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
+| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` |
+| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
 | `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git ~/.claude/skills/agent-skills-vercel` |
 | `adversarial-spec` | Adversarial Spec | **Stronger specs before coding** — expose requirement gaps early | `git clone https://github.com/zscole/adversarial-spec.git ~/.claude/skills/adversarial-spec` |
@@ -920,7 +927,7 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 ```bash
 HAVE_CARTOGRAPHER=$([ -d "$HOME/.claude/skills/cartographer" ] && echo 1 || echo 0)
-HAVE_UI_SKILLS=$(([ -d "$HOME/.claude/skills/ui-skills" ] || [ -d "$HOME/.claude/skills/baseline-ui" ]) && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] || [ -f "$HOME/.claude/skills/fixing-accessibility/SKILL.md" ] || [ -d "$HOME/.claude/skills/ui-skills" ]) && echo 1 || echo 0)
 HAVE_TASTE_SKILL=$([ -f "$HOME/.claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
 HAVE_SEMVER_CHANGELOG=$(([ -d "$HOME/.claude/skills/semver-changelog" ] || [ -d "$HOME/.claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
 HAVE_AGENT_SKILLS_VERCEL=$([ -d "$HOME/.claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
@@ -928,6 +935,7 @@ HAVE_ADVERSARIAL_SPEC=$([ -d "$HOME/.claude/skills/adversarial-spec" ] && echo 1
 HAVE_TRAILOFBITS_SKILLS=$([ -d "$HOME/.claude/skills/trailofbits-skills" ] && echo 1 || echo 0)
 HAVE_X_RESEARCH_SKILL=$([ -d "$HOME/.claude/skills/x-research-skill" ] && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
 ```
 
 ### Ask which skills to install
@@ -981,19 +989,31 @@ fi
 
 if [ "$INSTALL_UI_SKILLS" = "1" ]; then
   if which npx >/dev/null 2>&1; then
-    npx skills add ibelick/ui-skills 2>/dev/null || {
-      echo "Install manually: https://github.com/ibelick/ui-skills"
-    }
+    npx -y ui-skills add --all 2>/dev/null || true
   else
-    echo "npx not found. Install manually: https://github.com/ibelick/ui-skills"
+    echo "npx not found. Install manually: npx -y ui-skills add --all"
+  fi
+
+  if [ ! -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] && [ ! -f "$HOME/.claude/skills/fixing-accessibility/SKILL.md" ]; then
+    echo "Install manually: npx -y ui-skills add --all"
   fi
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
   mkdir -p "$HOME/.claude/skills/taste-skill"
-  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/SKILL.md -o "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
-    echo "Install manually: https://github.com/Leonxlnx/taste-skill"
+  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
+    if which git >/dev/null 2>&1; then
+      TMP_TASTE_DIR=$(mktemp -d 2>/dev/null || echo "")
+      if [ -n "$TMP_TASTE_DIR" ] && git clone --depth 1 https://github.com/Leonxlnx/taste-skill.git "$TMP_TASTE_DIR/taste-skill" 2>/dev/null; then
+        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
+        rm -rf "$TMP_TASTE_DIR"
+      fi
+    fi
   }
+
+  if [ ! -s "$HOME/.claude/skills/taste-skill/SKILL.md" ]; then
+    echo "Install manually: https://github.com/Leonxlnx/taste-skill"
+  fi
 fi
 
 if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
@@ -1046,6 +1066,21 @@ if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
   fi
 fi
 ```
+
+### Verify skill installs (required)
+
+After running installs, verify each selected skill path exists before marking success:
+
+- UI Skills: `$HOME/.claude/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`)
+- Taste Skill: `$HOME/.claude/skills/taste-skill/SKILL.md`
+- Cartographer: `$HOME/.claude/skills/cartographer` directory
+- Semver Changelog: `$HOME/.claude/skills/semver-changelog` or `$HOME/.claude/skills/semantic-version-changelog-generator`
+- Agent Skills (Vercel): `$HOME/.claude/skills/agent-skills-vercel` directory
+- Adversarial Spec: `$HOME/.claude/skills/adversarial-spec` directory
+- Trail of Bits Skills: `$HOME/.claude/skills/trailofbits-skills` directory
+- X Research Skill: `$HOME/.claude/skills/x-research-skill` directory
+
+If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
 ### Track installation results
 
@@ -1406,14 +1441,14 @@ Use tracking variables from Step 4e. If gh was already installed before setup, s
 
 ```
 Agent skills:
-- Cartographer: <installed | already installed | skipped>
-- UI Skills: <installed | already installed | skipped>
-- Taste Skill: <installed | already installed | skipped>
-- Semver Changelog: <installed | already installed | skipped>
-- Agent Skills (Vercel): <installed | already installed | skipped>
-- Adversarial Spec: <installed | already installed | skipped>
-- Trail of Bits Skills: <installed | already installed | skipped>
-- X Research Skill: <installed | already installed | skipped>
+- Cartographer: <installed | already installed | skipped | failed>
+- UI Skills: <installed | already installed | skipped | failed>
+- Taste Skill: <installed | already installed | skipped | failed>
+- Semver Changelog: <installed | already installed | skipped | failed>
+- Agent Skills (Vercel): <installed | already installed | skipped | failed>
+- Adversarial Spec: <installed | already installed | skipped | failed>
+- Trail of Bits Skills: <installed | already installed | skipped | failed>
+- X Research Skill: <installed | already installed | skipped | failed>
 ```
 
 Use tracking variables from Step 4f.

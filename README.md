@@ -192,6 +192,13 @@ If setup has not been run yet, run:
 
 This scaffolds `.flux/` in your project and configures your preferences. After it finishes successfully, restart Claude Code once before using Flux commands.
 
+`/flux:setup` also offers optional, OS-aware productivity app installs:
+- macOS: Superset, Ghostty, Raycast, Wispr Flow, Granola
+- Linux: Ghostty
+- Windows: Granola
+
+These are optional, but recommended when relevant to your workflow.
+
 ### Build Your First Feature
 
 Once setup completes, you're ready. Start with:
