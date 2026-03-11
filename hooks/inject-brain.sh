@@ -32,5 +32,7 @@ if [ -x "$FLUXCTL" ] && [ -d ".flux" ]; then
   echo ""
   "$FLUXCTL" session-state || true
   echo ""
+  "$FLUXCTL" prime-status || true
+  echo ""
   "$FLUXCTL" scope-status || true
 fi

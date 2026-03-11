@@ -71,6 +71,7 @@ WORKFLOW_STATUSES = [
     "ready_for_handoff",
     "done",
 ]
+PRIME_STATUSES = ["not_started", "in_progress", "done"]
 
 TASK_SPEC_HEADINGS = [
     "## Description",
@@ -812,10 +813,58 @@ def artifact_path_for_phase(epic_id: str, phase: str) -> Path:
     return artifact_dir_for_epic(epic_id) / f"{phase}.md"
 
 
+def default_prime_state() -> dict:
+    """Default prime-state metadata stored in meta.json."""
+    return {
+        "status": "not_started",
+        "last_run_at": None,
+        "last_run_version": None,
+    }
+
+
+def current_flux_version() -> Optional[str]:
+    """Best-effort local Flux version lookup."""
+    candidates = [
+        get_repo_root() / "package.json",
+        get_repo_root() / ".claude-plugin" / "plugin.json",
+        get_repo_root() / ".factory-plugin" / "plugin.json",
+    ]
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        version = data.get("version")
+        if isinstance(version, str) and version.strip():
+            return version.strip()
+    return None
+
+
 def load_meta(use_json: bool = True) -> dict:
     """Load meta.json."""
     meta_path = get_flow_dir() / META_FILE
-    return load_json_or_exit(meta_path, "meta.json", use_json=use_json)
+    meta = load_json_or_exit(meta_path, "meta.json", use_json=use_json)
+    if not isinstance(meta, dict):
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "next_epic": 1,
+            "active_objective": None,
+            "prime": default_prime_state(),
+        }
+    if "prime" not in meta or not isinstance(meta.get("prime"), dict):
+        meta["prime"] = default_prime_state()
+    else:
+        prime = meta["prime"]
+        merged_prime = default_prime_state()
+        for key in ("status", "last_run_at", "last_run_version"):
+            if key in prime:
+                merged_prime[key] = prime[key]
+        if merged_prime.get("status") not in PRIME_STATUSES:
+            merged_prime["status"] = "not_started"
+        meta["prime"] = merged_prime
+    return meta
 
 
 def save_meta(meta: dict) -> None:
@@ -838,6 +887,49 @@ def set_active_objective(epic_id: Optional[str], use_json: bool = True) -> None:
     else:
         meta["active_objective"] = epic_id
     save_meta(meta)
+
+
+def get_prime_state(use_json: bool = True) -> dict:
+    """Get repo prime-state metadata."""
+    meta = load_meta(use_json=use_json)
+    prime = meta.get("prime")
+    if not isinstance(prime, dict):
+        return default_prime_state()
+    merged = default_prime_state()
+    for key in merged:
+        if key in prime:
+            merged[key] = prime[key]
+    if merged["status"] not in PRIME_STATUSES:
+        merged["status"] = "not_started"
+    return merged
+
+
+def set_prime_state(
+    status: str,
+    *,
+    use_json: bool = True,
+    last_run_at: Optional[str] = None,
+    last_run_version: Optional[str] = None,
+) -> dict:
+    """Update repo prime-state metadata and return the normalized state."""
+    if status not in PRIME_STATUSES:
+        status = "not_started"
+    meta = load_meta(use_json=use_json)
+    prime = get_prime_state(use_json=use_json)
+    prime["status"] = status
+    if status == "done":
+        prime["last_run_at"] = last_run_at or now_iso()
+        prime["last_run_version"] = last_run_version or current_flux_version()
+    elif status == "in_progress":
+        prime["last_run_at"] = last_run_at or prime.get("last_run_at")
+        if last_run_version is not None:
+            prime["last_run_version"] = last_run_version
+    else:
+        prime["last_run_at"] = None
+        prime["last_run_version"] = None
+    meta["prime"] = prime
+    save_meta(meta)
+    return prime
 
 
 # --- Context Hints (for codex reviews) ---
@@ -2346,7 +2438,12 @@ def cmd_init(args: argparse.Namespace) -> None:
     # Create meta.json if missing (never overwrite existing)
     meta_path = flow_dir / META_FILE
     if not meta_path.exists():
-        meta = {"schema_version": SCHEMA_VERSION, "next_epic": 1, "active_objective": None}
+        meta = {
+            "schema_version": SCHEMA_VERSION,
+            "next_epic": 1,
+            "active_objective": None,
+            "prime": default_prime_state(),
+        }
         atomic_write_json(meta_path, meta)
         actions.append("created meta.json")
     else:
@@ -2360,6 +2457,7 @@ def cmd_init(args: argparse.Namespace) -> None:
             "schema_version": raw_meta.get("schema_version", SCHEMA_VERSION),
             "next_epic": raw_meta.get("next_epic", 1),
             "active_objective": raw_meta.get("active_objective"),
+            "prime": raw_meta.get("prime", default_prime_state()),
         }
         if merged_meta != raw_meta:
             atomic_write_json(meta_path, merged_meta)
@@ -2453,6 +2551,7 @@ def cmd_status(args: argparse.Namespace) -> None:
     current_objective = (
         choose_current_objective(current_actor, use_json=args.json) if flow_exists else None
     )
+    prime_state = get_prime_state(use_json=args.json) if flow_exists else default_prime_state()
 
     # Count epics and tasks by status
     epic_counts = {"open": 0, "done": 0}
@@ -2519,6 +2618,7 @@ def cmd_status(args: argparse.Namespace) -> None:
                     "workflow_status": current_objective["workflow_status"],
                     "next_action": current_objective.get("next_action"),
                 },
+                "prime": prime_state,
             }
         )
     else:
@@ -2564,6 +2664,14 @@ def cmd_status(args: argparse.Namespace) -> None:
             )
             if current_objective.get("next_action"):
                 print(f"Next: {current_objective['next_action']}")
+        if flow_exists:
+            print()
+            prime_line = f"Prime: {prime_state['status']}"
+            if prime_state.get("last_run_at"):
+                prime_line += f" at {prime_state['last_run_at']}"
+            if prime_state.get("last_run_version"):
+                prime_line += f" (v{prime_state['last_run_version']})"
+            print(prime_line)
 
 
 def cmd_ralph_pause(args: argparse.Namespace) -> None:
@@ -4406,6 +4514,7 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
         if path.exists():
             artifacts.append({"phase": phase, "path": str(path.relative_to(get_repo_root()))})
 
+    prime_state = get_prime_state(use_json=args.json)
     result = {
         "objective": {
             "id": epic_data["id"],
@@ -4425,6 +4534,7 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
             "resolved_decisions": epic_data["resolved_decisions"],
         },
         "progress": progress,
+        "prime": prime_state,
         "tasks": {
             "ready": [{"id": t["id"], "title": t["title"]} for t in readiness["ready"]],
             "in_progress": [
@@ -4456,6 +4566,7 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
             f"Technical: {epic_data['technical_level'] or 'unset'} | "
             f"Target: {epic_data['implementation_target']}"
         )
+        print(f"Prime: {prime_state['status']}")
         print("Progress: " + " -> ".join(phase_parts))
         print(
             f"Current: {epic_data['workflow_phase']} / {epic_data['workflow_step']} "
@@ -4475,8 +4586,38 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "flow_exists": False,
             "objective": None,
             "task": None,
-            "message": "Flux is not initialized. Start a new scoped objective.",
-            "next_action": "/flux:setup then /flux:scope",
+            "prime": default_prime_state(),
+            "message": "Flux is not initialized yet.",
+            "next_action": "/flux:setup",
+        }
+        if args.json:
+            json_output(result)
+        else:
+            print(result["message"])
+        return
+
+    prime_state = get_prime_state(use_json=args.json)
+    if prime_state.get("status") != "done":
+        current_actor = get_actor()
+        epic_data = choose_current_objective(current_actor, use_json=args.json)
+        result = {
+            "state": "needs_prime",
+            "flow_exists": True,
+            "objective": None
+            if not epic_data
+            else {
+                "id": epic_data["id"],
+                "title": epic_data["title"],
+                "objective_kind": epic_data["objective_kind"],
+                "scope_mode": epic_data["scope_mode"],
+                "workflow_phase": epic_data["workflow_phase"],
+                "workflow_step": epic_data["workflow_step"],
+                "workflow_status": epic_data["workflow_status"],
+            },
+            "task": None,
+            "prime": prime_state,
+            "message": "Flux is installed, but this repository has not been primed yet. Run /flux:prime before scoping or implementation.",
+            "next_action": "/flux:prime",
         }
         if args.json:
             json_output(result)
@@ -4492,6 +4633,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "flow_exists": True,
             "objective": None,
             "task": None,
+            "prime": prime_state,
             "message": "No open objective. Start a new feature, bug, or refactor scope.",
             "next_action": "/flux:scope",
         }
@@ -4538,6 +4680,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     result = {
         "state": state,
         "flow_exists": True,
+        "prime": prime_state,
         "objective": {
             "id": epic_data["id"],
             "title": epic_data["title"],
@@ -4635,6 +4778,57 @@ def cmd_artifact_read(args: argparse.Namespace) -> None:
         )
     else:
         print(content)
+
+
+def cmd_prime_status(args: argparse.Namespace) -> None:
+    """Show whether this repo has been primed yet."""
+    if not ensure_flow_exists():
+        result = {
+            "flow_exists": False,
+            "prime": default_prime_state(),
+            "prime_required": True,
+            "message": "Flux is not initialized yet.",
+            "next_action": "/flux:setup",
+        }
+        if args.json:
+            json_output(result)
+        else:
+            print(result["message"])
+        return
+
+    prime = get_prime_state(use_json=args.json)
+    prime_required = prime.get("status") != "done"
+    message = (
+        "Prime has not completed for this repository yet."
+        if prime_required
+        else "Prime has completed for this repository."
+    )
+    result = {
+        "flow_exists": True,
+        "prime": prime,
+        "prime_required": prime_required,
+        "message": message,
+        "next_action": "/flux:prime" if prime_required else None,
+    }
+    if args.json:
+        json_output(result)
+    else:
+        print(message)
+
+
+def cmd_prime_mark(args: argparse.Namespace) -> None:
+    """Internal helper to persist prime-state metadata."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+    prime = set_prime_state(
+        args.status,
+        use_json=args.json,
+        last_run_version=args.version,
+    )
+    if args.json:
+        json_output({"prime": prime, "message": f"Prime marked {prime['status']}"})
+    else:
+        print(f"Prime marked {prime['status']}")
 
 
 def cmd_task_set_backend(args: argparse.Namespace) -> None:
@@ -7662,6 +7856,24 @@ def main() -> None:
     )
     p_session_state.add_argument("--json", action="store_true", help="JSON output")
     p_session_state.set_defaults(func=cmd_session_state)
+
+    # prime-status
+    p_prime_status = subparsers.add_parser(
+        "prime-status", help="Show whether this repository has been primed"
+    )
+    p_prime_status.add_argument("--json", action="store_true", help="JSON output")
+    p_prime_status.set_defaults(func=cmd_prime_status)
+
+    # prime-mark
+    p_prime_mark = subparsers.add_parser(
+        "prime-mark", help="Internal helper to persist prime-state metadata"
+    )
+    p_prime_mark.add_argument(
+        "--status", required=True, choices=PRIME_STATUSES, help="Prime status"
+    )
+    p_prime_mark.add_argument("--version", help="Flux version associated with this prime run")
+    p_prime_mark.add_argument("--json", action="store_true", help="JSON output")
+    p_prime_mark.set_defaults(func=cmd_prime_mark)
 
     # scope-status
     p_scope_status = subparsers.add_parser(

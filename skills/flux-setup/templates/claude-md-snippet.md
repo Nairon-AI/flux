@@ -12,6 +12,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 
 **Turn policy (mandatory):**
 - On any new work-like request, first run `.flux/bin/fluxctl session-state`.
+- If `session-state` says `needs_prime`, run `/flux:prime` before scoping, coding, or review work.
 - Treat these as work-like requests:
   - "build", "implement", "add", "create"
   - "fix", "debug", "resolve"
@@ -22,6 +23,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - Do not silently ignore active Flux state just because the user phrased the request casually.
 
 **Routing rules:**
+- If `session-state` says `needs_prime`: run `/flux:prime` first. Do not start scope or implementation before prime completes.
 - If `session-state` says `resume_scope`: continue the current scoped objective unless the user clearly wants a new one.
 - If `session-state` says `resume_work`: resume the active task/objective unless the user clearly wants a new one.
 - If `session-state` says `needs_completion_review`: route to review before claiming the work is fully done.
@@ -30,6 +32,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 
 **Scoping rules:**
 - `/flux:scope` is the full scoping workflow: Start -> Discover -> Define -> Develop -> Deliver -> Handoff.
+- Prime is the first workflow step in a repository. If the repo is not primed yet, do that automatically before starting scope.
 - At the start of a new scope, ask:
   - is this a feature, bug, or refactor?
   - should we go shallow or deep?
@@ -44,6 +47,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 .flux/bin/fluxctl epics               # List all epics
 .flux/bin/fluxctl objective current   # Show active objective
 .flux/bin/fluxctl session-state       # Show routing state
+.flux/bin/fluxctl prime-status        # Show whether prime is still required
 .flux/bin/fluxctl scope-status        # Show scoping phase/progress
 .flux/bin/fluxctl tasks --epic fn-N   # List tasks for epic
 .flux/bin/fluxctl ready --epic fn-N   # What's ready

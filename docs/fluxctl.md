@@ -705,12 +705,25 @@ fluxctl session-state [--json]
 ```
 
 Typical states:
+- `needs_prime`
 - `fresh_session_no_objective`
 - `resume_scope`
 - `resume_work`
 - `needs_review`
 - `needs_completion_review`
 - `idle_with_open_epics`
+
+When `needs_prime` is returned, Flux should run `/flux:prime` before scoping or implementation.
+
+### prime-status
+
+Show whether this repository has been primed yet.
+
+```bash
+fluxctl prime-status [--json]
+```
+
+This is mainly used by Flux's routing layer and install/setup flow.
 
 ### scope-status
 

@@ -277,11 +277,35 @@ describe('Fluxctl CLI', () => {
     expect(parsed.flow_exists).toBe(false)
   }, SCRIPT_TIMEOUT)
 
+  test('session-state requires prime before any scoped workflow', async () => {
+    const tmpRoot = `/tmp/flux-needs-prime-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+
+    const sessionRaw = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
+    const session = JSON.parse(sessionRaw)
+    expect(session.state).toBe('needs_prime')
+    expect(session.next_action).toBe('/flux:prime')
+
+    await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
+
+    const primeRaw = await $`${fluxctl} prime-status --json`.cwd(tmpRoot).text()
+    const prime = JSON.parse(primeRaw)
+    expect(prime.prime_required).toBe(false)
+    expect(prime.prime.status).toBe('done')
+
+    const afterPrimeRaw = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
+    const afterPrime = JSON.parse(afterPrimeRaw)
+    expect(afterPrime.state).toBe('fresh_session_no_objective')
+  }, SCRIPT_TIMEOUT)
+
   test('scope-status reflects active objective workflow metadata', async () => {
     const tmpRoot = `/tmp/flux-scope-status-${Date.now()}`
     await $`mkdir -p ${tmpRoot}`.quiet()
 
     await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+    await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
     const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`.cwd(tmpRoot).text()
     const epic = JSON.parse(epicRaw)
 

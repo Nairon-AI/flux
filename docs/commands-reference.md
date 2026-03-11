@@ -2,6 +2,8 @@
 
 Complete reference for all available `/flux:*` commands.
 
+Flux is designed to route from intent. In normal use, you should be able to tell the agent what you want to build, fix, refactor, or continue, and let Flux choose the right command. Treat this page as a reference, not the primary way to drive the workflow.
+
 ---
 
 ## Installation

@@ -26,7 +26,7 @@
 
 ## The Problem
 
-You're using Claude Code, but something's off:
+You're using an AI coding agent, but something's off:
 
 - **No structure** → You jump straight into code and watch the agent go off the rails
 - **Context amnesia** → You keep re-explaining the same thing every session
@@ -64,10 +64,10 @@ The insight: in the age of agentic development, **you still need a framework**�
 
 Flux now treats `.flux/` as the canonical workflow memory for the current repository.
 
-- `session-state` tells Flux whether to start fresh, resume scoping, resume implementation, or route to review
+- `session-state` tells Flux whether to prime first, start fresh, resume scoping, resume implementation, or route to review
 - `scope-status` shows the active objective, current scoping phase, progress, and next action
 - an active objective pointer keeps feature, bug, and refactor work anchored even across long sessions
-- startup hooks and setup-installed Claude instructions tell the agent to realign with Flux state before acting on new work-like requests
+- startup hooks and setup-installed agent instructions tell the agent to realign with Flux state before acting on new work-like requests
 
 ---
 
@@ -87,10 +87,17 @@ Only stop when I need to run a slash command, approve something, or restart the 
 
 If Flux is already installed, verify it and continue.
 After install, run /flux:setup if this platform supports it and complete setup.
-Then guide me through:
-1) /flux:prime first (agent-readiness + inefficiency audit)
-2) /flux:scope -> /flux:work -> /flux:impl-review -> /flux:improve
-3) /flux:reflect at the end of each session
+
+After setup and any required restart, check whether this repository has been primed yet.
+If not, run /flux:prime automatically before any scoping or implementation work.
+
+Once Flux is ready, I should be able to describe what I want naturally:
+- build a feature
+- fix a bug
+- refactor something
+- continue existing work
+
+Flux should route to the right workflow automatically based on state and intent.
 
 Tell me exactly what you need from me, one step at a time, and do the rest automatically.
 ```
@@ -125,10 +132,10 @@ cd flux
 
 Then:
 1. Restart the agent/session if your platform requires it.
-2. Run `/flux:setup` where supported.
+2. Let your agent complete Flux setup where supported.
 
-After `/flux:setup` succeeds, restart once more if your platform loads plugins/prompts at session start.
-Then run `/flux:prime` first to audit agent readiness and workflow inefficiencies before starting new work.
+After setup succeeds, restart once more if your platform loads plugins/prompts at session start.
+After that, your agent should prime the repository automatically if needed, then route based on your intent.
 
 ### Upgrade Flux (existing users)
 
@@ -144,7 +151,7 @@ or:
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-Then restart your agent/session and run `/flux:setup`.
+Then restart your agent/session and let the agent finish Flux setup.
 
 ## Uninstall Flux (complete removal)
 
@@ -195,15 +202,11 @@ rm -rf ~/.flux
 
 Restart your agent/session if needed and verify Flux is gone.
 
-### Setup (if not already run)
+### First-Run Setup
 
-If setup has not been run yet, run:
+On supported platforms, Flux performs a first-run setup step that scaffolds `.flux/` in your project and configures your preferences.
 
-```bash
-/flux:setup
-```
-
-This scaffolds `.flux/` in your project and configures your preferences. After it finishes successfully, restart Claude Code once before using Flux commands.
+Your agent should handle this automatically after installation. If the platform requires a restart for new commands/prompts to load, restart once and let the agent continue.
 
 `/flux:setup` also offers optional, OS-aware productivity app installs:
 - macOS: Superset, Ghostty, Raycast, Wispr Flow, Granola
@@ -214,51 +217,23 @@ These are optional, but recommended when relevant to your workflow.
 
 ### Prime Then Build
 
-First run:
+Prime is the first workflow step in a repository.
 
-```bash
-/flux:prime
-```
+`/flux:prime` audits your codebase for agent readiness, finds inefficiencies, and surfaces what to improve before feature work begins. Flux now tracks whether prime has completed, so the agent can detect this automatically and run it first when needed.
 
-`/flux:prime` audits your codebase for agent readiness, finds inefficiencies, and surfaces what to improve before you start feature work.
+After prime, you should not need to remember workflow commands. Just tell the agent what you want:
+- build a feature
+- fix a bug
+- refactor something
+- continue work
 
-Then start your first feature:
+Flux should use repo state plus your message to decide whether to scope, resume implementation, review, or hand work off.
 
-Once setup completes, you're ready. Start with:
-
-```bash
-/flux:scope Add user notifications
-```
-
-This runs the **Double Diamond** process:
-1. **Problem Space** — Flux interviews you: *What are we really solving? Who's affected? What are the risks?*
-2. **Solution Space** — Researches your codebase, then creates a sized epic with tasks (e.g., `fn-1.1`, `fn-1.2`)
-
-Then execute and review:
-
-```bash
-/flux:work fn-1.1          # Execute first task with full context
-/flux:work fn-1.2          # Next task
-
-/flux:impl-review          # Review implementation before moving on
-/flux:improve              # Find workflow improvements from recent patterns
-/flux:epic-review fn-1     # Verify the epic is complete
-
-# End of session
-/flux:reflect              # Capture learnings into memory/brain vault
-```
-
-**Core pattern:** Prime once -> Scope -> Build -> Review -> Improve. End each session with Reflect.
+**Core pattern:** Prime first, then let Flux route the workflow based on intent. Use the command table below as a reference, not as the primary way to drive Flux.
 
 ### Optimize Your Workflow
 
-Once you've been using Flux for a while, run:
-
-```bash
-/flux:improve
-```
-
-This analyzes your environment + sessions to detect inefficiencies and recommends concrete workflow upgrades.
+Once you've been using Flux for a while, the agent can run improve to analyze your environment + sessions, detect inefficiencies, and recommend concrete workflow upgrades.
 
 It can break down:
 - what you do most frequently,

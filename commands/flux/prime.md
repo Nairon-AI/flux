@@ -21,6 +21,18 @@ Then continue with the command. Do NOT block or prompt - just inform.
 
 ---
 
+## Step 0.5: Mark Prime As Running
+
+If `.flux/bin/fluxctl` exists in the current repo, run:
+
+```bash
+.flux/bin/fluxctl prime-mark --status in_progress --json >/dev/null 2>&1 || true
+```
+
+This records that prime has started, so Flux can route the session correctly while the audit is running.
+
+---
+
 # IMPORTANT: This command MUST invoke the skill `flux-prime`
 
 The ONLY purpose of this command is to call the `flux-prime` skill. You MUST use that skill now.
@@ -28,3 +40,9 @@ The ONLY purpose of this command is to call the `flux-prime` skill. You MUST use
 **User request:** $ARGUMENTS
 
 Pass the user request to the skill. The skill handles all assessment and remediation logic.
+
+After the skill completes successfully, if `.flux/bin/fluxctl` exists, run:
+
+```bash
+.flux/bin/fluxctl prime-mark --status done --json >/dev/null 2>&1 || true
+```
