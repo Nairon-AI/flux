@@ -266,6 +266,42 @@ describe('Fluxctl CLI', () => {
     const result = await $`${fluxctl} list`.cwd(FLUX_ROOT).text().catch(e => e.stderr?.toString() || e.message)
     expect(result).toBeTruthy()
   }, SCRIPT_TIMEOUT)
+
+  test('session-state reports fresh session when .flux is missing', async () => {
+    const tmpRoot = `/tmp/flux-session-state-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+    const output = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
+    const parsed = JSON.parse(output)
+
+    expect(parsed.state).toBe('fresh_session_no_objective')
+    expect(parsed.flow_exists).toBe(false)
+  }, SCRIPT_TIMEOUT)
+
+  test('scope-status reflects active objective workflow metadata', async () => {
+    const tmpRoot = `/tmp/flux-scope-status-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`.cwd(tmpRoot).text()
+    const epic = JSON.parse(epicRaw)
+
+    await $`${fluxctl} epic set-workflow ${epic.id} --phase discover --step "repro-and-impact" --status in_progress --summary "Investigating repro path" --next-action "Confirm expected behavior" --open-question "Does this affect social login?" --activate --json`.cwd(tmpRoot).quiet()
+
+    const statusRaw = await $`${fluxctl} scope-status --json`.cwd(tmpRoot).text()
+    const status = JSON.parse(statusRaw)
+    expect(status.objective.id).toBe(epic.id)
+    expect(status.objective.objective_kind).toBe('bug')
+    expect(status.objective.scope_mode).toBe('deep')
+    expect(status.workflow.phase).toBe('discover')
+    expect(status.workflow.step).toBe('repro-and-impact')
+    expect(status.workflow.status).toBe('in_progress')
+    expect(status.workflow.open_questions).toContain('Does this affect social login?')
+
+    const sessionRaw = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
+    const session = JSON.parse(sessionRaw)
+    expect(session.state).toBe('resume_scope')
+    expect(session.objective.id).toBe(epic.id)
+  }, SCRIPT_TIMEOUT)
 })
 
 describe('Integration', () => {

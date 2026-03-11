@@ -1,27 +1,21 @@
 ---
 name: flux-scope
-description: Combined requirements gathering and planning using Double Diamond process. Guides through Problem Space (discover/define) then Solution Space (research/plan). Default is quick mode (~10 min). Use --deep for thorough scoping (~45 min).
+description: Full Product OS-style scoping workflow for features, bugs, and refactors. Guides through Start, Discover, Define, Develop, Deliver, and Handoff. Default is shallow mode (~10 min). Use --deep for the full staged flow (~45 min).
 user-invocable: false
 ---
 
 # Flow scope
 
-Turn a rough idea into a well-defined epic with tasks using the Double Diamond process.
+Turn a rough idea into a well-defined objective using a Product OS-style workflow adapted for engineering.
 
-**Double Diamond Flow:**
+**Flux Scope Flow:**
 ```
-PROBLEM SPACE                    SOLUTION SPACE
-┌────────────────────┐          ┌────────────────────┐
-│ DISCOVER   DEFINE  │          │ RESEARCH   PLAN    │
-│ (diverge) (converge)│    →    │ (diverge) (converge)│
-│     ◇        ▽     │          │     ◇        ▽     │
-└────────────────────┘          └────────────────────┘
-     ~5-20 min                       ~5-25 min
+START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
 ```
 
 **Modes**:
-- **Quick (default)**: ~10 min total. MVP-focused problem exploration + short plan.
-- **Deep (`--deep`)**: ~45 min total. Thorough discovery + standard/deep plan.
+- **Shallow (default)**: ~10 min total. Compressed scoping for smaller or clearer work.
+- **Deep (`--deep`)**: ~45 min total. Full staged workflow with stronger gates, more edge cases, and richer handoff.
 - **Explore (`--explore [N]`)**: Generate N competing approaches, scaffold each in parallel, compare visually, pick winner.
 
 > "Understand the problem before solving it. Most failed features solve the wrong problem."
@@ -62,15 +56,15 @@ fi
 Continue regardless (non-blocking).
 
 **Role**: product-minded technical interviewer and planner
-**Goal**: understand the problem deeply, then create actionable tasks
+**Goal**: understand the problem deeply, keep the user aligned to the current workflow, then create actionable implementation context
 
 ## Input
 
 Full request: $ARGUMENTS
 
 **Options**:
-- `--quick` (default): MVP-focused, ~10 min total
-- `--deep`: Thorough scoping, ~45 min total
+- `--quick` / default shallow mode: compressed Product OS flow, ~10 min total
+- `--deep`: Full staged scoping, ~45 min total
 - `--explore [N]`: Generate N approaches (default 3), scaffold each in parallel, compare visually
 - `--linear`: Connect to Linear MCP, browse teams/projects, select issue to scope
 - `LIN-123` (or any `XXX-123` pattern): Directly scope a specific Linear issue
@@ -94,11 +88,23 @@ If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentence
 
 ## Detect Mode
 
-Parse arguments for `--deep` flag. Default is quick mode.
+Parse arguments for `--deep` flag. Default is shallow mode.
 
 ```
-SCOPE_MODE = "--deep" in arguments ? "deep" : "quick"
+SCOPE_MODE = "--deep" in arguments ? "deep" : "shallow"
 ```
+
+## Session Realignment
+
+Before asking new scoping questions, check current workflow state:
+
+```bash
+$FLUXCTL session-state --json
+```
+
+If there is an active scoped objective, resume it instead of silently starting over.
+If there is active implementation work, tell the user and only re-enter scope if they clearly want to switch objectives.
+Flux should always prefer alignment with `.flux/` state over treating each prompt as stateless.
 
 ## Detect Linear Mode
 

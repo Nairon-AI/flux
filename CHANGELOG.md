@@ -2,6 +2,28 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.4] - 2026-03-11
+
+### Added
+
+- **Deterministic workflow state engine** in `fluxctl`
+  - `session-state` for startup and natural-language routing
+  - `scope-status` for active objective, phase, progress, and next action
+  - active objective support plus objective switching and Product OS-style phase artifacts
+- **Product OS-style scope persistence**
+  - scoped objectives now track feature/bug/refactor kind, shallow vs deep mode, technical level, implementation target, workflow phase, workflow step, and next action
+  - `.flux/artifacts/` now stores human-readable phase outputs for resumable scoping
+
+### Improved
+
+- Session startup now explicitly prints Flux realignment guidance plus current `session-state` and `scope-status`
+- `/flux:setup` now installs stricter Claude instructions so work-like prompts realign with Flux state before acting
+- README and command docs now explain the deterministic state engine, active-objective alignment, and Product OS-style scoping behavior
+
+### Changed
+
+- Version synchronized to `1.9.4` across package metadata and Claude plugin manifests.
+
 ## [1.9.3] - 2026-03-10
 
 ### Added

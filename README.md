@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.3-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v1.9.4-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -53,11 +53,21 @@ Flux is the accumulation of our learnings working at enterprise and building sta
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
-**Flux gives you three things:**
+**Flux gives you four things:**
 
-1. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
-2. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
-3. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
+1. **A deterministic state engine** — `.flux/` tracks the active objective, workflow phase, next action, and scoping artifacts so Flux can realign the agent without drift
+2. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
+3. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
+4. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
+
+### Deterministic State Engine
+
+Flux now treats `.flux/` as the canonical workflow memory for the current repository.
+
+- `session-state` tells Flux whether to start fresh, resume scoping, resume implementation, or route to review
+- `scope-status` shows the active objective, current scoping phase, progress, and next action
+- an active objective pointer keeps feature, bug, and refactor work anchored even across long sessions
+- startup hooks and setup-installed Claude instructions tell the agent to realign with Flux state before acting on new work-like requests
 
 ---
 
@@ -471,23 +481,31 @@ rm -rf ~/.claude/plugins/marketplaces/nairon-flux
 
 ---
 
-#### `/flux:scope` — The Double Diamond
+#### `/flux:scope` — The Guided Scoping Workflow
 
-This is your starting point. It guides you through:
+This is your starting point. Flux uses the deterministic state engine in `.flux/` to keep the agent aligned while it guides you through:
 
-1. **Problem Space** — WHY are we building this?
-   - Core desire, reasoning validation, user perspective
-   - Surface blind spots and risks
-   - Converge to clear problem statement
+1. **Start**
+   - classify feature, bug, or refactor
+   - choose shallow vs deep
+   - capture technical level and implementation target
+   - realign with current `.flux/` state if work already exists
 
-2. **Solution Space** — HOW should we build it?
-   - Research codebase patterns
-   - Create epic with sized tasks
+2. **Discover / Define**
+   - understand why the work matters
+   - surface blind spots and risks
+   - converge to a defendable problem statement
+
+3. **Develop / Deliver / Handoff**
+   - shape the solution
+   - create epic with sized tasks
+   - route into `/flux:work` or engineer handoff
+   - show scoping progress so you always know where you are
 
 **Modes:**
 ```bash
-/flux:scope Add notifications          # Quick (~10 min) - MVP focus
-/flux:scope Add notifications --deep   # Deep (~45 min) - thorough scoping
+/flux:scope Add notifications          # Shallow (~10 min) - compressed scoping
+/flux:scope Add notifications --deep   # Deep (~45 min) - full staged workflow
 /flux:scope Add notifications --explore 3  # Generate 3 competing approaches
 ```
 
@@ -495,7 +513,7 @@ This is your starting point. It guides you through:
 
 ### Linear Integration (Optional)
 
-Connect Flux to Linear for team workflows. Select a Linear project, scope it with Double Diamond, and create tasks directly in Linear.
+Connect Flux to Linear for team workflows. Select a Linear project, scope it with the same Product OS-style shallow or deep flow, and create tasks directly in Linear.
 
 ```bash
 /flux:scope --linear              # Browse teams → projects, select one to scope
@@ -507,7 +525,7 @@ Connect Flux to Linear for team workflows. Select a Linear project, scope it wit
 1. Checks if Linear MCP is available (guides setup if not)
 2. Lists teams → projects (Linear project = Flux epic)
 3. Pulls project description, milestones, existing issues
-4. Runs Double Diamond scoping with Linear context
+4. Runs Product OS-style scoping with Linear context
 5. Creates tasks in Linear with proper dependencies
 6. Stores mapping in `.flux/epics/<id>/linear.json`
 
@@ -722,7 +740,7 @@ CTO-level observability:
 | Command | What it does |
 |---------|--------------|
 | `/flux:setup` | Initialize Flux in your project |
-| `/flux:scope <idea>` | **Double Diamond scoping** — interview + plan (`--deep`, `--explore N`, `--linear`) |
+| `/flux:scope <idea>` | **Guided scoping workflow** — staged interview, progress, and handoff (`--deep`, `--explore N`, `--linear`) |
 | `/flux:plan <idea>` | Create tasks only (skip problem space interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |

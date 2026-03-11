@@ -52,10 +52,25 @@ EPICS_DIR = "epics"
 SPECS_DIR = "specs"
 TASKS_DIR = "tasks"
 MEMORY_DIR = "memory"
+ARTIFACTS_DIR = "artifacts"
 CONFIG_FILE = "config.json"
 
 EPIC_STATUS = ["open", "done"]
 TASK_STATUS = ["todo", "in_progress", "blocked", "done"]
+OBJECTIVE_KINDS = ["feature", "bug", "refactor"]
+SCOPE_MODES = ["shallow", "deep"]
+TECHNICAL_LEVELS = ["non_technical", "semi_technical", "technical"]
+IMPLEMENTATION_TARGETS = ["self_with_ai", "engineer_handoff"]
+WORKFLOW_PHASES_DEEP = ["start", "discover", "define", "develop", "deliver", "handoff"]
+WORKFLOW_PHASES_SHALLOW = ["start", "discover", "define", "deliver", "handoff"]
+WORKFLOW_STATUSES = [
+    "not_started",
+    "in_progress",
+    "needs_confirmation",
+    "ready_for_work",
+    "ready_for_handoff",
+    "done",
+]
 
 TASK_SPEC_HEADINGS = [
     "## Description",
@@ -291,6 +306,12 @@ def get_default_config() -> dict:
         "planSync": {"enabled": True, "crossEpic": False},
         "review": {"backend": None},
         "scouts": {"github": False},
+        "workflow": {
+            "technicalLevel": "semi_technical",
+            "defaultScopeMode": "shallow",
+            "defaultImplementationTarget": "self_with_ai",
+            "autoResume": True,
+        },
     }
 
 
@@ -658,6 +679,43 @@ def normalize_epic(epic_data: dict) -> dict:
         epic_data["default_review"] = None
     if "default_sync" not in epic_data:
         epic_data["default_sync"] = None
+    if "objective_kind" not in epic_data:
+        epic_data["objective_kind"] = "feature"
+    if epic_data["objective_kind"] not in OBJECTIVE_KINDS:
+        epic_data["objective_kind"] = "feature"
+    if "scope_mode" not in epic_data:
+        epic_data["scope_mode"] = "shallow"
+    if epic_data["scope_mode"] not in SCOPE_MODES:
+        epic_data["scope_mode"] = "shallow"
+    if "technical_level" not in epic_data:
+        epic_data["technical_level"] = None
+    if epic_data["technical_level"] not in TECHNICAL_LEVELS:
+        epic_data["technical_level"] = None
+    if "implementation_target" not in epic_data:
+        epic_data["implementation_target"] = "self_with_ai"
+    if epic_data["implementation_target"] not in IMPLEMENTATION_TARGETS:
+        epic_data["implementation_target"] = "self_with_ai"
+    allowed_phases = workflow_phases_for_mode(epic_data["scope_mode"])
+    if "workflow_phase" not in epic_data:
+        epic_data["workflow_phase"] = allowed_phases[0]
+    if epic_data["workflow_phase"] not in allowed_phases:
+        epic_data["workflow_phase"] = allowed_phases[0]
+    if "workflow_step" not in epic_data:
+        epic_data["workflow_step"] = "intake"
+    if "workflow_status" not in epic_data:
+        epic_data["workflow_status"] = "not_started"
+    if epic_data["workflow_status"] not in WORKFLOW_STATUSES:
+        epic_data["workflow_status"] = "not_started"
+    if "workflow_summary" not in epic_data:
+        epic_data["workflow_summary"] = ""
+    if "open_questions" not in epic_data or not isinstance(epic_data["open_questions"], list):
+        epic_data["open_questions"] = []
+    if "resolved_decisions" not in epic_data or not isinstance(epic_data["resolved_decisions"], list):
+        epic_data["resolved_decisions"] = []
+    if "next_action" not in epic_data:
+        epic_data["next_action"] = None
+    if "scope_artifacts" not in epic_data or not isinstance(epic_data["scope_artifacts"], dict):
+        epic_data["scope_artifacts"] = {}
     return epic_data
 
 
@@ -712,6 +770,76 @@ def epic_id_from_task(task_id: str) -> str:
     return task_id.rsplit(".", 1)[0]
 
 
+def workflow_phases_for_mode(scope_mode: str) -> list[str]:
+    """Return the ordered workflow phases for a scope mode."""
+    return WORKFLOW_PHASES_DEEP if scope_mode == "deep" else WORKFLOW_PHASES_SHALLOW
+
+
+def workflow_progress(epic_data: dict) -> dict:
+    """Compute workflow progress metrics for an epic."""
+    phases = workflow_phases_for_mode(epic_data.get("scope_mode", "shallow"))
+    current_phase = epic_data.get("workflow_phase", phases[0])
+    try:
+        phase_index = phases.index(current_phase)
+    except ValueError:
+        phase_index = 0
+        current_phase = phases[0]
+    completed = phase_index
+    total = len(phases)
+    percent = int((completed / total) * 100) if total else 0
+    if epic_data.get("workflow_status") == "done":
+        completed = total
+        percent = 100
+    elif epic_data.get("workflow_status") in {"ready_for_work", "ready_for_handoff"}:
+        percent = int(((phase_index + 1) / total) * 100)
+    return {
+        "phases": phases,
+        "current_phase": current_phase,
+        "phase_index": phase_index,
+        "completed_phases": completed,
+        "total_phases": total,
+        "percent": percent,
+    }
+
+
+def artifact_dir_for_epic(epic_id: str) -> Path:
+    """Get artifact directory for an epic."""
+    return get_flow_dir() / ARTIFACTS_DIR / epic_id
+
+
+def artifact_path_for_phase(epic_id: str, phase: str) -> Path:
+    """Get artifact path for an epic phase."""
+    return artifact_dir_for_epic(epic_id) / f"{phase}.md"
+
+
+def load_meta(use_json: bool = True) -> dict:
+    """Load meta.json."""
+    meta_path = get_flow_dir() / META_FILE
+    return load_json_or_exit(meta_path, "meta.json", use_json=use_json)
+
+
+def save_meta(meta: dict) -> None:
+    """Write meta.json."""
+    atomic_write_json(get_flow_dir() / META_FILE, meta)
+
+
+def get_active_objective(use_json: bool = True) -> Optional[str]:
+    """Get active objective ID from meta.json."""
+    meta = load_meta(use_json=use_json)
+    active = meta.get("active_objective")
+    return active if isinstance(active, str) and is_epic_id(active) else None
+
+
+def set_active_objective(epic_id: Optional[str], use_json: bool = True) -> None:
+    """Set or clear the active objective in meta.json."""
+    meta = load_meta(use_json=use_json)
+    if epic_id is None:
+        meta.pop("active_objective", None)
+    else:
+        meta["active_objective"] = epic_id
+    save_meta(meta)
+
+
 # --- Context Hints (for codex reviews) ---
 
 
@@ -728,6 +856,120 @@ def get_changed_files(base_branch: str) -> list[str]:
         return [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
     except subprocess.CalledProcessError:
         return []
+
+
+def load_all_epics(use_json: bool = True) -> list[dict]:
+    """Load all epics with defaults applied."""
+    flow_dir = get_flow_dir()
+    epics_dir = flow_dir / EPICS_DIR
+    if not epics_dir.exists():
+        return []
+    epics = []
+    for epic_file in sorted(epics_dir.glob("fn-*.json")):
+        try:
+            epics.append(
+                normalize_epic(
+                    load_json_or_exit(epic_file, f"Epic {epic_file.stem}", use_json=use_json)
+                )
+            )
+        except SystemExit:
+            raise
+        except Exception:
+            continue
+    epics.sort(key=lambda e: parse_id(e.get("id", ""))[0] or 0)
+    return epics
+
+
+def choose_current_objective(current_actor: str, use_json: bool = True) -> Optional[dict]:
+    """Choose the current objective based on active meta pointer and live state."""
+    open_epics = [e for e in load_all_epics(use_json=use_json) if e.get("status") != "done"]
+    if not open_epics:
+        return None
+
+    active_id = get_active_objective(use_json=use_json)
+    if active_id:
+        for epic in open_epics:
+            if epic.get("id") == active_id:
+                return epic
+
+    # Prefer epic with in-progress task assigned to current actor.
+    for epic in open_epics:
+        tasks_dir = get_flow_dir() / TASKS_DIR
+        if not tasks_dir.exists():
+            break
+        for task_file in sorted(tasks_dir.glob(f"{epic['id']}.*.json")):
+            task_id = task_file.stem
+            if not is_task_id(task_id):
+                continue
+            task_data = load_task_with_state(task_id, use_json=use_json)
+            if (
+                task_data.get("status") == "in_progress"
+                and task_data.get("assignee") == current_actor
+            ):
+                return epic
+
+    # Otherwise use most recently updated open epic.
+    return sorted(
+        open_epics,
+        key=lambda e: (e.get("updated_at") or e.get("created_at") or "", e.get("id", "")),
+        reverse=True,
+    )[0]
+
+
+def tasks_for_epic(epic_id: str, use_json: bool = True) -> list[dict]:
+    """Load all tasks for an epic."""
+    tasks_dir = get_flow_dir() / TASKS_DIR
+    if not tasks_dir.exists():
+        return []
+    tasks = []
+    for task_file in sorted(tasks_dir.glob(f"{epic_id}.*.json")):
+        task_id = task_file.stem
+        if not is_task_id(task_id):
+            continue
+        task = load_task_with_state(task_id, use_json=use_json)
+        if "id" in task:
+            tasks.append(task)
+    tasks.sort(key=lambda t: parse_id(t.get("id", ""))[1] or 0)
+    return tasks
+
+
+def ready_state_for_epic(epic_id: str, use_json: bool = True) -> dict:
+    """Compute ready/in-progress/blocked state for an epic."""
+    current_actor = get_actor()
+    tasks = {task["id"]: task for task in tasks_for_epic(epic_id, use_json=use_json)}
+    ready = []
+    in_progress = []
+    blocked = []
+    for task in tasks.values():
+        if task.get("status") == "in_progress":
+            in_progress.append(task)
+            continue
+        if task.get("status") == "done":
+            continue
+        if task.get("status") == "blocked":
+            blocked.append({"task": task, "blocked_by": ["status=blocked"]})
+            continue
+        deps_done = True
+        blocking_deps = []
+        for dep in task.get("depends_on", []):
+            dep_task = tasks.get(dep)
+            if not dep_task or dep_task.get("status") != "done":
+                deps_done = False
+                blocking_deps.append(dep)
+        if deps_done:
+            ready.append(task)
+        else:
+            blocked.append({"task": task, "blocked_by": blocking_deps})
+    ready.sort(key=lambda t: ((task_priority(t)), parse_id(t["id"])[1] or 0, t.get("title", "")))
+    in_progress.sort(
+        key=lambda t: (
+            0 if t.get("assignee") == current_actor else 1,
+            task_priority(t),
+            parse_id(t["id"])[1] or 0,
+        )
+    )
+    blocked.sort(key=lambda b: (task_priority(b["task"]), parse_id(b["task"]["id"])[1] or 0))
+    return {"ready": ready, "in_progress": in_progress, "blocked": blocked}
 
 
 def get_embedded_file_contents(file_paths: list[str]) -> tuple[str, dict]:
@@ -2095,7 +2337,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     actions = []
 
     # Create directories if missing (idempotent, never destroys existing)
-    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR]:
+    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
         dir_path = flow_dir / subdir
         if not dir_path.exists():
             dir_path.mkdir(parents=True)
@@ -2104,9 +2346,24 @@ def cmd_init(args: argparse.Namespace) -> None:
     # Create meta.json if missing (never overwrite existing)
     meta_path = flow_dir / META_FILE
     if not meta_path.exists():
-        meta = {"schema_version": SCHEMA_VERSION, "next_epic": 1}
+        meta = {"schema_version": SCHEMA_VERSION, "next_epic": 1, "active_objective": None}
         atomic_write_json(meta_path, meta)
         actions.append("created meta.json")
+    else:
+        try:
+            raw_meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            if not isinstance(raw_meta, dict):
+                raw_meta = {"schema_version": SCHEMA_VERSION, "next_epic": 1}
+        except (json.JSONDecodeError, Exception):
+            raw_meta = {"schema_version": SCHEMA_VERSION, "next_epic": 1}
+        merged_meta = {
+            "schema_version": raw_meta.get("schema_version", SCHEMA_VERSION),
+            "next_epic": raw_meta.get("next_epic", 1),
+            "active_objective": raw_meta.get("active_objective"),
+        }
+        if merged_meta != raw_meta:
+            atomic_write_json(meta_path, merged_meta)
+            actions.append("upgraded meta.json (added missing keys)")
 
     # Config: create or upgrade (merge missing defaults)
     config_path = flow_dir / CONFIG_FILE
@@ -2162,7 +2419,7 @@ def cmd_detect(args: argparse.Namespace) -> None:
                 issues.append(f"meta.json parse error: {e}")
 
         # Check required subdirectories
-        for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR]:
+        for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
             if not (flow_dir / subdir).exists():
                 issues.append(f"{subdir}/ missing")
 
@@ -2192,6 +2449,10 @@ def cmd_status(args: argparse.Namespace) -> None:
     """Show .flow state and active Ralph runs."""
     flow_dir = get_flow_dir()
     flow_exists = flow_dir.exists()
+    current_actor = get_actor()
+    current_objective = (
+        choose_current_objective(current_actor, use_json=args.json) if flow_exists else None
+    )
 
     # Count epics and tasks by status
     epic_counts = {"open": 0, "done": 0}
@@ -2246,6 +2507,18 @@ def cmd_status(args: argparse.Namespace) -> None:
                     }
                     for r in active_runs
                 ],
+                "current_objective": None
+                if not current_objective
+                else {
+                    "id": current_objective["id"],
+                    "title": current_objective["title"],
+                    "objective_kind": current_objective["objective_kind"],
+                    "scope_mode": current_objective["scope_mode"],
+                    "workflow_phase": current_objective["workflow_phase"],
+                    "workflow_step": current_objective["workflow_step"],
+                    "workflow_status": current_objective["workflow_status"],
+                    "next_action": current_objective.get("next_action"),
+                },
             }
         )
     else:
@@ -2279,6 +2552,18 @@ def cmd_status(args: argparse.Namespace) -> None:
                 print(f"  {r['id']} ({iter_info}{task_info}){state_str}")
         else:
             print("No active runs")
+        if current_objective:
+            print()
+            print(
+                f"Current objective: {current_objective['id']} "
+                f"({current_objective['objective_kind']}, {current_objective['scope_mode']})"
+            )
+            print(
+                f"Phase: {current_objective['workflow_phase']} / "
+                f"{current_objective['workflow_step']} [{current_objective['workflow_status']}]"
+            )
+            if current_objective.get("next_action"):
+                print(f"Next: {current_objective['next_action']}")
 
 
 def cmd_ralph_pause(args: argparse.Namespace) -> None:
@@ -2731,10 +3016,29 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
         )
 
     # Create epic JSON
+    technical_level = args.technical_level or get_config("workflow.technicalLevel", "semi_technical")
+    scope_mode = args.scope_mode or get_config("workflow.defaultScopeMode", "shallow")
+    implementation_target = args.implementation_target or get_config(
+        "workflow.defaultImplementationTarget", "self_with_ai"
+    )
     epic_data = {
         "id": epic_id,
         "title": args.title,
         "status": "open",
+        "objective_kind": args.kind,
+        "scope_mode": scope_mode if scope_mode in SCOPE_MODES else "shallow",
+        "technical_level": technical_level if technical_level in TECHNICAL_LEVELS else None,
+        "implementation_target": implementation_target
+        if implementation_target in IMPLEMENTATION_TARGETS
+        else "self_with_ai",
+        "workflow_phase": "start",
+        "workflow_step": "intake",
+        "workflow_status": "not_started",
+        "workflow_summary": "",
+        "open_questions": [],
+        "resolved_decisions": [],
+        "next_action": "Continue scoping in /flux:scope",
+        "scope_artifacts": {},
         "plan_review_status": "unknown",
         "plan_reviewed_at": None,
         "branch_name": args.branch if args.branch else epic_id,
@@ -2745,6 +3049,7 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
         "updated_at": now_iso(),
     }
     atomic_write_json(flow_dir / EPICS_DIR / f"{epic_id}.json", epic_data)
+    set_active_objective(epic_id, use_json=args.json)
 
     # Create epic spec
     spec_content = create_epic_spec(epic_id, args.title)
@@ -2758,6 +3063,8 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
             {
                 "id": epic_id,
                 "title": args.title,
+                "objective_kind": epic_data["objective_kind"],
+                "scope_mode": epic_data["scope_mode"],
                 "spec_path": epic_data["spec_path"],
                 "message": f"Epic {epic_id} created",
             }
@@ -3029,7 +3336,7 @@ def cmd_show(args: argparse.Namespace) -> None:
 
         tasks.sort(key=task_sort_key)
 
-        result = {**epic_data, "tasks": tasks}
+        result = {**epic_data, "tasks": tasks, "progress": workflow_progress(epic_data)}
 
         if args.json:
             json_output(result)
@@ -3037,6 +3344,11 @@ def cmd_show(args: argparse.Namespace) -> None:
             print(f"Epic: {epic_data['id']}")
             print(f"Title: {epic_data['title']}")
             print(f"Status: {epic_data['status']}")
+            print(
+                "Workflow: "
+                f"{epic_data['workflow_phase']} / {epic_data['workflow_step']} "
+                f"[{epic_data['workflow_status']}]"
+            )
             print(f"Spec: {epic_data['spec_path']}")
             print(f"\nTasks ({len(tasks)}):")
             for t in tasks:
@@ -3573,12 +3885,34 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
+    old_artifact_dir = artifact_dir_for_epic(old_id)
+    new_artifact_dir = artifact_dir_for_epic(new_id)
+    if old_artifact_dir.exists():
+        new_artifact_dir.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            old_artifact_dir.rename(new_artifact_dir)
+        except OSError as e:
+            error_exit(
+                f"Failed to rename artifact directory {old_artifact_dir.name} -> {new_artifact_dir.name}: {e}",
+                use_json=args.json,
+            )
+
     # Update epic JSON content
     epic_data["id"] = new_id
     epic_data["title"] = args.title
     epic_data["spec_path"] = f"{FLOW_DIR}/{SPECS_DIR}/{new_id}.md"
+    if epic_data.get("scope_artifacts"):
+        updated_artifacts = {}
+        for phase in epic_data["scope_artifacts"]:
+            updated_artifacts[phase] = str(
+                artifact_path_for_phase(new_id, phase).relative_to(get_repo_root())
+            )
+        epic_data["scope_artifacts"] = updated_artifacts
     epic_data["updated_at"] = now_iso()
     atomic_write_json(epics_dir / f"{new_id}.json", epic_data)
+
+    if get_active_objective(use_json=args.json) == old_id:
+        set_active_objective(new_id, use_json=args.json)
 
     # Update task JSON content
     task_id_map = dict(task_files)  # old_task_id -> new_task_id
@@ -3834,6 +4168,473 @@ def cmd_epic_set_backend(args: argparse.Namespace) -> None:
         )
     else:
         print(f"Epic {args.id} backend specs updated: {', '.join(updated)}")
+
+
+def cmd_epic_set_context(args: argparse.Namespace) -> None:
+    """Set epic workflow context fields."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    if not is_epic_id(args.id):
+        error_exit(
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
+            use_json=args.json,
+        )
+
+    if (
+        args.kind is None
+        and args.scope_mode is None
+        and args.technical_level is None
+        and args.implementation_target is None
+        and not args.activate
+    ):
+        error_exit(
+            "At least one context field or --activate must be provided",
+            use_json=args.json,
+        )
+
+    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    if not epic_path.exists():
+        error_exit(f"Epic {args.id} not found", use_json=args.json)
+
+    epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json))
+    if args.kind is not None:
+        epic_data["objective_kind"] = args.kind
+    if args.scope_mode is not None:
+        epic_data["scope_mode"] = args.scope_mode
+        allowed_phases = workflow_phases_for_mode(args.scope_mode)
+        if epic_data.get("workflow_phase") not in allowed_phases:
+            epic_data["workflow_phase"] = allowed_phases[0]
+    if args.technical_level is not None:
+        epic_data["technical_level"] = args.technical_level
+    if args.implementation_target is not None:
+        epic_data["implementation_target"] = args.implementation_target
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epic_path, epic_data)
+    if args.activate:
+        set_active_objective(args.id, use_json=args.json)
+
+    if args.json:
+        json_output(
+            {
+                "id": args.id,
+                "objective_kind": epic_data["objective_kind"],
+                "scope_mode": epic_data["scope_mode"],
+                "technical_level": epic_data["technical_level"],
+                "implementation_target": epic_data["implementation_target"],
+                "active_objective": get_active_objective(use_json=args.json),
+                "message": f"Epic {args.id} context updated",
+            }
+        )
+    else:
+        print(f"Epic {args.id} context updated")
+
+
+def cmd_epic_set_workflow(args: argparse.Namespace) -> None:
+    """Set epic workflow phase/progress fields."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    if not is_epic_id(args.id):
+        error_exit(
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
+            use_json=args.json,
+        )
+
+    if (
+        args.phase is None
+        and args.step is None
+        and args.status is None
+        and args.summary is None
+        and args.next_action is None
+        and not args.clear_open_questions
+        and not args.clear_decisions
+        and not args.open_question
+        and not args.decision
+        and not args.activate
+    ):
+        error_exit(
+            "At least one workflow field or --activate must be provided",
+            use_json=args.json,
+        )
+
+    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    if not epic_path.exists():
+        error_exit(f"Epic {args.id} not found", use_json=args.json)
+
+    epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json))
+    if args.phase is not None:
+        allowed_phases = workflow_phases_for_mode(epic_data["scope_mode"])
+        if args.phase not in allowed_phases:
+            error_exit(
+                f"Phase '{args.phase}' is not valid for scope mode '{epic_data['scope_mode']}'. "
+                f"Allowed: {', '.join(allowed_phases)}",
+                use_json=args.json,
+            )
+        epic_data["workflow_phase"] = args.phase
+        if args.status is None and epic_data.get("workflow_status") != "done":
+            epic_data["workflow_status"] = "in_progress"
+    if args.step is not None:
+        epic_data["workflow_step"] = args.step
+    if args.status is not None:
+        epic_data["workflow_status"] = args.status
+    if args.summary is not None:
+        epic_data["workflow_summary"] = args.summary
+    if args.next_action is not None:
+        epic_data["next_action"] = args.next_action
+    if args.clear_open_questions:
+        epic_data["open_questions"] = []
+    if args.open_question:
+        epic_data["open_questions"].extend(args.open_question)
+    if args.clear_decisions:
+        epic_data["resolved_decisions"] = []
+    if args.decision:
+        epic_data["resolved_decisions"].extend(args.decision)
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epic_path, epic_data)
+    if args.activate:
+        set_active_objective(args.id, use_json=args.json)
+
+    progress = workflow_progress(epic_data)
+    if args.json:
+        json_output(
+            {
+                "id": args.id,
+                "workflow_phase": epic_data["workflow_phase"],
+                "workflow_step": epic_data["workflow_step"],
+                "workflow_status": epic_data["workflow_status"],
+                "workflow_summary": epic_data["workflow_summary"],
+                "open_questions": epic_data["open_questions"],
+                "resolved_decisions": epic_data["resolved_decisions"],
+                "next_action": epic_data["next_action"],
+                "progress": progress,
+                "active_objective": get_active_objective(use_json=args.json),
+                "message": f"Epic {args.id} workflow updated",
+            }
+        )
+    else:
+        print(
+            f"Epic {args.id} workflow updated: {epic_data['workflow_phase']} / "
+            f"{epic_data['workflow_step']} [{epic_data['workflow_status']}]"
+        )
+
+
+def cmd_objective_current(args: argparse.Namespace) -> None:
+    """Show the active objective."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    current_actor = get_actor()
+    epic_data = choose_current_objective(current_actor, use_json=args.json)
+    if not epic_data:
+        if args.json:
+            json_output({"objective": None, "message": "No active or open objective"})
+        else:
+            print("No active or open objective")
+        return
+
+    tasks = tasks_for_epic(epic_data["id"], use_json=args.json)
+    progress = workflow_progress(epic_data)
+    if args.json:
+        json_output({"objective": epic_data, "tasks": tasks, "progress": progress})
+    else:
+        print(f"Current objective: {epic_data['id']} - {epic_data['title']}")
+        print(
+            f"{epic_data['objective_kind']} | {epic_data['scope_mode']} | "
+            f"{epic_data['workflow_phase']} / {epic_data['workflow_step']}"
+        )
+
+
+def cmd_objective_switch(args: argparse.Namespace) -> None:
+    """Set the active objective explicitly."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    if not is_epic_id(args.id):
+        error_exit(
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
+            use_json=args.json,
+        )
+
+    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    if not epic_path.exists():
+        error_exit(f"Epic {args.id} not found", use_json=args.json)
+
+    epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json))
+    if epic_data.get("status") == "done":
+        error_exit(f"Epic {args.id} is already done", use_json=args.json)
+
+    set_active_objective(args.id, use_json=args.json)
+    if args.json:
+        json_output({"active_objective": args.id, "message": f"Active objective set to {args.id}"})
+    else:
+        print(f"Active objective set to {args.id}")
+
+
+def cmd_scope_status(args: argparse.Namespace) -> None:
+    """Show scoped workflow status for an objective."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    current_actor = get_actor()
+    epic_data = None
+    if args.objective:
+        if not is_epic_id(args.objective):
+            error_exit(
+                f"Invalid epic ID: {args.objective}. Expected format: fn-N or fn-N-slug",
+                use_json=args.json,
+            )
+        epic_path = get_flow_dir() / EPICS_DIR / f"{args.objective}.json"
+        if not epic_path.exists():
+            error_exit(f"Epic {args.objective} not found", use_json=args.json)
+        epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.objective}", use_json=args.json))
+    else:
+        epic_data = choose_current_objective(current_actor, use_json=args.json)
+
+    if not epic_data:
+        if args.json:
+            json_output({"objective": None, "message": "No active or open objective"})
+        else:
+            print("No active or open objective")
+        return
+
+    progress = workflow_progress(epic_data)
+    readiness = ready_state_for_epic(epic_data["id"], use_json=args.json)
+    artifacts = []
+    for phase in progress["phases"]:
+        path = artifact_path_for_phase(epic_data["id"], phase)
+        if path.exists():
+            artifacts.append({"phase": phase, "path": str(path.relative_to(get_repo_root()))})
+
+    result = {
+        "objective": {
+            "id": epic_data["id"],
+            "title": epic_data["title"],
+            "objective_kind": epic_data["objective_kind"],
+            "scope_mode": epic_data["scope_mode"],
+            "technical_level": epic_data["technical_level"],
+            "implementation_target": epic_data["implementation_target"],
+        },
+        "workflow": {
+            "phase": epic_data["workflow_phase"],
+            "step": epic_data["workflow_step"],
+            "status": epic_data["workflow_status"],
+            "summary": epic_data["workflow_summary"],
+            "next_action": epic_data["next_action"],
+            "open_questions": epic_data["open_questions"],
+            "resolved_decisions": epic_data["resolved_decisions"],
+        },
+        "progress": progress,
+        "tasks": {
+            "ready": [{"id": t["id"], "title": t["title"]} for t in readiness["ready"]],
+            "in_progress": [
+                {"id": t["id"], "title": t["title"], "assignee": t.get("assignee")}
+                for t in readiness["in_progress"]
+            ],
+            "blocked": [
+                {"id": b["task"]["id"], "title": b["task"]["title"], "blocked_by": b["blocked_by"]}
+                for b in readiness["blocked"]
+            ],
+        },
+        "artifacts": artifacts,
+    }
+    if args.json:
+        json_output(result)
+    else:
+        phases = progress["phases"]
+        phase_parts = []
+        for idx, phase in enumerate(phases):
+            if phase == epic_data["workflow_phase"]:
+                phase_parts.append(f"[>{phase}<]")
+            elif idx < progress["phase_index"]:
+                phase_parts.append(f"[x {phase}]")
+            else:
+                phase_parts.append(f"[  {phase}]")
+        print(f"Objective: {epic_data['id']} — {epic_data['title']}")
+        print(
+            f"Type: {epic_data['objective_kind']} | Mode: {epic_data['scope_mode']} | "
+            f"Technical: {epic_data['technical_level'] or 'unset'} | "
+            f"Target: {epic_data['implementation_target']}"
+        )
+        print("Progress: " + " -> ".join(phase_parts))
+        print(
+            f"Current: {epic_data['workflow_phase']} / {epic_data['workflow_step']} "
+            f"[{epic_data['workflow_status']}]"
+        )
+        if epic_data.get("next_action"):
+            print(f"Next: {epic_data['next_action']}")
+        if epic_data.get("workflow_summary"):
+            print(f"Summary: {epic_data['workflow_summary']}")
+
+
+def cmd_session_state(args: argparse.Namespace) -> None:
+    """Summarize the current workflow routing state."""
+    if not ensure_flow_exists():
+        result = {
+            "state": "fresh_session_no_objective",
+            "flow_exists": False,
+            "objective": None,
+            "task": None,
+            "message": "Flux is not initialized. Start a new scoped objective.",
+            "next_action": "/flux:setup then /flux:scope",
+        }
+        if args.json:
+            json_output(result)
+        else:
+            print(result["message"])
+        return
+
+    current_actor = get_actor()
+    epic_data = choose_current_objective(current_actor, use_json=args.json)
+    if not epic_data:
+        result = {
+            "state": "fresh_session_no_objective",
+            "flow_exists": True,
+            "objective": None,
+            "task": None,
+            "message": "No open objective. Start a new feature, bug, or refactor scope.",
+            "next_action": "/flux:scope",
+        }
+        if args.json:
+            json_output(result)
+        else:
+            print(result["message"])
+        return
+
+    readiness = ready_state_for_epic(epic_data["id"], use_json=args.json)
+    current_task = None
+    for task in readiness["in_progress"]:
+        if task.get("assignee") == current_actor:
+            current_task = task
+            break
+
+    all_tasks = tasks_for_epic(epic_data["id"], use_json=args.json)
+    if current_task:
+        state = "resume_work"
+        message = f"Resume task {current_task['id']} for {epic_data['title']}."
+        next_action = f"/flux:work {current_task['id']}"
+    elif all_tasks and all(t.get("status") == "done" for t in all_tasks) and epic_data.get("completion_review_status") != "ship":
+        state = "needs_completion_review"
+        message = f"Implementation is done for {epic_data['title']}, but completion review is pending."
+        next_action = f"/flux:epic-review {epic_data['id']}"
+    elif epic_data.get("workflow_status") in {"not_started", "in_progress", "needs_confirmation"}:
+        state = "resume_scope"
+        message = f"Resume scoping for {epic_data['title']} at {epic_data['workflow_phase']}."
+        next_action = f"/flux:scope {epic_data['title']}"
+    elif epic_data.get("workflow_status") == "ready_for_handoff":
+        state = "needs_review"
+        message = f"{epic_data['title']} is ready for handoff."
+        next_action = f"/flux:scope {epic_data['title']}"
+    elif readiness["ready"]:
+        state = "resume_work"
+        current_task = readiness["ready"][0]
+        message = f"Continue implementation with ready task {current_task['id']}."
+        next_action = f"/flux:work {current_task['id']}"
+    else:
+        state = "idle_with_open_epics"
+        message = f"{epic_data['title']} is open but waiting for the next decision."
+        next_action = epic_data.get("next_action") or f"/flux:scope {epic_data['title']}"
+
+    result = {
+        "state": state,
+        "flow_exists": True,
+        "objective": {
+            "id": epic_data["id"],
+            "title": epic_data["title"],
+            "objective_kind": epic_data["objective_kind"],
+            "scope_mode": epic_data["scope_mode"],
+            "workflow_phase": epic_data["workflow_phase"],
+            "workflow_step": epic_data["workflow_step"],
+            "workflow_status": epic_data["workflow_status"],
+        },
+        "task": None if not current_task else {"id": current_task["id"], "title": current_task["title"]},
+        "message": message,
+        "next_action": next_action,
+    }
+    if args.json:
+        json_output(result)
+    else:
+        print(message)
+
+
+def cmd_artifact_write(args: argparse.Namespace) -> None:
+    """Write a workflow artifact for an objective phase."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    if not is_epic_id(args.id):
+        error_exit(
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug",
+            use_json=args.json,
+        )
+
+    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    if not epic_path.exists():
+        error_exit(f"Epic {args.id} not found", use_json=args.json)
+
+    epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json))
+    allowed_phases = workflow_phases_for_mode(epic_data["scope_mode"])
+    if args.phase not in allowed_phases:
+        error_exit(
+            f"Phase '{args.phase}' is not valid for scope mode '{epic_data['scope_mode']}'. "
+            f"Allowed: {', '.join(allowed_phases)}",
+            use_json=args.json,
+        )
+
+    content = read_file_or_stdin(args.file, "Artifact file", use_json=args.json)
+    artifact_path = artifact_path_for_phase(args.id, args.phase)
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write(artifact_path, content)
+
+    epic_data["scope_artifacts"][args.phase] = str(artifact_path.relative_to(get_repo_root()))
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epic_path, epic_data)
+    if args.activate:
+        set_active_objective(args.id, use_json=args.json)
+
+    if args.json:
+        json_output(
+            {
+                "id": args.id,
+                "phase": args.phase,
+                "path": str(artifact_path.relative_to(get_repo_root())),
+                "message": f"Artifact written for {args.id} phase {args.phase}",
+            }
+        )
+    else:
+        print(f"Artifact written: {artifact_path.relative_to(get_repo_root())}")
+
+
+def cmd_artifact_read(args: argparse.Namespace) -> None:
+    """Read a workflow artifact for an objective phase."""
+    if not ensure_flow_exists():
+        error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
+
+    if not is_epic_id(args.id):
+        error_exit(
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug",
+            use_json=args.json,
+        )
+
+    artifact_path = artifact_path_for_phase(args.id, args.phase)
+    if not artifact_path.exists():
+        error_exit(
+            f"No artifact found for {args.id} phase {args.phase}",
+            use_json=args.json,
+        )
+
+    content = artifact_path.read_text(encoding="utf-8")
+    if args.json:
+        json_output(
+            {
+                "id": args.id,
+                "phase": args.phase,
+                "path": str(artifact_path.relative_to(get_repo_root())),
+                "content": content,
+            }
+        )
+    else:
+        print(content)
 
 
 def cmd_task_set_backend(args: argparse.Namespace) -> None:
@@ -4655,6 +5456,7 @@ def cmd_start(args: argparse.Namespace) -> None:
     # NOTE: We no longer update epic timestamp on task start/done.
     # Epic timestamp only changes on epic-level operations (set-plan, close).
     # This reduces merge conflicts in multi-user scenarios.
+    set_active_objective(epic_id_from_task(args.id), use_json=args.json)
 
     if args.json:
         json_output(
@@ -4779,6 +5581,27 @@ def cmd_done(args: argparse.Namespace) -> None:
 
     # Write runtime state to state-dir (not definition file)
     save_task_runtime(args.id, {"status": "done", "evidence": evidence})
+    epic_id = epic_id_from_task(args.id)
+    set_active_objective(epic_id, use_json=args.json)
+    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    if epic_path.exists():
+        epic_data = normalize_epic(
+            load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
+        )
+        tasks = tasks_for_epic(epic_id, use_json=args.json)
+        if tasks and all(t.get("status") == "done" for t in tasks):
+            epic_data["workflow_status"] = (
+                "ready_for_handoff"
+                if epic_data.get("implementation_target") == "engineer_handoff"
+                else "ready_for_work"
+            )
+            epic_data["next_action"] = (
+                f"/flux:epic-review {epic_id}"
+                if epic_data.get("implementation_target") == "self_with_ai"
+                else f"Prepare engineer handoff for {epic_id}"
+            )
+            epic_data["updated_at"] = now_iso()
+            atomic_write_json(epic_path, epic_data)
 
     # NOTE: We no longer update epic timestamp on task done.
     # This reduces merge conflicts in multi-user scenarios.
@@ -4980,8 +5803,11 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
 
     epic_data = load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json)
     epic_data["status"] = "done"
+    epic_data["workflow_status"] = "done"
     epic_data["updated_at"] = now_iso()
     atomic_write_json(epic_path, epic_data)
+    if get_active_objective(use_json=args.json) == args.id:
+        set_active_objective(None, use_json=args.json)
 
     if args.json:
         json_output(
@@ -5013,7 +5839,7 @@ def validate_flow_root(flow_dir: Path) -> list[str]:
             errors.append(f"meta.json unreadable: {e}")
 
     # Check required subdirectories exist
-    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR]:
+    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
         if not (flow_dir / subdir).exists():
             errors.append(f"Required directory missing: {subdir}/")
 
@@ -6830,6 +7656,21 @@ def main() -> None:
     p_status.add_argument("--json", action="store_true", help="JSON output")
     p_status.set_defaults(func=cmd_status)
 
+    # session-state
+    p_session_state = subparsers.add_parser(
+        "session-state", help="Summarize current workflow routing state"
+    )
+    p_session_state.add_argument("--json", action="store_true", help="JSON output")
+    p_session_state.set_defaults(func=cmd_session_state)
+
+    # scope-status
+    p_scope_status = subparsers.add_parser(
+        "scope-status", help="Show current scoped workflow progress"
+    )
+    p_scope_status.add_argument("--objective", help="Epic ID (defaults to active objective)")
+    p_scope_status.add_argument("--json", action="store_true", help="JSON output")
+    p_scope_status.set_defaults(func=cmd_scope_status)
+
     # config
     p_config = subparsers.add_parser("config", help="Config commands")
     config_sub = p_config.add_subparsers(dest="config_cmd", required=True)
@@ -6891,8 +7732,78 @@ def main() -> None:
     p_epic_create = epic_sub.add_parser("create", help="Create new epic")
     p_epic_create.add_argument("--title", required=True, help="Epic title")
     p_epic_create.add_argument("--branch", help="Branch name to store on epic")
+    p_epic_create.add_argument(
+        "--kind",
+        choices=OBJECTIVE_KINDS,
+        default="feature",
+        help="Objective kind",
+    )
+    p_epic_create.add_argument(
+        "--scope-mode",
+        choices=SCOPE_MODES,
+        help="Scope mode (defaults to workflow.defaultScopeMode config)",
+    )
+    p_epic_create.add_argument(
+        "--technical-level",
+        choices=TECHNICAL_LEVELS,
+        help="Technical level (defaults to workflow.technicalLevel config)",
+    )
+    p_epic_create.add_argument(
+        "--implementation-target",
+        choices=IMPLEMENTATION_TARGETS,
+        help="Implementation target (defaults to workflow.defaultImplementationTarget config)",
+    )
     p_epic_create.add_argument("--json", action="store_true", help="JSON output")
     p_epic_create.set_defaults(func=cmd_epic_create)
+
+    p_epic_set_context = epic_sub.add_parser("set-context", help="Set epic workflow context")
+    p_epic_set_context.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
+    p_epic_set_context.add_argument("--kind", choices=OBJECTIVE_KINDS, help="Objective kind")
+    p_epic_set_context.add_argument("--scope-mode", choices=SCOPE_MODES, help="Scope mode")
+    p_epic_set_context.add_argument(
+        "--technical-level", choices=TECHNICAL_LEVELS, help="Technical level"
+    )
+    p_epic_set_context.add_argument(
+        "--implementation-target",
+        choices=IMPLEMENTATION_TARGETS,
+        help="Implementation target",
+    )
+    p_epic_set_context.add_argument(
+        "--activate", action="store_true", help="Make this the active objective"
+    )
+    p_epic_set_context.add_argument("--json", action="store_true", help="JSON output")
+    p_epic_set_context.set_defaults(func=cmd_epic_set_context)
+
+    p_epic_set_workflow = epic_sub.add_parser("set-workflow", help="Set epic workflow state")
+    p_epic_set_workflow.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
+    p_epic_set_workflow.add_argument("--phase", help="Workflow phase")
+    p_epic_set_workflow.add_argument("--step", help="Workflow step")
+    p_epic_set_workflow.add_argument(
+        "--status", choices=WORKFLOW_STATUSES, help="Workflow status"
+    )
+    p_epic_set_workflow.add_argument("--summary", help="Workflow summary")
+    p_epic_set_workflow.add_argument("--next-action", help="Suggested next action")
+    p_epic_set_workflow.add_argument(
+        "--open-question",
+        action="append",
+        help="Open question to append (repeatable)",
+    )
+    p_epic_set_workflow.add_argument(
+        "--decision",
+        action="append",
+        help="Resolved decision to append (repeatable)",
+    )
+    p_epic_set_workflow.add_argument(
+        "--clear-open-questions", action="store_true", help="Clear open questions first"
+    )
+    p_epic_set_workflow.add_argument(
+        "--clear-decisions", action="store_true", help="Clear resolved decisions first"
+    )
+    p_epic_set_workflow.add_argument(
+        "--activate", action="store_true", help="Make this the active objective"
+    )
+    p_epic_set_workflow.add_argument("--json", action="store_true", help="JSON output")
+    p_epic_set_workflow.set_defaults(func=cmd_epic_set_workflow)
 
     p_epic_set_plan = epic_sub.add_parser("set-plan", help="Set epic spec from file")
     p_epic_set_plan.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
@@ -7074,6 +7985,39 @@ def main() -> None:
     p_show.add_argument("id", help="Epic or task ID (e.g., fn-1-add-auth, fn-1-add-auth.2)")
     p_show.add_argument("--json", action="store_true", help="JSON output")
     p_show.set_defaults(func=cmd_show)
+
+    # objective
+    p_objective = subparsers.add_parser("objective", help="Objective commands")
+    objective_sub = p_objective.add_subparsers(dest="objective_cmd", required=True)
+
+    p_objective_current = objective_sub.add_parser("current", help="Show active objective")
+    p_objective_current.add_argument("--json", action="store_true", help="JSON output")
+    p_objective_current.set_defaults(func=cmd_objective_current)
+
+    p_objective_switch = objective_sub.add_parser("switch", help="Switch active objective")
+    p_objective_switch.add_argument("id", help="Epic ID (e.g., fn-1-add-auth)")
+    p_objective_switch.add_argument("--json", action="store_true", help="JSON output")
+    p_objective_switch.set_defaults(func=cmd_objective_switch)
+
+    # artifact
+    p_artifact = subparsers.add_parser("artifact", help="Workflow artifact commands")
+    artifact_sub = p_artifact.add_subparsers(dest="artifact_cmd", required=True)
+
+    p_artifact_write = artifact_sub.add_parser("write", help="Write phase artifact")
+    p_artifact_write.add_argument("id", help="Epic ID (e.g., fn-1-add-auth)")
+    p_artifact_write.add_argument("--phase", required=True, help="Workflow phase")
+    p_artifact_write.add_argument("--file", required=True, help="Markdown file (use '-' for stdin)")
+    p_artifact_write.add_argument(
+        "--activate", action="store_true", help="Make this the active objective"
+    )
+    p_artifact_write.add_argument("--json", action="store_true", help="JSON output")
+    p_artifact_write.set_defaults(func=cmd_artifact_write)
+
+    p_artifact_read = artifact_sub.add_parser("read", help="Read phase artifact")
+    p_artifact_read.add_argument("id", help="Epic ID (e.g., fn-1-add-auth)")
+    p_artifact_read.add_argument("--phase", required=True, help="Workflow phase")
+    p_artifact_read.add_argument("--json", action="store_true", help="JSON output")
+    p_artifact_read.set_defaults(func=cmd_artifact_read)
 
     # epics
     p_epics = subparsers.add_parser("epics", help="List all epics")

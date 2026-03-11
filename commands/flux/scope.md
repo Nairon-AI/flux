@@ -1,7 +1,7 @@
 ---
 name: flux:scope
-description: Combined requirements gathering and planning. Uses Double Diamond process (Problem Space → Solution Space). Default is quick mode (~10 min). Use --deep for thorough scoping (~45 min). Use --linear or LIN-123 to pull context from Linear.
-argument-hint: "<feature description or spec file> [--deep] [--linear | LIN-123]"
+description: Full Product OS-style scoping workflow for features, bugs, and refactors. Default is shallow mode; use --deep for the full staged experience. Use --linear or LIN-123 to pull context from Linear.
+argument-hint: "<feature|bug|refactor description or spec file> [--deep] [--linear | LIN-123]"
 ---
 
 # IMPORTANT: This command MUST invoke the skill `flux-scope`
@@ -11,13 +11,14 @@ The ONLY purpose of this command is to call the `flux-scope` skill. You MUST use
 **User input:** $ARGUMENTS
 
 **Modes:**
-- Default: Quick mode (~10 min, MVP-focused discovery + short plan)
-- `--deep`: Thorough mode (~45 min, full discovery + detailed plan)
+- Default: Shallow mode (~10 min, compressed scoping + fast implementation package)
+- `--deep`: Deep mode (~45 min, full Start -> Discover -> Define -> Develop -> Deliver -> Handoff flow)
 - `--linear`: Connect to Linear MCP, browse teams/projects, select issue to scope
 - `LIN-123`: Directly scope a specific Linear issue (shorthand for --linear)
 
 **Process:**
-1. Problem Space: Discover why → Define problem statement
-2. Solution Space: Research codebase → Create epic + tasks
+1. Start: classify feature/bug/refactor, depth, technical level, implementation target
+2. Problem Space: Discover why -> Define problem statement
+3. Solution Space: Develop approach -> Deliver implementation package -> Handoff to `/flux:work` or engineer summary
 
 Pass the user input to the skill. The skill handles the full Double Diamond workflow.

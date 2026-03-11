@@ -26,7 +26,7 @@ Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code c
 | Command | Usage | Purpose |
 |---------|-------|---------|
 | `/flux:setup` | `/flux:setup` | Optional local setup (installs local `fluxctl` + project docs) |
-| `/flux:scope` | `/flux:scope <idea> [--deep] [--explore N]` | **Combined requirements + planning** (recommended) |
+| `/flux:scope` | `/flux:scope <idea> [--deep] [--explore N]` | **Full guided scoping workflow** (recommended) |
 | `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks only |
 | `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
 
@@ -38,21 +38,22 @@ Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code c
 <p><em>Coming soon</em></p>
 </details>
 
-**Recommended starting point.** Combines requirements gathering and planning into one command using the Double Diamond process:
+**Recommended starting point.** Runs Flux's Product OS-style scoping workflow:
 
-1. **Problem Space** (~5 min quick, ~20 min deep)
-   - Explore WHY: core desire, reasoning chain, user perspective
-   - Surface blind spots and risks
-   - Converge to clear problem statement
-
-2. **Solution Space** (~5 min quick, ~25 min deep)
-   - Research codebase patterns
-   - Gap analysis
-   - Create epic with sized tasks
+1. **Start**
+   - classify feature, bug, or refactor
+   - choose shallow vs deep
+   - capture technical level and implementation target
+2. **Discover / Define**
+   - clarify the actual problem before solutioning
+3. **Develop / Deliver / Handoff**
+   - shape the solution
+   - create epic + tasks
+   - route into `/flux:work` or engineer handoff
 
 **Usage:**
 ```bash
-/flux:scope Add user notifications           # Quick mode (~10 min)
+/flux:scope Add user notifications           # Shallow mode (~10 min)
 /flux:scope Add user notifications --deep    # Deep mode (~45 min)
 ```
 

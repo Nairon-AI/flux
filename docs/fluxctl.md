@@ -696,6 +696,55 @@ Output:
 
 Human-readable output shows epic/task counts and any active Ralph runs.
 
+### session-state
+
+Show the current workflow routing state for startup or natural-language realignment.
+
+```bash
+fluxctl session-state [--json]
+```
+
+Typical states:
+- `fresh_session_no_objective`
+- `resume_scope`
+- `resume_work`
+- `needs_review`
+- `needs_completion_review`
+- `idle_with_open_epics`
+
+### scope-status
+
+Show scoping progress for the active objective or a specific epic.
+
+```bash
+fluxctl scope-status [--objective fn-1-add-auth] [--json]
+```
+
+This includes:
+- objective type and mode
+- current phase and step
+- progress through shallow/deep flow
+- ready/in-progress/blocked tasks
+- persisted phase artifacts
+
+### objective
+
+Manage the active objective pointer used for session realignment.
+
+```bash
+fluxctl objective current [--json]
+fluxctl objective switch fn-1-add-auth [--json]
+```
+
+### artifact
+
+Read and write Product OS-style scoping artifacts for each objective phase.
+
+```bash
+fluxctl artifact write fn-1-add-auth --phase discover --file discover.md [--json]
+fluxctl artifact read fn-1-add-auth --phase discover [--json]
+```
+
 ### state-path
 
 Show the resolved state directory path (useful for debugging parallel worktree setups).

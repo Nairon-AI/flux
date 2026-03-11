@@ -15,23 +15,34 @@ The scarce resource has always been clarity — knowing what to build, defining 
 ## Overview
 
 ```
-┌─────────────────────────────────┬─────────────────────────────────┐
-│       PROBLEM SPACE             │       SOLUTION SPACE            │
-├─────────────────────────────────┼─────────────────────────────────┤
-│                                 │                                 │
-│   DISCOVER        DEFINE        │   RESEARCH        PLAN          │
-│   (diverge)      (converge)     │   (diverge)      (converge)     │
-│                                 │                                 │
-│      ╱╲             │           │      ╱╲              │          │
-│     ╱  ╲            │           │     ╱  ╲             │          │
-│    ╱    ╲           │           │    ╱    ╲            │          │
-│   ╱      ╲          ▼           │   ╱      ╲           ▼          │
-│                                 │                                 │
-│   Explore      One problem      │   Explore       Epic +          │
-│   broadly      statement        │   solutions     tasks           │
-│                                 │                                 │
-└─────────────────────────────────┴─────────────────────────────────┘
+START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
 ```
+
+At all times, Flux should persist:
+- objective kind: feature, bug, or refactor
+- scope mode: shallow or deep
+- technical level
+- implementation target
+- current phase, step, and next action
+
+Use `fluxctl scope-status` to render a progress card after each major transition.
+
+---
+
+## START
+
+**Purpose**: Establish the workflow envelope before asking deeper questions.
+
+**Always capture**:
+- feature, bug, or refactor
+- shallow or deep
+- technical level
+- self with AI or engineer handoff
+
+**Why this matters**:
+- Shallow and deep mode should feel different.
+- Non-technical users should get stronger defaults.
+- Engineer handoff should produce richer deliverables than self-build mode.
 
 ---
 
@@ -75,9 +86,9 @@ The scarce resource has always been clarity — knowing what to build, defining 
 
 ## SOLUTION SPACE
 
-### RESEARCH Phase (Diverge)
+### DEVELOP Phase (Diverge)
 
-**Purpose**: Explore the codebase and best practices before committing to approach.
+**Purpose**: Explore solution options, states, edge cases, engineering constraints, and trade-offs before committing.
 
 **Steps**:
 | Scout | What It Finds |
@@ -92,40 +103,49 @@ The scarce resource has always been clarity — knowing what to build, defining 
 
 **Exit Signal**: Clear understanding of existing code, patterns to follow, and risks.
 
-**Output**: Research findings with file refs, reuse points, and gaps.
+**Output**: Proposed approach, edge cases, risks, states, and supporting research.
 
 ---
 
-### PLAN Phase (Converge)
+### DELIVER Phase (Converge)
 
-**Purpose**: Create actionable tasks from research.
+**Purpose**: Produce the implementation-ready package.
 
 **Process**:
-1. Run gap analysis on research + problem statement
-2. Design task breakdown (target M-sized tasks)
-3. Minimize file overlap for parallel work
-4. Set dependencies between tasks
-5. Write task specs (what, not how)
-6. Validate epic structure
+1. Summarize the chosen problem and solution
+2. Convert the approach into an epic + tasks
+3. Persist phase artifacts and decisions
+4. Prepare next action for implementation or engineer handoff
 
-**Exit Signal**: Validated epic with sized tasks, clear acceptance criteria.
+**Exit Signal**: Epic + tasks are ready, next action is explicit, and the user knows what happens next.
 
-**Output**: Epic + tasks in `.flux/`
+**Output**: Epic + tasks in `.flux/`, plus Deliver artifact and next action.
+
+---
+
+### HANDOFF Phase
+
+**Purpose**: Route the scoped objective into implementation or engineer-facing handoff.
+
+**Outputs**:
+- `/flux:work <task>` or `/flux:work <epic>` recommendation for self-build
+- engineer handoff summary for handoff mode
+- persisted handoff artifact for resumability
 
 ---
 
 ## Mode Differences
 
-### Quick Mode (~10 min)
+### Shallow Mode (~10 min)
 
 | Phase | Time | Depth |
 |-------|------|-------|
 | Discover | 3-5 min | 5-8 questions total |
 | Define | 1-2 min | Quick synthesis |
-| Research | 2-3 min | All scouts, brief analysis |
-| Plan | 2-3 min | Short task descriptions |
+| Develop | 2-3 min | Focus on obvious solution, key risks only |
+| Deliver | 2-3 min | Short implementation package |
 
-**Use when**: Clear feature, low ambiguity, want to start building quickly.
+**Use when**: Clear feature, narrow bug, or straightforward refactor.
 
 ### Deep Mode (~45 min)
 
@@ -133,8 +153,8 @@ The scarce resource has always been clarity — knowing what to build, defining 
 |-------|------|-------|
 | Discover | 15-20 min | 15-20 questions, thorough |
 | Define | 5 min | Careful synthesis |
-| Research | 10-15 min | Deep analysis, alternatives |
-| Plan | 10-15 min | Detailed specs, phased approach |
+| Develop | 10-15 min | Alternatives, states, trade-offs |
+| Deliver/Handoff | 10-15 min | Rich package + stronger gates |
 
 **Use when**: High-stakes feature, significant ambiguity, complex integration.
 
@@ -159,11 +179,13 @@ The scarce resource has always been clarity — knowing what to build, defining 
 
 ## Transition Points
 
-### Problem → Solution Handoff
+### Define → Deliver Handoff
 
-After DEFINE, create the epic immediately:
+After DEFINE, create the epic immediately and start persisting structured workflow state:
 ```bash
 $FLUXCTL epic create --title "<from problem statement>" --json
+$FLUXCTL epic set-context <id> --kind feature --scope-mode shallow --activate
+$FLUXCTL epic set-workflow <id> --phase define --step problem-statement --status in_progress
 $FLUXCTL epic set-plan <id> --file - <<'EOF'
 # Problem Statement
 <one sentence>
@@ -173,13 +195,13 @@ $FLUXCTL epic set-plan <id> --file - <<'EOF'
 EOF
 ```
 
-This anchors the Solution Space to the defined problem.
+This anchors the remaining workflow to the defined problem.
 
-### Solution → Work Handoff
+### Deliver → Work Handoff
 
-After PLAN, the epic is ready for `/flux:work`:
+After DELIVER, the epic is ready for `/flux:work`:
 ```
 Next: /flux:work <epic-id>
 ```
 
-Tasks are already sized and specced. Implementation begins.
+Tasks are already sized and specced, and `fluxctl session-state` should now route future prompts correctly.

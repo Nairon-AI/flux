@@ -15,3 +15,22 @@ fi
 echo "Brain vault index - read relevant files before acting:"
 echo ""
 cat "$BRAIN_INDEX"
+
+# Also surface current Flux workflow state when available so new/resumed
+# sessions can re-anchor on the active objective immediately.
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+if [ -z "$PLUGIN_ROOT" ]; then
+  PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+fi
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+
+if [ -x "$FLUXCTL" ] && [ -d ".flux" ]; then
+  echo ""
+  echo "Flux workflow status:"
+  echo ""
+  echo "Before acting on new work-like requests, realign with Flux state first."
+  echo ""
+  "$FLUXCTL" session-state || true
+  echo ""
+  "$FLUXCTL" scope-status || true
+fi
