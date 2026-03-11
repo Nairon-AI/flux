@@ -73,60 +73,61 @@ Flux now treats `.flux/` as the canonical workflow memory for the current reposi
 
 ## Install Flux
 
-> **⚠️ IMPORTANT:** Run slash commands in Claude Code chat input, not terminal bash.
+> **⚠️ IMPORTANT:** If your agent uses slash commands, run them in the agent UI, not terminal bash.
 
 ### Agent-driven path (recommended)
 
 ```
-Help me install Flux in this Claude Code session.
+Help me install Flux in this current agent environment.
 
-Ask me to run one slash command at a time in chat and wait for "done":
-1) /plugin marketplace add https://github.com/Nairon-AI/flux
-2) /plugin install flux@nairon-flux
+First detect whether this session is Claude Code, Factory Droid, Codex, or another Flux-compatible environment.
+Use the correct install path for this platform.
+Handle as much of the install as you can yourself.
+Only stop when I need to run a slash command, approve something, or restart the session.
 
-If Flux is already installed, skip install and continue.
-Then run /flux:setup and complete setup questions.
-After restart, guide me through:
+If Flux is already installed, verify it and continue.
+After install, run /flux:setup if this platform supports it and complete setup.
+Then guide me through:
 1) /flux:prime first (agent-readiness + inefficiency audit)
 2) /flux:scope -> /flux:work -> /flux:impl-review -> /flux:improve
 3) /flux:reflect at the end of each session
 
-After /flux:setup succeeds, tell me to fully restart Claude Code and wait for my "done".
-Do the rest automatically.
+Tell me exactly what you need from me, one step at a time, and do the rest automatically.
 ```
 
 Who does what:
-- **You:** run slash commands in chat and restart Claude Code when asked.
-- **Agent:** handles setup workflow and verification.
+- **You:** only step in when the agent needs a command, confirmation, or restart.
+- **Agent:** chooses the right install path, drives setup, and gets Flux ready to use.
 
-### Manual path
+### Manual path (choose your platform)
 
-Run:
+Use the install path that matches your agent environment:
 
-```
-/plugin marketplace add https://github.com/Nairon-AI/flux
-/plugin install flux@nairon-flux
-```
-
-If the marketplace is already configured, run only:
-
-```
-/plugin install flux@nairon-flux
-```
-
-Alternative fast path:
-
+**Claude Code**
 ```
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-If `/plugin add ...` opens Discover and says "Add a marketplace first", use the two-command flow above.
+**Factory Droid**
+```
+droid plugin marketplace add https://github.com/Nairon-AI/flux
+```
+
+**OpenAI Codex**
+```bash
+git clone https://github.com/Nairon-AI/flux
+cd flux
+./scripts/install-codex.sh flux
+```
+
+**OpenCode**
+- Use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port.
 
 Then:
-1. Restart Claude Code fully.
-2. Run `/flux:setup` (required final setup step).
+1. Restart the agent/session if your platform requires it.
+2. Run `/flux:setup` where supported.
 
-After `/flux:setup` succeeds, restart Claude Code once before using Flux commands.
+After `/flux:setup` succeeds, restart once more if your platform loads plugins/prompts at session start.
 Then run `/flux:prime` first to audit agent readiness and workflow inefficiencies before starting new work.
 
 ### Upgrade Flux (existing users)
@@ -143,32 +144,30 @@ or:
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
-Then restart Claude Code and run `/flux:setup`.
+Then restart your agent/session and run `/flux:setup`.
 
 ## Uninstall Flux (complete removal)
 
 ### Agent-driven path (recommended)
 
 ```
-Help me completely uninstall Flux from this machine.
+Help me completely uninstall Flux from this environment.
 
-Ask me to run one slash command at a time in Claude chat and wait for "done":
-1) /plugin uninstall flux@nairon-flux
-2) /plugin marketplace remove nairon-flux
+First detect which Flux-compatible agent/platform this environment is using.
+Use the correct uninstall path for this platform.
+Handle as much as you can yourself.
+Only stop when I need to run a slash command, confirm removal, or restart the session.
 
-Then clean local artifacts:
-- ~/.claude/plugins/cache/nairon-flux
-- ~/.claude/plugins/marketplaces/nairon-flux
-- ./.flux in this repository
-- ask before removing ~/.flux (full machine cleanup)
-
-Finally, confirm Flux is gone and tell me to restart Claude Code once.
+Remove project-local Flux state (.flux) unless I ask to keep it.
+Offer machine-level cleanup separately before removing caches or global Flux data.
+When finished, verify Flux is no longer installed and tell me whether I need to restart anything.
 ```
 
 ### Manual path
 
-Run in Claude Code chat input:
+For plugin-based agents, remove the Flux plugin from that agent first, then remove project-local state:
 
+**Claude Code**
 ```
 /plugin uninstall flux@nairon-flux
 /plugin marketplace remove nairon-flux
@@ -180,10 +179,10 @@ If uninstall says plugin not found:
 /plugin uninstall flux
 ```
 
-Then run terminal cleanup:
+Then run local cleanup:
 
 ```bash
-# Claude plugin cache and marketplace metadata
+# Plugin cache and marketplace metadata (Claude example)
 rm -rf ~/.claude/plugins/cache/nairon-flux
 rm -rf ~/.claude/plugins/marketplaces/nairon-flux
 
@@ -194,7 +193,7 @@ rm -rf .flux
 rm -rf ~/.flux
 ```
 
-Restart Claude Code and verify Flux is gone from `/plugin list`.
+Restart your agent/session if needed and verify Flux is gone.
 
 ### Setup (if not already run)
 
