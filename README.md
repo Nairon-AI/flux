@@ -16,9 +16,9 @@ Flux enforces repeatable workflows, tracks state across sessions, and uses multi
 
 ---
 
-### Platform Compatibility
+### Agent Compatibility
 
-| Platform | Status | Install |
+| Agent | Status | Install |
 |----------|--------|---------|
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
