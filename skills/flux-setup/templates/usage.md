@@ -50,7 +50,7 @@ Task tracking for AI agents. All state lives in `.flux/`.
 .flux/bin/fluxctl ready --epic fn-1-add-oauth   # What's ready to work on
 .flux/bin/fluxctl validate --all                # Check structure
 .flux/bin/fluxctl state-path                    # Show state directory (for worktrees)
-.flux/bin/fluxctl agentmap --check             # Check whether agentmap is installed
+.flux/bin/fluxctl agentmap --check             # Check built-in agentmap support
 .flux/bin/fluxctl agentmap --write             # Write .flux/context/agentmap.yaml
 
 # Create
@@ -95,7 +95,7 @@ Migration is optional — existing repos work without changes.
 
 ## Agentmap
 
-If `agentmap` is installed, Flux can generate a compact codebase map:
+Flux can generate a compact built-in codebase map:
 
 ```bash
 .flux/bin/fluxctl agentmap --write

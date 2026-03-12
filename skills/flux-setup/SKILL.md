@@ -27,7 +27,6 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Lefthook** — fast pre-commit hooks
   - **Agent Browser** — browser automation CLI for agent-driven UI QA
   - **CLI Continues** — resume/switch session context across agent CLIs
-  - **Agentmap** — generate codebase maps for faster agent navigation and context handoff
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Claude Code sessions using git worktrees
   - **Ghostty** — fast terminal for split-pane workflows

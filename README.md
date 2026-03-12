@@ -53,12 +53,13 @@ Flux is the accumulation of our learnings working at enterprise and building sta
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
-**Flux gives you four things:**
+**Flux gives you five things:**
 
 1. **A deterministic state engine** — `.flux/` tracks the active objective, workflow phase, next action, and scoping artifacts so Flux can realign the agent without drift
 2. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
-3. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
-4. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
+3. **Native repo context mapping** — Flux can generate a built-in codebase map from tracked files for faster repo navigation and fresh-session realignment
+4. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
+5. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
 
 ### Deterministic State Engine
 
@@ -68,6 +69,28 @@ Flux now treats `.flux/` as the canonical workflow memory for the current reposi
 - `scope-status` shows the active objective, current scoping phase, progress, and next action
 - an active objective pointer keeps feature, bug, and refactor work anchored even across long sessions
 - startup hooks and setup-installed agent instructions tell the agent to realign with Flux state before acting on new work-like requests
+
+## Architecture
+
+Flux is split into a few clear layers:
+
+1. **Deterministic repo state** — `.flux/` stores tracked workflow data like objectives, epics, tasks, specs, memory, and config.
+2. **Runtime coordination state** — shared runtime task state lives outside tracked repo files so multiple worktrees and agents can coordinate safely.
+3. **Workflow control plane** — `fluxctl` is the single write path for workflow mutations, status inspection, validation, and routing.
+4. **Agent interface layer** — slash commands and skills translate natural-language intent into deterministic Flux operations.
+5. **Context acceleration layer** — Flux now includes a built-in `agentmap` implementation that generates YAML repo maps from git-tracked files, including README summaries and top-level definitions.
+
+### Built-in Agentmap
+
+Flux no longer depends on the external `agentmap` CLI.
+
+- `fluxctl agentmap --check` reports built-in availability
+- `fluxctl agentmap --write` writes `.flux/context/agentmap.yaml`
+- the map is generated from git-tracked files only
+- README files are included as high-signal project summaries
+- file header comments, shebangs, and top-level definitions are used to improve agent startup context
+
+The map is a navigation aid, not a source of truth. It helps fresh agents understand the repo faster, but it does not replace reading the code.
 
 ---
 
@@ -207,6 +230,8 @@ Restart your agent/session if needed and verify Flux is gone.
 On supported platforms, Flux performs a first-run setup step that scaffolds `.flux/` in your project and configures your preferences.
 
 Your agent should handle this automatically after installation. If the platform requires a restart for new commands/prompts to load, restart once and let the agent continue.
+
+Flux also ships with built-in agentmap support, so there is no separate `agentmap` install step during setup.
 
 `/flux:setup` also offers optional, OS-aware productivity app installs:
 - macOS: Superset, Ghostty, Raycast, Wispr Flow, Granola

@@ -717,8 +717,6 @@ Flux recommends CLI tools that complement the AI development workflow.
 | `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` | `npm i -g lefthook` |
 | `agent-browser` | Agent Browser | **Browser automation for coding agents** — UI QA and reproducible evidence | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
 | `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
-| `agentmap` | Agentmap | **Codebase map for agents** — inject file-purpose tree at session start | Yes | `npm i -g agentmap` | `npm i -g agentmap` | `npm i -g agentmap` |
-
 ### Detect existing tools
 
 ```bash
@@ -729,7 +727,6 @@ HAVE_FZF_CLI=$(which fzf >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
-HAVE_AGENTMAP_CLI=$(which agentmap >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_WINGET=$(which winget >/dev/null 2>&1 && echo 1 || echo 0)
 
@@ -767,7 +764,6 @@ INSTALL_FZF=0
 INSTALL_LEFTHOOK=0
 INSTALL_AGENT_BROWSER=0
 INSTALL_CONTINUES=0
-INSTALL_AGENTMAP=0
 
 # Set each to 1 if selected by user
 ```
@@ -780,7 +776,6 @@ INSTALL_AGENTMAP=0
 {"label": "Lefthook", "description": "Fast pre-commit hooks to catch issues before CI (free)"}
 {"label": "Agent Browser", "description": "Headless browser automation CLI for agent-driven QA (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
-{"label": "Agentmap", "description": "Generate codebase map for faster agent navigation and context handoff (free)"}
 ```
 
 **If GitHub MCP was installed in step 4c, mention the synergy:**
@@ -888,13 +883,12 @@ if [ "$INSTALL_FZF" = "1" ]; then
 fi
 ```
 
-**Lefthook / Agent Browser / CLI Continues / Agentmap (Node-based):**
+**Lefthook / Agent Browser / CLI Continues (Node-based):**
 ```bash
 if which npm >/dev/null 2>&1; then
   [ "$INSTALL_LEFTHOOK" = "1" ] && npm i -g lefthook 2>/dev/null || true
   [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
-  [ "$INSTALL_AGENTMAP" = "1" ] && npm i -g agentmap 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
@@ -1402,7 +1396,6 @@ CLI tools:
 - Lefthook: <installed | already installed | skipped>
 - Agent Browser: <installed | already installed | skipped>
 - CLI Continues: <installed | already installed | skipped>
-- Agentmap: <installed | already installed | skipped>
 ```
 
 Use tracking variables from Step 4e. If gh was already installed before setup, show "already installed".

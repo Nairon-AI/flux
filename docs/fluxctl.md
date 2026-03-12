@@ -789,7 +789,7 @@ fluxctl agentmap --ignore "dist/**" --ignore "**/*.test.ts"
 ```
 
 Notes:
-- `--check` reports whether the `agentmap` CLI is available in `PATH`
+- `--check` reports built-in agentmap availability and Flux version metadata
 - `--write` writes to `.flux/context/agentmap.yaml`
 - without `--out` or `--write`, YAML is printed to stdout
 - generated maps are navigation aids, not authoritative documentation

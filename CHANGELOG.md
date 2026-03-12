@@ -2,6 +2,18 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- `fluxctl agentmap` now uses a built-in Flux implementation instead of requiring an external `agentmap` CLI in `PATH`
+- `/flux:setup` no longer recommends or installs `agentmap` as a separate tool
+
+### Improved
+
+- setup docs now describe agentmap generation as a native Flux capability
+- built-in tests now validate actual map generation logic instead of a stubbed external binary
+
 ## [1.9.5] - 2026-03-12
 
 ### Added

@@ -327,100 +327,145 @@ describe('Fluxctl CLI', () => {
     expect(session.objective.id).toBe(epic.id)
   }, SCRIPT_TIMEOUT)
 
-  test('agentmap --check reports availability from PATH', async () => {
-    const tmpRoot = `/tmp/flux-agentmap-check-${Date.now()}`
-    const tmpBin = join(tmpRoot, 'bin')
-    mkdirSync(tmpBin, { recursive: true })
-
-    const stub = `#!/bin/sh
-if [ "$1" = "--version" ]; then
-  echo "agentmap 0.0.1-test"
-  exit 0
-fi
-echo "stub output"
-`
-    writeFileSync(join(tmpBin, 'agentmap'), stub, { mode: 0o755 })
-
+  test('agentmap --check reports built-in availability', async () => {
     const output = await $`${fluxctl} agentmap --check --json`
       .cwd(FLUX_ROOT)
-      .env({
-        ...process.env,
-        PATH: `${tmpBin}:${process.env.PATH || ''}`,
-      })
       .text()
 
     const parsed = JSON.parse(output)
     expect(parsed.available).toBe(true)
-    expect(parsed.version).toContain('0.0.1-test')
-    expect(parsed.path).toContain('/agentmap')
+    expect(parsed.engine).toBe('built-in')
+    expect(parsed.path).toBe(null)
+    expect(typeof parsed.version === 'string' || parsed.version === null).toBe(true)
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap generates built-in YAML with descriptions and defs', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-generate-${Date.now()}`
+    mkdirSync(join(tmpRoot, 'src'), { recursive: true })
+
+    writeFileSync(
+      join(tmpRoot, 'src', 'index.ts'),
+      `// CLI entrypoint.\n// Wires dependencies and starts the app.\n\nexport function main() {\n  return true\n}\n\nexport class App {}\n`
+    )
+    writeFileSync(
+      join(tmpRoot, 'src', 'hidden.ts'),
+      `export function hidden() {\n  return false\n}\n`
+    )
+    await $`git init -q`.cwd(tmpRoot).quiet()
+    await $`git add .`.cwd(tmpRoot).quiet()
+
+    const output = await $`${fluxctl} agentmap src --json`
+      .cwd(tmpRoot)
+      .text()
+
+    const parsed = JSON.parse(output)
+    expect(parsed.engine).toBe('built-in')
+    expect(parsed.file_count).toBe(1)
+    expect(parsed.yaml).toContain('"src":')
+    expect(parsed.yaml).toContain('"index.ts":')
+    expect(parsed.yaml).toContain('CLI entrypoint. Wires dependencies and starts the app.')
+    expect(parsed.yaml).toContain('"main": "line 4, function, exported"')
+    expect(parsed.yaml).toContain('"App": "line 8, class, exported"')
+    expect(parsed.yaml).not.toContain('hidden.ts')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap returns empty map outside a git repo', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-nongit-${Date.now()}`
+    mkdirSync(join(tmpRoot, 'src'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'src', 'index.ts'),
+      `// Non-git file.\n\nexport function main() {\n  return true\n}\n`
+    )
+
+    const output = await $`${fluxctl} agentmap src --json`
+      .cwd(tmpRoot)
+      .text()
+
+    const parsed = JSON.parse(output)
+    expect(parsed.file_count).toBe(0)
+    expect(parsed.yaml).toContain('"src": {}')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap skips license headers and includes README descriptions', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-readme-${Date.now()}`
+    mkdirSync(join(tmpRoot, 'src'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'README.md'),
+      `# Flux Sample\n\nA small sample repo.\n\n![Diagram](./diagram.png)\n`
+    )
+    writeFileSync(
+      join(tmpRoot, 'src', 'licensed.ts'),
+      `// SPDX-License-Identifier: MIT\n// Utility parser.\n// Handles normalization.\n\nexport function parseInput() {\n  return true\n}\n`
+    )
+    await $`git init -q`.cwd(tmpRoot).quiet()
+    await $`git add .`.cwd(tmpRoot).quiet()
+
+    const output = await $`${fluxctl} agentmap . --json`
+      .cwd(tmpRoot)
+      .text()
+
+    const parsed = JSON.parse(output)
+    expect(parsed.file_count).toBe(2)
+    expect(parsed.yaml).toContain('"README.md":')
+    expect(parsed.yaml).toContain('"Flux Sample\\nA small sample repo."')
+    expect(parsed.yaml).toContain('"licensed.ts":')
+    expect(parsed.yaml).toContain('"Utility parser. Handles normalization."')
+    expect(parsed.yaml).not.toContain('SPDX-License-Identifier')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap preserves shebang, skips directives, and ignores TS reference comments', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-directives-${Date.now()}`
+    mkdirSync(join(tmpRoot, 'src'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'src', 'cli.ts'),
+      `#!/usr/bin/env node\n"use strict"\n/// <reference path="./types.d.ts" />\n// CLI runner.\n// Executes the sync workflow.\n\nexport function main() {\n  return true\n}\n`
+    )
+    await $`git init -q`.cwd(tmpRoot).quiet()
+    await $`git add .`.cwd(tmpRoot).quiet()
+
+    const output = await $`${fluxctl} agentmap src --json`
+      .cwd(tmpRoot)
+      .text()
+
+    const parsed = JSON.parse(output)
+    expect(parsed.file_count).toBe(1)
+    expect(parsed.yaml).toContain('#!/usr/bin/env node\\nCLI runner. Executes the sync workflow.')
+    expect(parsed.yaml).not.toContain('use strict')
+    expect(parsed.yaml).not.toContain('<reference path=')
 
     rmSync(tmpRoot, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)
 
   test('agentmap --write writes default Flux artifact path', async () => {
     const tmpRoot = `/tmp/flux-agentmap-write-${Date.now()}`
-    const tmpBin = join(tmpRoot, 'bin')
-    mkdirSync(tmpBin, { recursive: true })
+    mkdirSync(join(tmpRoot, 'src'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'src', 'index.ts'),
+      `// Test entrypoint.\n\nexport function main() {\n  return true\n}\n`
+    )
+    await $`git init -q`.cwd(tmpRoot).quiet()
+    await $`git add .`.cwd(tmpRoot).quiet()
 
-    const stub = `#!/bin/sh
-OUT=""
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    --version)
-      echo "agentmap 0.0.1-test"
-      exit 0
-      ;;
-    -o|--output)
-      OUT="$2"
-      shift 2
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
-if [ -n "$OUT" ]; then
-  mkdir -p "$(dirname "$OUT")"
-  cat > "$OUT" <<'EOF'
-repo:
-  src:
-    index.ts:
-      description: test entrypoint
-EOF
-else
-  cat <<'EOF'
-repo:
-  src:
-    index.ts:
-      description: test entrypoint
-EOF
-fi
-`
-    writeFileSync(join(tmpBin, 'agentmap'), stub, { mode: 0o755 })
-
-    mkdirSync(tmpRoot, { recursive: true })
     await $`${fluxctl} init --json`
       .cwd(tmpRoot)
-      .env({
-        ...process.env,
-        PATH: `${tmpBin}:${process.env.PATH || ''}`,
-      })
       .quiet()
 
-    const output = await $`${fluxctl} agentmap --write --json`
+    const output = await $`${fluxctl} agentmap src --write --json`
       .cwd(tmpRoot)
-      .env({
-        ...process.env,
-        PATH: `${tmpBin}:${process.env.PATH || ''}`,
-      })
       .text()
 
     const parsed = JSON.parse(output)
     const mapPath = join(tmpRoot, '.flux', 'context', 'agentmap.yaml')
     expect(parsed.output_file.endsWith('/.flux/context/agentmap.yaml')).toBe(true)
+    expect(parsed.file_count).toBe(1)
     expect(existsSync(mapPath)).toBe(true)
-    expect(readFileSync(mapPath, 'utf-8')).toContain('test entrypoint')
+    expect(readFileSync(mapPath, 'utf-8')).toContain('Test entrypoint.')
 
     rmSync(tmpRoot, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)

@@ -7,6 +7,7 @@ Agents must use fluxctl for all writes - never edit .flux/* directly.
 """
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -5886,45 +5887,426 @@ def cmd_state_path(args: argparse.Namespace) -> None:
             print(state_dir)
 
 
+AGENTMAP_SUPPORTED_EXTENSIONS = {
+    ".ts",
+    ".tsx",
+    ".mts",
+    ".cts",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".py",
+    ".pyi",
+    ".rs",
+    ".go",
+    ".zig",
+    ".c",
+    ".h",
+    ".cpp",
+    ".hpp",
+    ".cc",
+    ".cxx",
+}
+AGENTMAP_MAX_HEADER_LINES = 50
+AGENTMAP_MAX_DESCRIPTION_LINES = 25
+AGENTMAP_LICENSE_PATTERNS = [
+    r"\bcopyright\s*(?:\(c\)|©|\d{4})",
+    r"\bspdx-license-identifier\s*:",
+    r"\ball rights reserved\b",
+    r"\blicensed under\b",
+    r"\bpermission is hereby granted\b",
+    r"\bredistribution and use\b",
+    r"\bthis source code is licensed\b",
+    r"\bwithout warranty\b",
+    r'\bthe software is provided "as is"\b',
+]
+
+
+def _agentmap_supported(path: Path) -> bool:
+    return path.suffix.lower() in AGENTMAP_SUPPORTED_EXTENSIONS
+
+
+def _agentmap_is_readme(path: Path) -> bool:
+    name = path.name.lower()
+    return name == "readme" or name == "readme.md"
+
+
+def _agentmap_matches(rel_path: str, filters: list[str], ignores: list[str]) -> bool:
+    if filters and not any(fnmatch.fnmatch(rel_path, pattern) for pattern in filters):
+        return False
+    if any(fnmatch.fnmatch(rel_path, pattern) for pattern in ignores):
+        return False
+    return True
+
+
+def _agentmap_normalize_comment_lines(lines: list[str]) -> Optional[str]:
+    cleaned = []
+    for raw in lines[:AGENTMAP_MAX_DESCRIPTION_LINES]:
+        line = raw.strip()
+        line = re.sub(r"^(///|//!|//|#)\s?", "", line)
+        line = re.sub(r"^/\*\*?\s?", "", line)
+        line = re.sub(r"\*/$", "", line).strip()
+        line = re.sub(r"^\*\s?", "", line)
+        line = line.strip()
+        if line:
+            cleaned.append(line)
+    if not cleaned:
+        return None
+    return " ".join(cleaned)
+
+
+def _agentmap_is_license_comment(text: str) -> bool:
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in AGENTMAP_LICENSE_PATTERNS)
+
+
+def _agentmap_is_reference_directive(text: str) -> bool:
+    return bool(re.match(r"^///\s*<reference\s", text.strip()))
+
+
+def _agentmap_truncate_lines(lines: list[str]) -> list[str]:
+    if len(lines) <= AGENTMAP_MAX_DESCRIPTION_LINES:
+        return lines
+    remaining = len(lines) - AGENTMAP_MAX_DESCRIPTION_LINES
+    return lines[:AGENTMAP_MAX_DESCRIPTION_LINES] + [f"... and {remaining} more lines"]
+
+
+def _agentmap_extract_block_comment(
+    lines: list[str], start: int, opener: str, closer: str
+) -> tuple[Optional[str], int]:
+    first = lines[start].strip()
+    payload = [first[len(opener) :]]
+    idx = start
+    while idx < len(lines):
+        current = lines[idx].strip()
+        if idx != start:
+            payload.append(current)
+        if closer in current:
+            joined = "\n".join(payload).split(closer, 1)[0]
+            return _agentmap_normalize_comment_lines(joined.splitlines()), idx + 1
+        idx += 1
+    return _agentmap_normalize_comment_lines(payload), idx
+
+
+def _agentmap_is_js_directive(line: str) -> bool:
+    stripped = line.strip().rstrip(";")
+    return stripped in {'"use strict"', "'use strict'", '"use client"', "'use client'", '"use server"', "'use server'"}
+
+
+def _agentmap_collect_line_comment_description(
+    lines: list[str], start: int, prefixes: tuple[str, ...]
+) -> tuple[Optional[str], int]:
+    comment_lines = []
+    idx = start
+    while idx < len(lines):
+        current = lines[idx].strip()
+        if not current.startswith(prefixes):
+            break
+        comment_lines.append(lines[idx])
+        idx += 1
+
+    normalized_lines = []
+    for raw in comment_lines:
+        stripped = raw.strip()
+        if _agentmap_is_reference_directive(stripped):
+            continue
+        normalized = _agentmap_normalize_comment_lines([raw])
+        if not normalized:
+            continue
+        normalized_lines.append(normalized)
+
+    while normalized_lines and _agentmap_is_license_comment(normalized_lines[0]):
+        normalized_lines.pop(0)
+
+    if not normalized_lines:
+        return None, idx
+    return " ".join(normalized_lines[:AGENTMAP_MAX_DESCRIPTION_LINES]), idx
+
+
+def _agentmap_extract_header_description(path: Path, text: str) -> Optional[str]:
+    lines = text.splitlines()[:AGENTMAP_MAX_HEADER_LINES]
+    idx = 0
+    shebang: Optional[str] = None
+    if lines and lines[0].startswith("#!"):
+        shebang = lines[0].strip()
+        idx += 1
+    suffix = path.suffix.lower()
+
+    def with_shebang(description: Optional[str]) -> Optional[str]:
+        if shebang and description:
+            return f"{shebang}\n{description}"
+        if shebang:
+            return shebang
+        return description
+
+    if suffix in {".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"}:
+        while idx < len(lines) and _agentmap_is_js_directive(lines[idx]):
+            idx += 1
+    while idx < len(lines):
+        while idx < len(lines) and not lines[idx].strip():
+            idx += 1
+        if idx >= len(lines):
+            return with_shebang(None)
+
+        line = lines[idx].strip()
+        description: Optional[str] = None
+        next_idx = idx + 1
+
+        if suffix in {".py", ".pyi"}:
+            if line.startswith('"""') or line.startswith("'''"):
+                quote = line[:3]
+                description, next_idx = _agentmap_extract_block_comment(lines, idx, quote, quote)
+            elif line.startswith("#"):
+                description, next_idx = _agentmap_collect_line_comment_description(lines, idx, ("#",))
+        elif line.startswith("/**") or line.startswith("/*"):
+            opener = "/**" if line.startswith("/**") else "/*"
+            description, next_idx = _agentmap_extract_block_comment(lines, idx, opener, "*/")
+        elif suffix == ".rs" and (line.startswith("//!") or line.startswith("///") or line.startswith("//")):
+            description, next_idx = _agentmap_collect_line_comment_description(
+                lines, idx, ("//!", "///", "//")
+            )
+        elif line.startswith("//"):
+            description, next_idx = _agentmap_collect_line_comment_description(lines, idx, ("///", "//"))
+
+        if not description:
+            idx = next_idx
+            continue
+        if not _agentmap_is_license_comment(description):
+            return with_shebang(description)
+        idx = next_idx
+
+    return with_shebang(None)
+
+
+def _agentmap_extract_markdown_description(text: str) -> Optional[str]:
+    lines = text.splitlines()[:AGENTMAP_MAX_HEADER_LINES]
+    filtered = []
+    in_comment = False
+    for raw in lines:
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("<!--"):
+            in_comment = True
+        if in_comment:
+            if "-->" in stripped:
+                in_comment = False
+            continue
+        if stripped.startswith("!["):
+            continue
+        stripped = re.sub(r"^#{1,6}\s*", "", stripped)
+        stripped = re.sub(r"^[-*+]\s+", "- ", stripped)
+        filtered.append(stripped)
+    if not filtered:
+        return None
+    return "\n".join(_agentmap_truncate_lines(filtered))
+
+
+def _agentmap_format_def(line_no: int, kind: str, exported: bool = False) -> str:
+    parts = [f"line {line_no}", kind]
+    if exported:
+        parts.append("exported")
+    return ", ".join(parts)
+
+
+def _agentmap_extract_defs(path: Path, text: str) -> dict[str, str]:
+    suffix = path.suffix.lower()
+    defs: dict[str, str] = {}
+    lines = text.splitlines()
+
+    if suffix in {".py", ".pyi"}:
+        patterns = [
+            (re.compile(r"^class\s+([A-Za-z_]\w*)\b"), "class"),
+            (re.compile(r"^(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\("), "function"),
+        ]
+        for idx, line in enumerate(lines, start=1):
+            if line.startswith((" ", "\t")):
+                continue
+            stripped = line.strip()
+            for pattern, kind in patterns:
+                match = pattern.match(stripped)
+                if match:
+                    defs[match.group(1)] = _agentmap_format_def(idx, kind)
+                    break
+        return defs
+
+    if suffix in {".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"}:
+        patterns = [
+            (re.compile(r"^(export\s+)?(?:default\s+)?class\s+([A-Za-z_$][\w$]*)\b"), "class"),
+            (re.compile(r"^(export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\("), "function"),
+            (re.compile(r"^(export\s+)?interface\s+([A-Za-z_$][\w$]*)\b"), "interface"),
+            (re.compile(r"^(export\s+)?type\s+([A-Za-z_$][\w$]*)\b"), "type"),
+            (re.compile(r"^(export\s+)?enum\s+([A-Za-z_$][\w$]*)\b"), "enum"),
+            (re.compile(r"^(export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>"), "function"),
+        ]
+        depth = 0
+        for idx, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if depth == 0:
+                for pattern, kind in patterns:
+                    match = pattern.match(stripped)
+                    if match:
+                        exported = bool(match.group(1))
+                        defs[match.group(2)] = _agentmap_format_def(idx, kind, exported)
+                        break
+            depth += line.count("{") - line.count("}")
+            if depth < 0:
+                depth = 0
+        return defs
+
+    if suffix == ".rs":
+        patterns = [
+            (re.compile(r"^(pub\s+)?(?:async\s+)?fn\s+([A-Za-z_]\w*)\s*\("), "function"),
+            (re.compile(r"^(pub\s+)?struct\s+([A-Za-z_]\w*)\b"), "struct"),
+            (re.compile(r"^(pub\s+)?enum\s+([A-Za-z_]\w*)\b"), "enum"),
+            (re.compile(r"^(pub\s+)?trait\s+([A-Za-z_]\w*)\b"), "trait"),
+            (re.compile(r"^(pub\s+)?type\s+([A-Za-z_]\w*)\b"), "type"),
+        ]
+        depth = 0
+        for idx, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if depth == 0:
+                for pattern, kind in patterns:
+                    match = pattern.match(stripped)
+                    if match:
+                        defs[match.group(2)] = _agentmap_format_def(idx, kind, bool(match.group(1)))
+                        break
+            depth += line.count("{") - line.count("}")
+            if depth < 0:
+                depth = 0
+        return defs
+
+    if suffix == ".go":
+        patterns = [
+            (re.compile(r"^func\s+(?:\([^)]+\)\s*)?([A-Za-z_]\w*)\s*\("), "function"),
+            (re.compile(r"^type\s+([A-Za-z_]\w*)\s+struct\b"), "struct"),
+            (re.compile(r"^type\s+([A-Za-z_]\w*)\s+interface\b"), "interface"),
+        ]
+        depth = 0
+        for idx, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if depth == 0:
+                for pattern, kind in patterns:
+                    match = pattern.match(stripped)
+                    if match:
+                        name = match.group(1)
+                        defs[name] = _agentmap_format_def(idx, kind, name[:1].isupper())
+                        break
+            depth += line.count("{") - line.count("}")
+            if depth < 0:
+                depth = 0
+        return defs
+
+    return defs
+
+
+def _agentmap_insert(tree: dict[str, Any], parts: list[str], payload: dict[str, Any]) -> None:
+    node = tree
+    for part in parts[:-1]:
+        node = node.setdefault(part, {})
+    node[parts[-1]] = payload
+
+
+def _agentmap_render_yaml(node: Any, indent: int = 0) -> list[str]:
+    if not isinstance(node, dict):
+        return [" " * indent + json.dumps(node, ensure_ascii=False)]
+
+    lines = []
+    for key in sorted(node.keys()):
+        value = node[key]
+        prefix = " " * indent + f"{json.dumps(str(key), ensure_ascii=False)}:"
+        if isinstance(value, dict):
+            if value:
+                lines.append(prefix)
+                lines.extend(_agentmap_render_yaml(value, indent + 2))
+            else:
+                lines.append(prefix + " {}")
+        else:
+            lines.append(prefix + f" {json.dumps(value, ensure_ascii=False)}")
+    return lines
+
+
+def _generate_agentmap_yaml(target_dir: Path, filters: list[str], ignores: list[str]) -> tuple[str, int]:
+    tree: dict[str, Any] = {target_dir.name: {}}
+    count = 0
+    if target_dir.resolve() == Path.home().resolve():
+        return "\n".join(_agentmap_render_yaml(tree)) + "\n", 0
+
+    try:
+        subprocess.run(
+            ["git", "rev-parse", "--git-dir"],
+            cwd=target_dir,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        return "\n".join(_agentmap_render_yaml(tree)) + "\n", 0
+
+    try:
+        result = subprocess.run(
+            ["git", "ls-files"],
+            cwd=target_dir,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        tracked_files = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    except subprocess.CalledProcessError:
+        tracked_files = []
+
+    for rel_path in sorted(tracked_files):
+        path = (target_dir / rel_path).resolve()
+        if not path.is_file():
+            continue
+        if not _agentmap_supported(path) and not _agentmap_is_readme(path):
+            continue
+        if not _agentmap_matches(rel_path, filters, ignores):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+        except OSError:
+            continue
+
+        description = (
+            _agentmap_extract_markdown_description(text)
+            if _agentmap_is_readme(path)
+            else _agentmap_extract_header_description(path, text)
+        )
+        if not description:
+            continue
+
+        payload: dict[str, Any] = {"description": description}
+        defs = _agentmap_extract_defs(path, text)
+        if defs:
+            payload["defs"] = defs
+        _agentmap_insert(tree[target_dir.name], rel_path.split("/"), payload)
+        count += 1
+
+    return "\n".join(_agentmap_render_yaml(tree)) + "\n", count
+
+
 def cmd_agentmap(args: argparse.Namespace) -> None:
-    """Generate or inspect an agentmap artifact."""
-    agentmap_bin = shutil.which("agentmap")
+    """Generate or inspect a built-in agentmap artifact."""
 
     if args.check:
-        version = None
-        if agentmap_bin:
-            try:
-                result = subprocess.run(
-                    [agentmap_bin, "--version"],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-                version = (result.stdout or result.stderr).strip() or None
-            except subprocess.CalledProcessError:
-                version = None
-
         payload = {
-            "available": bool(agentmap_bin),
-            "path": agentmap_bin,
-            "version": version,
+            "available": True,
+            "engine": "built-in",
+            "path": None,
+            "version": current_flux_version(),
         }
         if args.json:
             json_output(payload)
         else:
-            if agentmap_bin:
-                print(f"agentmap available: {version or 'unknown version'}")
-                print(agentmap_bin)
-            else:
-                print("agentmap not found in PATH")
+            version = payload["version"] or "unknown version"
+            print(f"agentmap built into fluxctl ({version})")
         return
-
-    if not agentmap_bin:
-        error_exit(
-            "agentmap not found in PATH. Install with: npm i -g agentmap",
-            use_json=args.json,
-            code=2,
-        )
 
     if args.write and args.out:
         error_exit("--write and --out cannot be used together", use_json=args.json)
@@ -5943,44 +6325,30 @@ def cmd_agentmap(args: argparse.Namespace) -> None:
         if not output_path.is_absolute():
             output_path = (Path.cwd() / output_path).resolve()
 
-    cmd = [agentmap_bin, str(target_dir)]
+    yaml_text, file_count = _generate_agentmap_yaml(target_dir, args.filter, args.ignore)
     if output_path is not None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        cmd.extend(["-o", str(output_path)])
-    for pattern in args.filter:
-        cmd.extend(["--filter", pattern])
-    for pattern in args.ignore:
-        cmd.extend(["--ignore", pattern])
+        atomic_write(output_path, yaml_text)
 
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        detail = (e.stderr or e.stdout or str(e)).strip()
-        error_exit(f"agentmap failed: {detail}", use_json=args.json, code=2)
-
-    stdout = result.stdout.strip()
     if args.json:
         payload = {
             "available": True,
-            "path": agentmap_bin,
+            "engine": "built-in",
+            "path": None,
             "dir": str(target_dir),
             "output_file": str(output_path) if output_path else None,
             "filters": args.filter,
             "ignores": args.ignore,
+            "file_count": file_count,
         }
         if output_path is None:
-            payload["yaml"] = stdout
+            payload["yaml"] = yaml_text.rstrip()
         json_output(payload)
     else:
         if output_path is not None:
             print(output_path)
         else:
-            print(stdout)
+            print(yaml_text.rstrip())
 
 
 def cmd_migrate_state(args: argparse.Namespace) -> None:
@@ -8436,7 +8804,7 @@ def main() -> None:
     p_agentmap.add_argument(
         "--check",
         action="store_true",
-        help="Check whether agentmap is available",
+        help="Check built-in agentmap availability",
     )
     p_agentmap.add_argument(
         "--filter",

@@ -69,7 +69,6 @@ detect_cli_tools() {
     if cmd_exists continues || cmd_exists cont; then
         tools+=("cli-continues")
     fi
-    cmd_exists agentmap && tools+=("agentmap")
     
     # Package managers
     cmd_exists bun && tools+=("bun")

@@ -14,12 +14,12 @@
 
 ## 1) Objective
 
-Flux already recommends `agentmap` as an optional CLI tool. This plan describes how to move from "recommended external utility" to "integrated Flux capability" without making Flux depend on `agentmap` for core functionality.
+Flux originally recommended `agentmap` as an optional CLI tool. This plan describes the move from "recommended external utility" to "integrated Flux capability" so Flux no longer depends on a separate `agentmap` install.
 
 The integration goal is:
 
-- keep `agentmap` optional
-- make it first-class when installed
+- make agentmap functionality native to Flux
+- make it first-class inside Flux
 - generate repo maps in predictable Flux-owned locations
 - use the maps to improve startup context, planning, worker execution, and orchestration
 
@@ -55,15 +55,15 @@ It should not be treated as:
 
 ## 4) Desired User Experience
 
-### For users without `agentmap`
+### For users
 
 - Flux continues to work normally.
-- Setup may recommend installing `agentmap`.
-- Commands should degrade gracefully with clear messages.
+- No separate `agentmap` install should be required.
+- Commands should degrade gracefully only when a repo cannot be mapped safely.
 
-### For users with `agentmap`
+### Built-in behavior
 
-- Flux can generate a repo map through `fluxctl`, not only through raw `npx` commands.
+- Flux can generate a repo map through `fluxctl`.
 - Flux stores maps in predictable project-local paths.
 - Agents can be told where to find current maps.
 - Planning and execution flows can inject filtered maps into fresh context when useful.
@@ -74,7 +74,7 @@ Implement the integration in three layers.
 
 ### 5.1 Tool Detection Layer
 
-- detect whether `agentmap` is available
+- expose built-in map generation through Flux
 - surface availability in setup and diagnostics
 
 ### 5.2 Artifact Generation Layer
@@ -108,8 +108,8 @@ Recommended new `fluxctl` surface:
 - default: print generated YAML to stdout
 - `--write`: write to Flux default path
 - `--out`: custom output path
-- `--check`: verify the tool is installed and print version/path metadata
-- `--filter` and `--ignore`: pass through to `agentmap`
+- `--check`: report built-in availability and Flux version metadata
+- `--filter` and `--ignore`: apply Flux-native file filtering
 
 ## 7) Proposed Artifact Paths
 
@@ -130,19 +130,19 @@ Reasons:
 
 ### Goals
 
-- give Flux a stable way to invoke `agentmap`
+- give Flux a stable native way to generate an agent map
 
 ### Steps
 
 1. Add a new `fluxctl agentmap` command.
-2. Detect whether `agentmap` is available via PATH.
-3. Return structured JSON or readable errors when not available.
+2. Implement generation logic directly inside Flux.
+3. Return structured JSON metadata and safe empty maps for unsupported repo states.
 4. Support passthrough of `--filter`, `--ignore`, and `--out`.
 5. Add `--write` shortcut for `.flux/context/agentmap.yaml`.
 
 ### Exit Criteria
 
-- users can generate the map through `fluxctl` without manually invoking `npx agentmap`
+- users can generate the map through `fluxctl` without any external install step
 
 ## Phase 2: Setup and Docs
 
@@ -155,7 +155,7 @@ Reasons:
 1. Update `.flux/usage.md` template with `agentmap` examples.
 2. Update Flux setup snippets to mention `.flux/context/agentmap.yaml` when present.
 3. Update documentation to explain when to use the map and when to ignore it.
-4. Add troubleshooting guidance for missing `agentmap`.
+4. Add troubleshooting guidance for repos that produce sparse maps.
 
 ### Exit Criteria
 
@@ -169,14 +169,13 @@ Reasons:
 
 ### Steps
 
-1. During `/flux:prime`, detect whether `agentmap` is installed.
-2. If installed, optionally generate a base repo map.
-3. If not installed, continue as usual and optionally recommend it.
+1. During `/flux:prime`, optionally generate a base repo map.
+2. If a repo produces no useful map entries, continue as usual and explain why.
 4. Later, measure map coverage quality by checking whether important files include header comments.
 
 ### Exit Criteria
 
-- prime can recognize and leverage `agentmap` without making it mandatory
+- prime can recognize and leverage built-in agent maps without any setup dependency
 
 ## Phase 4: Planning and Work Integration
 
@@ -203,7 +202,7 @@ Reasons:
 
 ### Steps
 
-1. On workspace creation, generate an issue-scoped agent map if `agentmap` is installed.
+1. On workspace creation, generate an issue-scoped agent map.
 2. Use the map as part of the workspace bootstrap context.
 3. Refresh the map when important files in the workspace change.
 
@@ -213,8 +212,8 @@ Reasons:
 
 ## 9) Guardrails
 
-- `agentmap` must remain optional
-- Flux must not fail if `agentmap` is missing
+- the feature must be native to Flux
+- Flux must not rely on a separate `agentmap` binary
 - generated maps should be filtered when possible
 - maps should not be treated as authoritative truth
 - maps should be stored in predictable, Flux-owned paths
@@ -244,4 +243,4 @@ The integration should be considered successful when:
 - generated maps have a stable default location
 - generated setup docs mention the map when relevant
 - Flux workflows can consume the map without requiring it
-- the feature is tested and degrades gracefully when `agentmap` is absent
+- the feature is tested and degrades gracefully when a repo cannot produce useful map entries
