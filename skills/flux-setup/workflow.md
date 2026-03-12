@@ -1443,7 +1443,6 @@ Documentation updated:
 
 Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
-- First command after setup + restart: /flux:prime (audits agent readiness and inefficiencies)
 - Interested in autonomous mode? Run /flux:ralph-init
 - Default skill bootstrap: claudeception (installed if missing)
 - Optional agent skills can be installed/updated via /flux:setup
@@ -1453,9 +1452,20 @@ Notes:
 - This setup is optional - plugin works without it
 ```
 
-### Final reminder (always print at the end)
+### What to do next (always print at the end, visually separated from summary)
 
-- **After restart, run /flux:prime first** (agent-readiness and inefficiency audit).
-- **Core loop: /flux:scope -> /flux:work -> /flux:impl-review -> /flux:improve** (`/flux:improve` finds ways to improve your agent workflow over time).
-- **End each session with /flux:reflect** (capture what you learned so the system improves over time).
-- **From now on, use Superset as your primary orchestrator for parallel Claude Code workflows using git worktrees.**
+Print this **exactly** after the summary block, with a blank line before it:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+What to do next:
+
+  1. Restart Claude Code (required for new MCP servers to activate)
+  2. Run /flux:prime — this audits the repo for agent-readiness and inefficiencies. It only runs once.
+
+After prime completes, the core loop is:
+  /flux:scope → /flux:work → /flux:impl-review → /flux:improve
+
+End each session with /flux:reflect to capture learnings.
+```
