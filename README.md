@@ -7,10 +7,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**A deterministic state engine and structured SDLC layer for Claude Code.**<br>
-Harness your agent with repeatable workflows, multi-model adversarial reviews, and continuous improvement — so every session ships better than the last.
+**A structured harness and deterministic state engine for Claude Code.**<br>
+Build software reliably with agents.
 
 </div>
+
+Flux enforces repeatable workflows, tracks state across sessions, and uses multi-model adversarial reviews to catch what no single model spots alone. Run long, complex tasks without drift — Flux keeps the agent on rails even when context gets deep. Analyze your sessions, detect inefficiencies, and get recommended optimisations from an engine that learns your patterns and stays current with the latest harness and context engineering best practices. Ship with confidence. Sleep better at night.
 
 ---
 
