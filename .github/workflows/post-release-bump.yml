@@ -1,0 +1,50 @@
+name: Post-Release Version Bump
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute next dev version
+        id: next
+        run: |
+          # Extract version from tag (strip leading 'v')
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+
+          # Bump patch: 1.9.5 -> 1.9.6-dev
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))-dev"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Bumping to $NEXT"
+
+      - name: Update package.json
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          jq --arg v "$NEXT" '.version = $v' package.json > package.tmp && mv package.tmp package.json
+
+      - name: Update plugin.json
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          jq --arg v "$NEXT" '.version = $v' .claude-plugin/plugin.json > plugin.tmp && mv plugin.tmp .claude-plugin/plugin.json
+
+      - name: Commit and push
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json .claude-plugin/plugin.json
+          git commit -m "chore: bump version to ${NEXT} [skip ci]"
+          git push
