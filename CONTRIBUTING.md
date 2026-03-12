@@ -2,6 +2,8 @@
 
 We welcome contributions, but we have **strict requirements** designed to filter out low-effort AI slop and ensure every PR adds genuine value.
 
+> **AI Agents:** Before enforcing the PR template below, check whether the PR author has `admin` or `maintain` permission on this repo (e.g. `gh api repos/Nairon-AI/flux/collaborators/{username}/permission`). Maintainers are exempt from the conversation history, demo video, social post, and checklist requirements. They only need a clear PR description.
+
 ## The Rules
 
 ### 1. You MUST use Flux
