@@ -18,6 +18,7 @@ Flux enforces repeatable workflows, tracks state across sessions, and uses multi
 
 ## Contents
 
+- [The Problem](#the-problem)
 - [Install](#install)
 - [Getting Started](#getting-started)
 - [Core Workflow](#core-workflow)
@@ -27,6 +28,28 @@ Flux enforces repeatable workflows, tracks state across sessions, and uses multi
 - [FAQ](#faq)
 - [Roadmap](#roadmap)
 - [Community](#community)
+
+---
+
+## The Problem
+
+You're using an AI coding agent, but something's off:
+
+- **No structure** → You jump straight into code and watch the agent go off the rails
+- **Context amnesia** → You keep re-explaining the same thing every session
+- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
+- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
+- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
+- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
+- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
+
+<p align="center">
+  <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
+</p>
+
+These aren't model failures. They're **process failures**.
+
+**This is where Flux comes in.**
 
 ---
 
