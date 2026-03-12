@@ -340,6 +340,12 @@ Not recommended — both are task tracking systems and will confuse the agent. P
 
 ## Roadmap
 
+### v2.0 — Relay
+
+A fully autonomous orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
+
+Relay coordinates multiple agents working in parallel across worktrees, manages task dependencies, and handles handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
+
 ### Feature Roadmap
 
 | Command | Enhancement |
