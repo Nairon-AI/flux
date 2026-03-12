@@ -10,7 +10,6 @@
   - `README.md`
   - `docs/architecture.md`
   - `docs/fluxctl.md`
-  - `docs/codex-install.md`
 
 ## 1) Executive Summary
 

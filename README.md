@@ -18,8 +18,6 @@
 | Platform | Status | Install |
 |----------|--------|---------|
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
-| [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
-| [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
 
 ---
@@ -53,13 +51,16 @@ Flux is the accumulation of our learnings working at enterprise and building sta
 
 The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
 
-**Flux gives you five things:**
+**Flux gives you six things:**
 
 1. **A deterministic state engine** — `.flux/` tracks the active objective, workflow phase, next action, and scoping artifacts so Flux can realign the agent without drift
 2. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
 3. **Native repo context mapping** — Flux can generate a built-in codebase map from tracked files for faster repo navigation and fresh-session realignment
-4. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
-5. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
+4. **Adversarial reviews** — Plans and implementations are reviewed by a second model (Codex CLI / GPT) to reach multi-model consensus before shipping
+5. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
+6. **Observability** — Tap into your entire workflow to get full visibility into your harness (the tools you're using, the quality of your sessions, and more)
+
+> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During `/flux:impl-review` and `/flux:epic-review`, Flux uses the Codex CLI as an adversarial reviewer — a second model with different training data and biases that independently evaluates your plans and code. Multiple models reaching consensus catches blind spots that no single model finds alone. This is one of Flux's biggest advantages over single-model workflows.
 
 ### Deterministic State Engine
 
@@ -113,18 +114,6 @@ Use the install path that matches your agent environment:
 **Claude Code**
 ```
 /plugin add https://github.com/Nairon-AI/flux@latest
-```
-
-**Factory Droid**
-```
-droid plugin marketplace add https://github.com/Nairon-AI/flux
-```
-
-**OpenAI Codex**
-```bash
-git clone https://github.com/Nairon-AI/flux
-cd flux
-./scripts/install-codex.sh flux
 ```
 
 **OpenCode**

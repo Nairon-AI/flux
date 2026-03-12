@@ -234,7 +234,6 @@ Step 3: Matched Recommendations
 
 - [ ] **Windows support**
   - Bash scripts won't work natively
-  - README says "Factory Droid" but no Windows install path
   - **Fix**: Clarify Windows support status or add PowerShell scripts
 
 - [ ] **Conflicting MCP configs**
