@@ -908,7 +908,6 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
-| `cartographer` | Cartographer | **Parallel codebase mapping** — faster architecture understanding in large repos | `git clone https://github.com/kingbootoshi/cartographer.git ~/.claude/skills/cartographer` |
 | `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` |
 | `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
@@ -918,7 +917,6 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 ### Detect existing skills
 
 ```bash
-HAVE_CARTOGRAPHER=$([ -d "$HOME/.claude/skills/cartographer" ] && echo 1 || echo 0)
 HAVE_UI_SKILLS=$(([ -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] || [ -f "$HOME/.claude/skills/fixing-accessibility/SKILL.md" ] || [ -d "$HOME/.claude/skills/ui-skills" ]) && echo 1 || echo 0)
 HAVE_TASTE_SKILL=$([ -f "$HOME/.claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
 HAVE_SEMVER_CHANGELOG=$(([ -d "$HOME/.claude/skills/semver-changelog" ] || [ -d "$HOME/.claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
@@ -936,7 +934,6 @@ HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
   "question": "Flux can install optional agent skills. Which would you like?",
   "multiple": true,
   "options": [
-    {"label": "Cartographer", "description": "Map architecture with parallel subagents (free, open-source)"},
     {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design"},
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
@@ -950,7 +947,6 @@ HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
 Map selected skill options to install flags:
 
 ```bash
-INSTALL_CARTOGRAPHER=0
 INSTALL_UI_SKILLS=0
 INSTALL_TASTE_SKILL=0
 INSTALL_SEMVER_CHANGELOG=0
@@ -963,16 +959,6 @@ INSTALL_X_RESEARCH_SKILL=0
 ### Install selected skills
 
 ```bash
-if [ "$INSTALL_CARTOGRAPHER" = "1" ]; then
-  if [ -d "$HOME/.claude/skills/cartographer" ]; then
-    git -C "$HOME/.claude/skills/cartographer" pull --ff-only 2>/dev/null || true
-  else
-    git clone --depth 1 https://github.com/kingbootoshi/cartographer.git "$HOME/.claude/skills/cartographer" 2>/dev/null || {
-      echo "Install manually: https://github.com/kingbootoshi/cartographer"
-    }
-  fi
-fi
-
 if [ "$INSTALL_UI_SKILLS" = "1" ]; then
   if which npx >/dev/null 2>&1; then
     npx -y ui-skills add --all 2>/dev/null || true
@@ -1039,7 +1025,6 @@ After running installs, verify each selected skill path exists before marking su
 
 - UI Skills: `$HOME/.claude/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`)
 - Taste Skill: `$HOME/.claude/skills/taste-skill/SKILL.md`
-- Cartographer: `$HOME/.claude/skills/cartographer` directory
 - Semver Changelog: `$HOME/.claude/skills/semver-changelog` or `$HOME/.claude/skills/semantic-version-changelog-generator`
 - Agent Skills (Vercel): `$HOME/.claude/skills/agent-skills-vercel` directory
 - X Research Skill: `$HOME/.claude/skills/x-research-skill` directory
@@ -1404,7 +1389,6 @@ Use tracking variables from Step 4e. If gh was already installed before setup, s
 
 ```
 Agent skills:
-- Cartographer: <installed | already installed | skipped | failed>
 - UI Skills: <installed | already installed | skipped | failed>
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
