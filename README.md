@@ -541,8 +541,6 @@ Powered by [desloppify](https://github.com/peteromallet/desloppify) — a codeba
 
 Target: **95+ strict score** = codebase a senior engineer would respect.
 
-That's it. Prime once, then Scope -> Build -> Review -> Improve. End sessions with Reflect. Keep the codebase clean. Repeat.
-
 ### Build Persistent Memory
 
 Flux includes a **brain vault** — persistent memory that makes the agent smarter over time. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing).
