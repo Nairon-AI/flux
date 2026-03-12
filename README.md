@@ -78,7 +78,7 @@ Upgrade Flux. Fetch the README at https://github.com/Nairon-AI/flux for upgrade 
 Uninstall Flux. Fetch the README at https://github.com/Nairon-AI/flux for uninstall instructions.
 ```
 
-The agent handles the rest. You only step in when a slash command or restart is needed.
+After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
 
 <details>
 <summary><strong>Agent Instructions</strong> — the agent reads this section when it fetches the README</summary>
