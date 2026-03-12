@@ -82,7 +82,7 @@ Flux is split into a few clear layers:
 
 ### Built-in Agentmap
 
-Flux no longer depends on the external `agentmap` CLI.
+Flux includes a built-in codebase mapping system.
 
 - `fluxctl agentmap --check` reports built-in availability
 - `fluxctl agentmap --write` writes `.flux/context/agentmap.yaml`

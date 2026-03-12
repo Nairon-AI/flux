@@ -14,7 +14,7 @@
 
 ## 1) Objective
 
-Flux originally recommended `agentmap` as an optional CLI tool. This plan describes the move from "recommended external utility" to "integrated Flux capability" so Flux no longer depends on a separate `agentmap` install.
+Flux now treats codebase mapping as a native capability. This plan describes how Flux-owned repo mapping fits into setup, workflow acceleration, and orchestration.
 
 The integration goal is:
 
@@ -25,7 +25,7 @@ The integration goal is:
 
 ## 2) Why Agentmap Fits Flux
 
-`agentmap` provides:
+The mapping system provides:
 
 - a compact YAML inventory of files and responsibilities
 - top-level definitions with line numbers
@@ -58,7 +58,7 @@ It should not be treated as:
 ### For users
 
 - Flux continues to work normally.
-- No separate `agentmap` install should be required.
+- No separate mapping install should be required.
 - Commands should degrade gracefully only when a repo cannot be mapped safely.
 
 ### Built-in behavior
