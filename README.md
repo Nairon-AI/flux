@@ -128,15 +128,16 @@ After that, your agent should prime the repository automatically if needed, then
 
 ### Upgrade Flux (existing users)
 
-To upgrade, run the same install command again — it overwrites the existing version:
+Remove the old version first, then re-install:
 
 ```
+/plugin remove flux@nairon-flux
 /plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
 Then restart your agent/session. That's it.
 
-> **Why not `/plugin update`?** The `/plugin update` command resolves from a marketplace cache that can be stale. Re-running `/plugin add ...@latest` always fetches the latest code directly from GitHub.
+> **Why not `/plugin update`?** The `/plugin update` command resolves from a stale marketplace cache and will install an older version. Always remove + re-add to get the latest.
 
 ## Uninstall Flux (complete removal)
 
