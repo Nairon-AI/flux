@@ -63,7 +63,29 @@ These aren't model failures. They're **process failures**.
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
 
-After installing, restart your agent and let it run `/flux:setup`.
+> **⚠️ IMPORTANT:** If your agent uses slash commands, run them in the agent UI, not terminal bash.
+
+### Agent-driven path (recommended)
+
+```
+Install Flux. Fetch the README at https://github.com/Nairon-AI/flux for install instructions.
+```
+
+The agent will detect your platform, install Flux, run setup, and prime the repo. You only step in when a platform command or restart is needed.
+
+### Manual path
+
+**Claude Code**
+```
+/plugin add https://github.com/Nairon-AI/flux@latest
+```
+
+**OpenCode**
+- Use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port.
+
+Then:
+1. Restart the agent/session if your platform requires it.
+2. Let your agent complete Flux setup (`/flux:setup`).
 
 ### Upgrade
 
