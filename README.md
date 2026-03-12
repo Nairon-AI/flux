@@ -139,45 +139,30 @@ Then restart your agent/session. That's it.
 
 > **Why not `/plugin update`?** The `/plugin update` command resolves from a stale marketplace cache and will install an older version. Always remove + re-add to get the latest.
 
-## Uninstall Flux (complete removal)
+## Uninstall Flux
 
 ### Agent-driven path (recommended)
 
+Just tell your agent:
+
 ```
-Uninstall Flux. Fetch the README at https://github.com/Nairon-AI/flux for uninstall instructions.
+Uninstall Flux
 ```
+
+The agent will walk you through what to remove. Flux tracks what it installed during setup (MCP servers, skills, desktop apps, CLI tools) and will ask what you want to keep vs. remove — since many of these tools aren't Flux-specific.
 
 ### Manual path
 
-For plugin-based agents, remove the Flux plugin from that agent first, then remove project-local state:
-
-**Claude Code**
 ```
-/plugin uninstall flux@nairon-flux
-/plugin marketplace remove nairon-flux
-```
-
-If uninstall says plugin not found:
-
-```
-/plugin uninstall flux
-```
-
-Then run local cleanup:
-
-```bash
-# Plugin cache and marketplace metadata (Claude example)
-rm -rf ~/.claude/plugins/cache/nairon-flux
-rm -rf ~/.claude/plugins/marketplaces/nairon-flux
-
-# Current project artifacts created by /flux:setup (run from project root)
+/plugin remove flux@nairon-flux
 rm -rf .flux
-
-# Optional: remove user-level Flux data (all projects)
 rm -rf ~/.flux
+rm -rf ~/.claude/plugins/cache/nairon-flux
 ```
 
-Restart your agent/session if needed and verify Flux is gone.
+Then remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md.
+
+Restart Claude Code to complete.
 
 ### First-Run Setup
 

@@ -1044,9 +1044,17 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
 ```json
 {
   "setup_version": "<PLUGIN_VERSION>",
-  "setup_date": "<ISO_DATE>"
+  "setup_date": "<ISO_DATE>",
+  "installed_by_flux": {
+    "mcp_servers": ["<list of MCP server names installed this session, e.g. context7, exa, github, supermemory, firecrawl>"],
+    "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
+    "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, ghostty, superset, wispr-flow, granola>"],
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"]
+  }
 }
 ```
+
+Only include items that were **installed by this setup session** (not items that were "already installed"). This manifest is used by the uninstall flow to know what Flux added.
 
 ## Step 6: Configuration Questions
 
@@ -1452,4 +1460,103 @@ After prime completes, the core loop is:
   /flux:scope → /flux:work → /flux:impl-review → /flux:improve
 
 End each session with /flux:reflect to capture learnings.
+```
+
+---
+
+## Uninstall Flow
+
+When the user asks to uninstall Flux, follow this flow. The goal is to let them choose exactly what to remove.
+
+### Step U1: Read the install manifest
+
+```bash
+MANIFEST=$(jq -r '.installed_by_flux // empty' .flux/meta.json 2>/dev/null)
+```
+
+If `.flux/meta.json` has no `installed_by_flux` field (older install), skip to Step U3 and only offer core Flux removal.
+
+### Step U2: Ask what to remove
+
+Present each category that has items, and let the user choose per-category. Use the question tool:
+
+```json
+{
+  "header": "Uninstall Flux",
+  "question": "Flux installed these items during setup. Which do you want to remove? (Flux core files are always removed)",
+  "multiple": true,
+  "options": [
+    {"label": "MCP servers", "description": "<list from manifest, e.g. Firecrawl, Exa>"},
+    {"label": "Agent skills", "description": "<list from manifest, e.g. UI Skills, Taste Skill>"},
+    {"label": "Desktop apps", "description": "<list from manifest, e.g. Raycast, Ghostty> (manual uninstall instructions)"},
+    {"label": "CLI tools", "description": "<list from manifest, e.g. jq, fzf> (manual uninstall instructions)"},
+    {"label": "Just remove Flux core", "description": "Only remove .flux/, plugin, and CLAUDE.md section"}
+  ]
+}
+```
+
+### Step U3: Remove Flux core (always)
+
+```bash
+# Remove Flux plugin
+# Tell user to run: /plugin remove flux@nairon-flux
+
+# Remove project artifacts
+rm -rf .flux
+
+# Remove CLAUDE.md / AGENTS.md flux section
+# Strip everything between <!-- BEGIN FLUX --> and <!-- END FLUX --> (inclusive)
+```
+
+### Step U4: Remove selected extras
+
+**MCP servers** (if selected):
+For each MCP server in the manifest, remove its entry from `~/.claude/settings.json` under `mcpServers`.
+
+**Agent skills** (if selected):
+```bash
+# Remove each skill directory
+rm -rf ~/.claude/skills/<skill-name>
+```
+
+Map skill names to directories:
+- `ui-skills` → `~/.claude/skills/baseline-ui`, `~/.claude/skills/fixing-accessibility`, etc.
+- `taste-skill` → `~/.claude/skills/taste-skill`
+- `agent-skills-vercel` → `~/.claude/skills/agent-skills-vercel`
+- `x-research-skill` → `~/.claude/skills/x-research-skill`
+
+**Desktop apps** (if selected):
+Cannot auto-uninstall GUI apps. Print manual instructions:
+```
+To uninstall desktop apps, use your OS app removal method:
+- macOS: drag from /Applications to Trash, or use AppCleaner
+- <list each app that was installed>
+```
+
+**CLI tools** (if selected):
+Print uninstall commands for each:
+```bash
+# Examples — adapt based on what was installed
+brew uninstall gh        # GitHub CLI
+brew uninstall jq
+brew uninstall fzf
+brew uninstall lefthook
+# etc.
+```
+
+### Step U5: Confirm
+
+```
+Flux has been uninstalled.
+
+Removed:
+- Flux plugin (run /plugin remove flux@nairon-flux to complete)
+- .flux/ directory
+- CLAUDE.md / AGENTS.md flux sections
+- <list any extras that were removed>
+
+Kept:
+- <list any extras the user chose to keep>
+
+Restart Claude Code for changes to take effect.
 ```
