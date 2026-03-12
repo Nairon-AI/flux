@@ -27,7 +27,7 @@ This creates/upgrades:
 
 Read `.flux/meta.json` and check for `setup_version` field.
 
-Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json` (Claude Code) or `${PLUGIN_ROOT}/.factory-plugin/plugin.json` (Factory Droid) - check whichever exists.
+Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 
 **If `setup_version` exists (already set up):**
 - If **same version**: tell user "Already set up with v<VERSION>. Re-run to update docs only? (y/n)"

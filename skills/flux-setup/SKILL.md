@@ -34,7 +34,6 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Wispr Flow** — voice-to-text acceleration (macOS)
   - **Granola** — AI meeting notes companion (macOS/Windows)
 - **Optional** additional agent skill:
-  - **Cartographer** — parallel codebase mapping for faster onboarding
   - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene

@@ -25,9 +25,7 @@ $FLUXCTL <command>
 If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
 SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
-# Portable: Claude Code uses .claude-plugin, Factory Droid uses .factory-plugin
 PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
-[[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${PLUGIN_ROOT}/.factory-plugin/plugin.json"
 PLUGIN_VER=$(jq -r '.version' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
 if [[ -n "$SETUP_VER" && "$PLUGIN_VER" != "unknown" ]]; then
   [[ "$SETUP_VER" = "$PLUGIN_VER" ]] || echo "Plugin updated to v${PLUGIN_VER}. Run /flux:setup to refresh local scripts (current: v${SETUP_VER})."

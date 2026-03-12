@@ -828,7 +828,6 @@ def current_flux_version() -> Optional[str]:
     candidates = [
         get_repo_root() / "package.json",
         get_repo_root() / ".claude-plugin" / "plugin.json",
-        get_repo_root() / ".factory-plugin" / "plugin.json",
     ]
     for path in candidates:
         if not path.exists():

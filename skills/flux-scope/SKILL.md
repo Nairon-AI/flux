@@ -47,7 +47,6 @@ SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
 PLUGIN_ROOT="${PLUGIN_ROOT}"
 [ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
-[ -f "$PLUGIN_JSON" ] || PLUGIN_JSON="${PLUGIN_ROOT}/.factory-plugin/plugin.json"
 PLUGIN_VER=$(jq -r '.version' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
 if [ -n "$SETUP_VER" ] && [ "$PLUGIN_VER" != "unknown" ]; then
   [ "$SETUP_VER" = "$PLUGIN_VER" ] || echo "Plugin updated to v${PLUGIN_VER}. Run /flux:setup to refresh local scripts (current: v${SETUP_VER})."
