@@ -104,7 +104,7 @@ The map is a navigation aid, not a source of truth. It helps fresh agents unders
 Install Flux. Fetch the README at https://github.com/Nairon-AI/flux for install instructions.
 ```
 
-The agent will detect your platform, install Flux, run setup, and prime the repo. You only step in for slash commands, approvals, or restarts.
+The agent will detect your platform, install Flux, run setup, and prime the repo. You only step in when a platform command or restart is needed.
 
 ### Manual path (choose your platform)
 
