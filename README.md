@@ -7,7 +7,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**Your AI workflow has gaps. Flux finds them.**
+**A deterministic state engine and structured SDLC layer for Claude Code.**<br>
+Harness your agent with repeatable workflows, multi-model adversarial reviews, and continuous improvement — so every session ships better than the last.
 
 </div>
 
