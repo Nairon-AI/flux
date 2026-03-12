@@ -41,6 +41,9 @@ You're using an AI coding agent, but something's off:
 - **Tool FOMO** → You discover a tool that would've saved hours... after the fact
 - **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
 - **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
+- **Security blind spots** → The agent writes code with SQL injection, XSS, or hardcoded secrets and you don't catch it
+- **Single-model echo chamber** → One model reviews its own work and calls it good
+- **Long tasks fall apart** → The agent loses the plot 20 minutes into a complex task and you have to start over
 - **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
 
 <p align="center">
