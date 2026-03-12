@@ -35,16 +35,16 @@ Flux enforces repeatable workflows, tracks state across sessions, and uses multi
 
 You're using an AI coding agent, but something's off:
 
-- **No structure** → You jump straight into code and watch the agent go off the rails
-- **Context amnesia** → You keep re-explaining the same thing every session
-- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
-- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
-- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
-- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
-- **Security blind spots** → The agent writes code with SQL injection, XSS, or hardcoded secrets and you don't catch it
-- **Single-model echo chamber** → One model reviews its own work and calls it good
-- **Long tasks fall apart** → The agent loses the plot 20 minutes into a complex task and you have to start over
-- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
+- **No structure** → You said "build me a dashboard" and came back to a mess of half-finished components
+- **Context amnesia** → You've explained the auth flow three times this week. To the same agent.
+- **Groundhog Day** → The agent tried the same broken import path five times in a row and you watched it happen
+- **Tool FOMO** → You found out about Context7 after spending two hours debugging stale docs
+- **Requirements drift** → You asked for a login page and got a full user management system with email verification
+- **Blind acceptance** → You shipped the agent's suggestion without reading it. It's in production now. Good luck.
+- **Security roulette** → Someone found the hardcoded API key the agent left in your config. On GitHub. Publicly.
+- **Echo chamber** → The agent reviewed its own code, said "looks good", and you believed it
+- **Long tasks implode** → 20 minutes into a complex refactor, the agent forgot what it was doing and started over
+- **Flying blind** → You have no idea if you're getting better at this or just getting faster at making mistakes
 
 <p align="center">
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
