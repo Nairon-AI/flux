@@ -14,6 +14,7 @@ Task tracking for AI agents. All state lives in `.flux/`.
 ```
 .flux/
 ├── bin/fluxctl             # CLI (this install)
+├── context/                # Optional cached context artifacts (e.g., agentmap.yaml)
 ├── epics/fn-N-slug.json    # Epic metadata (e.g., fn-1-add-oauth.json)
 ├── specs/fn-N-slug.md      # Epic specifications
 ├── tasks/fn-N-slug.M.json  # Task metadata (e.g., fn-1-add-oauth.1.json)
@@ -49,6 +50,8 @@ Task tracking for AI agents. All state lives in `.flux/`.
 .flux/bin/fluxctl ready --epic fn-1-add-oauth   # What's ready to work on
 .flux/bin/fluxctl validate --all                # Check structure
 .flux/bin/fluxctl state-path                    # Show state directory (for worktrees)
+.flux/bin/fluxctl agentmap --check             # Check whether agentmap is installed
+.flux/bin/fluxctl agentmap --write             # Write .flux/context/agentmap.yaml
 
 # Create
 .flux/bin/fluxctl epic create --title "..."
@@ -89,6 +92,23 @@ Runtime state (status, assignee, etc.) is stored in `.git/flow-state/`, shared a
 ```
 
 Migration is optional — existing repos work without changes.
+
+## Agentmap
+
+If `agentmap` is installed, Flux can generate a compact codebase map:
+
+```bash
+.flux/bin/fluxctl agentmap --write
+.flux/bin/fluxctl agentmap --filter "src/**" --filter "scripts/**"
+```
+
+Default output path:
+
+```text
+.flux/context/agentmap.yaml
+```
+
+Use the map as a fast structural overview. It supplements code reading; it does not replace it.
 
 ## Troubleshooting
 

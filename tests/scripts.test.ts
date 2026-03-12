@@ -6,7 +6,7 @@
  */
 
 import { test, expect, describe, beforeAll } from 'bun:test'
-import { existsSync } from 'fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { $ } from 'bun'
 
@@ -325,6 +325,104 @@ describe('Fluxctl CLI', () => {
     const session = JSON.parse(sessionRaw)
     expect(session.state).toBe('resume_scope')
     expect(session.objective.id).toBe(epic.id)
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap --check reports availability from PATH', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-check-${Date.now()}`
+    const tmpBin = join(tmpRoot, 'bin')
+    mkdirSync(tmpBin, { recursive: true })
+
+    const stub = `#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "agentmap 0.0.1-test"
+  exit 0
+fi
+echo "stub output"
+`
+    writeFileSync(join(tmpBin, 'agentmap'), stub, { mode: 0o755 })
+
+    const output = await $`${fluxctl} agentmap --check --json`
+      .cwd(FLUX_ROOT)
+      .env({
+        ...process.env,
+        PATH: `${tmpBin}:${process.env.PATH || ''}`,
+      })
+      .text()
+
+    const parsed = JSON.parse(output)
+    expect(parsed.available).toBe(true)
+    expect(parsed.version).toContain('0.0.1-test')
+    expect(parsed.path).toContain('/agentmap')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('agentmap --write writes default Flux artifact path', async () => {
+    const tmpRoot = `/tmp/flux-agentmap-write-${Date.now()}`
+    const tmpBin = join(tmpRoot, 'bin')
+    mkdirSync(tmpBin, { recursive: true })
+
+    const stub = `#!/bin/sh
+OUT=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --version)
+      echo "agentmap 0.0.1-test"
+      exit 0
+      ;;
+    -o|--output)
+      OUT="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [ -n "$OUT" ]; then
+  mkdir -p "$(dirname "$OUT")"
+  cat > "$OUT" <<'EOF'
+repo:
+  src:
+    index.ts:
+      description: test entrypoint
+EOF
+else
+  cat <<'EOF'
+repo:
+  src:
+    index.ts:
+      description: test entrypoint
+EOF
+fi
+`
+    writeFileSync(join(tmpBin, 'agentmap'), stub, { mode: 0o755 })
+
+    mkdirSync(tmpRoot, { recursive: true })
+    await $`${fluxctl} init --json`
+      .cwd(tmpRoot)
+      .env({
+        ...process.env,
+        PATH: `${tmpBin}:${process.env.PATH || ''}`,
+      })
+      .quiet()
+
+    const output = await $`${fluxctl} agentmap --write --json`
+      .cwd(tmpRoot)
+      .env({
+        ...process.env,
+        PATH: `${tmpBin}:${process.env.PATH || ''}`,
+      })
+      .text()
+
+    const parsed = JSON.parse(output)
+    const mapPath = join(tmpRoot, '.flux', 'context', 'agentmap.yaml')
+    expect(parsed.output_file.endsWith('/.flux/context/agentmap.yaml')).toBe(true)
+    expect(existsSync(mapPath)).toBe(true)
+    expect(readFileSync(mapPath, 'utf-8')).toContain('test entrypoint')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)
 })
 

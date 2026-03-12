@@ -5886,6 +5886,103 @@ def cmd_state_path(args: argparse.Namespace) -> None:
             print(state_dir)
 
 
+def cmd_agentmap(args: argparse.Namespace) -> None:
+    """Generate or inspect an agentmap artifact."""
+    agentmap_bin = shutil.which("agentmap")
+
+    if args.check:
+        version = None
+        if agentmap_bin:
+            try:
+                result = subprocess.run(
+                    [agentmap_bin, "--version"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                version = (result.stdout or result.stderr).strip() or None
+            except subprocess.CalledProcessError:
+                version = None
+
+        payload = {
+            "available": bool(agentmap_bin),
+            "path": agentmap_bin,
+            "version": version,
+        }
+        if args.json:
+            json_output(payload)
+        else:
+            if agentmap_bin:
+                print(f"agentmap available: {version or 'unknown version'}")
+                print(agentmap_bin)
+            else:
+                print("agentmap not found in PATH")
+        return
+
+    if not agentmap_bin:
+        error_exit(
+            "agentmap not found in PATH. Install with: npm i -g agentmap",
+            use_json=args.json,
+            code=2,
+        )
+
+    if args.write and args.out:
+        error_exit("--write and --out cannot be used together", use_json=args.json)
+
+    target_dir = Path(args.dir).resolve()
+    if not target_dir.exists():
+        error_exit(f"Directory not found: {target_dir}", use_json=args.json)
+    if not target_dir.is_dir():
+        error_exit(f"Not a directory: {target_dir}", use_json=args.json)
+
+    output_path: Optional[Path] = None
+    if args.write:
+        output_path = get_flow_dir() / "context" / "agentmap.yaml"
+    elif args.out:
+        output_path = Path(args.out).expanduser()
+        if not output_path.is_absolute():
+            output_path = (Path.cwd() / output_path).resolve()
+
+    cmd = [agentmap_bin, str(target_dir)]
+    if output_path is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        cmd.extend(["-o", str(output_path)])
+    for pattern in args.filter:
+        cmd.extend(["--filter", pattern])
+    for pattern in args.ignore:
+        cmd.extend(["--ignore", pattern])
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        detail = (e.stderr or e.stdout or str(e)).strip()
+        error_exit(f"agentmap failed: {detail}", use_json=args.json, code=2)
+
+    stdout = result.stdout.strip()
+    if args.json:
+        payload = {
+            "available": True,
+            "path": agentmap_bin,
+            "dir": str(target_dir),
+            "output_file": str(output_path) if output_path else None,
+            "filters": args.filter,
+            "ignores": args.ignore,
+        }
+        if output_path is None:
+            payload["yaml"] = stdout
+        json_output(payload)
+    else:
+        if output_path is not None:
+            print(output_path)
+        else:
+            print(stdout)
+
+
 def cmd_migrate_state(args: argparse.Namespace) -> None:
     """Migrate runtime state from definition files to state-dir."""
     if not ensure_flow_exists():
@@ -8316,6 +8413,45 @@ def main() -> None:
     p_state_path.add_argument("--task", help="Task ID to show state file path for")
     p_state_path.add_argument("--json", action="store_true", help="JSON output")
     p_state_path.set_defaults(func=cmd_state_path)
+
+    # agentmap
+    p_agentmap = subparsers.add_parser(
+        "agentmap", help="Generate or inspect an agentmap artifact"
+    )
+    p_agentmap.add_argument(
+        "dir",
+        nargs="?",
+        default=".",
+        help="Directory to map (defaults to current directory)",
+    )
+    p_agentmap.add_argument(
+        "--out",
+        help="Write YAML to a specific file path",
+    )
+    p_agentmap.add_argument(
+        "--write",
+        action="store_true",
+        help="Write to .flux/context/agentmap.yaml",
+    )
+    p_agentmap.add_argument(
+        "--check",
+        action="store_true",
+        help="Check whether agentmap is available",
+    )
+    p_agentmap.add_argument(
+        "--filter",
+        action="append",
+        default=[],
+        help="Filter pattern to include (repeatable)",
+    )
+    p_agentmap.add_argument(
+        "--ignore",
+        action="append",
+        default=[],
+        help="Ignore pattern to exclude (repeatable)",
+    )
+    p_agentmap.add_argument("--json", action="store_true", help="JSON output")
+    p_agentmap.set_defaults(func=cmd_agentmap)
 
     # migrate-state
     p_migrate = subparsers.add_parser(

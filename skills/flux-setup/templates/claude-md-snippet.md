@@ -63,6 +63,8 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - Treat `/flux:scope` as the full scoping workflow: Start -> Discover -> Define -> Develop -> Deliver -> Handoff
 - Ask the user how deep to go (`shallow` vs `deep`) and how technical they are when starting a new scope
 - If the user asks "where are we?" or seems unsure what comes next, run `.flux/bin/fluxctl scope-status`
+- If `.flux/context/agentmap.yaml` exists, use it as a fast structural overview of the repo before broad file exploration
+- Treat the agentmap as navigation aid only. Still read the actual files before making changes
 
 **Troubleshooting:**
 - If Flux commands fail or return "Unknown skill", consult the official README: https://github.com/Nairon-AI/flux#troubleshooting

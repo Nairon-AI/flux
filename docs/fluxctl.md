@@ -7,7 +7,7 @@ CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, migrate-state
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
 ```
 
 ## Multi-User Safety
@@ -775,6 +775,24 @@ Source values:
 - `env` — `FLOW_STATE_DIR` environment variable
 - `git-common-dir` — `git --git-common-dir` (shared across worktrees)
 - `fallback` — `.flux/state` (non-git or old git)
+
+### agentmap
+
+Generate or inspect a project-local `agentmap` artifact.
+
+```bash
+fluxctl agentmap --check
+fluxctl agentmap --write
+fluxctl agentmap --out .flux/context/agentmap.yaml
+fluxctl agentmap --filter "src/**" --filter "scripts/**"
+fluxctl agentmap --ignore "dist/**" --ignore "**/*.test.ts"
+```
+
+Notes:
+- `--check` reports whether the `agentmap` CLI is available in `PATH`
+- `--write` writes to `.flux/context/agentmap.yaml`
+- without `--out` or `--write`, YAML is printed to stdout
+- generated maps are navigation aids, not authoritative documentation
 
 ### migrate-state
 

@@ -2,6 +2,27 @@
 
 All notable changes to Flux will be documented in this file.
 
+## [1.9.5] - 2026-03-12
+
+### Added
+
+- **Native `agentmap` wrapper in `fluxctl`**
+  - `fluxctl agentmap --check` reports whether `agentmap` is available in `PATH`
+  - `fluxctl agentmap --write` writes a project-local map to `.flux/context/agentmap.yaml`
+  - filter and ignore patterns can now be passed through Flux instead of invoking `agentmap` manually
+- **Project-local agentmap guidance**
+  - setup templates now teach agents to use `.flux/context/agentmap.yaml` as a fast structural overview when present
+  - `.flux/usage.md` now documents the new `fluxctl agentmap` workflow
+
+### Improved
+
+- `docs/fluxctl.md` now documents the `agentmap` command and its default artifact path
+- script tests now cover `fluxctl agentmap --check` and `fluxctl agentmap --write` with a stubbed binary
+
+### Changed
+
+- Version synchronized to `1.9.5` across package metadata and Claude plugin manifests.
+
 ## [1.9.4] - 2026-03-11
 
 ### Added
