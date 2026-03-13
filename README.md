@@ -109,7 +109,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 
 1. Tell the user to run in their agent UI:
    ```
-   /plugin remove flux@nairon-flux
+   /plugin uninstall flux@nairon-flux
    /plugin add https://github.com/Nairon-AI/flux@latest
    ```
 2. Tell the user to restart their agent/session with `--resume`.
@@ -121,7 +121,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 2. Ask the user per-category what to keep vs. remove (MCP servers, skills, desktop apps, CLI tools) — many aren't Flux-specific.
 3. Tell the user to run in their agent UI:
    ```
-   /plugin remove flux@nairon-flux
+   /plugin uninstall flux@nairon-flux
    ```
 4. Remove project artifacts:
    ```bash
