@@ -94,9 +94,9 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
    ```
    /plugin add https://github.com/Nairon-AI/flux@latest
    ```
-2. Tell the user to restart their agent/session.
+2. Tell the user to restart their agent/session with `--resume` to pick up where they left off.
 3. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
-4. If setup installs new MCP servers, tell the user to restart once more.
+4. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
 5. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
@@ -110,7 +110,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
    /plugin remove flux@nairon-flux
    /plugin add https://github.com/Nairon-AI/flux@latest
    ```
-2. Tell the user to restart their agent/session.
+2. Tell the user to restart their agent/session with `--resume`.
 3. Run `/flux:setup` to refresh local scripts if needed.
 
 #### Uninstall flow
@@ -127,7 +127,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
    ```
 5. Remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md.
 6. Optionally remove user-level data: `rm -rf ~/.flux ~/.claude/plugins/cache/nairon-flux`
-7. Tell the user to restart.
+7. Tell the user to restart with `--resume`.
 
 </details>
 

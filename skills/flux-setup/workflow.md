@@ -135,7 +135,7 @@ Do **NOT** run `claude ...` CLI commands from inside `/flux:setup`.
 
 Why: `/flux:setup` runs inside an active Claude Code session, and nested `claude` invocations fail with "cannot be launched inside another Claude Code session".
 
-Use direct config updates to `~/.claude/settings.json` (preferred), then tell the user to restart Claude Code.
+Use direct config updates to `~/.claude/settings.json` (preferred), then tell the user to restart Claude Code with `--resume`.
 
 ### Available MCP Servers
 
@@ -442,7 +442,7 @@ MCP servers (install manually in Claude Code):
      - supermemory: https://mcp.supermemory.ai/mcp
      - firecrawl: npx -y firecrawl-mcp
      - github: npx -y @modelcontextprotocol/server-github
-  3. Restart Claude Code
+  3. Restart Claude Code with `--resume` to pick up where you left off
 ```
 
 ## Step 4d: Install recommended desktop applications (Optional)
@@ -1453,7 +1453,7 @@ Print this **exactly** after the summary block, with a blank line before it:
 
 What to do next:
 
-  1. Restart Claude Code (required for new MCP servers to activate)
+  1. Restart Claude Code with `--resume` (required for new MCP servers to activate)
   2. Run /flux:prime — this audits the repo for agent-readiness and inefficiencies. It only runs once.
 
 After prime completes, the core loop is:
@@ -1558,5 +1558,5 @@ Removed:
 Kept:
 - <list any extras the user chose to keep>
 
-Restart Claude Code for changes to take effect.
+Restart Claude Code with `--resume` for changes to take effect.
 ```
