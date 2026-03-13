@@ -8,7 +8,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
 **The missing Agentic SDLC harness and deterministic state engine for Claude Code.**<br>
-Comes with a self-improving Recommendations Engine. Build software reliably with agents.
+Build software reliably with agents (Self-improving Recommendations Engine included)
 
 </div>
 
