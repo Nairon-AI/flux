@@ -1211,7 +1211,9 @@ Available questions (include only if corresponding config is unset):
   "question": "Which model should scout agents use? (Scouts analyze your codebase during /flux:prime)",
   "options": [
     {"label": "claude-haiku-4-5 (Recommended)", "description": "Fast and cost-effective. Works with any Anthropic API access."},
-    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fast model. Requires Codex Pro subscription."}
+    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro subscription."},
+    {"label": "gpt-5.3-codex", "description": "OpenAI's balanced model. Requires ChatGPT Pro subscription."},
+    {"label": "gpt-5.4", "description": "OpenAI's most capable model. Requires ChatGPT Pro subscription."}
   ],
   "multiSelect": false
 }
@@ -1288,6 +1290,8 @@ Only process answers for questions that were asked (config values that were unse
 **Scout Model** (if question was asked):
 - If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
 - If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
+- If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
+- If "gpt-5.4": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.4" --json`
 
 **Review** (if question was asked):
 Map user's answer to config value and persist:
@@ -1314,6 +1318,84 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
   1. Check if `gh` CLI is available: `which gh`
   2. If available, run: `gh api -X PUT /user/starred/Nairon-AI/flux`
   3. If `gh` not available or command fails, show: `Star manually: https://github.com/Nairon-AI/flux`
+
+## Step 7b: Codex Verification (conditional)
+
+**Only run this step if the user chose a Codex/OpenAI model for either scouts or reviews** (i.e. scout model starts with `gpt-`/`o1`/`o3`/`o4`, or review backend is `codex`).
+
+### 1. Check Codex CLI is installed
+
+```bash
+which codex >/dev/null 2>&1 && echo "CODEX_INSTALLED=1" || echo "CODEX_INSTALLED=0"
+```
+
+If not installed, tell the user:
+
+```
+Codex CLI is required for your chosen configuration but isn't installed.
+Install it: npm install -g @openai/codex
+Then re-run /flux:setup to verify.
+```
+
+Save the config anyway (they may install it later), but warn that scouts/reviews won't work until codex is available.
+
+### 2. Check Codex authentication
+
+```bash
+codex login status 2>&1
+```
+
+Expected outputs:
+- `Logged in using ChatGPT` → authenticated via OAuth
+- `Logged in using API key` → authenticated via API key
+- Anything else → not authenticated
+
+If not authenticated, run the OAuth flow:
+
+```
+Codex CLI is installed but not authenticated. Let's log you in now.
+```
+
+Then tell the user to run in their terminal:
+
+```bash
+codex login
+```
+
+This opens a browser for ChatGPT OAuth. After the user confirms they've logged in, verify again:
+
+```bash
+codex login status 2>&1
+```
+
+If still not authenticated, warn and continue:
+
+```
+Codex authentication failed. Scouts and reviews will fall back to Claude models until you run: codex login
+```
+
+### 3. Verify model access (if authenticated)
+
+Run a minimal check to confirm the configured model is accessible:
+
+```bash
+codex exec -m "<configured_model>" --ephemeral --sandbox read-only -o /dev/null "Respond with only the word ok" 2>&1 | head -5
+```
+
+If the command fails or returns an error about model access:
+
+```
+Your account doesn't appear to have access to <model>. This model requires a ChatGPT Pro subscription.
+Falling back to claude-haiku-4-5 for scouts.
+```
+
+Then update the config: `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
+
+If the command succeeds (shows `model: <configured_model>`), print:
+
+```
+Codex verified: authenticated and <model> is accessible.
+```
 
 ## Step 8: Print Summary
 
