@@ -377,7 +377,39 @@ Ask ONE question per category that has recommendations. Skip categories with no 
 }
 ```
 
-**Question 4: Environment (if gaps exist)**
+**Question 4: Browser Automation (if web app detected AND no browser automation tool)**
+
+Only ask this if the testing scout detected a web app (React, Next, Vue, Svelte, etc.) but found no browser automation tool (Playwright, Cypress, Puppeteer, Stagehand, agent-browser).
+
+```json
+{
+  "questions": [{
+    "question": "Your web app has no browser automation tool. This means agents can't visually verify UI changes or run E2E tests. Install one?",
+    "header": "Browser",
+    "multiSelect": true,
+    "options": [
+      {
+        "label": "Install agent-browser (Recommended)",
+        "description": "Browser automation CLI built for coding agents. Enables visual QA and reproducible evidence. Install: npm i -g agent-browser"
+      },
+      {
+        "label": "Skip",
+        "description": "Set up browser automation later"
+      }
+    ]
+  }]
+}
+```
+
+If "Install agent-browser" selected, run in Phase 6:
+
+```bash
+npm i -g agent-browser 2>&1 | tail -5
+# Verify install
+which agent-browser >/dev/null 2>&1 && echo "agent-browser installed successfully" || echo "agent-browser install failed"
+```
+
+**Question 5: Environment (if gaps exist)**
 
 ```json
 {

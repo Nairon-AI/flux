@@ -78,6 +78,18 @@ ls -la playwright.config.* cypress.config.* cypress/ e2e/ 2>/dev/null
 ls -d integration/ tests/integration/ tests/e2e/ 2>/dev/null
 ```
 
+### Browser Automation (for web apps)
+```bash
+# Detect if this is a web app (has frontend framework or HTML output)
+grep -E '"(react|next|vue|nuxt|svelte|angular|astro|remix|gatsby)"' package.json 2>/dev/null
+ls -la index.html public/index.html src/App.* src/app/ app/ pages/ 2>/dev/null
+
+# Check for browser automation tools
+which agent-browser >/dev/null 2>&1 && echo "agent-browser=installed" || echo "agent-browser=missing"
+which playwright >/dev/null 2>&1 && echo "playwright-cli=installed" || echo "playwright-cli=missing"
+grep -E '"(playwright|puppeteer|selenium|stagehand|agent-browser)"' package.json 2>/dev/null
+```
+
 ### CI Test Config
 ```bash
 # GitHub Actions
@@ -107,6 +119,11 @@ ls -la .gitlab-ci.yml .circleci/config.yml Jenkinsfile .travis.yml 2>/dev/null
 - Unit tests: ✅ Found in [location] / ❌ Not found
 - Integration tests: ✅ Found in [location] / ❌ Not found
 - E2E tests: ✅ Found in [location] / ❌ Not found
+
+### Browser Automation (web apps only)
+- Is web app: ✅ Yes ([framework]) / ❌ No (skip this section)
+- Browser automation tool: ✅ [tool] / ❌ Not configured
+- agent-browser CLI: ✅ Installed / ❌ Missing
 
 ### Coverage
 - Coverage tool: ✅ [tool] / ❌ Not configured
