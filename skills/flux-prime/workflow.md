@@ -50,7 +50,53 @@ Task flux:workflow-scout       # CI/CD, templates, automation
 
 ### Codex backend
 
-If using Codex backend, launch all 9 scouts in parallel using `codex exec` via Bash. Each scout reads its prompt from the agent definition file and writes output to a temp file.
+If using Codex backend, first run a single preflight check to verify codex + model access before launching all 9 scouts:
+
+#### Preflight check
+
+```bash
+# 1. Is codex installed?
+which codex >/dev/null 2>&1 && echo "CODEX_OK" || echo "CODEX_MISSING"
+```
+
+If `CODEX_MISSING`: skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Codex CLI not found. Falling back to Claude scouts.
+Install codex: npm install -g @openai/codex
+Then run: codex login
+```
+
+```bash
+# 2. Is codex authenticated?
+codex login status 2>&1
+```
+
+If not authenticated (output doesn't contain "Logged in"): skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Codex CLI not authenticated. Falling back to Claude scouts.
+Run in a separate terminal: codex login
+```
+
+```bash
+# 3. Can we reach the configured model? (single quick probe)
+timeout 30 codex exec -m "$SCOUT_MODEL" --ephemeral --sandbox read-only -o /dev/null "Say ok" 2>&1 | head -3
+```
+
+If the probe fails (timeout, error, or model access denied): skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Cannot access model <SCOUT_MODEL>. This may require a ChatGPT Pro subscription.
+Falling back to Claude scouts for this run.
+
+To fix permanently, run: .flux/bin/fluxctl config set scouts.model "claude-haiku-4-5"
+Or upgrade your OpenAI plan and retry.
+```
+
+**Only proceed with Codex scouts if all 3 checks pass.** On any failure, fall through to the Claude backend section above — do not fail the entire prime.
+
+#### Launch scouts (after preflight passes)
 
 Run all 9 in parallel using background Bash commands:
 
@@ -76,6 +122,8 @@ for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout d
   echo ""
 done
 ```
+
+If any individual scout output is empty or missing, note the failure but continue with the scouts that did produce output.
 
 ### Common
 
