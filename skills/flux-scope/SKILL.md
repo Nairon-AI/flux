@@ -1532,6 +1532,88 @@ View: https://linear.app/team/ENG/project/user-authentication
 
 ---
 
+## Ralph Mode Offer
+
+After showing the completion summary, **always** offer Ralph mode. This lets the user run the entire epic autonomously overnight.
+
+### Step 1: Check if Ralph is already set up
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+RALPH_EXISTS=$([[ -d "$REPO_ROOT/scripts/ralph" ]] && echo 1 || echo 0)
+```
+
+### Step 2: Present the offer
+
+Show:
+```
+---
+🌙 Run this epic autonomously overnight?
+
+Ralph mode will work through all <N> tasks in <epic-id> without intervention —
+plan review, implementation, code review, and completion review.
+
+You start it from your terminal and check results in the morning.
+---
+```
+
+Then:
+
+**If RALPH_EXISTS=1 (Ralph already set up):**
+
+Show:
+```
+Ralph is already set up in this repo.
+
+To run this epic overnight:
+  1. Edit scripts/ralph/config.env → set EPICS=<epic-id>
+  2. From your terminal (NOT inside Claude Code):
+     ./scripts/ralph/ralph.sh
+
+Want me to update config.env with this epic? [y/n]
+```
+
+Wait for user response (do NOT use AskUserQuestion tool). Only clear affirmative responses (y, yes, sure, yeah, ok, do it) count as yes. Anything else = no.
+
+- If **yes**: Edit `scripts/ralph/config.env` — replace the `EPICS=` line with `EPICS=<epic-id>`. Then show:
+  ```
+  Updated config.env: EPICS=<epic-id>
+
+  Start from terminal: ./scripts/ralph/ralph.sh
+  ```
+- If **no**: Continue to Update Check.
+
+**If RALPH_EXISTS=0 (Ralph not set up):**
+
+Show:
+```
+Would you like to set up Ralph mode for this epic? [y/n]
+
+This will:
+  - Scaffold scripts/ralph/ in your repo
+  - Configure review backends (RepoPrompt or Codex)
+  - Pre-configure it for epic <epic-id>
+```
+
+Wait for user response (do NOT use AskUserQuestion tool). Only clear affirmative responses count as yes.
+
+- If **yes**:
+  1. Execute the **full workflow** defined in `skills/flux-ralph-init/SKILL.md` (steps 1-7). This is NOT a slash command invocation — follow the ralph-init SKILL.md instructions directly inline.
+  2. After ralph-init completes, edit `scripts/ralph/config.env` — replace the `EPICS=` line (which will be empty or have the template default) with `EPICS=<epic-id>`.
+  3. Show:
+     ```
+     Ralph initialized for epic <epic-id>!
+
+     To start (run from your terminal, NOT inside Claude Code):
+       ./scripts/ralph/ralph.sh
+
+     Config: scripts/ralph/config.env
+     Tip: run ./scripts/ralph/ralph_once.sh first to observe a single iteration.
+     ```
+- If **no**: Continue to Update Check.
+
+---
+
 ## Update Check (End of Command)
 
 **ALWAYS run at the very end of /flux:scope execution:**
@@ -1550,7 +1632,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin remove flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
