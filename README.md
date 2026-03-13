@@ -7,8 +7,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**A structured harness and deterministic state engine for Claude Code.**<br>
-Build software reliably with agents.
+**The missing Agentic SDLC harness and deterministic state engine for Claude Code.**<br>
+Comes with a self-improving Recommendations Engine. Build software reliably with agents.
 
 </div>
 
