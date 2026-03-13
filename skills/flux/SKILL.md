@@ -28,7 +28,7 @@ $FLUXCTL <command> --help   # e.g., $FLUXCTL task --help
 ## Quick Reference
 
 ```bash
-# Check if .flow exists
+# Check if .flux exists
 $FLUXCTL detect --json
 
 # Initialize (if needed)

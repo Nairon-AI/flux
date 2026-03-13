@@ -58,7 +58,7 @@ When splitting tasks, design for minimal file overlap. Tasks touching disjoint f
 
 List expected files in each task's `**Files:**` field. If multiple tasks must touch the same file, mark dependencies explicitly with `fluxctl dep add`.
 
-## Step 0: Initialize .flow
+## Step 0: Initialize .flux
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 
@@ -66,7 +66,7 @@ List expected files in each task's `**Files:**` field. If multiple tasks must to
 # Get fluxctl path
 FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
 
-# Ensure .flow exists
+# Ensure .flux exists
 $FLUXCTL init --json
 ```
 
@@ -169,7 +169,7 @@ Default to standard unless complexity demands more or less.
 - Docs + metrics
 - Risks + mitigations
 
-## Step 5: Write to .flow
+## Step 5: Write to .flux
 
 **Efficiency note**: Use stdin (`--file -`) with heredocs to avoid temp files. Use `task set-spec` to set description + acceptance in one call.
 

@@ -50,7 +50,7 @@ Detect ID type:
 ### Step 2: Validate Environment
 
 ```bash
-test -d .flow || { echo "No .flux/ found. Run fluxctl init first."; exit 1; }
+test -d .flux || { echo "No .flux/ found. Run fluxctl init first."; exit 1; }
 ```
 
 If `.flux/` missing, output error and stop.

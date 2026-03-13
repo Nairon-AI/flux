@@ -2544,7 +2544,7 @@ def cmd_detect(args: argparse.Namespace) -> None:
 
 
 def cmd_status(args: argparse.Namespace) -> None:
-    """Show .flow state and active Ralph runs."""
+    """Show .flux state and active Ralph runs."""
     flow_dir = get_flow_dir()
     flow_exists = flow_dir.exists()
     current_actor = get_actor()
@@ -8310,7 +8310,7 @@ def main() -> None:
     p_detect.set_defaults(func=cmd_detect)
 
     # status
-    p_status = subparsers.add_parser("status", help="Show .flow state and active runs")
+    p_status = subparsers.add_parser("status", help="Show .flux state and active runs")
     p_status.add_argument("--json", action="store_true", help="JSON output")
     p_status.set_defaults(func=cmd_status)
 
