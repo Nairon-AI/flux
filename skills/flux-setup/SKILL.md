@@ -29,7 +29,6 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **CLI Continues** — resume/switch session context across agent CLIs
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Claude Code sessions using git worktrees
-  - **Ghostty** — fast terminal for split-pane workflows
   - **Raycast** — launcher/snippets/clipboard productivity layer
   - **Wispr Flow** — voice-to-text acceleration (macOS)
   - **Granola** — AI meeting notes companion (macOS/Windows)

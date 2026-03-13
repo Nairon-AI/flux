@@ -479,7 +479,6 @@ echo "Detected OS: $OS_TYPE"
 | ID | Name | macOS | Linux | Windows | Benefit | Free | Install |
 |----|------|-------|-------|---------|---------|------|---------|
 | `raycast` | Raycast | Yes | No | No | **Launcher on steroids** — AI, snippets, clipboard history | Freemium | `brew install --cask raycast` |
-| `ghostty` | Ghostty | Yes | Yes | No | **Fast terminal** — GPU-accelerated, split-pane workflows | Yes | `brew install --cask ghostty` |
 | `superset` | Superset | Yes | No | No | **Primary orchestrator for parallel Claude sessions** — git worktree workspace manager | Yes | `brew install --cask superset` |
 | `wispr-flow` | Wispr Flow | Yes | No | No | **Voice-to-text 4x faster** — dictate anywhere | Freemium | Manual download |
 | `granola` | Granola | Yes | No | Yes | **AI meeting notes** — no bot joins calls | Freemium | Manual download |
@@ -487,8 +486,8 @@ echo "Detected OS: $OS_TYPE"
 ### OS Compatibility Matrix
 
 ```
-macOS:   Raycast, Ghostty, Superset, Wispr Flow, Granola (all 5)
-Linux:   Ghostty only
+macOS:   Raycast, Superset, Wispr Flow, Granola (all 4)
+Linux:   (none)
 Windows: Granola only
 ```
 
@@ -509,17 +508,6 @@ if [ "$OS_TYPE" = "macos" ]; then
   HAVE_RAYCAST=$([ -d "/Applications/Raycast.app" ] && echo 1 || echo 0)
   HAVE_SUPERSET=$([ -d "/Applications/Superset.app" ] && echo 1 || echo 0)
   HAVE_WISPR=$([ -d "/Applications/Wispr Flow.app" ] && echo 1 || echo 0)
-fi
-
-if [ "$OS_TYPE" = "macos" ] || [ "$OS_TYPE" = "linux" ]; then
-  # Terminal category (Ghostty conflicts) - macOS and Linux
-  HAVE_ITERM=$([ -d "/Applications/iTerm.app" ] && echo 1 || echo 0)
-  HAVE_WARP=$([ -d "/Applications/Warp.app" ] && echo 1 || echo 0)
-  HAVE_ALACRITTY=$([ -d "/Applications/Alacritty.app" ] || which alacritty >/dev/null 2>&1 && echo 1 || echo 0)
-  HAVE_KITTY=$([ -d "/Applications/kitty.app" ] || which kitty >/dev/null 2>&1 && echo 1 || echo 0)
-  
-  # Check if already installed
-  HAVE_GHOSTTY=$([ -d "/Applications/Ghostty.app" ] || which ghostty >/dev/null 2>&1 && echo 1 || echo 0)
 fi
 
 if [ "$OS_TYPE" = "macos" ] || [ "$OS_TYPE" = "windows" ]; then
@@ -556,25 +544,13 @@ Desktop apps already installed: <comma-separated list>
     // Only include apps NOT already installed
     {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Claude Code sessions using git worktrees (free)"},
     {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
-    {"label": "Ghostty", "description": "Fast GPU terminal with split panes for parallel agents (free)"},
     {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
     {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
   ]
 }
 ```
 
-**For Linux users** (only Ghostty):
-
-```json
-{
-  "header": "Desktop Apps (Linux)",
-  "question": "Flux recommends Ghostty terminal for Linux. Install it?",
-  "options": [
-    {"label": "Yes, install Ghostty", "description": "Fast GPU terminal with split panes (free, open-source)"},
-    {"label": "Skip", "description": "Keep current terminal setup"}
-  ]
-}
-```
+**For Linux users**: Skip desktop apps section entirely and note in summary: "Desktop apps: skipped (no compatible apps for Linux)"
 
 **For Windows users** (only Granola):
 
@@ -607,32 +583,6 @@ Skip desktop apps section entirely and note in summary: "Desktop apps: skipped (
 }
 ```
 
-**Example: Ghostty conflicts with iTerm:**
-```json
-{
-  "header": "Terminal Conflict",
-  "question": "You have iTerm installed. Ghostty is faster with better split-pane focus. How to proceed?",
-  "options": [
-    {"label": "Keep iTerm", "description": "Don't install Ghostty"},
-    {"label": "Try Ghostty", "description": "Install alongside iTerm (can switch later)"},
-    {"label": "Skip", "description": "Decide later"}
-  ]
-}
-```
-
-**Example: Ghostty conflicts with Warp:**
-```json
-{
-  "header": "Terminal Conflict",
-  "question": "You have Warp installed. Ghostty is simpler with better split-pane workflows. How to proceed?",
-  "options": [
-    {"label": "Keep Warp", "description": "Don't install Ghostty (Warp has its own AI features)"},
-    {"label": "Try Ghostty", "description": "Install alongside Warp (can switch later)"},
-    {"label": "Skip", "description": "Decide later"}
-  ]
-}
-```
-
 ### Install selected applications
 
 **Raycast (macOS only):**
@@ -641,24 +591,6 @@ if [ "$OS_TYPE" = "macos" ]; then
   brew install --cask raycast 2>/dev/null || {
     echo "Install manually: https://raycast.com"
   }
-fi
-```
-
-**Ghostty (macOS/Linux):**
-```bash
-if [ "$OS_TYPE" = "macos" ]; then
-  brew install --cask ghostty 2>/dev/null || {
-    echo "Install manually: https://ghostty.org"
-  }
-elif [ "$OS_TYPE" = "linux" ]; then
-  # Check package manager
-  if which apt-get >/dev/null 2>&1; then
-    echo "Install from: https://ghostty.org/docs/install/linux"
-  elif which pacman >/dev/null 2>&1; then
-    echo "Install: pacman -S ghostty"
-  else
-    echo "Install manually: https://ghostty.org"
-  fi
 fi
 ```
 
@@ -1048,7 +980,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "installed_by_flux": {
     "mcp_servers": ["<list of MCP server names installed this session, e.g. context7, exa, github, supermemory, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
-    "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, ghostty, superset, wispr-flow, granola>"],
+    "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, wispr-flow, granola>"],
     "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"]
   }
 }
@@ -1427,7 +1359,6 @@ MCP servers: skipped (install later with /flux:setup or manually)
 ```
 Desktop applications (<OS_TYPE>):
 - Raycast: <installed | already installed | skipped | conflict: kept Alfred>
-- Ghostty: <installed | already installed | skipped | conflict: kept iTerm>
 - Superset: <installed | already installed | skipped>
 - Wispr Flow: <installed | already installed | skipped>
 - Granola: <installed | already installed | skipped>
@@ -1435,7 +1366,7 @@ Desktop applications (<OS_TYPE>):
 
 Use tracking variables from Step 4d to determine status. Only show apps compatible with user's OS:
 - macOS: show all 5 apps
-- Linux: show only Ghostty
+- Linux: skip (no compatible apps)
 - Windows: show only Granola
 
 If OS was unsupported or user skipped all:
@@ -1552,7 +1483,7 @@ Present each category that has items, and let the user choose per-category. Use 
   "options": [
     {"label": "MCP servers", "description": "<list from manifest, e.g. Firecrawl, Exa>"},
     {"label": "Agent skills", "description": "<list from manifest, e.g. UI Skills, Taste Skill>"},
-    {"label": "Desktop apps", "description": "<list from manifest, e.g. Raycast, Ghostty> (manual uninstall instructions)"},
+    {"label": "Desktop apps", "description": "<list from manifest, e.g. Raycast, Superset> (manual uninstall instructions)"},
     {"label": "CLI tools", "description": "<list from manifest, e.g. jq, fzf> (manual uninstall instructions)"},
     {"label": "Just remove Flux core", "description": "Only remove .flux/, plugin, and CLAUDE.md section"}
   ]
