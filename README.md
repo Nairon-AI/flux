@@ -35,7 +35,13 @@ These aren't model failures. They're **process failures**.
 
 **This is where Flux comes in.**
 
-Flux enforces repeatable workflows, tracks state across sessions, and uses multi-model adversarial reviews to catch what no single model spots alone. Run long, complex tasks without drift — Flux keeps the agent on rails even when context gets deep. Analyze your sessions, detect inefficiencies, and get recommended optimisations from an engine that learns your patterns and stays current with the latest harness and context engineering best practices. Ship with confidence. Finally stop doom-scrolling. Sleep better at night knowing our recommendations engine will always stay up-to-date.
+- **Repeatable workflows** — enforces structure across sessions so you and the agent never lose track of what's next
+- **Multi-model adversarial reviews** — catches what no single model spots alone
+- **Long tasks without drift** — Flux keeps the agent on rails even when context gets deep
+- **Session analysis** — detect inefficiencies and get recommended optimisations from an engine that learns your patterns
+- **Always up-to-date** — stays current with the latest harness and context engineering best practices so you can stop doom-scrolling
+
+Ship with confidence. Sleep better at night.
 
 ---
 
