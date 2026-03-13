@@ -37,45 +37,23 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 
 **If no `setup_version`:** continue (first-time setup)
 
-## Step 3: Ask Installation Scope (FIRST)
+## Step 3: Installation Scope
 
-**Before creating directories, ask where to install:**
+Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory. This means:
 
-Check if scope is already configured:
+- Different projects can have different MCP servers, skills, and Flux configs
+- No conflicts with your global `~/.claude/settings.json`
+- Team members get the same setup when they clone the repo
+
+Persist the scope:
 ```bash
-CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
-```
-
-If not set, use the question tool to ask:
-```json
-{
-  "header": "Install Scope",
-  "question": "Where should Flux be installed?",
-  "options": [
-    {"label": "Project (Recommended)", "description": "Install in .flux/ - isolated to this project, committed to git"},
-    {"label": "User", "description": "Install in ~/.flux/ - shared scripts across all projects, project data stays local"},
-    {"label": "Global", "description": "Install in /usr/local/flux/ - system-wide for all users (requires sudo)"}
-  ]
-}
-```
-
-**Set paths based on answer:**
-- **Project**: `BIN_ROOT=".flux/bin"`, `CONFIG_ROOT=".flux"`
-- **User**: `BIN_ROOT="$HOME/.flux/bin"`, `CONFIG_ROOT=".flux"` (scripts shared, epics/tasks local)
-- **Global**: `BIN_ROOT="/usr/local/flux/bin"`, `CONFIG_ROOT=".flux"`
-
-Persist the choice:
-```bash
-"${PLUGIN_ROOT}/scripts/fluxctl" config set install.scope "<project|user|global>" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set install.scope "project" --json
 ```
 
 ## Step 4: Create directories and copy files
 
 **IMPORTANT: Do NOT read fluxctl.py - it's too large. Just copy it.**
 
-Based on the scope from Step 3:
-
-**Project scope (default):**
 ```bash
 mkdir -p .flux/bin
 cp "${PLUGIN_ROOT}/scripts/fluxctl" .flux/bin/fluxctl
@@ -83,46 +61,24 @@ cp "${PLUGIN_ROOT}/scripts/fluxctl.py" .flux/bin/fluxctl.py
 chmod +x .flux/bin/fluxctl
 ```
 
-**User scope:**
-```bash
-mkdir -p ~/.flux/bin
-cp "${PLUGIN_ROOT}/scripts/fluxctl" ~/.flux/bin/fluxctl
-cp "${PLUGIN_ROOT}/scripts/fluxctl.py" ~/.flux/bin/fluxctl.py
-chmod +x ~/.flux/bin/fluxctl
-# Also create local .flux/ for project data
-mkdir -p .flux
-```
-Note: Tell user to add `~/.flux/bin` to their PATH.
-
-**Global scope:**
-```bash
-sudo mkdir -p /usr/local/flux/bin
-sudo cp "${PLUGIN_ROOT}/scripts/fluxctl" /usr/local/flux/bin/fluxctl
-sudo cp "${PLUGIN_ROOT}/scripts/fluxctl.py" /usr/local/flux/bin/fluxctl.py
-sudo chmod +x /usr/local/flux/bin/fluxctl
-# Also create local .flux/ for project data
-mkdir -p .flux
-```
-Note: `/usr/local/flux/bin` is typically already in PATH on most systems.
-
 Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
 
 ## Step 4b: Install default skill (Claudeception)
 
-Install Claudeception by default if not already present:
+Install Claudeception at project level if not already present:
 
 ```bash
-mkdir -p "${HOME}/.claude/skills"
+mkdir -p ".claude/skills"
 
-if [ ! -d "${HOME}/.claude/skills/claudeception" ]; then
-  git clone --depth 1 https://github.com/blader/Claudeception.git "${HOME}/.claude/skills/claudeception" 2>/dev/null || true
+if [ ! -d ".claude/skills/claudeception" ]; then
+  git clone --depth 1 https://github.com/blader/Claudeception.git ".claude/skills/claudeception" 2>/dev/null || true
 fi
 ```
 
 If clone fails, continue setup and print this manual fallback command:
 
 ```bash
-git clone https://github.com/blader/Claudeception.git ~/.claude/skills/claudeception
+git clone https://github.com/blader/Claudeception.git .claude/skills/claudeception
 ```
 
 ## Step 4c: Install recommended MCP servers (Optional)
@@ -135,7 +91,7 @@ Do **NOT** run `claude ...` CLI commands from inside `/flux:setup`.
 
 Why: `/flux:setup` runs inside an active Claude Code session, and nested `claude` invocations fail with "cannot be launched inside another Claude Code session".
 
-Use direct config updates to `~/.claude/settings.json` (preferred), then tell the user to restart Claude Code with `--resume`.
+Use direct config updates to the project-level `.mcp.json` (preferred), then tell the user to restart Claude Code with `--resume`.
 
 ### Available MCP Servers
 
@@ -150,11 +106,11 @@ Use direct config updates to `~/.claude/settings.json` (preferred), then tell th
 
 | ID | Name | Category | Benefit | Free | Install Method |
 |----|------|----------|---------|------|----------------|
-| `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | Add `mcpServers.context7` to `~/.claude/settings.json` |
-| `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `~/.claude/settings.json` |
-| `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `~/.claude/settings.json` |
-| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | Add `mcpServers.supermemory` to `~/.claude/settings.json` |
-| `firecrawl` | Firecrawl | search | **Clean markdown + PDF parsing for agents** — crawl and scrape hard websites | Freemium | Add `mcpServers.firecrawl` to `~/.claude/settings.json` |
+| `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | Add `mcpServers.context7` to `.mcp.json` |
+| `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `.mcp.json` |
+| `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `.mcp.json` |
+| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | Add `mcpServers.supermemory` to `.mcp.json` |
+| `firecrawl` | Firecrawl | search | **Clean markdown + PDF parsing for agents** — crawl and scrape hard websites | Freemium | Add `mcpServers.firecrawl` to `.mcp.json` |
 
 ### Conflict Detection
 
@@ -203,15 +159,15 @@ HAVE_DEVDOCS=$(echo "$MCP_LIST" | grep -qx "devdocs" && echo 1 || echo 0)
 HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
 ```
 
-Before writing MCP settings, ensure settings file exists and is valid JSON:
+Before writing MCP settings, ensure the project-level `.mcp.json` exists and is valid JSON:
 
 ```bash
-mkdir -p "$HOME/.claude"
-[ -f "$SETTINGS_FILE" ] || printf '{"mcpServers":{}}\n' > "$SETTINGS_FILE"
+MCP_FILE=".mcp.json"
+[ -f "$MCP_FILE" ] || printf '{"mcpServers":{}}\n' > "$MCP_FILE"
 
-if ! jq -e . "$SETTINGS_FILE" >/dev/null 2>&1; then
-  cp "$SETTINGS_FILE" "$SETTINGS_FILE.bak.$(date +%Y%m%d-%H%M%S)"
-  printf '{"mcpServers":{}}\n' > "$SETTINGS_FILE"
+if ! jq -e . "$MCP_FILE" >/dev/null 2>&1; then
+  cp "$MCP_FILE" "$MCP_FILE.bak.$(date +%Y%m%d-%H%M%S)"
+  printf '{"mcpServers":{}}\n' > "$MCP_FILE"
 fi
 ```
 
@@ -309,7 +265,7 @@ Based on user's choice:
 ```bash
 # Example: Switch from Perplexity to Exa
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | del(.mcpServers.perplexity) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | del(.mcpServers.perplexity) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 ### Install selected servers
@@ -319,32 +275,32 @@ For each selected server (that passed conflict resolution), install it:
 **Context7:**
 ```bash
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.context7 = {"type":"http","url":"https://mcp.context7.com/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.context7 = {"type":"http","url":"https://mcp.context7.com/mcp"}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 **Exa:**
 ```bash
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.exa = {"type":"http","url":"https://mcp.exa.ai/mcp"}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 **GitHub:**
 ```bash
 # Requires GITHUB_PERSONAL_ACCESS_TOKEN - ask user if they want to configure
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 **Supermemory:**
 ```bash
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.supermemory = {"type":"http","url":"https://mcp.supermemory.ai/mcp"}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.supermemory = {"type":"http","url":"https://mcp.supermemory.ai/mcp"}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 **Firecrawl:**
 ```bash
 tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.firecrawl = {"command":"npx","args":["-y","firecrawl-mcp"]}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.firecrawl = {"command":"npx","args":["-y","firecrawl-mcp"]}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 ### Ask about API keys / tokens (only for installed servers that need them)
@@ -375,7 +331,7 @@ If user chooses to add token:
 Then reconfigure:
 ```bash
 tmp=$(mktemp)
-jq --arg token "<user_provided_token>" '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":$token}}' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+jq --arg token "<user_provided_token>" '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":$token}}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
 **Context7 / Exa / Supermemory / Firecrawl API keys:**
@@ -398,7 +354,7 @@ These work without keys but keys unlock higher rate limits. Only ask if user ins
 }
 ```
 
-If user selects any key option, ask for each selected key value and patch `~/.claude/settings.json`:
+If user selects any key option, ask for each selected key value and patch `.mcp.json`:
 
 ```bash
 # Example helper to set one env key on an MCP server
@@ -410,7 +366,7 @@ set_mcp_env_key() {
   tmp=$(mktemp)
   jq --arg s "$server" --arg k "$env_key" --arg v "$env_val" \
     '.mcpServers = (.mcpServers // {}) | .mcpServers[$s] = ((.mcpServers[$s] // {}) + {env: ((.mcpServers[$s].env // {}) + {($k): $v})})' \
-    "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+    "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 }
 
 # Call based on user selections:
@@ -841,19 +797,19 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
 | `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` |
-| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> ~/.claude/skills/taste-skill/SKILL.md` |
+| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> .claude/skills/taste-skill/SKILL.md` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
-| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git ~/.claude/skills/agent-skills-vercel` |
-| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git ~/.claude/skills/x-research-skill` |
+| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git .claude/skills/agent-skills-vercel` |
+| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git .claude/skills/x-research-skill` |
 
 ### Detect existing skills
 
 ```bash
-HAVE_UI_SKILLS=$(([ -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] || [ -f "$HOME/.claude/skills/fixing-accessibility/SKILL.md" ] || [ -d "$HOME/.claude/skills/ui-skills" ]) && echo 1 || echo 0)
-HAVE_TASTE_SKILL=$([ -f "$HOME/.claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
-HAVE_SEMVER_CHANGELOG=$(([ -d "$HOME/.claude/skills/semver-changelog" ] || [ -d "$HOME/.claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
-HAVE_AGENT_SKILLS_VERCEL=$([ -d "$HOME/.claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
-HAVE_X_RESEARCH_SKILL=$([ -d "$HOME/.claude/skills/x-research-skill" ] && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -f ".claude/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/fixing-accessibility/SKILL.md" ] || [ -d ".claude/skills/ui-skills" ]) && echo 1 || echo 0)
+HAVE_TASTE_SKILL=$([ -f ".claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
+HAVE_SEMVER_CHANGELOG=$(([ -d ".claude/skills/semver-changelog" ] || [ -d ".claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
+HAVE_AGENT_SKILLS_VERCEL=$([ -d ".claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
+HAVE_X_RESEARCH_SKILL=$([ -d ".claude/skills/x-research-skill" ] && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
 ```
@@ -898,24 +854,24 @@ if [ "$INSTALL_UI_SKILLS" = "1" ]; then
     echo "npx not found. Install manually: npx -y ui-skills add --all"
   fi
 
-  if [ ! -f "$HOME/.claude/skills/baseline-ui/SKILL.md" ] && [ ! -f "$HOME/.claude/skills/fixing-accessibility/SKILL.md" ]; then
+  if [ ! -f ".claude/skills/baseline-ui/SKILL.md" ] && [ ! -f ".claude/skills/fixing-accessibility/SKILL.md" ]; then
     echo "Install manually: npx -y ui-skills add --all"
   fi
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
-  mkdir -p "$HOME/.claude/skills/taste-skill"
-  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
+  mkdir -p ".claude/skills/taste-skill"
+  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
     if which git >/dev/null 2>&1; then
       TMP_TASTE_DIR=$(mktemp -d 2>/dev/null || echo "")
       if [ -n "$TMP_TASTE_DIR" ] && git clone --depth 1 https://github.com/Leonxlnx/taste-skill.git "$TMP_TASTE_DIR/taste-skill" 2>/dev/null; then
-        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" "$HOME/.claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
+        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
         rm -rf "$TMP_TASTE_DIR"
       fi
     fi
   }
 
-  if [ ! -s "$HOME/.claude/skills/taste-skill/SKILL.md" ]; then
+  if [ ! -s ".claude/skills/taste-skill/SKILL.md" ]; then
     echo "Install manually: https://github.com/Leonxlnx/taste-skill"
   fi
 fi
@@ -931,20 +887,20 @@ if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
 fi
 
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
-  if [ -d "$HOME/.claude/skills/agent-skills-vercel" ]; then
-    git -C "$HOME/.claude/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
+  if [ -d ".claude/skills/agent-skills-vercel" ]; then
+    git -C ".claude/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
   else
-    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git "$HOME/.claude/skills/agent-skills-vercel" 2>/dev/null || {
+    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git ".claude/skills/agent-skills-vercel" 2>/dev/null || {
       echo "Install manually: https://github.com/vercel-labs/agent-skills"
     }
   fi
 fi
 
 if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
-  if [ -d "$HOME/.claude/skills/x-research-skill" ]; then
-    git -C "$HOME/.claude/skills/x-research-skill" pull --ff-only 2>/dev/null || true
+  if [ -d ".claude/skills/x-research-skill" ]; then
+    git -C ".claude/skills/x-research-skill" pull --ff-only 2>/dev/null || true
   else
-    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git "$HOME/.claude/skills/x-research-skill" 2>/dev/null || {
+    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git ".claude/skills/x-research-skill" 2>/dev/null || {
       echo "Install manually: https://github.com/rohunvora/x-research-skill"
     }
   fi
@@ -955,11 +911,11 @@ fi
 
 After running installs, verify each selected skill path exists before marking success:
 
-- UI Skills: `$HOME/.claude/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`)
-- Taste Skill: `$HOME/.claude/skills/taste-skill/SKILL.md`
-- Semver Changelog: `$HOME/.claude/skills/semver-changelog` or `$HOME/.claude/skills/semantic-version-changelog-generator`
-- Agent Skills (Vercel): `$HOME/.claude/skills/agent-skills-vercel` directory
-- X Research Skill: `$HOME/.claude/skills/x-research-skill` directory
+- UI Skills: `.claude/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`)
+- Taste Skill: `.claude/skills/taste-skill/SKILL.md`
+- Semver Changelog: `.claude/skills/semver-changelog` or `.claude/skills/semantic-version-changelog-generator`
+- Agent Skills (Vercel): `.claude/skills/agent-skills-vercel` directory
+- X Research Skill: `.claude/skills/x-research-skill` directory
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
@@ -1031,7 +987,7 @@ If ANY config values are already set, print a notice before asking questions:
 
 ```
 Current configuration:
-- Install scope: <project|user|global> (change with: fluxctl config set install.scope <project|user|global>)
+- Install scope: project (always project-local)
 - Memory: <enabled|disabled> (change with: fluxctl config set memory.enabled <true|false>)
 - Plan-Sync: <enabled|disabled> (change with: fluxctl config set planSync.enabled <true|false>)
 - Plan-Sync cross-epic: <enabled|disabled> (change with: fluxctl config set planSync.crossEpic <true|false>)
@@ -1046,41 +1002,7 @@ Only include lines for config values that are set. If no config is set, skip thi
 
 Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
 
-**Installation Scope question** (always ask FIRST if not already configured):
-
-Check if scope is already set:
-```bash
-CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
-```
-
-If CURRENT_SCOPE is empty, include this question FIRST:
-```json
-{
-  "header": "Install Scope",
-  "question": "Where should Flux be installed?",
-  "options": [
-    {"label": "Project (Recommended)", "description": "Install in .flux/ - isolated to this project, committed to git"},
-    {"label": "User", "description": "Install in ~/.flux/ - shared config across all projects, project data stays local"},
-    {"label": "Global", "description": "Install in /usr/local/flux/ - system-wide for all users (requires sudo)"}
-  ],
-  "multiSelect": false
-}
-```
-
-**Process scope answer immediately** (before other questions):
-- If "Project": Set `INSTALL_ROOT=".flux"` and `CONFIG_ROOT=".flux"`
-- If "User": Set `INSTALL_ROOT="$HOME/.flux"` and `CONFIG_ROOT=".flux"` (scripts shared, data local)
-- If "Global": Set `INSTALL_ROOT="/usr/local/flux"` and `CONFIG_ROOT=".flux"`
-
-Then persist:
-```bash
-"${PLUGIN_ROOT}/scripts/fluxctl" config set install.scope "<project|user|global>" --json
-```
-
-**Adjust Steps 3-4 based on scope:**
-- **Project scope**: `mkdir -p .flux/bin` and copy scripts there
-- **User scope**: `mkdir -p ~/.flux/bin` and copy scripts there, add to PATH hint
-- **Global scope**: `sudo mkdir -p /usr/local/flux/bin` and copy scripts there
+**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory.
 
 Available questions (include only if corresponding config is unset):
 
@@ -1506,19 +1428,19 @@ rm -rf .flux
 ### Step U4: Remove selected extras
 
 **MCP servers** (if selected):
-For each MCP server in the manifest, remove its entry from `~/.claude/settings.json` under `mcpServers`.
+For each MCP server in the manifest, remove its entry from `.mcp.json` under `mcpServers`. If `.mcp.json` becomes empty (`{"mcpServers":{}}`), delete it.
 
 **Agent skills** (if selected):
 ```bash
 # Remove each skill directory
-rm -rf ~/.claude/skills/<skill-name>
+rm -rf .claude/skills/<skill-name>
 ```
 
 Map skill names to directories:
-- `ui-skills` → `~/.claude/skills/baseline-ui`, `~/.claude/skills/fixing-accessibility`, etc.
-- `taste-skill` → `~/.claude/skills/taste-skill`
-- `agent-skills-vercel` → `~/.claude/skills/agent-skills-vercel`
-- `x-research-skill` → `~/.claude/skills/x-research-skill`
+- `ui-skills` → `.claude/skills/baseline-ui`, `.claude/skills/fixing-accessibility`, etc.
+- `taste-skill` → `.claude/skills/taste-skill`
+- `agent-skills-vercel` → `.claude/skills/agent-skills-vercel`
+- `x-research-skill` → `.claude/skills/x-research-skill`
 
 **Desktop apps** (if selected):
 Cannot auto-uninstall GUI apps. Print manual instructions:
