@@ -83,6 +83,8 @@ Help me uninstall the Flux plugin. Fetch the README at https://github.com/Nairon
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
 
+> **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. Different projects can have completely different Flux setups with zero conflicts.
+
 <details>
 <summary><strong>Agent Instructions</strong> — the agent reads this section when it fetches the README</summary>
 
@@ -123,10 +125,10 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
    ```
 4. Remove project artifacts:
    ```bash
-   rm -rf .flux
+   rm -rf .flux .mcp.json .claude/skills/
    ```
 5. Remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md.
-6. Optionally remove user-level data: `rm -rf ~/.flux ~/.claude/plugins/cache/nairon-flux`
+6. Optionally remove plugin cache: `rm -rf ~/.claude/plugins/cache/nairon-flux`
 7. Tell the user to restart with `--resume`.
 
 </details>

@@ -49,7 +49,7 @@ Read [workflow.md](workflow.md) and follow each step in order.
 - **Fully optional** - standard plugin usage works without local setup
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
-- In active Claude Code sessions, configure MCPs via `~/.claude/settings.json` updates (do not invoke nested `claude` CLI commands)
+- All MCPs, skills, and config install project-local (`.mcp.json`, `.claude/skills/`, `.flux/`) — never touches global `~/.claude/settings.json`
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 
