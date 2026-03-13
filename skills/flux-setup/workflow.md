@@ -1490,7 +1490,7 @@ Present each category that has items, and let the user choose per-category. Use 
 
 ```bash
 # Remove Flux plugin
-# Tell user to run: /plugin remove flux@nairon-flux
+# Tell user to run: /plugin uninstall flux@nairon-flux
 
 # Remove project artifacts
 rm -rf .flux
@@ -1541,7 +1541,7 @@ brew uninstall lefthook
 Flux has been uninstalled.
 
 Removed:
-- Flux plugin (run /plugin remove flux@nairon-flux to complete)
+- Flux plugin (run /plugin uninstall flux@nairon-flux to complete)
 - .flux/ directory
 - CLAUDE.md / AGENTS.md flux sections
 - <list any extras that were removed>

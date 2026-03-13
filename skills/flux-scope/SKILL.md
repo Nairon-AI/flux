@@ -1532,6 +1532,67 @@ View: https://linear.app/team/ENG/project/user-authentication
 
 ---
 
+## Ralph Mode Offer
+
+After showing the completion summary, **always** offer Ralph mode. This lets the user run the entire epic autonomously overnight.
+
+### Step 1: Check if Ralph has been initialized
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+RALPH_EXISTS=$([[ -d "$REPO_ROOT/scripts/ralph" ]] && echo 1 || echo 0)
+```
+
+### Step 2: Present the offer
+
+Show:
+```
+---
+Run this epic autonomously overnight?
+
+Ralph mode will work through all <N> tasks in <epic-id> without intervention —
+plan review, implementation, code review, and completion review.
+
+You start it from your terminal and check results in the morning.
+
+[y/n]
+---
+```
+
+Wait for user response (do NOT use AskUserQuestion tool). Only clear affirmative responses (y, yes, sure, yeah, ok, do it) count as yes. Anything else = no.
+
+- If **no**: Continue to Update Check.
+- If **yes**: Continue to Step 3.
+
+### Step 3: Initialize or configure Ralph
+
+**If RALPH_EXISTS=0 (first time):**
+
+Execute the **full workflow** defined in `skills/flux-ralph-init/SKILL.md` (steps 1-7) inline. This is a Flux skill — follow its instructions directly, do NOT tell the user to run it themselves.
+
+After ralph-init completes, continue to Step 4.
+
+**If RALPH_EXISTS=1 (already initialized):**
+
+Skip straight to Step 4.
+
+### Step 4: Configure epic and show start instructions
+
+Edit `scripts/ralph/config.env` — replace the `EPICS=` line with `EPICS=<epic-id>`.
+
+Then show:
+```
+Ralph configured for epic <epic-id>.
+
+To start (run from your terminal, NOT inside Claude Code):
+  ./scripts/ralph/ralph.sh
+
+Tip: run ./scripts/ralph/ralph_once.sh first to observe a single iteration.
+Config: scripts/ralph/config.env
+```
+
+---
+
 ## Update Check (End of Command)
 
 **ALWAYS run at the very end of /flux:scope execution:**
@@ -1550,7 +1611,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin remove flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
