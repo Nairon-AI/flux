@@ -1332,70 +1332,52 @@ which codex >/dev/null 2>&1 && echo "CODEX_INSTALLED=1" || echo "CODEX_INSTALLED
 If not installed, tell the user:
 
 ```
-Codex CLI is required for your chosen configuration but isn't installed.
-Install it: npm install -g @openai/codex
+⚠️  Codex CLI is required for your chosen configuration but isn't installed.
+
+Run this in a separate terminal:
+  npm install -g @openai/codex
+
 Then re-run /flux:setup to verify.
 ```
 
-Save the config anyway (they may install it later), but warn that scouts/reviews won't work until codex is available.
+Save the config anyway (they may install it later), but warn that scouts/reviews will fall back to Claude models until codex is available. **Do not block setup.**
 
-### 2. Check Codex authentication
+### 2. Check Codex authentication (non-interactive only)
 
 ```bash
 codex login status 2>&1
 ```
 
 Expected outputs:
-- `Logged in using ChatGPT` → authenticated via OAuth
-- `Logged in using API key` → authenticated via API key
-- Anything else → not authenticated
+- `Logged in using ChatGPT` → authenticated via OAuth ✅
+- `Logged in using API key` → authenticated via API key ✅
+- Anything else → not authenticated ❌
 
-If not authenticated, run the OAuth flow:
+**IMPORTANT**: Do NOT attempt to run `codex login` from within Claude Code. The OAuth flow opens a browser and requires interactive input — it will hang in the Bash tool.
 
-```
-Codex CLI is installed but not authenticated. Let's log you in now.
-```
-
-Then tell the user to run in their terminal:
-
-```bash
-codex login
-```
-
-This opens a browser for ChatGPT OAuth. After the user confirms they've logged in, verify again:
-
-```bash
-codex login status 2>&1
-```
-
-If still not authenticated, warn and continue:
+If not authenticated, tell the user:
 
 ```
-Codex authentication failed. Scouts and reviews will fall back to Claude models until you run: codex login
+⚠️  Codex CLI is installed but not authenticated.
+
+Run this in a separate terminal:
+  codex login
+
+This will open your browser for ChatGPT authentication.
+After logging in, restart Claude Code with --resume and re-run /flux:setup.
 ```
 
-### 3. Verify model access (if authenticated)
+Save the config and continue setup — **do not block or wait**. The user will authenticate externally and re-run setup.
 
-Run a minimal check to confirm the configured model is accessible:
+### 3. Print Codex status in summary
 
-```bash
-codex exec -m "<configured_model>" --ephemeral --sandbox read-only -o /dev/null "Respond with only the word ok" 2>&1 | head -5
-```
+Based on the checks above, include one of these lines in the Step 8 summary under Configuration:
 
-If the command fails or returns an error about model access:
+- If codex installed + authenticated: `Codex: verified ✅ (authenticated via <method>)`
+- If codex installed + not authenticated: `Codex: not authenticated ⚠️ (run 'codex login' in your terminal)`
+- If codex not installed: `Codex: not installed ⚠️ (run 'npm install -g @openai/codex' in your terminal)`
 
-```
-Your account doesn't appear to have access to <model>. This model requires a ChatGPT Pro subscription.
-Falling back to claude-haiku-4-5 for scouts.
-```
-
-Then update the config: `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
-
-If the command succeeds (shows `model: <configured_model>`), print:
-
-```
-Codex verified: authenticated and <model> is accessible.
-```
+**Do NOT run `codex exec` to verify model access during setup.** It's slow and can timeout. Model access is verified naturally when the user first runs `/flux:prime` — if the model fails there, prime will report the error clearly.
 
 ## Step 8: Print Summary
 
