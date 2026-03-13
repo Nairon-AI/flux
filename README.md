@@ -83,7 +83,7 @@ Help me uninstall the Flux plugin. Fetch the README at https://github.com/Nairon
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
 
-> **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. Different projects can have completely different Flux setups with zero conflicts.
+> **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. No two projects need the same harness — different MCPs, skills, tools, and agentic patterns. Flux starts as a one-size-fits-all setup, then self-improves daily into the best harness for *that specific project*.
 
 <details>
 <summary><strong>Agent Instructions</strong> — the agent reads this section when it fetches the README</summary>
