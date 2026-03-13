@@ -47,6 +47,7 @@ from .utils import (
     workflow_phases_for_mode,
 )
 from .config import get_config, get_default_config, deep_merge
+from . import tracker
 from .state import (
     default_prime_state,
     delete_task_runtime,
@@ -533,6 +534,12 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
 
     # NOTE: We no longer update meta["next_epic"] since scan-based allocation
     # is the source of truth. This reduces merge conflicts.
+
+    # Tracker hook: create Linear project if configured
+    linear_project_id = tracker.on_epic_created(epic_data)
+    if linear_project_id:
+        epic_data["linear_project_id"] = linear_project_id
+        atomic_write_json(flux_dir / EPICS_DIR / f"{epic_id}.json", epic_data)
 
     if args.json:
         json_output(

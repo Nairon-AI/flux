@@ -1098,6 +1098,16 @@ If user selects "Linear", ask for their Linear team key (the short prefix in iss
 }
 ```
 
+Then ask for their Linear API key (needed for automated sync of epics/tasks to Linear):
+```json
+{
+  "header": "Linear API Key",
+  "question": "Enter your Linear API key for automated tracker sync. Create one at Settings → API → Personal API keys in Linear. Leave blank to skip (tracker hooks will be no-ops until set).",
+  "options": [],
+  "freeformInput": true
+}
+```
+
 **Review question** (include if CURRENT_BACKEND is empty):
 ```json
 {
@@ -1206,6 +1216,16 @@ Only process answers for questions that were asked (config values that were unse
      ```
      Save the config anyway — do not block setup.
   5. Add `linear-cli` to the `installed_by_flux.skills` list in meta.json.
+  6. If the user provided a LINEAR_API_KEY, tell them to add it to their environment:
+     ```
+     Add LINEAR_API_KEY to your shell profile (~/.zshrc or ~/.bashrc):
+       export LINEAR_API_KEY="<their_key>"
+
+     Then restart your terminal or run: source ~/.zshrc
+
+     This key enables automatic sync of Flux epics → Linear projects and tasks → Linear issues.
+     ```
+     Do NOT write the key to any file in the project (it's a secret). The key is read from env at runtime.
 - If "None": `"${PLUGIN_ROOT}/scripts/fluxctl" config set tracker.provider "none" --json`
 
 **Review** (if question was asked):
