@@ -12,25 +12,6 @@ Build software reliably with agents.
 
 </div>
 
-Flux enforces repeatable workflows, tracks state across sessions, and uses multi-model adversarial reviews to catch what no single model spots alone. Run long, complex tasks without drift — Flux keeps the agent on rails even when context gets deep. Analyze your sessions, detect inefficiencies, and get recommended optimisations from an engine that learns your patterns and stays current with the latest harness and context engineering best practices. Ship with confidence. Sleep better at night.
-
----
-
-## Contents
-
-- [The Problem](#the-problem)
-- [Install](#install)
-- [Getting Started](#getting-started)
-- [Core Workflow](#core-workflow)
-- [Features](#features)
-- [Commands](#commands)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [Roadmap](#roadmap)
-- [Community](#community)
-
----
-
 ## The Problem
 
 You're using an AI coding agent, but something's off:
@@ -53,6 +34,22 @@ You're using an AI coding agent, but something's off:
 These aren't model failures. They're **process failures**.
 
 **This is where Flux comes in.**
+
+Flux enforces repeatable workflows, tracks state across sessions, and uses multi-model adversarial reviews to catch what no single model spots alone. Run long, complex tasks without drift — Flux keeps the agent on rails even when context gets deep. Analyze your sessions, detect inefficiencies, and get recommended optimisations from an engine that learns your patterns and stays current with the latest harness and context engineering best practices. Ship with confidence. Finally stop doom-scrolling. Sleep better at night knowing our recommendations engine will always stay up-to-date.
+
+---
+
+## Contents
+
+- [Install](#install)
+- [Getting Started](#getting-started)
+- [Core Workflow](#core-workflow)
+- [Features](#features)
+- [Commands](#commands)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Roadmap](#roadmap)
+- [Community](#community)
 
 ---
 
@@ -161,15 +158,6 @@ Prime → Scope → Work → Review → Improve → Reflect
 | **Review** | Adversarial multi-model review of your implementation |
 | **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
 | **Reflect** | Capture learnings into persistent brain vault |
-
-### Scoping Modes
-
-```bash
-/flux:scope Add notifications          # Shallow (~10 min)
-/flux:scope Add notifications --deep   # Deep (~45 min)
-/flux:scope Add notifications --explore 3  # Compare 3 approaches in parallel
-/flux:scope --linear                   # Scope from Linear project
-```
 
 ---
 
