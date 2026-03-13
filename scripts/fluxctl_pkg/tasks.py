@@ -59,6 +59,7 @@ from .state import (
     artifact_dir_for_epic,
 )
 from .config import load_flux_config, get_config
+from . import tracker
 
 
 def normalize_task(task_data: dict) -> dict:
@@ -339,6 +340,14 @@ def cmd_task_create(args: argparse.Namespace) -> None:
 
     # NOTE: We no longer update epic["next_task"] since scan-based allocation
     # is the source of truth. This reduces merge conflicts.
+
+    # Tracker hook: create Linear issue if configured
+    epic_data = load_json(epic_path) or {}
+    linear_project_id = epic_data.get("linear_project_id")
+    linear_issue_id = tracker.on_task_created(task_data, project_id=linear_project_id)
+    if linear_issue_id:
+        task_data["linear_issue_id"] = linear_issue_id
+        atomic_write_json(flux_dir / TASKS_DIR / f"{task_id}.json", task_data)
 
     if args.json:
         json_output(
@@ -1362,6 +1371,12 @@ def cmd_start(args: argparse.Namespace) -> None:
     # This reduces merge conflicts in multi-user scenarios.
     set_active_objective(epic_id_from_task(args.id), use_json=args.json)
 
+    # Tracker hook: update Linear issue status
+    linear_issue_id = task_def.get("linear_issue_id")
+    if linear_issue_id:
+        old_status = status if status else "todo"
+        tracker.on_status_changed(args.id, old_status, "in_progress", linear_issue_id)
+
     if args.json:
         json_output(
             {
@@ -1510,6 +1525,11 @@ def cmd_done(args: argparse.Namespace) -> None:
     # NOTE: We no longer update epic timestamp on task done.
     # This reduces merge conflicts in multi-user scenarios.
 
+    # Tracker hook: update Linear issue status
+    linear_issue_id = task_data.get("linear_issue_id")
+    if linear_issue_id:
+        tracker.on_status_changed(args.id, "in_progress", "done", linear_issue_id)
+
     if args.json:
         json_output(
             {"id": args.id, "status": "done", "message": f"Task {args.id} completed"}
@@ -1565,6 +1585,11 @@ def cmd_block(args: argparse.Namespace) -> None:
 
     # Write runtime state to state-dir (not definition file)
     save_task_runtime(args.id, {"status": "blocked", "blocked_reason": reason})
+
+    # Tracker hook: update Linear issue + add block comment
+    linear_issue_id = task_data.get("linear_issue_id")
+    if linear_issue_id:
+        tracker.on_blocked(args.id, reason, linear_issue_id)
 
     if args.json:
         json_output(

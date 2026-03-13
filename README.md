@@ -218,11 +218,11 @@ STRIDE-based security analysis adapted from [Factory AI security-engineer plugin
 
 ### Linear Integration
 
-Connect Flux to [Linear](https://linear.app/docs/mcp) for team workflows — scope Linear projects with the same guided flow and create tasks directly.
+Connect Flux to [Linear](https://linear.app) during `/flux:setup` — epics auto-create Linear projects, tasks auto-create issues, and status changes (start, done, block) sync in real-time. Your team gets full visibility without leaving Linear.
 
 ```bash
-/flux:scope --linear    # Browse teams → projects
-/flux:scope LIN-42      # Scope specific issue
+/flux:setup              # Select "Linear" when prompted for task tracker
+fluxctl config get tracker.provider   # Check current tracker config
 ```
 
 ---
@@ -232,7 +232,7 @@ Connect Flux to [Linear](https://linear.app/docs/mcp) for team workflows — sco
 | Command | What it does |
 |---------|-------------|
 | `/flux:setup` | Initialize Flux in your project |
-| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`, `--linear`) |
+| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) |
 | `/flux:plan <idea>` | Create tasks only (skip interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |

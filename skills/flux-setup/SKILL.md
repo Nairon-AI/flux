@@ -38,6 +38,8 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Agent Skills (Vercel)** — broad reusable skills catalog
   - **X Research Skill** — structured X/Twitter research and summarization
+- **Optional** task tracker integration:
+  - **Linear** — installs the [Linear CLI skill](https://skills.sh/schpet/linear-cli/linear-cli) so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
 
 ## Workflow
@@ -73,7 +75,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin remove flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
