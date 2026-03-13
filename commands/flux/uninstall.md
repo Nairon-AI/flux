@@ -19,7 +19,7 @@ If cancel → stop.
 
 ## Execute cleanup
 
-The agent executes all cleanup directly — do not ask the user to run commands manually.
+Try to execute each cleanup step directly. If any command is denied or blocked (e.g., by permission settings or a destructive command guard), collect it into a "manual steps" list instead.
 
 ### Remove project artifacts
 
@@ -48,7 +48,7 @@ rm -rf .claude/skills/
 
 ### Clean up docs
 
-For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive).
+For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). Use the Edit tool for this — it does not require Bash.
 
 ### Remove plugin cache
 ```bash
@@ -57,18 +57,18 @@ rm -rf ~/.claude/plugins/cache/nairon-flux
 
 ## Report
 
+Print what was cleaned up and what still needs manual action:
+
 ```
 Flux uninstalled.
 
 Cleaned up:
-- Flux project artifacts
-- Project-local MCP config (.mcp.json)
-- Project-local skills (.claude/skills/)
-- Flux sections from docs (if existed)
-- Plugin cache
+- <list items the agent successfully executed>
 
-To finish, run in your agent UI:
-  /plugin uninstall flux@nairon-flux
-
-Then restart with --resume.
+Manual steps remaining:
+- <list any commands that were blocked — print the exact commands>
+- Run in your agent UI: /plugin uninstall flux@nairon-flux
+- Restart with --resume
 ```
+
+If all cleanup commands succeeded, the "Manual steps remaining" section only contains the `/plugin uninstall` and restart steps.
