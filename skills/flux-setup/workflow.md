@@ -963,6 +963,7 @@ CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.enabled 
 CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_SCOUT_MODEL=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_TRACKER=$("${PLUGIN_ROOT}/scripts/fluxctl" config get tracker.provider --json 2>/dev/null | jq -r '.value // empty')
 ```
 
 Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
@@ -994,6 +995,7 @@ Current configuration:
 - Review backend: <codex|rp|none> (change with: fluxctl config set review.backend <codex|rp|none>)
 - GitHub scout: <enabled|disabled> (change with: fluxctl config set scouts.github <true|false>)
 - Scout model: <model-name> (change with: fluxctl config set scouts.model <model-name>)
+- Task tracker: <linear|none> (change with: fluxctl config set tracker.provider <linear|none>)
 ```
 
 Only include lines for config values that are set. If no config is set, skip this notice.
@@ -1073,6 +1075,29 @@ Available questions (include only if corresponding config is unset):
 }
 ```
 
+**Task Tracker question** (include if CURRENT_TRACKER is empty):
+```json
+{
+  "header": "Task Tracker",
+  "question": "Do you use a task tracker? Flux can sync epics and tasks to your tracker so your team has visibility.",
+  "options": [
+    {"label": "Linear", "description": "Installs the Linear CLI skill. Agent can create/update issues and projects directly."},
+    {"label": "None", "description": "Use Flux's built-in .flux/ tracking only (configure later with: fluxctl config set tracker.provider linear)"}
+  ],
+  "multiSelect": false
+}
+```
+
+If user selects "Linear", ask for their Linear team key (the short prefix in issue IDs, e.g. "ENG", "PROD"):
+```json
+{
+  "header": "Linear Team",
+  "question": "Enter your Linear team key (the prefix in your issue IDs, e.g. ENG, PROD)",
+  "options": [],
+  "freeformInput": true
+}
+```
+
 **Review question** (include if CURRENT_BACKEND is empty):
 ```json
 {
@@ -1146,6 +1171,42 @@ Only process answers for questions that were asked (config values that were unse
 - If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
 - If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
 - If "gpt-5.4": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.4" --json`
+
+**Task Tracker** (if question was asked):
+- If "Linear":
+  1. Save config:
+     ```bash
+     "${PLUGIN_ROOT}/scripts/fluxctl" config set tracker.provider "linear" --json
+     "${PLUGIN_ROOT}/scripts/fluxctl" config set tracker.teamId "<TEAM_KEY>" --json
+     ```
+  2. Install Linear CLI skill (project-local):
+     ```bash
+     mkdir -p ".claude/skills/linear-cli"
+     curl -fsSL https://skills.sh/schpet/linear-cli/linear-cli/SKILL.md -o ".claude/skills/linear-cli/SKILL.md" 2>/dev/null || {
+       echo "curl failed, trying git..."
+       TMP_LINEAR=$(mktemp -d)
+       git clone --depth 1 https://github.com/schpet/linear-cli.git "$TMP_LINEAR" 2>/dev/null
+       cp "$TMP_LINEAR/linear-cli/SKILL.md" ".claude/skills/linear-cli/SKILL.md" 2>/dev/null || true
+       rm -rf "$TMP_LINEAR"
+     }
+     ```
+  3. Verify install: check `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: https://skills.sh/schpet/linear-cli/linear-cli`
+  4. Check Linear CLI is installed:
+     ```bash
+     which linear >/dev/null 2>&1 && echo "LINEAR_CLI_OK=1" || echo "LINEAR_CLI_OK=0"
+     ```
+     If not installed, tell the user:
+     ```
+     ⚠️  Linear CLI is required for tracker integration but isn't installed.
+
+     Run this in a separate terminal:
+       npm install -g @anthropic-ai/linear-cli
+
+     Then re-run /flux:setup to verify.
+     ```
+     Save the config anyway — do not block setup.
+  5. Add `linear-cli` to the `installed_by_flux.skills` list in meta.json.
+- If "None": `"${PLUGIN_ROOT}/scripts/fluxctl" config set tracker.provider "none" --json`
 
 **Review** (if question was asked):
 Map user's answer to config value and persist:

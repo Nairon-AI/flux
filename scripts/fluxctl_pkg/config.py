@@ -28,6 +28,7 @@ def get_default_config() -> dict:
         "planSync": {"enabled": True, "crossEpic": False},
         "review": {"backend": None},
         "scouts": {"github": False},
+        "tracker": {"provider": None, "teamId": None},
         "workflow": {
             "technicalLevel": "semi_technical",
             "defaultScopeMode": "shallow",
