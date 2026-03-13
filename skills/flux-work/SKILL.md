@@ -58,7 +58,7 @@ Continue regardless.
 
 ## Ralph Mode Rules (always follow)
 
-If `REVIEW_RECEIPT_PATH` is set or `FLOW_RALPH=1`:
+If `REVIEW_RECEIPT_PATH` is set or `FLUX_RALPH=1`:
 - **Must** use `fluxctl done` and verify task status is `done` before committing.
 - **Must** stage with `git add -A` (never list files).
 - **Do NOT** use TodoWrite for tracking.

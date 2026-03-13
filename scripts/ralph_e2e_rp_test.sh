@@ -104,11 +104,11 @@ PY
 
 
 find_jsonl() {
-  if [[ -n "${FLOW_RALPH_CLAUDE_SESSION_ID:-}" ]]; then
+  if [[ -n "${FLUX_RALPH_CLAUDE_SESSION_ID:-}" ]]; then
     if command -v fd >/dev/null 2>&1; then
-      fd -a "${FLOW_RALPH_CLAUDE_SESSION_ID}.jsonl" "$HOME/.claude/projects" | head -n 1 || true
+      fd -a "${FLUX_RALPH_CLAUDE_SESSION_ID}.jsonl" "$HOME/.claude/projects" | head -n 1 || true
     else
-      find "$HOME/.claude/projects" -name "${FLOW_RALPH_CLAUDE_SESSION_ID}.jsonl" -print 2>/dev/null | head -n 1 || true
+      find "$HOME/.claude/projects" -name "${FLUX_RALPH_CLAUDE_SESSION_ID}.jsonl" -print 2>/dev/null | head -n 1 || true
     fi
   fi
 }
@@ -353,7 +353,7 @@ assert impl2["type"] == "impl_review"
 assert impl2["id"] == "fn-2.1"
 PY
 
-if [[ "${FLOW_RALPH_VERBOSE:-}" == "1" ]]; then
+if [[ "${FLUX_RALPH_VERBOSE:-}" == "1" ]]; then
   run_dir="$(ls -t scripts/ralph/runs | grep -v '^\\.gitkeep$' | head -n 1)"
   log_file="scripts/ralph/runs/$run_dir/ralph.log"
   [[ -f "$log_file" ]] || fail "missing verbose log $log_file"

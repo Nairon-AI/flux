@@ -83,7 +83,7 @@ Task tracking for AI agents. All state lives in `.flux/`.
 
 ## Parallel Worktrees
 
-Runtime state (status, assignee, etc.) is stored in `.git/flow-state/`, shared across worktrees:
+Runtime state (status, assignee, etc.) is stored in `.git/flux-state/`, shared across worktrees:
 
 ```bash
 .flux/bin/fluxctl state-path              # Show state directory

@@ -487,7 +487,7 @@ Edit `scripts/ralph/config.env`:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CODEX_SANDBOX` | `auto` | `read-only`, `workspace-write`, `danger-full-access`, `auto` |
-| `FLOW_CODEX_EMBED_MAX_BYTES` | `500000` | Max bytes embedded in prompts |
+| `FLUX_CODEX_EMBED_MAX_BYTES` | `500000` | Max bytes embedded in prompts |
 
 > **Windows:** Use `auto` or `danger-full-access`. The `read-only` mode blocks all shell commands.
 
@@ -623,7 +623,7 @@ Use alternate config files for different platforms or review backends without ed
 ### Verbose Logging
 
 ```bash
-FLOW_RALPH_VERBOSE=1 scripts/ralph/ralph.sh
+FLUX_RALPH_VERBOSE=1 scripts/ralph/ralph.sh
 ```
 
 Detailed logs → `scripts/ralph/runs/<run>/ralph.log`
@@ -631,9 +631,9 @@ Detailed logs → `scripts/ralph/runs/<run>/ralph.log`
 ### Debug Environment Variables
 
 ```bash
-FLOW_RALPH_CLAUDE_MODEL=claude-opus-4-5-20251101
-FLOW_RALPH_CLAUDE_DEBUG=hooks
-FLOW_RALPH_CLAUDE_PERMISSION_MODE=bypassPermissions
+FLUX_RALPH_CLAUDE_MODEL=claude-opus-4-5-20251101
+FLUX_RALPH_CLAUDE_DEBUG=hooks
+FLUX_RALPH_CLAUDE_PERMISSION_MODE=bypassPermissions
 ```
 
 ---
@@ -700,7 +700,7 @@ rm -rf ~/.config/dcg/
 
 Plugin hooks enforce workflow rules deterministically.
 
-> **Only active when `FLOW_RALPH=1`** — zero overhead for non-Ralph users.
+> **Only active when `FLUX_RALPH=1`** — zero overhead for non-Ralph users.
 
 | Rule | Purpose |
 |------|---------|
@@ -717,7 +717,7 @@ plugins/flux/
   scripts/hooks/ralph-guard.py  # Logic
 ```
 
-**Disable temporarily:** Unset `FLOW_RALPH`
+**Disable temporarily:** Unset `FLUX_RALPH`
 
 **Disable permanently:** Delete `hooks/` directory
 

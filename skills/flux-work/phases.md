@@ -274,7 +274,7 @@ Context optimization. Each task gets fresh context:
 - Review cycles stay isolated
 - Main conversation stays lean (just summaries)
 
-**Ralph mode**: Worker inherits `bypassPermissions` from parent. FLOW_RALPH=1 and REVIEW_RECEIPT_PATH are passed through.
+**Ralph mode**: Worker inherits `bypassPermissions` from parent. FLUX_RALPH=1 and REVIEW_RECEIPT_PATH are passed through.
 
 **Interactive mode**: Permission prompts pass through to user. Worker runs in foreground (blocking).
 

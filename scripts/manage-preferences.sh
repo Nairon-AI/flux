@@ -4,7 +4,7 @@
 
 set -e
 
-# Use project-local .flux/ directory (like flow-next uses .flow/)
+# Use project-local .flux/ directory (like flux uses .flow/)
 PREFS_FILE=".flux/preferences.json"
 
 # Ensure directory exists

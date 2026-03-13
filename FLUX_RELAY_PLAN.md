@@ -214,7 +214,7 @@ These are proposed targets for implementation. They are planning placeholders, n
 
 ### Runtime State
 
-- Preferred runtime location: `.git/flow-state/orchestrator/`
+- Preferred runtime location: `.git/flux-state/orchestrator/`
 - Fallback when git common dir is unavailable: `.flux/runtime/orchestrator/`
 
 ## 10) Step-by-Step Implementation Plan
@@ -726,7 +726,7 @@ These questions should be resolved before implementation begins.
 4. Should planning always run before work, or can a workflow opt into "direct work" for small issues?
 5. Should tracker writes happen only through app-server tools, or should the daemon support a small set of direct writes for safety-critical transitions?
 6. Should successful runs stop at `Human Review` in v1, even if auto-land is technically possible?
-7. Should orchestrator runtime state live only in `.git/flow-state`, or also support a user-global cache?
+7. Should orchestrator runtime state live only in `.git/flux-state`, or also support a user-global cache?
 8. Should the first release support only Codex app-server, or define a more generic runner interface from day one?
 
 ## 13) Risks and Mitigations

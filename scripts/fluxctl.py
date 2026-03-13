@@ -47,7 +47,7 @@ except ImportError:
 
 SCHEMA_VERSION = 2
 SUPPORTED_SCHEMA_VERSIONS = [1, 2]
-FLOW_DIR = ".flux"
+FLUX_DIR = ".flux"
 META_FILE = "meta.json"
 EPICS_DIR = "epics"
 SPECS_DIR = "specs"
@@ -111,26 +111,26 @@ def get_repo_root() -> Path:
         return Path.cwd()
 
 
-def get_flow_dir() -> Path:
+def get_flux_dir() -> Path:
     """Get .flux/ directory path."""
-    return get_repo_root() / FLOW_DIR
+    return get_repo_root() / FLUX_DIR
 
 
-def ensure_flow_exists() -> bool:
+def ensure_flux_exists() -> bool:
     """Check if .flux/ exists."""
-    return get_flow_dir().exists()
+    return get_flux_dir().exists()
 
 
 def get_state_dir() -> Path:
     """Get state directory for runtime task state.
 
     Resolution order:
-    1. FLOW_STATE_DIR env var (explicit override for orchestrators)
+    1. FLUX_STATE_DIR env var (explicit override for orchestrators)
     2. git common-dir (shared across all worktrees automatically)
     3. Fallback to .flux/state for non-git repos
     """
     # 1. Explicit override
-    if state_dir := os.environ.get("FLOW_STATE_DIR"):
+    if state_dir := os.environ.get("FLUX_STATE_DIR"):
         return Path(state_dir).resolve()
 
     # 2. Git common-dir (shared across worktrees)
@@ -142,12 +142,12 @@ def get_state_dir() -> Path:
             check=True,
         )
         common = result.stdout.strip()
-        return Path(common) / "flow-state"
+        return Path(common) / "flux-state"
     except subprocess.CalledProcessError:
         pass
 
     # 3. Fallback for non-git repos
-    return get_flow_dir() / "state"
+    return get_flux_dir() / "state"
 
 
 # --- StateStore (runtime task state) ---
@@ -238,8 +238,8 @@ def get_state_store() -> LocalFileStateStore:
 
 def load_task_definition(task_id: str, use_json: bool = True) -> dict:
     """Load task definition from tracked file (no runtime state)."""
-    flow_dir = get_flow_dir()
-    def_path = flow_dir / TASKS_DIR / f"{task_id}.json"
+    flux_dir = get_flux_dir()
+    def_path = flux_dir / TASKS_DIR / f"{task_id}.json"
     return load_json_or_exit(def_path, f"Task {task_id}", use_json=use_json)
 
 
@@ -294,8 +294,8 @@ def delete_task_runtime(task_id: str) -> None:
 
 def save_task_definition(task_id: str, definition: dict) -> None:
     """Write definition to tracked file (filters out runtime fields)."""
-    flow_dir = get_flow_dir()
-    def_path = flow_dir / TASKS_DIR / f"{task_id}.json"
+    flux_dir = get_flux_dir()
+    def_path = flux_dir / TASKS_DIR / f"{task_id}.json"
     # Filter out runtime fields
     clean_def = {k: v for k, v in definition.items() if k not in RUNTIME_FIELDS}
     atomic_write_json(def_path, clean_def)
@@ -328,9 +328,9 @@ def deep_merge(base: dict, override: dict) -> dict:
     return result
 
 
-def load_flow_config() -> dict:
+def load_flux_config() -> dict:
     """Load .flux/config.json, merging with defaults for missing keys."""
-    config_path = get_flow_dir() / CONFIG_FILE
+    config_path = get_flux_dir() / CONFIG_FILE
     defaults = get_default_config()
     if not config_path.exists():
         return defaults
@@ -345,7 +345,7 @@ def load_flow_config() -> dict:
 
 def get_config(key: str, default=None):
     """Get nested config value like 'memory.enabled'."""
-    config = load_flow_config()
+    config = load_flux_config()
     for part in key.split("."):
         if not isinstance(config, dict):
             return default
@@ -357,7 +357,7 @@ def get_config(key: str, default=None):
 
 def set_config(key: str, value) -> dict:
     """Set nested config value and return updated config."""
-    config_path = get_flow_dir() / CONFIG_FILE
+    config_path = get_flux_dir() / CONFIG_FILE
     if config_path.exists():
         try:
             config = json.loads(config_path.read_text(encoding="utf-8"))
@@ -423,10 +423,10 @@ def run_rp_cli(
 
     Args:
         args: Command arguments to pass to rp-cli
-        timeout: Max seconds to wait. Default from FLOW_RP_TIMEOUT env or 1200s (20min).
+        timeout: Max seconds to wait. Default from FLUX_RP_TIMEOUT env or 1200s (20min).
     """
     if timeout is None:
-        timeout = int(os.environ.get("FLOW_RP_TIMEOUT", "1200"))
+        timeout = int(os.environ.get("FLUX_RP_TIMEOUT", "1200"))
     rp = require_rp_cli()
     cmd = [rp] + args
     try:
@@ -674,7 +674,7 @@ def normalize_epic(epic_data: dict) -> dict:
         epic_data["branch_name"] = None
     if "depends_on_epics" not in epic_data:
         epic_data["depends_on_epics"] = []
-    # Backend spec defaults (for orchestration products like flow-swarm)
+    # Backend spec defaults (for orchestration products like flux-swarm)
     if "default_impl" not in epic_data:
         epic_data["default_impl"] = None
     if "default_review" not in epic_data:
@@ -728,7 +728,7 @@ def normalize_task(task_data: dict) -> dict:
     # Migrate legacy 'deps' key to 'depends_on'
     if "depends_on" not in task_data:
         task_data["depends_on"] = task_data.get("deps", [])
-    # Backend spec defaults (for orchestration products like flow-swarm)
+    # Backend spec defaults (for orchestration products like flux-swarm)
     if "impl" not in task_data:
         task_data["impl"] = None
     if "review" not in task_data:
@@ -806,7 +806,7 @@ def workflow_progress(epic_data: dict) -> dict:
 
 def artifact_dir_for_epic(epic_id: str) -> Path:
     """Get artifact directory for an epic."""
-    return get_flow_dir() / ARTIFACTS_DIR / epic_id
+    return get_flux_dir() / ARTIFACTS_DIR / epic_id
 
 
 def artifact_path_for_phase(epic_id: str, phase: str) -> Path:
@@ -844,7 +844,7 @@ def current_flux_version() -> Optional[str]:
 
 def load_meta(use_json: bool = True) -> dict:
     """Load meta.json."""
-    meta_path = get_flow_dir() / META_FILE
+    meta_path = get_flux_dir() / META_FILE
     meta = load_json_or_exit(meta_path, "meta.json", use_json=use_json)
     if not isinstance(meta, dict):
         return {
@@ -869,7 +869,7 @@ def load_meta(use_json: bool = True) -> dict:
 
 def save_meta(meta: dict) -> None:
     """Write meta.json."""
-    atomic_write_json(get_flow_dir() / META_FILE, meta)
+    atomic_write_json(get_flux_dir() / META_FILE, meta)
 
 
 def get_active_objective(use_json: bool = True) -> Optional[str]:
@@ -952,8 +952,8 @@ def get_changed_files(base_branch: str) -> list[str]:
 
 def load_all_epics(use_json: bool = True) -> list[dict]:
     """Load all epics with defaults applied."""
-    flow_dir = get_flow_dir()
-    epics_dir = flow_dir / EPICS_DIR
+    flux_dir = get_flux_dir()
+    epics_dir = flux_dir / EPICS_DIR
     if not epics_dir.exists():
         return []
     epics = []
@@ -986,7 +986,7 @@ def choose_current_objective(current_actor: str, use_json: bool = True) -> Optio
 
     # Prefer epic with in-progress task assigned to current actor.
     for epic in open_epics:
-        tasks_dir = get_flow_dir() / TASKS_DIR
+        tasks_dir = get_flux_dir() / TASKS_DIR
         if not tasks_dir.exists():
             break
         for task_file in sorted(tasks_dir.glob(f"{epic['id']}.*.json")):
@@ -1010,7 +1010,7 @@ def choose_current_objective(current_actor: str, use_json: bool = True) -> Optio
 
 def tasks_for_epic(epic_id: str, use_json: bool = True) -> list[dict]:
     """Load all tasks for an epic."""
-    tasks_dir = get_flow_dir() / TASKS_DIR
+    tasks_dir = get_flux_dir() / TASKS_DIR
     if not tasks_dir.exists():
         return []
     tasks = []
@@ -1078,13 +1078,13 @@ def get_embedded_file_contents(file_paths: list[str]) -> tuple[str, dict]:
         file_paths: List of file paths (relative to repo root)
 
     Environment:
-        FLOW_CODEX_EMBED_MAX_BYTES: Total byte budget for embedded files.
+        FLUX_CODEX_EMBED_MAX_BYTES: Total byte budget for embedded files.
             Default 102400 (100KB). Set to 0 for unlimited.
     """
     repo_root = get_repo_root()
 
     # Get budget from env (default 100KB to prevent oversized prompts)
-    max_bytes_str = os.environ.get("FLOW_CODEX_EMBED_MAX_BYTES", "102400")
+    max_bytes_str = os.environ.get("FLUX_CODEX_EMBED_MAX_BYTES", "102400")
     try:
         max_total_bytes = int(max_bytes_str)
     except ValueError:
@@ -1587,7 +1587,7 @@ def run_codex_exec(
     """Run codex exec and return (stdout, thread_id, exit_code, stderr).
 
     If session_id provided, tries to resume. Falls back to new session if resume fails.
-    Model: FLOW_CODEX_MODEL env > parameter > default (gpt-5.2 + high reasoning).
+    Model: FLUX_CODEX_MODEL env > parameter > default (gpt-5.2 + high reasoning).
 
     Note: Prompt is passed via stdin (using '-') to avoid Windows command-line
     length limits (~8191 chars) and special character escaping issues. (GH-35)
@@ -1599,7 +1599,7 @@ def run_codex_exec(
     """
     codex = require_codex()
     # Model priority: env > parameter > default (gpt-5.2 + high reasoning = GPT 5.2 High)
-    effective_model = os.environ.get("FLOW_CODEX_MODEL") or model or "gpt-5.2"
+    effective_model = os.environ.get("FLUX_CODEX_MODEL") or model or "gpt-5.2"
 
     if session_id:
         # Try resume first - use stdin for prompt (model already set in original session)
@@ -2062,14 +2062,14 @@ def get_actor() -> str:
     """Determine current actor for soft-claim semantics.
 
     Priority:
-    1. FLOW_ACTOR env var
+    1. FLUX_ACTOR env var
     2. git config user.email
     3. git config user.name
     4. $USER env var
     5. "unknown"
     """
-    # 1. FLOW_ACTOR env var
-    if actor := os.environ.get("FLOW_ACTOR"):
+    # 1. FLUX_ACTOR env var
+    if actor := os.environ.get("FLUX_ACTOR"):
         return actor.strip()
 
     # 2. git config user.email (preferred)
@@ -2100,7 +2100,7 @@ def get_actor() -> str:
     return "unknown"
 
 
-def scan_max_epic_id(flow_dir: Path) -> int:
+def scan_max_epic_id(flux_dir: Path) -> int:
     """Scan .flux/epics/ and .flux/specs/ to find max epic number. Returns 0 if none exist.
 
     Handles legacy (fn-N.json), short suffix (fn-N-xxx.json), and slug (fn-N-slug.json) formats.
@@ -2110,7 +2110,7 @@ def scan_max_epic_id(flow_dir: Path) -> int:
     pattern = r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?\.(json|md)$"
 
     # Scan epics/*.json
-    epics_dir = flow_dir / EPICS_DIR
+    epics_dir = flux_dir / EPICS_DIR
     if epics_dir.exists():
         for epic_file in epics_dir.glob("fn-*.json"):
             match = re.match(pattern, epic_file.name)
@@ -2119,7 +2119,7 @@ def scan_max_epic_id(flow_dir: Path) -> int:
                 max_n = max(max_n, n)
 
     # Scan specs/*.md as safety net (catches orphaned specs)
-    specs_dir = flow_dir / SPECS_DIR
+    specs_dir = flux_dir / SPECS_DIR
     if specs_dir.exists():
         for spec_file in specs_dir.glob("fn-*.md"):
             match = re.match(pattern, spec_file.name)
@@ -2130,9 +2130,9 @@ def scan_max_epic_id(flow_dir: Path) -> int:
     return max_n
 
 
-def scan_max_task_id(flow_dir: Path, epic_id: str) -> int:
+def scan_max_task_id(flux_dir: Path, epic_id: str) -> int:
     """Scan .flux/tasks/ to find max task number for an epic. Returns 0 if none exist."""
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     if not tasks_dir.exists():
         return 0
 
@@ -2281,8 +2281,8 @@ def validate_task_spec_headings(content: str) -> list[str]:
 
 def clear_task_evidence(task_id: str) -> None:
     """Clear ## Evidence section contents but keep the heading with empty template."""
-    flow_dir = get_flow_dir()
-    spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+    flux_dir = get_flux_dir()
+    spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
     if not spec_path.exists():
         return
     content = spec_path.read_text(encoding="utf-8")
@@ -2300,8 +2300,8 @@ def clear_task_evidence(task_id: str) -> None:
 
 def find_dependents(task_id: str, same_epic: bool = False) -> list[str]:
     """Find tasks that depend on task_id (recursive). Returns list of dependent task IDs."""
-    flow_dir = get_flow_dir()
-    tasks_dir = flow_dir / TASKS_DIR
+    flux_dir = get_flux_dir()
+    tasks_dir = flux_dir / TASKS_DIR
     if not tasks_dir.exists():
         return []
 
@@ -2425,18 +2425,18 @@ def find_active_run(
 
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize or upgrade .flux/ directory structure (idempotent)."""
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
     actions = []
 
     # Create directories if missing (idempotent, never destroys existing)
     for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
-        dir_path = flow_dir / subdir
+        dir_path = flux_dir / subdir
         if not dir_path.exists():
             dir_path.mkdir(parents=True)
             actions.append(f"created {subdir}/")
 
     # Create meta.json if missing (never overwrite existing)
-    meta_path = flow_dir / META_FILE
+    meta_path = flux_dir / META_FILE
     if not meta_path.exists():
         meta = {
             "schema_version": SCHEMA_VERSION,
@@ -2464,7 +2464,7 @@ def cmd_init(args: argparse.Namespace) -> None:
             actions.append("upgraded meta.json (added missing keys)")
 
     # Config: create or upgrade (merge missing defaults)
-    config_path = flow_dir / CONFIG_FILE
+    config_path = flux_dir / CONFIG_FILE
     if not config_path.exists():
         atomic_write_json(config_path, get_default_config())
         actions.append("created config.json")
@@ -2489,7 +2489,7 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     if args.json:
         json_output(
-            {"success": True, "message": message, "path": str(flow_dir), "actions": actions}
+            {"success": True, "message": message, "path": str(flux_dir), "actions": actions}
         )
     else:
         print(message)
@@ -2497,13 +2497,13 @@ def cmd_init(args: argparse.Namespace) -> None:
 
 def cmd_detect(args: argparse.Namespace) -> None:
     """Check if .flux/ exists and is valid."""
-    flow_dir = get_flow_dir()
-    exists = flow_dir.exists()
+    flux_dir = get_flux_dir()
+    exists = flux_dir.exists()
     valid = False
     issues = []
 
     if exists:
-        meta_path = flow_dir / META_FILE
+        meta_path = flux_dir / META_FILE
         if not meta_path.exists():
             issues.append("meta.json missing")
         else:
@@ -2518,7 +2518,7 @@ def cmd_detect(args: argparse.Namespace) -> None:
 
         # Check required subdirectories
         for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
-            if not (flow_dir / subdir).exists():
+            if not (flux_dir / subdir).exists():
                 issues.append(f"{subdir}/ missing")
 
         valid = len(issues) == 0
@@ -2527,16 +2527,16 @@ def cmd_detect(args: argparse.Namespace) -> None:
         result = {
             "exists": exists,
             "valid": valid,
-            "path": str(flow_dir) if exists else None,
+            "path": str(flux_dir) if exists else None,
         }
         if issues:
             result["issues"] = issues
         json_output(result)
     else:
         if exists and valid:
-            print(f".flux/ exists and is valid at {flow_dir}")
+            print(f".flux/ exists and is valid at {flux_dir}")
         elif exists:
-            print(f".flux/ exists but has issues at {flow_dir}:")
+            print(f".flux/ exists but has issues at {flux_dir}:")
             for issue in issues:
                 print(f"  - {issue}")
         else:
@@ -2545,21 +2545,21 @@ def cmd_detect(args: argparse.Namespace) -> None:
 
 def cmd_status(args: argparse.Namespace) -> None:
     """Show .flux state and active Ralph runs."""
-    flow_dir = get_flow_dir()
-    flow_exists = flow_dir.exists()
+    flux_dir = get_flux_dir()
+    flux_exists = flux_dir.exists()
     current_actor = get_actor()
     current_objective = (
-        choose_current_objective(current_actor, use_json=args.json) if flow_exists else None
+        choose_current_objective(current_actor, use_json=args.json) if flux_exists else None
     )
-    prime_state = get_prime_state(use_json=args.json) if flow_exists else default_prime_state()
+    prime_state = get_prime_state(use_json=args.json) if flux_exists else default_prime_state()
 
     # Count epics and tasks by status
     epic_counts = {"open": 0, "done": 0}
     task_counts = {"todo": 0, "in_progress": 0, "blocked": 0, "done": 0}
 
-    if flow_exists:
-        epics_dir = flow_dir / EPICS_DIR
-        tasks_dir = flow_dir / TASKS_DIR
+    if flux_exists:
+        epics_dir = flux_dir / EPICS_DIR
+        tasks_dir = flux_dir / TASKS_DIR
 
         if epics_dir.exists():
             for epic_file in epics_dir.glob("fn-*.json"):
@@ -2592,7 +2592,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         json_output(
             {
                 "success": True,
-                "flow_exists": flow_exists,
+                "flux_exists": flux_exists,
                 "epics": epic_counts,
                 "tasks": task_counts,
                 "runs": [
@@ -2622,7 +2622,7 @@ def cmd_status(args: argparse.Namespace) -> None:
             }
         )
     else:
-        if not flow_exists:
+        if not flux_exists:
             print(".flux/ not initialized")
         else:
             total_epics = sum(epic_counts.values())
@@ -2664,7 +2664,7 @@ def cmd_status(args: argparse.Namespace) -> None:
             )
             if current_objective.get("next_action"):
                 print(f"Next: {current_objective['next_action']}")
-        if flow_exists:
+        if flux_exists:
             print()
             prime_line = f"Prime: {prime_state['status']}"
             if prime_state.get("last_run_at"):
@@ -2761,7 +2761,7 @@ def cmd_ralph_status(args: argparse.Namespace) -> None:
 
 def cmd_config_get(args: argparse.Namespace) -> None:
     """Get a config value."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -2780,7 +2780,7 @@ def cmd_config_get(args: argparse.Namespace) -> None:
 
 def cmd_config_set(args: argparse.Namespace) -> None:
     """Set a config value."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -2796,12 +2796,12 @@ def cmd_config_set(args: argparse.Namespace) -> None:
 
 def cmd_review_backend(args: argparse.Namespace) -> None:
     """Get review backend for skill conditionals. Returns ASK if not configured."""
-    # Priority: FLOW_REVIEW_BACKEND env > config > ASK
-    env_val = os.environ.get("FLOW_REVIEW_BACKEND", "").strip()
+    # Priority: FLUX_REVIEW_BACKEND env > config > ASK
+    env_val = os.environ.get("FLUX_REVIEW_BACKEND", "").strip()
     if env_val and env_val in ("rp", "codex", "none"):
         backend = env_val
         source = "env"
-    elif ensure_flow_exists():
+    elif ensure_flux_exists():
         cfg_val = get_config("review.backend")
         if cfg_val and cfg_val in ("rp", "codex", "none"):
             backend = cfg_val
@@ -2843,7 +2843,7 @@ Architectural choices with rationale. Why we chose X over Y.
 
 def cmd_memory_init(args: argparse.Namespace) -> None:
     """Initialize memory directory with templates."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -2862,8 +2862,8 @@ def cmd_memory_init(args: argparse.Namespace) -> None:
             print("Enable with: fluxctl config set memory.enabled true")
         sys.exit(1)
 
-    flow_dir = get_flow_dir()
-    memory_dir = flow_dir / MEMORY_DIR
+    flux_dir = get_flux_dir()
+    memory_dir = flux_dir / MEMORY_DIR
 
     # Create memory dir if missing
     memory_dir.mkdir(parents=True, exist_ok=True)
@@ -2896,7 +2896,7 @@ def cmd_memory_init(args: argparse.Namespace) -> None:
 
 def require_memory_enabled(args) -> Path:
     """Check memory is enabled and return memory dir. Exits on error."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -2914,7 +2914,7 @@ def require_memory_enabled(args) -> Path:
             print("Enable with: fluxctl config set memory.enabled true")
         sys.exit(1)
 
-    memory_dir = get_flow_dir() / MEMORY_DIR
+    memory_dir = get_flux_dir() / MEMORY_DIR
     required_files = ["pitfalls.md", "conventions.md", "decisions.md"]
     missing = [f for f in required_files if not (memory_dir / f).exists()]
     if missing:
@@ -3095,18 +3095,18 @@ def cmd_memory_search(args: argparse.Namespace) -> None:
 
 def cmd_epic_create(args: argparse.Namespace) -> None:
     """Create a new epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    meta_path = flow_dir / META_FILE
+    flux_dir = get_flux_dir()
+    meta_path = flux_dir / META_FILE
     load_json_or_exit(meta_path, "meta.json", use_json=args.json)
 
     # MU-1: Scan-based allocation for merge safety
     # Scan existing epics to determine next ID (don't rely on counter)
-    max_epic = scan_max_epic_id(flow_dir)
+    max_epic = scan_max_epic_id(flux_dir)
     epic_num = max_epic + 1
     # Use slugified title as suffix, fallback to random if empty/invalid
     slug = slugify(args.title)
@@ -3114,8 +3114,8 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
     epic_id = f"fn-{epic_num}-{suffix}"
 
     # Double-check no collision (shouldn't happen with scan-based allocation)
-    epic_json_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
-    epic_spec_path = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    epic_json_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
+    epic_spec_path = flux_dir / SPECS_DIR / f"{epic_id}.md"
     if epic_json_path.exists() or epic_spec_path.exists():
         error_exit(
             f"Refusing to overwrite existing epic {epic_id}. "
@@ -3151,17 +3151,17 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
         "plan_reviewed_at": None,
         "branch_name": args.branch if args.branch else epic_id,
         "depends_on_epics": [],
-        "spec_path": f"{FLOW_DIR}/{SPECS_DIR}/{epic_id}.md",
+        "spec_path": f"{FLUX_DIR}/{SPECS_DIR}/{epic_id}.md",
         "next_task": 1,
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
-    atomic_write_json(flow_dir / EPICS_DIR / f"{epic_id}.json", epic_data)
+    atomic_write_json(flux_dir / EPICS_DIR / f"{epic_id}.json", epic_data)
     set_active_objective(epic_id, use_json=args.json)
 
     # Create epic spec
     spec_content = create_epic_spec(epic_id, args.title)
-    atomic_write(flow_dir / SPECS_DIR / f"{epic_id}.md", spec_content)
+    atomic_write(flux_dir / SPECS_DIR / f"{epic_id}.md", spec_content)
 
     # NOTE: We no longer update meta["next_epic"] since scan-based allocation
     # is the source of truth. This reduces merge conflicts.
@@ -3183,7 +3183,7 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
 
 def cmd_task_create(args: argparse.Namespace) -> None:
     """Create a new task under an epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3193,20 +3193,20 @@ def cmd_task_create(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.epic}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.epic}.json"
 
     load_json_or_exit(epic_path, f"Epic {args.epic}", use_json=args.json)
 
     # MU-1: Scan-based allocation for merge safety
     # Scan existing tasks to determine next ID (don't rely on counter)
-    max_task = scan_max_task_id(flow_dir, args.epic)
+    max_task = scan_max_task_id(flux_dir, args.epic)
     task_num = max_task + 1
     task_id = f"{args.epic}.{task_num}"
 
     # Double-check no collision (shouldn't happen with scan-based allocation)
-    task_json_path = flow_dir / TASKS_DIR / f"{task_id}.json"
-    task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+    task_json_path = flux_dir / TASKS_DIR / f"{task_id}.json"
+    task_spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
     if task_json_path.exists() or task_spec_path.exists():
         error_exit(
             f"Refusing to overwrite existing task {task_id}. "
@@ -3249,15 +3249,15 @@ def cmd_task_create(args: argparse.Namespace) -> None:
         "assignee": None,
         "claimed_at": None,
         "claim_note": "",
-        "spec_path": f"{FLOW_DIR}/{TASKS_DIR}/{task_id}.md",
+        "spec_path": f"{FLUX_DIR}/{TASKS_DIR}/{task_id}.md",
         "created_at": now_iso(),
         "updated_at": now_iso(),
     }
-    atomic_write_json(flow_dir / TASKS_DIR / f"{task_id}.json", task_data)
+    atomic_write_json(flux_dir / TASKS_DIR / f"{task_id}.json", task_data)
 
     # Create task spec
     spec_content = create_task_spec(task_id, args.title, acceptance)
-    atomic_write(flow_dir / TASKS_DIR / f"{task_id}.md", spec_content)
+    atomic_write(flux_dir / TASKS_DIR / f"{task_id}.md", spec_content)
 
     # NOTE: We no longer update epic["next_task"] since scan-based allocation
     # is the source of truth. This reduces merge conflicts.
@@ -3279,7 +3279,7 @@ def cmd_task_create(args: argparse.Namespace) -> None:
 
 def cmd_dep_add(args: argparse.Namespace) -> None:
     """Add a dependency to a task."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3304,8 +3304,8 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    task_path = flow_dir / TASKS_DIR / f"{args.task}.json"
+    flux_dir = get_flux_dir()
+    task_path = flux_dir / TASKS_DIR / f"{args.task}.json"
 
     task_data = load_json_or_exit(task_path, f"Task {args.task}", use_json=args.json)
 
@@ -3332,7 +3332,7 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
 
 def cmd_task_set_deps(args: argparse.Namespace) -> None:
     """Set dependencies for a task (convenience wrapper for dep add)."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3352,8 +3352,8 @@ def cmd_task_set_deps(args: argparse.Namespace) -> None:
         error_exit("--deps cannot be empty", use_json=args.json)
 
     task_epic = epic_id_from_task(args.task_id)
-    flow_dir = get_flow_dir()
-    task_path = flow_dir / TASKS_DIR / f"{args.task_id}.json"
+    flux_dir = get_flux_dir()
+    task_path = flux_dir / TASKS_DIR / f"{args.task_id}.json"
 
     task_data = load_json_or_exit(
         task_path, f"Task {args.task_id}", use_json=args.json
@@ -3403,22 +3403,22 @@ def cmd_task_set_deps(args: argparse.Namespace) -> None:
 
 def cmd_show(args: argparse.Namespace) -> None:
     """Show epic or task details."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
 
     if is_epic_id(args.id):
-        epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+        epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
         epic_data = normalize_epic(
             load_json_or_exit(epic_path, f"Epic {args.id}", use_json=args.json)
         )
 
         # Get tasks for this epic (with merged runtime state)
         tasks = []
-        tasks_dir = flow_dir / TASKS_DIR
+        tasks_dir = flux_dir / TASKS_DIR
         if tasks_dir.exists():
             for task_file in sorted(tasks_dir.glob(f"{args.id}.*.json")):
                 task_id = task_file.stem
@@ -3488,13 +3488,13 @@ def cmd_show(args: argparse.Namespace) -> None:
 
 def cmd_epics(args: argparse.Namespace) -> None:
     """List all epics."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epics_dir = flow_dir / EPICS_DIR
+    flux_dir = get_flux_dir()
+    epics_dir = flux_dir / EPICS_DIR
 
     epics = []
     if epics_dir.exists():
@@ -3505,7 +3505,7 @@ def cmd_epics(args: argparse.Namespace) -> None:
                 )
             )
             # Count tasks (with merged runtime state)
-            tasks_dir = flow_dir / TASKS_DIR
+            tasks_dir = flux_dir / TASKS_DIR
             task_count = 0
             done_count = 0
             if tasks_dir.exists():
@@ -3551,13 +3551,13 @@ def cmd_epics(args: argparse.Namespace) -> None:
 
 def cmd_tasks(args: argparse.Namespace) -> None:
     """List tasks."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    tasks_dir = flow_dir / TASKS_DIR
+    flux_dir = get_flux_dir()
+    tasks_dir = flux_dir / TASKS_DIR
 
     tasks = []
     if tasks_dir.exists():
@@ -3613,14 +3613,14 @@ def cmd_tasks(args: argparse.Namespace) -> None:
 
 def cmd_list(args: argparse.Namespace) -> None:
     """List all epics and their tasks."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epics_dir = flow_dir / EPICS_DIR
-    tasks_dir = flow_dir / TASKS_DIR
+    flux_dir = get_flux_dir()
+    epics_dir = flux_dir / EPICS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
 
     # Load all epics
     epics = []
@@ -3720,15 +3720,15 @@ def cmd_list(args: argparse.Namespace) -> None:
 
 def cmd_cat(args: argparse.Namespace) -> None:
     """Print markdown spec for epic or task."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=False)
 
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
 
     if is_epic_id(args.id):
-        spec_path = flow_dir / SPECS_DIR / f"{args.id}.md"
+        spec_path = flux_dir / SPECS_DIR / f"{args.id}.md"
     elif is_task_id(args.id):
-        spec_path = flow_dir / TASKS_DIR / f"{args.id}.md"
+        spec_path = flux_dir / TASKS_DIR / f"{args.id}.md"
     else:
         error_exit(
             f"Invalid ID: {args.id}. Expected format: fn-N or fn-N-slug (epic), fn-N.M or fn-N-slug.M (task)",
@@ -3742,7 +3742,7 @@ def cmd_cat(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_plan(args: argparse.Namespace) -> None:
     """Set/overwrite entire epic spec from file."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3752,8 +3752,8 @@ def cmd_epic_set_plan(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     # Verify epic exists (will be loaded later for timestamp update)
     if not epic_path.exists():
@@ -3763,7 +3763,7 @@ def cmd_epic_set_plan(args: argparse.Namespace) -> None:
     content = read_file_or_stdin(args.file, "Input file", use_json=args.json)
 
     # Write spec
-    spec_path = flow_dir / SPECS_DIR / f"{args.id}.md"
+    spec_path = flux_dir / SPECS_DIR / f"{args.id}.md"
     atomic_write(spec_path, content)
 
     # Update epic timestamp
@@ -3785,7 +3785,7 @@ def cmd_epic_set_plan(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None:
     """Set plan review status for an epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3795,8 +3795,8 @@ def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
@@ -3824,7 +3824,7 @@ def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_completion_review_status(args: argparse.Namespace) -> None:
     """Set completion review status for an epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3834,8 +3834,8 @@ def cmd_epic_set_completion_review_status(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
@@ -3863,7 +3863,7 @@ def cmd_epic_set_completion_review_status(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_branch(args: argparse.Namespace) -> None:
     """Set epic branch name."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3873,8 +3873,8 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
@@ -3900,7 +3900,7 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_title(args: argparse.Namespace) -> None:
     """Rename epic by setting a new title (updates slug in ID, renames all files)."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -3912,8 +3912,8 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    old_epic_path = flow_dir / EPICS_DIR / f"{old_id}.json"
+    flux_dir = get_flux_dir()
+    old_epic_path = flux_dir / EPICS_DIR / f"{old_id}.json"
 
     if not old_epic_path.exists():
         error_exit(f"Epic {old_id} not found", use_json=args.json)
@@ -3934,7 +3934,7 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
 
     # Check if new ID already exists (and isn't same as old)
     if new_id != old_id:
-        new_epic_path = flow_dir / EPICS_DIR / f"{new_id}.json"
+        new_epic_path = flux_dir / EPICS_DIR / f"{new_id}.json"
         if new_epic_path.exists():
             error_exit(
                 f"Epic {new_id} already exists. Choose a different title.",
@@ -3943,9 +3943,9 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
 
     # Collect files to rename
     renames: list[tuple[Path, Path]] = []
-    specs_dir = flow_dir / SPECS_DIR
-    tasks_dir = flow_dir / TASKS_DIR
-    epics_dir = flow_dir / EPICS_DIR
+    specs_dir = flux_dir / SPECS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
+    epics_dir = flux_dir / EPICS_DIR
 
     # Epic JSON
     renames.append((old_epic_path, epics_dir / f"{new_id}.json"))
@@ -3975,9 +3975,9 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
                     renames.append((old_task_md, tasks_dir / f"{new_task_id}.md"))
 
     # Checkpoint file
-    old_checkpoint = flow_dir / f".checkpoint-{old_id}.json"
+    old_checkpoint = flux_dir / f".checkpoint-{old_id}.json"
     if old_checkpoint.exists():
-        renames.append((old_checkpoint, flow_dir / f".checkpoint-{new_id}.json"))
+        renames.append((old_checkpoint, flux_dir / f".checkpoint-{new_id}.json"))
 
     # Perform renames (collect errors but continue)
     rename_errors: list[str] = []
@@ -4008,7 +4008,7 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
     # Update epic JSON content
     epic_data["id"] = new_id
     epic_data["title"] = args.title
-    epic_data["spec_path"] = f"{FLOW_DIR}/{SPECS_DIR}/{new_id}.md"
+    epic_data["spec_path"] = f"{FLUX_DIR}/{SPECS_DIR}/{new_id}.md"
     if epic_data.get("scope_artifacts"):
         updated_artifacts = {}
         for phase in epic_data["scope_artifacts"]:
@@ -4030,7 +4030,7 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
             task_data = normalize_task(load_json(task_path))
             task_data["id"] = new_task_id
             task_data["epic"] = new_id
-            task_data["spec_path"] = f"{FLOW_DIR}/{TASKS_DIR}/{new_task_id}.md"
+            task_data["spec_path"] = f"{FLUX_DIR}/{TASKS_DIR}/{new_task_id}.md"
             # Update depends_on references within same epic
             if task_data.get("depends_on"):
                 task_data["depends_on"] = [
@@ -4095,7 +4095,7 @@ def cmd_epic_set_title(args: argparse.Namespace) -> None:
 
 def cmd_epic_add_dep(args: argparse.Namespace) -> None:
     """Add epic-level dependency."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4116,9 +4116,9 @@ def cmd_epic_add_dep(args: argparse.Namespace) -> None:
     if epic_id == dep_id:
         error_exit("Epic cannot depend on itself", use_json=args.json)
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
-    dep_path = flow_dir / EPICS_DIR / f"{dep_id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
+    dep_path = flux_dir / EPICS_DIR / f"{dep_id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {epic_id} not found", use_json=args.json)
@@ -4163,7 +4163,7 @@ def cmd_epic_add_dep(args: argparse.Namespace) -> None:
 
 def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
     """Remove epic-level dependency."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4177,8 +4177,8 @@ def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {epic_id} not found", use_json=args.json)
@@ -4221,7 +4221,7 @@ def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_backend(args: argparse.Namespace) -> None:
     """Set epic default backend specs for impl/review/sync."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4239,8 +4239,8 @@ def cmd_epic_set_backend(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
@@ -4280,7 +4280,7 @@ def cmd_epic_set_backend(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_context(args: argparse.Namespace) -> None:
     """Set epic workflow context fields."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     if not is_epic_id(args.id):
@@ -4301,7 +4301,7 @@ def cmd_epic_set_context(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    epic_path = get_flux_dir() / EPICS_DIR / f"{args.id}.json"
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
 
@@ -4340,7 +4340,7 @@ def cmd_epic_set_context(args: argparse.Namespace) -> None:
 
 def cmd_epic_set_workflow(args: argparse.Namespace) -> None:
     """Set epic workflow phase/progress fields."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     if not is_epic_id(args.id):
@@ -4366,7 +4366,7 @@ def cmd_epic_set_workflow(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    epic_path = get_flux_dir() / EPICS_DIR / f"{args.id}.json"
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
 
@@ -4429,7 +4429,7 @@ def cmd_epic_set_workflow(args: argparse.Namespace) -> None:
 
 def cmd_objective_current(args: argparse.Namespace) -> None:
     """Show the active objective."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     current_actor = get_actor()
@@ -4455,7 +4455,7 @@ def cmd_objective_current(args: argparse.Namespace) -> None:
 
 def cmd_objective_switch(args: argparse.Namespace) -> None:
     """Set the active objective explicitly."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     if not is_epic_id(args.id):
@@ -4464,7 +4464,7 @@ def cmd_objective_switch(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    epic_path = get_flux_dir() / EPICS_DIR / f"{args.id}.json"
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
 
@@ -4481,7 +4481,7 @@ def cmd_objective_switch(args: argparse.Namespace) -> None:
 
 def cmd_scope_status(args: argparse.Namespace) -> None:
     """Show scoped workflow status for an objective."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     current_actor = get_actor()
@@ -4492,7 +4492,7 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
                 f"Invalid epic ID: {args.objective}. Expected format: fn-N or fn-N-slug",
                 use_json=args.json,
             )
-        epic_path = get_flow_dir() / EPICS_DIR / f"{args.objective}.json"
+        epic_path = get_flux_dir() / EPICS_DIR / f"{args.objective}.json"
         if not epic_path.exists():
             error_exit(f"Epic {args.objective} not found", use_json=args.json)
         epic_data = normalize_epic(load_json_or_exit(epic_path, f"Epic {args.objective}", use_json=args.json))
@@ -4580,10 +4580,10 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
 
 def cmd_session_state(args: argparse.Namespace) -> None:
     """Summarize the current workflow routing state."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         result = {
             "state": "fresh_session_no_objective",
-            "flow_exists": False,
+            "flux_exists": False,
             "objective": None,
             "task": None,
             "prime": default_prime_state(),
@@ -4602,7 +4602,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         epic_data = choose_current_objective(current_actor, use_json=args.json)
         result = {
             "state": "needs_prime",
-            "flow_exists": True,
+            "flux_exists": True,
             "objective": None
             if not epic_data
             else {
@@ -4630,7 +4630,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     if not epic_data:
         result = {
             "state": "fresh_session_no_objective",
-            "flow_exists": True,
+            "flux_exists": True,
             "objective": None,
             "task": None,
             "prime": prime_state,
@@ -4679,7 +4679,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
 
     result = {
         "state": state,
-        "flow_exists": True,
+        "flux_exists": True,
         "prime": prime_state,
         "objective": {
             "id": epic_data["id"],
@@ -4702,7 +4702,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
 
 def cmd_artifact_write(args: argparse.Namespace) -> None:
     """Write a workflow artifact for an objective phase."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     if not is_epic_id(args.id):
@@ -4711,7 +4711,7 @@ def cmd_artifact_write(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    epic_path = get_flow_dir() / EPICS_DIR / f"{args.id}.json"
+    epic_path = get_flux_dir() / EPICS_DIR / f"{args.id}.json"
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
 
@@ -4750,7 +4750,7 @@ def cmd_artifact_write(args: argparse.Namespace) -> None:
 
 def cmd_artifact_read(args: argparse.Namespace) -> None:
     """Read a workflow artifact for an objective phase."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
 
     if not is_epic_id(args.id):
@@ -4782,9 +4782,9 @@ def cmd_artifact_read(args: argparse.Namespace) -> None:
 
 def cmd_prime_status(args: argparse.Namespace) -> None:
     """Show whether this repo has been primed yet."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         result = {
-            "flow_exists": False,
+            "flux_exists": False,
             "prime": default_prime_state(),
             "prime_required": True,
             "message": "Flux is not initialized yet.",
@@ -4804,7 +4804,7 @@ def cmd_prime_status(args: argparse.Namespace) -> None:
         else "Prime has completed for this repository."
     )
     result = {
-        "flow_exists": True,
+        "flux_exists": True,
         "prime": prime,
         "prime_required": prime_required,
         "message": message,
@@ -4818,7 +4818,7 @@ def cmd_prime_status(args: argparse.Namespace) -> None:
 
 def cmd_prime_mark(args: argparse.Namespace) -> None:
     """Internal helper to persist prime-state metadata."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json)
     prime = set_prime_state(
         args.status,
@@ -4833,7 +4833,7 @@ def cmd_prime_mark(args: argparse.Namespace) -> None:
 
 def cmd_task_set_backend(args: argparse.Namespace) -> None:
     """Set task backend specs for impl/review/sync."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4852,8 +4852,8 @@ def cmd_task_set_backend(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    task_path = flow_dir / TASKS_DIR / f"{task_id}.json"
+    flux_dir = get_flux_dir()
+    task_path = flux_dir / TASKS_DIR / f"{task_id}.json"
 
     if not task_path.exists():
         error_exit(f"Task {task_id} not found", use_json=args.json)
@@ -4890,7 +4890,7 @@ def cmd_task_set_backend(args: argparse.Namespace) -> None:
 
 def cmd_task_show_backend(args: argparse.Namespace) -> None:
     """Show effective backend specs for a task (task + epic levels only)."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4902,8 +4902,8 @@ def cmd_task_show_backend(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    task_path = flow_dir / TASKS_DIR / f"{task_id}.json"
+    flux_dir = get_flux_dir()
+    task_path = flux_dir / TASKS_DIR / f"{task_id}.json"
 
     if not task_path.exists():
         error_exit(f"Task {task_id} not found", use_json=args.json)
@@ -4916,7 +4916,7 @@ def cmd_task_show_backend(args: argparse.Namespace) -> None:
     epic_id = task_data.get("epic")
     epic_data = None
     if epic_id:
-        epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+        epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
         if epic_path.exists():
             epic_data = normalize_epic(
                 load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
@@ -4975,7 +4975,7 @@ def cmd_task_set_spec(args: argparse.Namespace) -> None:
     Full replacement mode: --file replaces entire spec content (like epic set-plan).
     Section patch mode: --description and/or --acceptance update specific sections.
     """
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -4995,9 +4995,9 @@ def cmd_task_set_spec(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    task_json_path = flow_dir / TASKS_DIR / f"{task_id}.json"
-    task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+    flux_dir = get_flux_dir()
+    task_json_path = flux_dir / TASKS_DIR / f"{task_id}.json"
+    task_spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
 
     # Verify task exists
     if not task_json_path.exists():
@@ -5065,7 +5065,7 @@ def cmd_task_set_spec(args: argparse.Namespace) -> None:
 
 def cmd_task_reset(args: argparse.Namespace) -> None:
     """Reset task status to todo."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -5077,8 +5077,8 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    task_json_path = flow_dir / TASKS_DIR / f"{task_id}.json"
+    flux_dir = get_flux_dir()
+    task_json_path = flux_dir / TASKS_DIR / f"{task_id}.json"
 
     if not task_json_path.exists():
         error_exit(f"Task {task_id} not found", use_json=args.json)
@@ -5088,7 +5088,7 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
 
     # Load epic to check if closed
     epic_id = epic_id_from_task(task_id)
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
     if epic_path.exists():
         epic_data = load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
         if epic_data.get("status") == "done":
@@ -5137,7 +5137,7 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
     if args.cascade:
         dependents = find_dependents(task_id, same_epic=True)
         for dep_id in dependents:
-            dep_path = flow_dir / TASKS_DIR / f"{dep_id}.json"
+            dep_path = flux_dir / TASKS_DIR / f"{dep_id}.json"
             if not dep_path.exists():
                 continue
 
@@ -5177,7 +5177,7 @@ def _task_set_section(
     task_id: str, section: str, file_path: str, use_json: bool
 ) -> None:
     """Helper to set a task spec section."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=use_json
         )
@@ -5187,9 +5187,9 @@ def _task_set_section(
             f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=use_json
         )
 
-    flow_dir = get_flow_dir()
-    task_json_path = flow_dir / TASKS_DIR / f"{task_id}.json"
-    task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+    flux_dir = get_flux_dir()
+    task_json_path = flux_dir / TASKS_DIR / f"{task_id}.json"
+    task_spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
 
     # Verify task exists
     if not task_json_path.exists():
@@ -5231,7 +5231,7 @@ def _task_set_section(
 
 def cmd_ready(args: argparse.Namespace) -> None:
     """List ready tasks for an epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -5241,8 +5241,8 @@ def cmd_ready(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.epic}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.epic}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.epic} not found", use_json=args.json)
@@ -5251,7 +5251,7 @@ def cmd_ready(args: argparse.Namespace) -> None:
     current_actor = get_actor()
 
     # Get all tasks for epic (with merged runtime state)
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     if not tasks_dir.exists():
         error_exit(
             f"{TASKS_DIR}/ missing. Run 'fluxctl init' or fix repo state.",
@@ -5360,12 +5360,12 @@ def cmd_ready(args: argparse.Namespace) -> None:
 
 def cmd_next(args: argparse.Namespace) -> None:
     """Select the next plan/work unit."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
 
     # Resolve epics list
     epic_ids: list[str] = []
@@ -5383,7 +5383,7 @@ def cmd_next(args: argparse.Namespace) -> None:
                 error_exit(f"Invalid epic ID in epics file: {e}", use_json=args.json)
             epic_ids.append(e)
     else:
-        epics_dir = flow_dir / EPICS_DIR
+        epics_dir = flux_dir / EPICS_DIR
         if epics_dir.exists():
             for epic_file in sorted(epics_dir.glob("fn-*.json")):
                 # Match: fn-N.json, fn-N-xxx.json (short), fn-N-slug.json (long)
@@ -5404,7 +5404,7 @@ def cmd_next(args: argparse.Namespace) -> None:
     blocked_epics: dict[str, list[str]] = {}
 
     for epic_id in epic_ids:
-        epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+        epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
         if not epic_path.exists():
             if args.epics_file:
                 error_exit(f"Epic {epic_id} not found", use_json=args.json)
@@ -5421,7 +5421,7 @@ def cmd_next(args: argparse.Namespace) -> None:
         for dep in epic_data.get("depends_on_epics", []) or []:
             if dep == epic_id:
                 continue
-            dep_path = flow_dir / EPICS_DIR / f"{dep}.json"
+            dep_path = flux_dir / EPICS_DIR / f"{dep}.json"
             if not dep_path.exists():
                 blocked_by.append(dep)
                 continue
@@ -5448,7 +5448,7 @@ def cmd_next(args: argparse.Namespace) -> None:
                 print(f"plan {epic_id} needs_plan_review")
             return
 
-        tasks_dir = flow_dir / TASKS_DIR
+        tasks_dir = flux_dir / TASKS_DIR
         if not tasks_dir.exists():
             error_exit(
                 f"{TASKS_DIR}/ missing. Run 'fluxctl init' or fix repo state.",
@@ -5557,7 +5557,7 @@ def cmd_next(args: argparse.Namespace) -> None:
 
 def cmd_start(args: argparse.Namespace) -> None:
     """Start a task (set status to in_progress)."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -5666,7 +5666,7 @@ def cmd_start(args: argparse.Namespace) -> None:
 
 def cmd_done(args: argparse.Namespace) -> None:
     """Complete a task with summary and evidence."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -5676,8 +5676,8 @@ def cmd_done(args: argparse.Namespace) -> None:
             f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    task_spec_path = flow_dir / TASKS_DIR / f"{args.id}.md"
+    flux_dir = get_flux_dir()
+    task_spec_path = flux_dir / TASKS_DIR / f"{args.id}.md"
 
     # Load task with merged runtime state (fail early before any writes)
     task_data = load_task_with_state(args.id, use_json=args.json)
@@ -5777,7 +5777,7 @@ def cmd_done(args: argparse.Namespace) -> None:
     save_task_runtime(args.id, {"status": "done", "evidence": evidence})
     epic_id = epic_id_from_task(args.id)
     set_active_objective(epic_id, use_json=args.json)
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
     if epic_path.exists():
         epic_data = normalize_epic(
             load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
@@ -5810,7 +5810,7 @@ def cmd_done(args: argparse.Namespace) -> None:
 
 def cmd_block(args: argparse.Namespace) -> None:
     """Block a task with a reason."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -5820,8 +5820,8 @@ def cmd_block(args: argparse.Namespace) -> None:
             f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    task_spec_path = flow_dir / TASKS_DIR / f"{args.id}.md"
+    flux_dir = get_flux_dir()
+    task_spec_path = flux_dir / TASKS_DIR / f"{args.id}.md"
 
     # Load task with merged runtime state
     task_data = load_task_with_state(args.id, use_json=args.json)
@@ -6318,7 +6318,7 @@ def cmd_agentmap(args: argparse.Namespace) -> None:
 
     output_path: Optional[Path] = None
     if args.write:
-        output_path = get_flow_dir() / "context" / "agentmap.yaml"
+        output_path = get_flux_dir() / "context" / "agentmap.yaml"
     elif args.out:
         output_path = Path(args.out).expanduser()
         if not output_path.is_absolute():
@@ -6352,13 +6352,13 @@ def cmd_agentmap(args: argparse.Namespace) -> None:
 
 def cmd_migrate_state(args: argparse.Namespace) -> None:
     """Migrate runtime state from definition files to state-dir."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    tasks_dir = flow_dir / TASKS_DIR
+    flux_dir = get_flux_dir()
+    tasks_dir = flux_dir / TASKS_DIR
     store = get_state_store()
 
     migrated = []
@@ -6421,7 +6421,7 @@ def cmd_migrate_state(args: argparse.Namespace) -> None:
 
 def cmd_epic_close(args: argparse.Namespace) -> None:
     """Close an epic (all tasks must be done)."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -6431,14 +6431,14 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
             f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{args.id}.json"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{args.id}.json"
 
     if not epic_path.exists():
         error_exit(f"Epic {args.id} not found", use_json=args.json)
 
     # Check all tasks are done (with merged runtime state)
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     if not tasks_dir.exists():
         error_exit(
             f"{TASKS_DIR}/ missing. Run 'fluxctl init' or fix repo state.",
@@ -6475,12 +6475,12 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
         print(f"Epic {args.id} closed")
 
 
-def validate_flow_root(flow_dir: Path) -> list[str]:
+def validate_flux_root(flux_dir: Path) -> list[str]:
     """Validate .flux/ root invariants. Returns list of errors."""
     errors = []
 
     # Check meta.json exists and is valid
-    meta_path = flow_dir / META_FILE
+    meta_path = flux_dir / META_FILE
     if not meta_path.exists():
         errors.append(f"meta.json missing: {meta_path}")
     else:
@@ -6498,20 +6498,20 @@ def validate_flow_root(flow_dir: Path) -> list[str]:
 
     # Check required subdirectories exist
     for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
-        if not (flow_dir / subdir).exists():
+        if not (flux_dir / subdir).exists():
             errors.append(f"Required directory missing: {subdir}/")
 
     return errors
 
 
 def validate_epic(
-    flow_dir: Path, epic_id: str, use_json: bool = True
+    flux_dir: Path, epic_id: str, use_json: bool = True
 ) -> tuple[list[str], list[str], int]:
     """Validate a single epic. Returns (errors, warnings, task_count)."""
     errors = []
     warnings = []
 
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
 
     if not epic_path.exists():
         errors.append(f"Epic {epic_id} not found")
@@ -6522,7 +6522,7 @@ def validate_epic(
     )
 
     # Check epic spec exists
-    epic_spec = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    epic_spec = flux_dir / SPECS_DIR / f"{epic_id}.md"
     if not epic_spec.exists():
         errors.append(f"Epic spec missing: {epic_spec}")
 
@@ -6540,12 +6540,12 @@ def validate_epic(
             if dep == epic_id:
                 errors.append(f"Epic {epic_id}: depends_on_epics cannot include itself")
                 continue
-            dep_path = flow_dir / EPICS_DIR / f"{dep}.json"
+            dep_path = flux_dir / EPICS_DIR / f"{dep}.json"
             if not dep_path.exists():
                 errors.append(f"Epic {epic_id}: depends_on_epics missing epic {dep}")
 
     # Get all tasks (with merged runtime state for accurate status)
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     tasks = {}
     if tasks_dir.exists():
         for task_file in tasks_dir.glob(f"{epic_id}.*.json"):
@@ -6566,7 +6566,7 @@ def validate_epic(
             errors.append(f"Task {task_id}: invalid status '{status}'")
 
         # Check task spec exists
-        task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+        task_spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
         if not task_spec_path.exists():
             errors.append(f"Task spec missing: {task_spec_path}")
         else:
@@ -7121,7 +7121,7 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
 
     if not standalone:
         # Task-specific review requires .flux/
-        if not ensure_flow_exists():
+        if not ensure_flux_exists():
             error_exit(".flux/ does not exist", use_json=args.json)
 
         # Validate task ID
@@ -7129,8 +7129,8 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
             error_exit(f"Invalid task ID: {task_id}", use_json=args.json)
 
         # Load task spec
-        flow_dir = get_flow_dir()
-        task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
+        flux_dir = get_flux_dir()
+        task_spec_path = flux_dir / TASKS_DIR / f"{task_id}.md"
 
         if not task_spec_path.exists():
             error_exit(f"Task spec not found: {task_spec_path}", use_json=args.json)
@@ -7345,7 +7345,7 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
 
 def cmd_codex_plan_review(args: argparse.Namespace) -> None:
     """Run plan review via codex exec."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist", use_json=args.json)
 
     epic_id = args.epic
@@ -7394,8 +7394,8 @@ def cmd_codex_plan_review(args: argparse.Namespace) -> None:
         )
 
     # Load epic spec
-    flow_dir = get_flow_dir()
-    epic_spec_path = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    flux_dir = get_flux_dir()
+    epic_spec_path = flux_dir / SPECS_DIR / f"{epic_id}.md"
 
     if not epic_spec_path.exists():
         error_exit(f"Epic spec not found: {epic_spec_path}", use_json=args.json)
@@ -7403,7 +7403,7 @@ def cmd_codex_plan_review(args: argparse.Namespace) -> None:
     epic_spec = epic_spec_path.read_text(encoding="utf-8")
 
     # Load task specs for this epic
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     task_specs_parts = []
     for task_file in sorted(tasks_dir.glob(f"{epic_id}.*.md")):
         task_id = task_file.stem
@@ -7711,7 +7711,7 @@ def cmd_codex_completion_review(args: argparse.Namespace) -> None:
     Verifies that all epic requirements are implemented before closing.
     Two-phase approach: extract requirements, then verify coverage.
     """
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(".flux/ does not exist", use_json=args.json)
 
     epic_id = args.epic
@@ -7720,17 +7720,17 @@ def cmd_codex_completion_review(args: argparse.Namespace) -> None:
     if not is_epic_id(epic_id):
         error_exit(f"Invalid epic ID: {epic_id}", use_json=args.json)
 
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
 
     # Load epic spec
-    epic_spec_path = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    epic_spec_path = flux_dir / SPECS_DIR / f"{epic_id}.md"
     if not epic_spec_path.exists():
         error_exit(f"Epic spec not found: {epic_spec_path}", use_json=args.json)
 
     epic_spec = epic_spec_path.read_text(encoding="utf-8")
 
     # Load task specs for this epic
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     task_specs_parts = []
     for task_file in sorted(tasks_dir.glob(f"{epic_id}.*.md")):
         task_id = task_file.stem
@@ -7932,7 +7932,7 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
     Use before plan-review or other long operations to enable recovery
     if context compaction occurs.
     """
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -7944,9 +7944,9 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
-    spec_path = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    flux_dir = get_flux_dir()
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
+    spec_path = flux_dir / SPECS_DIR / f"{epic_id}.md"
 
     if not epic_path.exists():
         error_exit(f"Epic {epic_id} not found", use_json=args.json)
@@ -7960,7 +7960,7 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
         epic_spec = spec_path.read_text(encoding="utf-8")
 
     # Load all tasks for this epic (including runtime state)
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     store = get_state_store()
     tasks = []
     if tasks_dir.exists():
@@ -7995,7 +7995,7 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
     }
 
     # Write checkpoint
-    checkpoint_path = flow_dir / f".checkpoint-{epic_id}.json"
+    checkpoint_path = flux_dir / f".checkpoint-{epic_id}.json"
     atomic_write_json(checkpoint_path, checkpoint)
 
     if args.json:
@@ -8015,7 +8015,7 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
     Reads .flux/.checkpoint-fn-N.json and overwrites current state.
     Use to recover after context compaction or to rollback changes.
     """
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -8027,8 +8027,8 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    checkpoint_path = flow_dir / f".checkpoint-{epic_id}.json"
+    flux_dir = get_flux_dir()
+    checkpoint_path = flux_dir / f".checkpoint-{epic_id}.json"
 
     if not checkpoint_path.exists():
         error_exit(f"No checkpoint found for {epic_id}", use_json=args.json)
@@ -8043,8 +8043,8 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
         error_exit("Invalid checkpoint format", use_json=args.json)
 
     # Restore epic
-    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
-    spec_path = flow_dir / SPECS_DIR / f"{epic_id}.md"
+    epic_path = flux_dir / EPICS_DIR / f"{epic_id}.json"
+    spec_path = flux_dir / SPECS_DIR / f"{epic_id}.md"
 
     epic_data = checkpoint["epic"]["data"]
     epic_data["updated_at"] = now_iso()
@@ -8054,7 +8054,7 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
         atomic_write(spec_path, checkpoint["epic"]["spec"])
 
     # Restore tasks (including runtime state)
-    tasks_dir = flow_dir / TASKS_DIR
+    tasks_dir = flux_dir / TASKS_DIR
     store = get_state_store()
     restored_tasks = []
     for task in checkpoint["tasks"]:
@@ -8095,7 +8095,7 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
 
 def cmd_checkpoint_delete(args: argparse.Namespace) -> None:
     """Delete checkpoint file for an epic."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -8107,8 +8107,8 @@ def cmd_checkpoint_delete(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    flow_dir = get_flow_dir()
-    checkpoint_path = flow_dir / f".checkpoint-{epic_id}.json"
+    flux_dir = get_flux_dir()
+    checkpoint_path = flux_dir / f".checkpoint-{epic_id}.json"
 
     if not checkpoint_path.exists():
         if args.json:
@@ -8135,7 +8135,7 @@ def cmd_checkpoint_delete(args: argparse.Namespace) -> None:
 
 def cmd_validate(args: argparse.Namespace) -> None:
     """Validate epic structure or all epics."""
-    if not ensure_flow_exists():
+    if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
         )
@@ -8144,14 +8144,14 @@ def cmd_validate(args: argparse.Namespace) -> None:
     if not args.epic and not getattr(args, "all", False):
         error_exit("Must specify --epic or --all", use_json=args.json)
 
-    flow_dir = get_flow_dir()
+    flux_dir = get_flux_dir()
 
     # MU-3: Validate all mode
     if getattr(args, "all", False):
         # First validate .flux/ root invariants
-        root_errors = validate_flow_root(flow_dir)
+        root_errors = validate_flux_root(flux_dir)
 
-        epics_dir = flow_dir / EPICS_DIR
+        epics_dir = flux_dir / EPICS_DIR
 
         # Find all epics (if epics dir exists)
         epic_ids = []
@@ -8184,7 +8184,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
         all_warnings = []
 
         # Detect orphaned specs (spec exists but no epic JSON)
-        specs_dir = flow_dir / SPECS_DIR
+        specs_dir = flux_dir / SPECS_DIR
         if specs_dir.exists():
             pattern = r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?\.md$"
             for spec_file in specs_dir.glob("fn-*.md"):
@@ -8200,7 +8200,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
 
         for epic_id in epic_ids:
             errors, warnings, task_count = validate_epic(
-                flow_dir, epic_id, use_json=args.json
+                flux_dir, epic_id, use_json=args.json
             )
             all_errors.extend(errors)
             all_warnings.extend(warnings)
@@ -8256,7 +8256,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
         )
 
     errors, warnings, task_count = validate_epic(
-        flow_dir, args.epic, use_json=args.json
+        flux_dir, args.epic, use_json=args.json
     )
     valid = len(errors) == 0
 

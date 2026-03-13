@@ -2,7 +2,7 @@
 """
 Ralph Guard - Hook script for enforcing Ralph workflow rules.
 
-Only runs when FLOW_RALPH=1 is set. Exits silently otherwise to avoid
+Only runs when FLUX_RALPH=1 is set. Exits silently otherwise to avoid
 polluting context for non-Ralph users.
 
 Enforces:
@@ -585,12 +585,12 @@ def main():
     # Debug logging - always write to see if hook is being called
     debug_file = Path("/tmp/ralph-guard-debug.log")
     with debug_file.open("a") as f:
-        f.write(f"[{os.environ.get('FLOW_RALPH', 'unset')}] Hook called\n")
+        f.write(f"[{os.environ.get('FLUX_RALPH', 'unset')}] Hook called\n")
 
     # Early exit if not in Ralph mode - no output, no context pollution
-    if os.environ.get("FLOW_RALPH") != "1":
+    if os.environ.get("FLUX_RALPH") != "1":
         with debug_file.open("a") as f:
-            f.write("  -> Exiting: FLOW_RALPH not set to 1\n")
+            f.write("  -> Exiting: FLUX_RALPH not set to 1\n")
         sys.exit(0)
 
     # Read input

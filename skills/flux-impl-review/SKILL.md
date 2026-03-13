@@ -24,7 +24,7 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 **Priority** (first match wins):
 1. `--review=rp|codex|export|none` argument
-2. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
+2. `FLUX_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
 3. `.flux/config.json` → `review.backend`
 4. **Error** - no auto-detection
 
