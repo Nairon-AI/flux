@@ -2,15 +2,34 @@
 
 Execute these phases in order. Reference [pillars.md](pillars.md) for scoring criteria and [remediation.md](remediation.md) for fix templates.
 
-**Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts run as sonnet for quality.
+**Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts use the model configured during `/flux:setup`.
+
+---
+
+## Phase 0: Read Scout Model Config
+
+Before launching scouts, read the configured scout model:
+
+```bash
+SCOUT_MODEL=$(.flux/bin/fluxctl config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
+```
+
+If `SCOUT_MODEL` is empty, default to `claude-sonnet-4-6`.
+
+Determine the scout backend:
+- If `SCOUT_MODEL` starts with `claude-` → use **Claude backend** (Task tool with agent definitions)
+- If `SCOUT_MODEL` starts with `gpt-` or `o1` or `o3` or `o4` → use **Codex backend** (`codex exec` CLI)
+- Otherwise → use **Claude backend** as fallback
 
 ---
 
 ## Phase 1: Parallel Assessment
 
-Run all 9 scouts in parallel using the Task tool:
+### Claude backend (default)
 
-### Agent Readiness Scouts (Pillars 1-5)
+If using Claude backend, run all 9 scouts in parallel using the Task tool:
+
+#### Agent Readiness Scouts (Pillars 1-5)
 
 ```
 Task flux:tooling-scout    # linters, formatters, pre-commit, type checking
@@ -21,13 +40,44 @@ Task flux:build-scout      # build system, scripts, CI
 Task flux:docs-gap-scout   # README, ADRs, architecture docs
 ```
 
-### Production Readiness Scouts (Pillars 6-8)
+#### Production Readiness Scouts (Pillars 6-8)
 
 ```
 Task flux:observability-scout  # logging, tracing, metrics, health
 Task flux:security-scout       # branch protection, CODEOWNERS, secrets
 Task flux:workflow-scout       # CI/CD, templates, automation
 ```
+
+### Codex backend
+
+If using Codex backend, launch all 9 scouts in parallel using `codex exec` via Bash. Each scout reads its prompt from the agent definition file and writes output to a temp file.
+
+Run all 9 in parallel using background Bash commands:
+
+```bash
+# Read each scout's prompt from agents/*.md (strip the YAML frontmatter)
+# Launch all 9 concurrently, each writing to a temp output file
+
+SCOUT_MODEL="<configured model>"  # e.g. gpt-5.3-codex-spark
+
+for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout docs-gap-scout observability-scout security-scout workflow-scout; do
+  PROMPT=$(sed '1,/^---$/{ /^---$/!d; /^---$/d; }' "agents/${scout}.md" | sed '/^---$/d')
+  codex exec -m "$SCOUT_MODEL" --sandbox read-only --ephemeral -o "/tmp/flux-scout-${scout}.md" "$PROMPT" &
+done
+wait
+```
+
+After all complete, read each output file:
+
+```bash
+for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout docs-gap-scout observability-scout security-scout workflow-scout; do
+  echo "=== ${scout} ==="
+  cat "/tmp/flux-scout-${scout}.md" 2>/dev/null || echo "(no output)"
+  echo ""
+done
+```
+
+### Common
 
 **Important**: Launch all 9 scouts in parallel for speed (~15-20 seconds total).
 
