@@ -1191,16 +1191,9 @@ Only process answers for questions that were asked (config values that were unse
      ```
   2. Install Linear CLI skill (project-local):
      ```bash
-     mkdir -p ".claude/skills/linear-cli"
-     curl -fsSL https://skills.sh/schpet/linear-cli/linear-cli/SKILL.md -o ".claude/skills/linear-cli/SKILL.md" 2>/dev/null || {
-       echo "curl failed, trying git..."
-       TMP_LINEAR=$(mktemp -d)
-       git clone --depth 1 https://github.com/schpet/linear-cli.git "$TMP_LINEAR" 2>/dev/null
-       cp "$TMP_LINEAR/linear-cli/SKILL.md" ".claude/skills/linear-cli/SKILL.md" 2>/dev/null || true
-       rm -rf "$TMP_LINEAR"
-     }
+     npx skills add https://github.com/schpet/linear-cli --skill linear-cli
      ```
-  3. Verify install: check `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: https://skills.sh/schpet/linear-cli/linear-cli`
+  3. Verify install: check `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: npx skills add https://github.com/schpet/linear-cli --skill linear-cli`
   4. Check Linear CLI is installed:
      ```bash
      which linear >/dev/null 2>&1 && echo "LINEAR_CLI_OK=1" || echo "LINEAR_CLI_OK=0"
