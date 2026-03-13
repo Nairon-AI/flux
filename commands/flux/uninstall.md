@@ -17,47 +17,58 @@ If cancel → stop.
 - "Yes, keep tasks" → partial uninstall
 - "No, remove everything" → full uninstall
 
-## Generate removal instructions
+## Execute cleanup
 
-Based on answers, generate the appropriate commands and print them for the user to run manually.
+The agent executes all cleanup directly — do not ask the user to run commands manually.
+
+### Remove project artifacts
 
 **If keeping tasks:**
-```
-To complete uninstall, run these commands manually:
-
+```bash
 rm -rf .flux/bin .flux/usage.md
 ```
 
 **If removing everything:**
-```
-To complete uninstall, run these commands manually:
-
-rm -rf .flow
-```
-
-**Always check for Ralph and add if exists:**
 ```bash
-# Check if Ralph is installed
+rm -rf .flux
+```
+
+**Always check for and remove Ralph if it exists:**
+```bash
 if [[ -d scripts/ralph ]]; then
-  echo "rm -rf scripts/ralph"
+  rm -rf scripts/ralph
 fi
 ```
 
-## Clean up docs (AI can do this)
+**Remove project-local MCP config and skills:**
+```bash
+rm -f .mcp.json
+rm -rf .claude/skills/
+```
 
-For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). This is safe for the AI to execute.
+### Clean up docs
+
+For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive).
+
+### Remove plugin cache
+```bash
+rm -rf ~/.claude/plugins/cache/nairon-flux
+```
 
 ## Report
 
 ```
-Flux uninstall prepared.
+Flux uninstalled.
 
 Cleaned up:
+- Flux project artifacts
+- Project-local MCP config (.mcp.json)
+- Project-local skills (.claude/skills/)
 - Flux sections from docs (if existed)
+- Plugin cache
 
-Run these commands manually to complete removal:
-<commands from above>
+To finish, run in your agent UI:
+  /plugin uninstall flux@nairon-flux
 
-Why manual? Destructive commands like rm -rf should have human hands on the keyboard.
-If you use DCG (Destructive Command Guard), it will block these commands from AI agents - this is intentional protection.
+Then restart with --resume.
 ```

@@ -123,7 +123,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
    ```
    /plugin uninstall flux@nairon-flux
    ```
-4. Remove project artifacts:
+4. Remove project artifacts (the agent does this, not the user):
    ```bash
    rm -rf .flux .mcp.json .claude/skills/
    ```
