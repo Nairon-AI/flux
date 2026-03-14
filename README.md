@@ -186,7 +186,7 @@ flowchart TD
         BrowserQA["Browser QA"]
         LearningCapture["Learning Capture"]
         DesloppifyScan["Desloppify Scan"]
-        FrustrationSignal{"3+ fix\niterations?"}
+        FrustrationSignal{"friction\nscore >= 3?"}
 
         SpecCompliance --> Adversarial
         Adversarial --> SecurityScan
@@ -232,7 +232,7 @@ flowchart TD
 | **Reflect** | *Between epics:* capture session learnings to brain vault |
 | **Ruminate** | *Between epics:* mine past conversations for missed patterns |
 | **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles |
-| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested when 3+ review fix iterations occur. |
+| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested when friction score >= 3 (weighted: review iterations + security findings + QA failures + repeated pitfalls). |
 
 ---
 
@@ -283,7 +283,7 @@ These are maintenance skills designed to run between epics, not during active de
 
 `/flux:improve` analyzes your sessions and recommends tools mapped to your specific friction patterns — from MCP servers to CLI tools to workflow changes. Recommendations are community-driven via [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
 
-Flux also auto-detects frustration during epic review — when 3+ NEEDS_WORK fix iterations occur, it suggests running `/flux:improve` to find tools and patterns that could catch those issues earlier.
+Flux also auto-detects frustration during epic review using a multi-signal friction score — review iterations, security findings, browser QA failures, and repeated pitfall categories (2x weight) combine into a weighted score. When the score hits 3+, Flux suggests running `/flux:improve` to find tools and patterns that could catch those issues earlier.
 
 ### Desloppify
 
@@ -370,43 +370,43 @@ fluxctl config get tracker.provider   # Check current tracker config
 
 **Core SDLC**
 
-| Command | What it does |
-|---------|-------------|
-| `/flux:setup` | Initialize Flux in your project |
-| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
-| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) |
-| `/flux:plan <idea>` | Create tasks only (skip interview) |
-| `/flux:work <task>` | Execute task with context reload |
-| `/flux:sync <epic>` | Sync specs after drift |
-| `/flux:impl-review` | Lightweight per-task review (single model) |
-| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) |
-| `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) |
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:setup` | Initialize Flux in your project | 1. First time using Flux — scaffolds `.flux/`, configures preferences, installs tools |
+| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) | 2. After setup — Flux detects unprimed repos and prompts you. Runs once per repo |
+| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux interviews you, creates an epic with sized tasks |
+| `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — skip the Double Diamond interview, go straight to task creation |
+| `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
+| `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |
+| `/flux:sync <epic>` | Sync specs after drift | Anytime — you realized task 3 invalidated task 5's approach, sync updates downstream specs |
+| `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) | 7. After epic review flags a low score, or manually when you want to improve code quality |
 
 **Security**
 
-| Command | What it does |
-|---------|-------------|
-| `/flux:threat-model` | STRIDE-based threat model |
-| `/flux:security-scan` | Scan for vulnerabilities |
-| `/flux:security-review` | Full security review |
-| `/flux:vuln-validate` | Validate findings with PoC |
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:security-scan` | Scan for vulnerabilities | Auto-triggered inside epic review when changed files touch auth/API/secrets/permissions. Also callable standalone on any PR |
+| `/flux:threat-model` | STRIDE-based threat model | Before building security-sensitive features — generates threat model to inform your design |
+| `/flux:security-review` | Full security review | Before shipping to production — comprehensive repo-wide security audit |
+| `/flux:vuln-validate` | Validate findings with PoC | After a scan finds issues — generates proof-of-concept exploits to confirm real vs false positive |
 
 **Maintenance (between epics)**
 
-| Command | What it does |
-|---------|-------------|
-| `/flux:reflect` | Capture session learnings to brain vault |
-| `/flux:ruminate` | Mine past conversations for missed patterns |
-| `/flux:meditate` | Prune brain vault, promote pitfalls to principles |
-| `/flux:improve` | Analyze sessions, recommend tools (auto-suggested on friction) |
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:reflect` | Capture session learnings to brain vault | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
+| `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
+| `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Between epics — audit `brain/` when it grows too large. Promotes recurring pitfalls into principles, prunes one-offs |
+| `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-suggested when epic review detects friction (score >= 3). Analyzes your sessions and recommends tools mapped to your specific pain points |
 
 **Utilities**
 
-| Command | What it does |
-|---------|-------------|
-| `/flux:score` | AI-native capability score |
-| `/flux:profile` | Export/share SDLC profile |
-| `/flux:contribute` | Report bug and auto-create fix PR |
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:score` | AI-native capability score | Anytime — benchmark your repo's AI-readiness |
+| `/flux:profile` | Export/share SDLC profile | Anytime — share your Flux setup with teammates or the community |
+| `/flux:contribute` | Report bug and auto-create fix PR | When you find a Flux bug — auto-creates a fix PR on the Flux repo |
 
 Full reference: `docs/commands-reference.md`
 
