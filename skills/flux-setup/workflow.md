@@ -106,6 +106,7 @@ Use direct config updates to the project-level `.mcp.json` (preferred), then tel
 
 | ID | Name | Category | Benefit | Free | Install Method |
 |----|------|----------|---------|------|----------------|
+| `fff` | FFF | search | **10x faster file search** — fuzzy matching, frecency-aware, git-status-aware file finder replacing default Glob/find | Yes | Binary install + add `mcpServers.fff` to `.mcp.json` |
 | `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | Add `mcpServers.context7` to `.mcp.json` |
 | `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `.mcp.json` |
 | `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `.mcp.json` |
@@ -136,11 +137,15 @@ MCP_LIST=$(
 )
 
 # Check each recommended MCP
+HAVE_FFF=$(echo "$MCP_LIST" | grep -qx "fff" && echo 1 || echo 0)
 HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qx "context7" && echo 1 || echo 0)
 HAVE_EXA=$(echo "$MCP_LIST" | grep -qx "exa" && echo 1 || echo 0)
 HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qx "github" && echo 1 || echo 0)
 HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qx "supermemory" && echo 1 || echo 0)
 HAVE_FIRECRAWL=$(echo "$MCP_LIST" | grep -qx "firecrawl" && echo 1 || echo 0)
+
+# FFF binary check (installed separately from MCP config)
+HAVE_FFF_BINARY=$(command -v fff-mcp >/dev/null 2>&1 && echo 1 || echo 0)
 
 # Detect conflicting/similar tools
 HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qx "perplexity" && echo 1 || echo 0)
@@ -199,6 +204,7 @@ Build the question dynamically. For items with conflicts, explain the situation:
 
 For **available** MCPs (no conflict):
 ```json
+{"label": "FFF", "description": "10x faster file search — fuzzy, frecency-aware, git-status-aware (free, installs binary)"}
 {"label": "Context7", "description": "No more hallucinated APIs — up-to-date library docs (free)"}
 {"label": "Exa", "description": "Fastest AI web search — real-time research (free)"}
 {"label": "GitHub", "description": "PRs, issues, actions without leaving Claude (free)"}
@@ -271,6 +277,31 @@ jq '.mcpServers = (.mcpServers // {}) | del(.mcpServers.perplexity) | .mcpServer
 ### Install selected servers
 
 For each selected server (that passed conflict resolution), install it:
+
+**FFF (Fast File Finder):**
+
+FFF requires a binary install before adding the MCP config. It replaces default file search with faster, fuzzy, frecency-aware search.
+
+```bash
+# Step 1: Install the fff-mcp binary (if not already installed)
+if ! command -v fff-mcp >/dev/null 2>&1; then
+  curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff.nvim/main/install-mcp.sh | bash
+fi
+
+# Step 2: Add MCP config (uses stdio, not HTTP)
+tmp=$(mktemp)
+jq '.mcpServers = (.mcpServers // {}) | .mcpServers.fff = {"type":"stdio","command":"fff-mcp","args":[]}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
+```
+
+If the binary install fails (e.g., no curl, unsupported platform), print manual fallback:
+```
+FFF binary installation failed. Install manually:
+  curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff.nvim/main/install-mcp.sh | bash
+
+Or download prebuilt binary from: https://github.com/dmtrKovalenko/fff.nvim/releases
+
+Then re-run /flux:setup to add the MCP config.
+```
 
 **Context7:**
 ```bash
@@ -393,6 +424,7 @@ If settings are not writable or `jq` is missing, print manual instructions:
 MCP servers (install manually in Claude Code):
   1. Run /mcp in chat
   2. Add these servers:
+     - fff: Install binary first (curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff.nvim/main/install-mcp.sh | bash), then add MCP with command "fff-mcp"
      - context7: https://mcp.context7.com/mcp
      - exa: https://mcp.exa.ai/mcp
      - supermemory: https://mcp.supermemory.ai/mcp
