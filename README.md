@@ -88,43 +88,47 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 <details>
 <summary><strong>Agent Instructions</strong> — the agent reads this section when it fetches the README</summary>
 
-> **⚠️ Slash commands (`/plugin ...`) must be run by the user in the agent UI, not by you in bash.**
+> **You can run `claude plugin ...` commands via bash — no need to ask the user to type slash commands.**
 
 #### Install flow
 
-1. Tell the user to run in their agent UI:
+1. Add the marketplace and install the plugin:
+   ```bash
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
    ```
-   /plugin add https://github.com/Nairon-AI/flux@latest
+2. Clear any stale cache and re-clone to ensure the latest version:
+   ```bash
+   rm -rf ~/.claude/plugins/cache/nairon-flux
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
    ```
-2. Tell the user to restart their agent/session with `--resume` to pick up where they left off.
-3. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
-4. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
-5. After restart, run `/flux:prime` if the repo hasn't been primed yet.
+3. Tell the user to restart their agent/session with `--resume` to load the plugin.
+4. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
+5. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
+6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
 
 #### Upgrade flow
 
-The `/plugin update` command resolves from a stale marketplace cache. **Do not use it.**
-
-1. Tell the user to run in their agent UI:
-   ```
-   /plugin uninstall flux@nairon-flux
-   /plugin add https://github.com/Nairon-AI/flux@latest
+1. Uninstall, clear cache, and reinstall to get the latest version:
+   ```bash
+   claude plugin uninstall flux@nairon-flux 2>&1
+   rm -rf ~/.claude/plugins/cache/nairon-flux
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
    ```
 2. Tell the user to restart their agent/session with `--resume`.
 3. Run `/flux:setup` to refresh local scripts if needed.
-
-> **If `/plugin add` opens the Discover tab instead of installing**, run `/plugin marketplace add https://github.com/Nairon-AI/flux` first, then retry.
 
 #### Uninstall flow
 
 1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
 2. Ask the user per-category what to keep vs. remove (MCP servers, skills, desktop apps, CLI tools) — many aren't Flux-specific.
-3. Tell the user to run in their agent UI:
-   ```
-   /plugin uninstall flux@nairon-flux
-   /plugin marketplace remove nairon-flux
+3. Uninstall the plugin and remove the marketplace:
+   ```bash
+   claude plugin uninstall flux@nairon-flux 2>&1
+   claude plugin marketplace remove nairon-flux 2>&1
    ```
 4. Remove project artifacts (the agent does this, not the user):
    ```bash
