@@ -96,6 +96,8 @@ The epic review is a multi-phase pipeline:
 6. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
 7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
 8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `brain/pitfalls/`
+9. **Desloppify Scan** — lightweight quality scan on changed files (if desloppify installed)
+10. **Frustration Signal** — suggest `/flux:improve` if 3+ fix iterations occurred
 
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
@@ -305,6 +307,72 @@ Format: one file per pattern, organized by area (e.g., `brain/pitfalls/frontend/
 - Browser QA failures — UI/UX issues missed during implementation
 
 Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `brain/pitfalls/` which is read during re-anchor — but only the relevant area subdirectories are loaded, keeping context lean. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs.
+
+### Step 10: Desloppify Scan (optional)
+
+**Only runs if `desloppify` is installed.** This is a scan-only pass — no fix loop, no auto-fix. The purpose is to surface quality regressions introduced during the epic.
+
+```bash
+if command -v desloppify >/dev/null 2>&1; then
+  # Get directories touched in this epic
+  CHANGED_DIRS=$(git diff "${DIFF_BASE}"..HEAD --name-only | xargs -I{} dirname {} | sort -u | grep -v '^\.$')
+
+  if [ -n "$CHANGED_DIRS" ]; then
+    for DIR in $CHANGED_DIRS; do
+      desloppify scan --path "$DIR" 2>/dev/null
+    done
+  fi
+fi
+```
+
+- If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
+- Do NOT auto-install desloppify. Skip silently if not available.
+- Do NOT enter a fix loop — this is informational only.
+
+### Step 11: Frustration Signal
+
+**See [workflow.md](workflow.md) "Frustration Signal" for full detection logic (quantitative + qualitative).**
+
+Two-part detection system:
+
+**Part 1 — Quantitative friction score** from pipeline counters:
+
+```
+FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (SAME_CATEGORY_PITFALLS * 2)
+```
+
+**Part 2 — Qualitative friction analysis** from three sources:
+1. **Developer messages** during fix loops — scan for frustration language and extract the *topic* (e.g., "wtf is this UI? Still not responsive" → `responsive, css_issues, ui_issues`)
+2. **Review issue categories** — classify reviewer feedback into domains (CSS/auth/testing/etc.)
+3. **Pitfall areas** from learning capture — `brain/pitfalls/frontend/` → `frontend, ui_issues`
+
+Combined into `FRICTION_DOMAINS` (what's broken) and `FRICTION_SIGNALS` (what `/flux:improve` should search for).
+
+**If `FRICTION_SCORE >= 3`**, output a **targeted** suggestion:
+
+```
+---
+**Friction detected** (score: {FRICTION_SCORE}):
+
+Quantitative:
+- Review iterations: {NEEDS_WORK_COUNT}
+- Security findings: {SECURITY_FINDINGS}
+- Browser QA failures: {BROWSER_QA_FAILURES}
+- Repeated pitfall categories: {SAME_CATEGORY_PITFALLS} (2x weight)
+
+Diagnosis: {primary friction domain} — {one-sentence summary}
+Evidence:
+{top 2-3 quotes/issues/pitfalls}
+
+Consider running `/flux:improve --user-context "{FRICTION_DOMAINS}"` —
+this skips the pain-point interview and goes straight to targeted
+recommendations for your specific friction areas.
+---
+```
+
+The `--user-context` flag pre-fills the detected friction domains so `/flux:improve`'s matching engine can skip discovery and go straight to relevant tool recommendations.
+
+This is a suggestion only — do not auto-invoke `/flux:improve`.
 
 ---
 

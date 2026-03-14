@@ -769,6 +769,203 @@ Only capture generalizable patterns, not one-off fixes.
 
 ---
 
+## Desloppify Scan Phase
+
+**Optional. Only runs if `desloppify` is installed. Scan-only — no fix loop.**
+
+The purpose is to surface quality regressions (dead code, duplication, complexity) introduced during the epic, not to fix them inline.
+
+```bash
+if command -v desloppify >/dev/null 2>&1; then
+  # Get top-level directories touched in this epic
+  CHANGED_DIRS=$(git diff "${DIFF_BASE}"..HEAD --name-only | xargs -I{} dirname {} | sort -u | grep -v '^\.$')
+
+  if [ -n "$CHANGED_DIRS" ]; then
+    echo "=== Desloppify Scan (changed directories) ==="
+    for DIR in $CHANGED_DIRS; do
+      if [ -d "$DIR" ]; then
+        desloppify scan --path "$DIR" 2>/dev/null
+      fi
+    done
+  fi
+fi
+```
+
+- If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
+- Do NOT auto-install desloppify — skip silently if not available.
+- Do NOT enter a fix loop — this is informational only.
+
+---
+
+## Frustration Signal
+
+The frustration signal combines **quantitative counters** (what went wrong) with **qualitative analysis** (what the developer is frustrated about) to produce a targeted, actionable suggestion.
+
+### Part 1: Quantitative Counters
+
+Maintain these counters across the entire epic review pipeline:
+
+| Counter | Incremented when | Source |
+|---------|-----------------|--------|
+| `NEEDS_WORK_COUNT` | NEEDS_WORK verdict from any reviewer | Spec compliance, adversarial, bot self-heal fix loops |
+| `SECURITY_FINDINGS` | STRIDE vulnerability found (confidence >= 0.8) | Security scan phase |
+| `BROWSER_QA_FAILURES` | QA criterion fails on first attempt | Browser QA phase |
+| `SAME_CATEGORY_PITFALLS` | 2+ pitfalls captured in the same area | Learning capture phase |
+
+#### How to Count
+
+- **Spec compliance fix loop**: Each re-review after NEEDS_WORK = +1 to `NEEDS_WORK_COUNT`
+- **Adversarial fix loop**: Each consensus issue requiring a fix = +1 to `NEEDS_WORK_COUNT`
+- **Bot self-heal**: Each bot-identified fix iteration = +1 to `NEEDS_WORK_COUNT`
+- **Security scan**: Count validated findings (not raw matches)
+- **Browser QA**: Count criteria that fail on the FIRST attempt (retries don't count)
+- **Pitfall clustering**: After learning capture, group captured pitfalls by area — if any area has 2+, increment `SAME_CATEGORY_PITFALLS`
+
+#### Friction Score
+
+Compute a weighted friction score at the end of the pipeline:
+
+```
+FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (SAME_CATEGORY_PITFALLS * 2)
+```
+
+Pitfall clustering is weighted 2x because repeated mistakes in the same area indicate a systematic gap, not a one-off.
+
+### Part 2: Qualitative Friction Analysis
+
+**This is what makes the suggestion specific and actionable instead of generic.**
+
+After computing the quantitative score, analyze the *content* of the review pipeline to extract what the developer is actually struggling with. Scan three sources:
+
+#### Source 1: Developer Messages During Fix Loops
+
+Scan the conversation for developer messages sent during NEEDS_WORK fix iterations. Look for:
+
+- **Frustration language**: "wtf", "still not", "again", "keeps", "why won't", "broken", "ugh", "ffs"
+- **Repeated complaints**: same topic mentioned 2+ times across iterations
+- **Domain keywords**: extract the topic the frustration is about
+
+Map detected language to friction domains:
+
+| Developer says (examples) | Friction domain | Maps to `/flux:improve` signals |
+|---------------------------|----------------|-------------------------------|
+| "UI still broken", "layout is off", "not rendering" | `frontend` | `ui_issues` |
+| "not responsive", "mobile is broken", "breakpoints" | `responsive` | `css_issues`, `ui_issues` |
+| "CSS won't work", "styling is wrong", "tailwind" | `css` | `css_issues` |
+| "auth still failing", "token expired", "login broken" | `security` | `auth_issues` |
+| "API returns wrong data", "endpoint 404" | `api` | `api_hallucination` |
+| "test keeps failing", "flaky test" | `testing` | `regressions` |
+| "forgot about", "we already discussed", "I told you" | `context` | `context_forgotten`, `re_explaining` |
+| "wrong docs", "outdated API", "doesn't exist anymore" | `docs` | `outdated_docs`, `api_hallucination` |
+| "slow", "takes forever", "build time" | `performance` | `slow_builds` |
+| "edge case", "didn't handle", "what about when" | `coverage` | `edge_case_misses`, `shallow_answers` |
+| "linting", "format", "prettier", "eslint" | `quality` | `lint_errors` |
+
+#### Source 2: Review Issue Categories
+
+Classify the actual issues from reviewer feedback into domains:
+
+- Issues mentioning CSS/styling/layout → `frontend`, `css`
+- Issues mentioning missing error handling → `coverage`
+- Issues mentioning auth/permissions → `security`
+- Issues mentioning test coverage → `testing`
+- Issues mentioning performance → `performance`
+
+#### Source 3: Pitfall Areas from Learning Capture
+
+The areas where pitfalls were written directly map to friction domains:
+
+- `brain/pitfalls/frontend/` → `frontend`, `css_issues`, `ui_issues`
+- `brain/pitfalls/security/` → `security`, `auth_issues`
+- `brain/pitfalls/api/` → `api`, `api_hallucination`
+- `brain/pitfalls/async/` → `async`, `edge_case_misses`
+- `brain/pitfalls/testing/` → `testing`, `regressions`
+
+#### Build Friction Context
+
+Combine all three sources into a friction context object:
+
+```
+FRICTION_DOMAINS: [list of detected domains, ranked by frequency]
+FRICTION_SIGNALS: [list of /flux:improve signal codes]
+FRICTION_EVIDENCE: [specific quotes/issues that triggered each domain]
+```
+
+Example:
+```
+FRICTION_DOMAINS: ["responsive", "frontend", "css"]
+FRICTION_SIGNALS: ["css_issues", "ui_issues"]
+FRICTION_EVIDENCE:
+  - Developer: "wtf is this UI? It's still not fully mobile responsive"
+  - Reviewer: "Missing viewport meta tag and responsive breakpoints"
+  - Pitfall: brain/pitfalls/frontend/missing-responsive-design.md
+```
+
+### Part 3: Trigger and Output
+
+If `FRICTION_SCORE >= 3`, output a **targeted** suggestion that includes both the quantitative breakdown AND the qualitative diagnosis:
+
+```
+---
+**Friction detected** (score: {FRICTION_SCORE}):
+
+Quantitative:
+- Review fix iterations: {NEEDS_WORK_COUNT}
+- Security findings: {SECURITY_FINDINGS}
+- Browser QA failures: {BROWSER_QA_FAILURES}
+- Clustered pitfalls (same area): {SAME_CATEGORY_PITFALLS}
+
+Diagnosis: {FRICTION_DOMAINS[0]} — {one-sentence summary of what kept going wrong}
+Evidence:
+{top 2-3 FRICTION_EVIDENCE entries}
+
+Consider running `/flux:improve --user-context "{FRICTION_DOMAINS joined by comma}"` —
+this will skip the pain-point interview and go straight to recommendations
+for {FRICTION_DOMAINS[0]} tooling ({FRICTION_SIGNALS joined by comma}).
+---
+```
+
+**Key difference from a generic suggestion**: The `--user-context` flag is pre-filled with the detected friction domains. When the developer runs this command, `/flux:improve` skips the "describe your frustrations" step and immediately maps these signals to relevant recommendations — responsive design libraries, CSS frameworks, visual regression tools, etc.
+
+This is a suggestion only — do not auto-invoke `/flux:improve`. The user decides whether to act on it.
+
+### Why This Works
+
+Without qualitative analysis, the suggestion is useless:
+```
+❌ "Consider running /flux:improve"  (generic — user has to start from scratch)
+```
+
+With qualitative analysis, the suggestion is specific and actionable:
+```
+✅ "Diagnosis: responsive — mobile breakpoints kept breaking across iterations.
+    Run /flux:improve --user-context 'responsive, CSS, mobile'"
+    (targeted — improve knows exactly what to search for)
+```
+
+The `/flux:improve` skill's matching engine already maps these friction signals to specific tool recommendations. The frustration signal just bridges the gap — it detects the problem domain during epic review and passes it forward so the recommendation engine doesn't have to rediscover it.
+
+### Why Multiple Quantitative Signals
+
+A single counter (just NEEDS_WORK) is unreliable:
+- Complex epics naturally have more iterations — 3 iterations on a 10-task epic is normal
+- Security findings indicate missing pre-validation, not review quality
+- Browser QA failures indicate spec drift, not implementation quality
+- Pitfall clustering reveals systematic blind spots (e.g., always forgetting error states)
+
+By combining signals, the friction score distinguishes between "complex epic that needed refinement" and "systematic workflow gap that tools could fix."
+
+### Common Causes by Signal Type
+
+| High signal | Likely cause | `/flux:improve` can recommend |
+|-------------|-------------|------------------------------|
+| NEEDS_WORK | Missing lint/format rules | Linters, formatters, pre-commit hooks |
+| SECURITY_FINDINGS | No pre-validation | Security scanning tools, pre-commit security checks |
+| BROWSER_QA_FAILURES | Spec drift | Better acceptance criteria templates, visual regression tools |
+| SAME_CATEGORY_PITFALLS | Systematic blind spot | `/flux:meditate` to promote to principles, structural enforcement |
+
+---
+
 ## Anti-patterns
 
 **All backends:**

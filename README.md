@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.7-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.0.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -155,17 +155,94 @@ After prime, just tell the agent what you want — *build a feature, fix a bug, 
 
 ## Core Workflow
 
-```
-Prime → Scope → Work → Review → Improve → Reflect
+```mermaid
+flowchart TD
+    SessionStart["Session Start<br/>(startup hook)"]
+    Pulse{"recommendation<br/>pulse"}
+    Prime["Prime<br/>(readiness audit)"]
+    Scope["Scope<br/>(problem definition)"]
+    Work["Work<br/>(task loop)"]
+    ImplReview["Impl Review<br/>(per-task, lightweight)"]
+    EpicReview["Epic Review<br/>(per-epic, thorough)"]
+    Quality["Quality<br/>(tests + desloppify scan)"]
+    Ship["Ship<br/>(push + PR)"]
+
+    SessionStart --> Pulse
+    Pulse -->|"new tools?<br/>nudge /flux:improve"| Prime
+    Pulse -->|"brain bloated?<br/>nudge /flux:meditate"| Prime
+    Pulse -->|"all clear"| Prime
+    Prime --> Scope
+    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
+
+    subgraph task_loop ["Task Loop (per task)"]
+        Work -->|"spawn worker"| ImplReview
+        ImplReview -->|"NEEDS_WORK"| Work
+        ImplReview -->|"SHIP"| NextTask["Next Task"]
+        NextTask -->|"more tasks"| Work
+    end
+
+    NextTask -->|"all tasks done"| EpicReview
+
+    subgraph review_pipeline ["Epic Review Pipeline"]
+        direction TB
+        SpecCompliance["Spec Compliance"]
+        Adversarial["Adversarial Review<br/>(Anthropic + OpenAI)"]
+        SecurityScan["STRIDE Security Scan"]
+        BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)"]
+        BrowserQA["Browser QA"]
+        LearningCapture["Learning Capture"]
+        DesloppifyScan["Desloppify Scan"]
+        FrustrationSignal{"friction<br/>score >= 3?"}
+
+        SpecCompliance --> Adversarial
+        Adversarial --> SecurityScan
+        SecurityScan --> BotSelfHeal
+        BotSelfHeal --> BrowserQA
+        BrowserQA --> LearningCapture
+        LearningCapture --> DesloppifyScan
+        DesloppifyScan --> FrustrationSignal
+    end
+
+    EpicReview --> SpecCompliance
+    FrustrationSignal -->|"no"| Quality
+    FrustrationSignal -->|"yes: suggest<br/>/flux:improve --user-context"| Quality
+    Quality --> Ship
+    Ship -->|"suggest /flux:reflect"| Done["Done"]
+
+    Brain["Brain Vault<br/>(pitfalls, principles,<br/>conventions, decisions)"]
+
+    Brain -.->|"read: principles +<br/>relevant pitfalls"| Scope
+    Brain -.->|"read: re-anchor<br/>per task"| Work
+    LearningCapture -.->|"write: pitfalls<br/>by area"| Brain
+
+    subgraph maintenance ["Between Epics"]
+        Reflect["Reflect<br/>(session learnings)"]
+        Ruminate["Ruminate<br/>(mine past sessions)"]
+        Meditate["Meditate<br/>(prune + promote)"]
+        Improve["Improve<br/>(recommendations engine)"]
+    end
+
+    Reflect -.->|"write"| Brain
+    Ruminate -.->|"write"| Brain
+    Meditate -.->|"prune/promote"| Brain
+    Pulse -.->|"nudge when<br/>brain bloated"| Meditate
+    Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
 
-| Step | What happens |
-|------|-------------|
-| **Scope** | Guided interview: classify the work, surface blind spots, create an epic with sized tasks |
-| **Work** | Execute tasks with context reload and state tracking |
-| **Review** | Lightweight per-task, thorough per-epic (adversarial + security + BYORB + browser QA) |
-| **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
-| **Reflect** | Capture learnings into persistent brain vault |
+| Phase | What happens |
+|-------|-------------|
+| **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain vault health (once/day). |
+| **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
+| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
+| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
+| **Quality** | Tests, lint/format, desloppify scan on changed files |
+| **Ship** | Push, open PR, suggest `/flux:reflect` |
+| | |
+| **Reflect** | *Between epics:* capture session learnings to brain vault. Suggested after every ship. |
+| **Ruminate** | *Between epics:* mine past conversations for missed patterns |
+| **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles. Auto-nudged when 5+ new pitfalls accumulate or 30+ days since last meditation. |
+| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested on friction (score >= 3) and via session start pulse when new tools are available. |
 
 ---
 
@@ -210,13 +287,31 @@ brain/
 /flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
 
-### Recommendation Engine
+These are maintenance skills designed to run between epics, not during active development. They audit, prune, and evolve the brain vault when you have breathing room.
 
-`/flux:improve` analyzes your sessions and recommends tools mapped to your specific friction patterns — from MCP servers to CLI tools to workflow changes. Recommendations are community-driven via [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
+### Self-Improving Harness
+
+Flux autonomously finds ways to improve itself for every project it's used in. The recommendation engine surfaces at every natural touchpoint — not just when you ask for it:
+
+| Touchpoint | What fires | How heavy |
+|---|---|---|
+| **Session start** | Recommendation pulse — checks for new tools and brain vault health | ~2s, once/day |
+| **During work** | Qualitative friction analysis — detects frustration topic from developer messages | Zero cost |
+| **After epic review** | Targeted `/flux:improve` suggestion with pre-filled friction context | Zero cost |
+| **After shipping** | `/flux:reflect` suggestion to capture learnings | Zero cost |
+| **Between epics** | Full `/flux:improve` analysis, `/flux:meditate` for brain pruning | Heavyweight |
+
+The **recommendation pulse** runs as a startup hook every session (rate-limited to once per day). It pulls the latest [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) repo, checks for new tools that match your stack, and checks if your brain vault needs pruning. If anything is actionable, it surfaces a brief nudge — you multi-select to install or dismiss.
+
+The **friction signal** fires during epic review using two layers: a quantitative friction score (review iterations, security findings, QA failures, repeated pitfalls) and qualitative analysis that scans developer messages and reviewer feedback to identify *what* you're struggling with. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
+
+The result: Flux gets smarter every session — new tools surface proactively, friction domains get diagnosed automatically, and the brain vault stays lean through meditate nudges. You don't have to remember to run maintenance commands.
 
 ### Desloppify
 
 Systematic code quality improvement powered by [desloppify](https://github.com/peteromallet/desloppify). Combines mechanical detection with LLM-based review. The scoring system resists gaming — you can't suppress warnings, you have to actually fix the code.
+
+When installed, Flux automatically runs a lightweight desloppify scan after epic review to surface quality regressions introduced during the epic. If the score drops below 85, it suggests a full fix pass.
 
 ```bash
 /flux:desloppify scan     # See your score
@@ -295,28 +390,45 @@ fluxctl config get tracker.provider   # Check current tracker config
 
 ## Commands
 
-| Command | What it does |
-|---------|-------------|
-| `/flux:setup` | Initialize Flux in your project |
-| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) |
-| `/flux:plan <idea>` | Create tasks only (skip interview) |
-| `/flux:work <task>` | Execute task with context reload |
-| `/flux:sync <epic>` | Sync specs after drift |
-| `/flux:impl-review` | Lightweight per-task review (single model) |
-| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning) |
-| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
-| `/flux:desloppify` | Code quality improvement |
-| `/flux:improve` | Analyze sessions, recommend tools |
-| `/flux:reflect` | Capture session learnings |
-| `/flux:ruminate` | Mine past conversations for patterns |
-| `/flux:meditate` | Prune brain vault, extract principles |
-| `/flux:threat-model` | STRIDE-based threat model |
-| `/flux:security-scan` | Scan for vulnerabilities |
-| `/flux:security-review` | Full security review |
-| `/flux:vuln-validate` | Validate findings with PoC |
-| `/flux:score` | AI-native capability score |
-| `/flux:profile` | Export/share SDLC profile |
-| `/flux:contribute` | Report bug and auto-create fix PR |
+**Core SDLC**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:setup` | Initialize Flux in your project | 1. First time using Flux — scaffolds `.flux/`, configures preferences, installs tools |
+| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) | 2. After setup — Flux detects unprimed repos and prompts you. Runs once per repo |
+| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux interviews you, creates an epic with sized tasks |
+| `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — skip the Double Diamond interview, go straight to task creation |
+| `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
+| `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |
+| `/flux:sync <epic>` | Sync specs after drift | Anytime — you realized task 3 invalidated task 5's approach, sync updates downstream specs |
+| `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) | 7. After epic review flags a low score, or manually when you want to improve code quality |
+
+**Security**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:security-scan` | Scan for vulnerabilities | Auto-triggered inside epic review when changed files touch auth/API/secrets/permissions. Also callable standalone on any PR |
+| `/flux:threat-model` | STRIDE-based threat model | Before building security-sensitive features — generates threat model to inform your design |
+| `/flux:security-review` | Full security review | Before shipping to production — comprehensive repo-wide security audit |
+| `/flux:vuln-validate` | Validate findings with PoC | After a scan finds issues — generates proof-of-concept exploits to confirm real vs false positive |
+
+**Maintenance (between epics)**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:reflect` | Capture session learnings to brain vault | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
+| `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
+| `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
+| `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
+
+**Utilities**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:score` | AI-native capability score | Anytime — benchmark your repo's AI-readiness |
+| `/flux:profile` | Export/share SDLC profile | Anytime — share your Flux setup with teammates or the community |
+| `/flux:contribute` | Report bug and auto-create fix PR | When you find a Flux bug — auto-creates a fix PR on the Flux repo |
 
 Full reference: `docs/commands-reference.md`
 
@@ -402,11 +514,11 @@ Not recommended — both are task tracking systems and will confuse the agent. P
 
 ## Roadmap
 
-### v2.0 — Relay
+### Next — Relay
 
 A fully autonomous orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
 
-Relay coordinates multiple agents working in parallel across worktrees, manages task dependencies, and handles handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
+Relay will coordinate multiple agents working in parallel across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
 
 ### Feature Roadmap
 

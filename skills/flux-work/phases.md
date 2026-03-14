@@ -342,6 +342,7 @@ After all tasks complete (or periodically for large epics):
 
 - Run relevant tests
 - Run lint/format per repo
+- If `desloppify` is installed, run `desloppify scan` on changed directories and log the score. If score is below 85, suggest `/flux:desloppify` to the user.
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues
@@ -366,6 +367,8 @@ git commit -m "<final summary>"
 Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
+
+**Suggest reflection**: After shipping, suggest the user run `/flux:reflect` to capture learnings from this epic while context is fresh. This feeds the brain vault's continuous improvement loop (reflect → ruminate → meditate).
 
 ## Definition of Done
 
