@@ -16,7 +16,7 @@ Flux is designed to route from intent. In normal use, you should be able to tell
 
 ```bash
 # Claude Code (recommended)
-/plugin add https://github.com/Nairon-AI/flux@latest
+/plugin install flux@nairon-flux
 ```
 
 Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code chat input, not in your terminal.
