@@ -278,7 +278,7 @@ def ready_state_for_epic(epic_id: str, use_json: bool = True) -> dict:
 
 def validate_flux_root(flux_dir: Path) -> list[str]:
     """Validate .flux/ root invariants. Returns list of errors."""
-    from .utils import META_FILE, MEMORY_DIR
+    from .utils import META_FILE
     errors = []
 
     # Check meta.json exists and is valid
@@ -300,7 +300,7 @@ def validate_flux_root(flux_dir: Path) -> list[str]:
 
     # Check required subdirectories exist
     from .utils import ARTIFACTS_DIR
-    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
+    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, ARTIFACTS_DIR]:
         if not (flux_dir / subdir).exists():
             errors.append(f"Required directory missing: {subdir}/")
 

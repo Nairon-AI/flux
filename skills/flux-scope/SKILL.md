@@ -1286,7 +1286,6 @@ This shapes what the research and plan need to cover.
 
 **Check configuration:**
 ```bash
-$FLUXCTL config get memory.enabled --json
 $FLUXCTL config get scouts.github --json
 ```
 
@@ -1327,7 +1326,6 @@ Use brain principles to guide research direction and plan structure. Read releva
 | `flux:practice-scout` | Best practices + pitfalls | YES |
 | `flux:docs-scout` | External documentation | YES |
 | `flux:github-scout` | Cross-repo patterns | IF scouts.github |
-| `flux:memory-scout` | Project memory | IF memory.enabled |
 | `flux:epic-scout` | Dependencies on open epics | YES |
 | `flux:docs-gap-scout` | Docs needing updates | YES |
 

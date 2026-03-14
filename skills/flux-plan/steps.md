@@ -74,9 +74,8 @@ $FLUXCTL init --json
 
 **If input is a Flow ID** (fn-N-slug or fn-N-slug.M, including legacy fn-N/fn-N-xxx): First fetch it with `$FLUXCTL show <id> --json` and `$FLUXCTL cat <id>` to get the request context.
 
-**Check if memory and github-scout are enabled:**
+**Check if github-scout is enabled:**
 ```bash
-$FLUXCTL config get memory.enabled --json
 $FLUXCTL config get scouts.github --json
 ```
 
@@ -97,7 +96,6 @@ Run ALL of these scouts in parallel:
 | `flux:practice-scout` | Best practices + pitfalls | YES |
 | `flux:docs-scout` | External documentation | YES |
 | `flux:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
-| `flux:memory-scout` | Project memory entries | IF memory.enabled |
 | `flux:epic-scout` | Dependencies on open epics | YES |
 | `flux:docs-gap-scout` | Docs needing updates | YES |
 
@@ -110,7 +108,6 @@ Run ALL of these scouts in parallel:
 | `flux:practice-scout` | Best practices + pitfalls | YES |
 | `flux:docs-scout` | External documentation | YES |
 | `flux:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
-| `flux:memory-scout` | Project memory entries | IF memory.enabled |
 | `flux:epic-scout` | Dependencies on open epics | YES |
 | `flux:docs-gap-scout` | Docs needing updates | YES |
 

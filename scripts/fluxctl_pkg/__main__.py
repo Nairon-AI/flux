@@ -5,7 +5,7 @@ from .utils import (
     TECHNICAL_LEVELS, IMPLEMENTATION_TARGETS, WORKFLOW_STATUSES, PRIME_STATUSES,
 )
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
-from .config import cmd_config_get, cmd_config_set, cmd_review_backend, cmd_memory_init, cmd_memory_add, cmd_memory_read, cmd_memory_list, cmd_memory_search
+from .config import cmd_config_get, cmd_config_set, cmd_review_backend
 from .epics import (
     cmd_epic_create, cmd_show, cmd_epics, cmd_list, cmd_cat,
     cmd_epic_set_plan, cmd_epic_set_plan_review_status, cmd_epic_set_completion_review_status,
@@ -92,12 +92,12 @@ def main() -> None:
     config_sub = p_config.add_subparsers(dest="config_cmd", required=True)
 
     p_config_get = config_sub.add_parser("get", help="Get config value")
-    p_config_get.add_argument("key", help="Config key (e.g., memory.enabled)")
+    p_config_get.add_argument("key", help="Config key (e.g., review.backend)")
     p_config_get.add_argument("--json", action="store_true", help="JSON output")
     p_config_get.set_defaults(func=cmd_config_get)
 
     p_config_set = config_sub.add_parser("set", help="Set config value")
-    p_config_set.add_argument("key", help="Config key (e.g., memory.enabled)")
+    p_config_set.add_argument("key", help="Config key (e.g., review.backend)")
     p_config_set.add_argument("value", help="Config value")
     p_config_set.add_argument("--json", action="store_true", help="JSON output")
     p_config_set.set_defaults(func=cmd_config_set)
@@ -108,38 +108,6 @@ def main() -> None:
     )
     p_review_backend.add_argument("--json", action="store_true", help="JSON output")
     p_review_backend.set_defaults(func=cmd_review_backend)
-
-    # memory
-    p_memory = subparsers.add_parser("memory", help="Memory commands")
-    memory_sub = p_memory.add_subparsers(dest="memory_cmd", required=True)
-
-    p_memory_init = memory_sub.add_parser("init", help="Initialize memory templates")
-    p_memory_init.add_argument("--json", action="store_true", help="JSON output")
-    p_memory_init.set_defaults(func=cmd_memory_init)
-
-    p_memory_add = memory_sub.add_parser("add", help="Add memory entry")
-    p_memory_add.add_argument(
-        "--type", required=True, help="Type: pitfall, convention, or decision"
-    )
-    p_memory_add.add_argument("content", help="Entry content")
-    p_memory_add.add_argument("--json", action="store_true", help="JSON output")
-    p_memory_add.set_defaults(func=cmd_memory_add)
-
-    p_memory_read = memory_sub.add_parser("read", help="Read memory entries")
-    p_memory_read.add_argument(
-        "--type", help="Filter by type: pitfalls, conventions, or decisions"
-    )
-    p_memory_read.add_argument("--json", action="store_true", help="JSON output")
-    p_memory_read.set_defaults(func=cmd_memory_read)
-
-    p_memory_list = memory_sub.add_parser("list", help="List memory entry counts")
-    p_memory_list.add_argument("--json", action="store_true", help="JSON output")
-    p_memory_list.set_defaults(func=cmd_memory_list)
-
-    p_memory_search = memory_sub.add_parser("search", help="Search memory entries")
-    p_memory_search.add_argument("pattern", help="Search pattern (regex)")
-    p_memory_search.add_argument("--json", action="store_true", help="JSON output")
-    p_memory_search.set_defaults(func=cmd_memory_search)
 
     # epic create
     p_epic = subparsers.add_parser("epic", help="Epic commands")

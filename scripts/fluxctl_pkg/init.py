@@ -21,7 +21,6 @@ from .utils import (
     EPICS_DIR,
     SPECS_DIR,
     TASKS_DIR,
-    MEMORY_DIR,
     ARTIFACTS_DIR,
     CONFIG_FILE,
     RUNTIME_FIELDS,
@@ -64,7 +63,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     actions = []
 
     # Create directories if missing (idempotent, never destroys existing)
-    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
+    for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, ARTIFACTS_DIR]:
         dir_path = flux_dir / subdir
         if not dir_path.exists():
             dir_path.mkdir(parents=True)
@@ -156,7 +155,7 @@ def cmd_detect(args: argparse.Namespace) -> None:
                 issues.append(f"meta.json parse error: {e}")
 
         # Check required subdirectories
-        for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, MEMORY_DIR, ARTIFACTS_DIR]:
+        for subdir in [EPICS_DIR, SPECS_DIR, TASKS_DIR, ARTIFACTS_DIR]:
             if not (flux_dir / subdir).exists():
                 issues.append(f"{subdir}/ missing")
 

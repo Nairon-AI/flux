@@ -958,7 +958,6 @@ HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 # Read current config values if they exist
 CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/fluxctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
@@ -992,7 +991,6 @@ If ANY config values are already set, print a notice before asking questions:
 ```
 Current configuration:
 - Install scope: project (always project-local)
-- Memory: <enabled|disabled> (change with: fluxctl config set memory.enabled <true|false>)
 - Plan-Sync: <enabled|disabled> (change with: fluxctl config set planSync.enabled <true|false>)
 - Plan-Sync cross-epic: <enabled|disabled> (change with: fluxctl config set planSync.crossEpic <true|false>)
 - Review backend: <codex|rp|none> (change with: fluxctl config set review.backend <codex|rp|none>)
@@ -1010,19 +1008,6 @@ Build the questions array dynamically. **Only include questions for config value
 **Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory.
 
 Available questions (include only if corresponding config is unset):
-
-**Memory question** (include if CURRENT_MEMORY is empty):
-```json
-{
-  "header": "Memory",
-  "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
-  "options": [
-    {"label": "Yes (Recommended)", "description": "Auto-capture pitfalls and conventions from review feedback"},
-    {"label": "No", "description": "Disable with: fluxctl config set memory.enabled false"}
-  ],
-  "multiSelect": false
-}
-```
 
 **Plan-Sync question** (include if CURRENT_PLANSYNC is empty):
 ```json
@@ -1234,10 +1219,6 @@ Use `AskUserQuestion` with the built questions array.
 ## Step 7: Process Answers
 
 Only process answers for questions that were asked (config values that were unset). Skip processing for config that was already set.
-
-**Memory** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled false --json`
 
 **Plan-Sync** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.enabled true --json`
