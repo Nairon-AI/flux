@@ -106,7 +106,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Fixed
 
-- **Safe upgrade path unified** — all update prompts now use `/plugin install flux@nairon-flux`
+- **Safe upgrade path unified** — all update prompts now use `/plugin add https://github.com/Nairon-AI/flux@latest`
   - Prevents stale guidance from older `/plugin marketplace update ...` instructions
   - Keeps upgrade behavior consistent with install behavior
 

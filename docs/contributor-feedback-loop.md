@@ -20,7 +20,7 @@ This project is being used to test the Flux plugin.
    - Make the minimal fix
    - Push and create PR with `gh pr create`
 3. Report the PR URL so it can be reviewed and merged
-4. After merge, upgrade: `/plugin install flux@nairon-flux`
+4. After merge, upgrade: `/plugin add https://github.com/Nairon-AI/flux@latest`
 
 **What counts as a Flux bug:**
 - Command fails unexpectedly
@@ -41,7 +41,7 @@ This project is being used to test the Flux plugin.
 /flux:contribute "Description of the issue"
 
 # After PR is merged, upgrade
-/plugin install flux@nairon-flux
+/plugin add https://github.com/Nairon-AI/flux@latest
 ```
 
 ## Workflow Diagram

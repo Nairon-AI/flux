@@ -48,6 +48,6 @@ cat << EOJSON
   "local_version": "$LOCAL_VERSION",
   "remote_version": "${REMOTE_VERSION:-unknown}",
   "update_available": $UPDATE_AVAILABLE,
-  "update_command": "/plugin install flux@nairon-flux"
+  "update_command": "/plugin add https://github.com/Nairon-AI/flux@latest"
 }
 EOJSON

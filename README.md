@@ -63,7 +63,7 @@ Ship with confidence. Sleep better at night.
 
 | Agent | Status | Install |
 |-------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | See install steps below |
+| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
 
 **Install** — paste this into your agent:
@@ -94,16 +94,12 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 
 1. Tell the user to run in their agent UI:
    ```
-   /plugin marketplace add https://github.com/Nairon-AI/flux
+   /plugin add https://github.com/Nairon-AI/flux@latest
    ```
-2. Then tell the user to install the plugin:
-   ```
-   /plugin install flux@nairon-flux
-   ```
-3. Tell the user to restart their agent/session with `--resume` to pick up where they left off.
-4. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
-5. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
-6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
+2. Tell the user to restart their agent/session with `--resume` to pick up where they left off.
+3. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
+4. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
+5. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
 
@@ -114,10 +110,12 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 1. Tell the user to run in their agent UI:
    ```
    /plugin uninstall flux@nairon-flux
-   /plugin install flux@nairon-flux
+   /plugin add https://github.com/Nairon-AI/flux@latest
    ```
 2. Tell the user to restart their agent/session with `--resume`.
 3. Run `/flux:setup` to refresh local scripts if needed.
+
+> **If `/plugin add` opens the Discover tab instead of installing**, run `/plugin marketplace add https://github.com/Nairon-AI/flux` first, then retry.
 
 #### Uninstall flow
 
@@ -516,7 +514,7 @@ Clear cache and reinstall:
 ```bash
 rm -rf ~/.claude/plugins/cache/nairon-flux ~/.claude/plugins/marketplaces/nairon-flux
 ```
-Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin install flux@nairon-flux`, restart again.
+Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin add https://github.com/Nairon-AI/flux@latest`, restart again.
 </details>
 
 <details>
@@ -525,7 +523,7 @@ Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/f
 ```bash
 rm -rf ~/.claude/plugins/cache/nairon-flux
 ```
-Restart, run `/plugin uninstall flux@nairon-flux`, then `/plugin install flux@nairon-flux`, restart again.
+Restart, run `/plugin uninstall flux@nairon-flux`, then `/plugin add https://github.com/Nairon-AI/flux@latest`, restart again.
 </details>
 
 <details>
@@ -536,7 +534,7 @@ rm -rf ~/.claude/plugins/cache/nairon-flux ~/.claude/plugins/marketplaces/nairon
 # Edit ~/.claude/plugins/installed_plugins.json — remove "nairon-flux" entries
 # Edit ~/.claude/settings.json — remove "flux@nairon-flux" from enabledPlugins
 ```
-Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin install flux@nairon-flux`, restart, run `/flux:setup`.
+Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin add https://github.com/Nairon-AI/flux@latest`, restart, run `/flux:setup`.
 </details>
 
 **Still stuck?** Join [Discord](https://discord.gg/CEQMd6fmXk) or open a [GitHub issue](https://github.com/Nairon-AI/flux/issues).
