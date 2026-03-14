@@ -28,9 +28,29 @@ Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code c
 | Command | Usage | Purpose |
 |---------|-------|---------|
 | `/flux:setup` | `/flux:setup` | Optional local setup (installs local `fluxctl` + project docs) |
+| `/flux:propose` | `/flux:propose` | Stakeholder feature proposal — conversational planning with engineering pushback and PR handoff |
 | `/flux:scope` | `/flux:scope <idea> [--deep] [--explore N]` | **Full guided scoping workflow** (recommended) |
 | `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks only |
 | `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
+
+### /flux:propose
+
+<!-- TODO: Add video showing propose flow -->
+<details>
+<summary>Video: Stakeholder feature proposal</summary>
+<p><em>Coming soon</em></p>
+</details>
+
+**For non-technical team members.** Guides stakeholders through a conversational feature proposal:
+
+1. **Understand** — what's the problem, who's affected, why now
+2. **Push back** — engineering complexity, third-party costs, timeline reality
+3. **Simplify** — probe for an MVP that delivers 80% of the value
+4. **Document** — write a proposal doc and create a PR for engineering handoff
+
+Engineers scope the proposal by running `/flux:scope docs/proposals/YYYY-MM-DD-feature-name.md`.
+
+Also detected **implicitly** — if someone uses `/flux:scope` with non-technical language, Flux asks whether they're an engineer or a stakeholder and routes accordingly.
 
 ### /flux:scope
 
