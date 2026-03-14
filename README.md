@@ -124,6 +124,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 3. Tell the user to run in their agent UI:
    ```
    /plugin uninstall flux@nairon-flux
+   /plugin marketplace remove nairon-flux
    ```
 4. Remove project artifacts (the agent does this, not the user):
    ```bash
