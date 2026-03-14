@@ -49,7 +49,7 @@ Ship with confidence. Sleep better at night.
 
 - [Install](#install)
 - [Getting Started](#getting-started)
-- [Core Workflow](#core-workflow)
+- [Architecture](#architecture)
 - [Features](#features)
 - [Commands](#commands)
 - [Troubleshooting](#troubleshooting)
@@ -189,7 +189,7 @@ After prime, just tell the agent what you want — *build a feature, fix a bug, 
 
 ---
 
-## Core Workflow
+## Architecture
 
 ```mermaid
 flowchart TD
