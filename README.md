@@ -139,7 +139,49 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 
 ### 1. Setup
 
-`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools (MCP servers, CLI tools, desktop apps, agent skills).
+`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. Everything is opt-in — you pick what you want.
+
+<details>
+<summary><b>What Flux offers to install</b></summary>
+
+**MCP Servers** — extend what Claude can do:
+
+| MCP | Why |
+|-----|-----|
+| [FFF](https://github.com/dmtrKovalenko/fff.nvim) | 10x faster file search — fuzzy, frecency-aware, git-status-aware (replaces default Glob/find) |
+| [Context7](https://context7.com) | Up-to-date, version-specific library docs — no more hallucinated APIs |
+| [Exa](https://exa.ai) | Fastest AI web search — real-time research without leaving your session |
+| [GitHub](https://github.com/modelcontextprotocol/servers/tree/main/src/github) | PRs, issues, actions in Claude — no context switching to browser |
+| [Supermemory](https://supermemory.ai) | Persistent memory across sessions — never re-explain context |
+| [Firecrawl](https://firecrawl.dev) | Scrape websites and PDFs into clean markdown for agents |
+
+**CLI Tools** — terminal essentials:
+
+| Tool | Why |
+|------|-----|
+| [gh](https://cli.github.com) | GitHub from the terminal — PRs, issues, releases |
+| [jq](https://jqlang.github.io/jq/) | JSON parsing for Flux internals |
+| [fzf](https://github.com/junegunn/fzf) | Fuzzy finder for interactive selection |
+| [Lefthook](https://github.com/evilmartians/lefthook) | Fast git hooks for pre-commit checks |
+| [agent-browser](https://github.com/nichochar/agent-browser) | Headless browser for automated UI QA during epic reviews |
+| [CLI Continues](https://github.com/nichochar/continues) | Session handoff — pick up where you left off across terminals |
+
+**Desktop Apps** (macOS):
+
+| App | Why |
+|-----|-----|
+| [Superset](https://superset.dev) | Parallel Claude sessions with git worktree workspace management |
+| [Raycast](https://raycast.com) | Launcher with AI, snippets, clipboard history |
+| [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
+| [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
+
+**Agent Skills**:
+
+| Skill | Why |
+|-------|-----|
+| [Claudeception](https://github.com/blader/Claudeception) | Continuous learning — extracts reusable knowledge from work sessions |
+
+</details>
 
 ### 2. Prime
 
