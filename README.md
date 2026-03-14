@@ -157,22 +157,22 @@ After prime, just tell the agent what you want — *build a feature, fix a bug, 
 
 ```mermaid
 flowchart TD
-    SessionStart["Session Start\n(startup hook)"]
-    Pulse{"recommendation\npulse"}
-    Prime["Prime\n(readiness audit)"]
-    Scope["Scope\n(problem definition)"]
-    Work["Work\n(task loop)"]
-    ImplReview["Impl Review\n(per-task, lightweight)"]
-    EpicReview["Epic Review\n(per-epic, thorough)"]
-    Quality["Quality\n(tests + desloppify scan)"]
-    Ship["Ship\n(push + PR)"]
+    SessionStart["Session Start<br/>(startup hook)"]
+    Pulse{"recommendation<br/>pulse"}
+    Prime["Prime<br/>(readiness audit)"]
+    Scope["Scope<br/>(problem definition)"]
+    Work["Work<br/>(task loop)"]
+    ImplReview["Impl Review<br/>(per-task, lightweight)"]
+    EpicReview["Epic Review<br/>(per-epic, thorough)"]
+    Quality["Quality<br/>(tests + desloppify scan)"]
+    Ship["Ship<br/>(push + PR)"]
 
     SessionStart --> Pulse
-    Pulse -->|"new tools?\nnudge /flux:improve"| Prime
-    Pulse -->|"brain bloated?\nnudge /flux:meditate"| Prime
+    Pulse -->|"new tools?<br/>nudge /flux:improve"| Prime
+    Pulse -->|"brain bloated?<br/>nudge /flux:meditate"| Prime
     Pulse -->|"all clear"| Prime
     Prime --> Scope
-    Scope -->|"creates epic + tasks\n+ Browser QA checklist"| Work
+    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
 
     subgraph task_loop ["Task Loop (per task)"]
         Work -->|"spawn worker"| ImplReview
@@ -186,13 +186,13 @@ flowchart TD
     subgraph review_pipeline ["Epic Review Pipeline"]
         direction TB
         SpecCompliance["Spec Compliance"]
-        Adversarial["Adversarial Review\n(Anthropic + OpenAI)"]
+        Adversarial["Adversarial Review<br/>(Anthropic + OpenAI)"]
         SecurityScan["STRIDE Security Scan"]
-        BotSelfHeal["BYORB Self-Heal\n(Greptile / CodeRabbit)"]
+        BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)"]
         BrowserQA["Browser QA"]
         LearningCapture["Learning Capture"]
         DesloppifyScan["Desloppify Scan"]
-        FrustrationSignal{"friction\nscore >= 3?"}
+        FrustrationSignal{"friction<br/>score >= 3?"}
 
         SpecCompliance --> Adversarial
         Adversarial --> SecurityScan
@@ -205,28 +205,28 @@ flowchart TD
 
     EpicReview --> SpecCompliance
     FrustrationSignal -->|"no"| Quality
-    FrustrationSignal -->|"yes: suggest\n/flux:improve --user-context"| Quality
+    FrustrationSignal -->|"yes: suggest<br/>/flux:improve --user-context"| Quality
     Quality --> Ship
     Ship -->|"suggest /flux:reflect"| Done["Done"]
 
-    Brain["Brain Vault\n(pitfalls, principles,\nconventions, decisions)"]
+    Brain["Brain Vault<br/>(pitfalls, principles,<br/>conventions, decisions)"]
 
-    Brain -.->|"read: principles +\nrelevant pitfalls"| Scope
-    Brain -.->|"read: re-anchor\nper task"| Work
-    LearningCapture -.->|"write: pitfalls\nby area"| Brain
+    Brain -.->|"read: principles +<br/>relevant pitfalls"| Scope
+    Brain -.->|"read: re-anchor<br/>per task"| Work
+    LearningCapture -.->|"write: pitfalls<br/>by area"| Brain
 
     subgraph maintenance ["Between Epics"]
-        Reflect["Reflect\n(session learnings)"]
-        Ruminate["Ruminate\n(mine past sessions)"]
-        Meditate["Meditate\n(prune + promote)"]
-        Improve["Improve\n(recommendations engine)"]
+        Reflect["Reflect<br/>(session learnings)"]
+        Ruminate["Ruminate<br/>(mine past sessions)"]
+        Meditate["Meditate<br/>(prune + promote)"]
+        Improve["Improve<br/>(recommendations engine)"]
     end
 
     Reflect -.->|"write"| Brain
     Ruminate -.->|"write"| Brain
     Meditate -.->|"prune/promote"| Brain
-    Pulse -.->|"nudge when\nbrain bloated"| Meditate
-    Pulse -.->|"nudge when\nnew tools"| Improve
+    Pulse -.->|"nudge when<br/>brain bloated"| Meditate
+    Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
 
 | Phase | What happens |
