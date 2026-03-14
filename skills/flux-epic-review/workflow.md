@@ -734,40 +734,6 @@ agent-browser close
 
 ---
 
-## Human Review Phase
-
-**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
-
-After all automated review passes are complete (spec compliance, adversarial, security, bot self-heal, browser QA, desloppify scan), check config:
-
-```bash
-HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
-```
-
-If `HUMAN_REVIEW` is `true`, ask the user:
-
-> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off?
-
-If the user says yes, print the command and move on immediately (non-blocking):
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  Run this in a separate terminal to review the full diff │
-│                                                          │
-│  bunx critique main                                      │
-│                                                          │
-│  Install Critique (requires Bun):                        │
-│  curl -fsSL https://bun.sh/install | bash                │
-│  bun install -g critique                                 │
-└──────────────────────────────────────────────────────────┘
-```
-
-If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
-
-**Do NOT wait for the user to finish reviewing. Proceed directly to Learning Capture.**
-
----
-
 ## Learning Capture Phase
 
 **Always runs after the full pipeline reaches SHIP (or after max iterations).**
@@ -859,6 +825,40 @@ fi
 - If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
 - Do NOT auto-install desloppify — skip silently if not available.
 - Do NOT enter a fix loop — this is informational only.
+
+---
+
+## Human Review Phase
+
+**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
+
+After all automated review passes are complete (spec compliance, adversarial, security, bot self-heal, browser QA, desloppify scan), check config:
+
+```bash
+HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
+```
+
+If `HUMAN_REVIEW` is `true`, ask the user:
+
+> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off?
+
+If the user says yes, print the command and move on immediately (non-blocking):
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  Run this in a separate terminal to review the full diff │
+│                                                          │
+│  bunx critique main                                      │
+│                                                          │
+│  Install Critique (requires Bun):                        │
+│  curl -fsSL https://bun.sh/install | bash                │
+│  bun install -g critique                                 │
+└──────────────────────────────────────────────────────────┘
+```
+
+If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
+
+**Do NOT wait for the user to finish reviewing. Proceed directly to Frustration Signal.**
 
 ---
 
