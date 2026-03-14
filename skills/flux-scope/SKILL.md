@@ -85,6 +85,25 @@ Examples:
 
 If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentences."
 
+## Detect Stakeholder vs Engineer
+
+Before detecting mode, check if the user is a non-technical stakeholder rather than an engineer.
+
+**Detection signals** (check the input text):
+- Language focuses on **outcomes** not implementation ("I want users to be able to..." vs "Add an API endpoint for...")
+- No technical terms (no mention of APIs, databases, components, endpoints, schemas, services)
+- Describes **what** without **how**
+- Talks about business goals, customer needs, or user experience without referencing architecture
+
+If 2+ signals are present, ask:
+
+> "It sounds like you're describing what you'd like built rather than how to build it. Are you an engineer planning to implement this, or are you proposing a feature for the engineering team?"
+
+- If **stakeholder** → hand off to `flux-propose` skill with their input preserved. Stop here.
+- If **engineer** → continue with `/flux:scope` normally.
+
+If the input is clearly technical (mentions specific files, APIs, architecture) → skip this check entirely.
+
 ## Detect Mode
 
 Parse arguments for `--deep` flag. Default is shallow mode.
