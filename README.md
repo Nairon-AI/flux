@@ -542,11 +542,17 @@ Restart Claude Code, run `/plugin add https://github.com/Nairon-AI/flux@latest`,
 
 ## FAQ
 
+**Do I have to follow every step Flux suggests?**
+No. Flux is a harness, not a straitjacket. Skip steps, override suggestions, or bail out of any flow at any time. The structured process exists so the agent doesn't freelance — but you're always in control. Most devs use `/flux:scope` for complex features and just talk naturally for quick fixes.
+
+**Will Flux slow me down on small tasks?**
+Flux detects task size from your message. Say "fix the typo in header.tsx" and it routes straight to implementation — no interview, no scoping ceremony. The full Product OS flow only activates when you ask it to scope something or when the task is ambiguous enough to warrant it.
+
 **What data does Flux read?**
-Repo structure, installed MCPs, and optionally Claude Code session files (with consent).
+Repo structure, installed MCPs, and optionally Claude Code session files (with consent). Everything stays project-local in `.flux/`. Nothing touches your global config unless you explicitly run `/flux:setup`.
 
 **Is any data sent externally?**
-Analysis runs locally. Network only used to fetch the recommendations repo.
+Analysis runs locally. Network is only used to fetch the recommendations repo and check for plugin updates. No telemetry, no usage tracking. If you connect to Universe (opt-in), score data syncs to your profile — but that's a separate, explicit action.
 
 **Can I use Flux with Beads?**
 Not recommended — both are task tracking systems and will confuse the agent. Pick one.
