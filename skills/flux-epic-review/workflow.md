@@ -799,13 +799,48 @@ fi
 
 ## Frustration Signal
 
-Track `NEEDS_WORK_COUNT` across all fix loops in this pipeline (spec compliance, adversarial, bot self-heal). Increment the counter each time a NEEDS_WORK verdict is received from any reviewer or bot.
+### Signals to Track
 
-If `NEEDS_WORK_COUNT >= 3` after the pipeline completes, output:
+Maintain these counters across the entire epic review pipeline:
+
+| Counter | Incremented when | Source |
+|---------|-----------------|--------|
+| `NEEDS_WORK_COUNT` | NEEDS_WORK verdict from any reviewer | Spec compliance, adversarial, bot self-heal fix loops |
+| `SECURITY_FINDINGS` | STRIDE vulnerability found (confidence >= 0.8) | Security scan phase |
+| `BROWSER_QA_FAILURES` | QA criterion fails on first attempt | Browser QA phase |
+| `SAME_CATEGORY_PITFALLS` | 2+ pitfalls captured in the same area | Learning capture phase |
+
+### How to Count
+
+- **Spec compliance fix loop**: Each re-review after NEEDS_WORK = +1 to `NEEDS_WORK_COUNT`
+- **Adversarial fix loop**: Each consensus issue requiring a fix = +1 to `NEEDS_WORK_COUNT`
+- **Bot self-heal**: Each bot-identified fix iteration = +1 to `NEEDS_WORK_COUNT`
+- **Security scan**: Count validated findings (not raw matches)
+- **Browser QA**: Count criteria that fail on the FIRST attempt (retries don't count)
+- **Pitfall clustering**: After learning capture, group captured pitfalls by area — if any area has 2+, increment `SAME_CATEGORY_PITFALLS`
+
+### Friction Score
+
+Compute a weighted friction score at the end of the pipeline:
+
+```
+FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (SAME_CATEGORY_PITFALLS * 2)
+```
+
+Pitfall clustering is weighted 2x because repeated mistakes in the same area indicate a systematic gap, not a one-off.
+
+### Trigger Threshold
+
+If `FRICTION_SCORE >= 3`, output:
 
 ```
 ---
-**Friction detected**: This epic required {NEEDS_WORK_COUNT} review fix iterations.
+**Friction detected** (score: {FRICTION_SCORE}):
+- Review fix iterations: {NEEDS_WORK_COUNT}
+- Security findings: {SECURITY_FINDINGS}
+- Browser QA failures: {BROWSER_QA_FAILURES}
+- Clustered pitfalls (same area): {SAME_CATEGORY_PITFALLS}
+
 Repeated rework may indicate workflow gaps — missing linters, outdated
 conventions, or tools that could catch these issues earlier.
 
@@ -816,11 +851,24 @@ targeted recommendations from the Flux recommendations engine.
 
 This is a suggestion only — do not auto-invoke `/flux:improve`. The user decides whether to act on it.
 
-Common causes of high iteration counts:
-- Missing lint/format rules that reviewers keep catching
-- Stale brain pitfalls that haven't been promoted to structural enforcement
-- Missing test coverage for edge cases
-- Tools that could pre-validate (e.g., desloppify, security-scan) not installed
+### Why Multiple Signals
+
+A single counter (just NEEDS_WORK) is unreliable:
+- Complex epics naturally have more iterations — 3 iterations on a 10-task epic is normal
+- Security findings indicate missing pre-validation, not review quality
+- Browser QA failures indicate spec drift, not implementation quality
+- Pitfall clustering reveals systematic blind spots (e.g., always forgetting error states)
+
+By combining signals, the friction score distinguishes between "complex epic that needed refinement" and "systematic workflow gap that tools could fix."
+
+### Common Causes by Signal Type
+
+| High signal | Likely cause | `/flux:improve` can recommend |
+|-------------|-------------|------------------------------|
+| NEEDS_WORK | Missing lint/format rules | Linters, formatters, pre-commit hooks |
+| SECURITY_FINDINGS | No pre-validation | Security scanning tools, pre-commit security checks |
+| BROWSER_QA_FAILURES | Spec drift | Better acceptance criteria templates, visual regression tools |
+| SAME_CATEGORY_PITFALLS | Systematic blind spot | `/flux:meditate` to promote to principles, structural enforcement |
 
 ---
 

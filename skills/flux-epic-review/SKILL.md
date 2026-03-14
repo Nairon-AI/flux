@@ -331,13 +331,30 @@ fi
 
 ### Step 11: Frustration Signal
 
-Track the total number of NEEDS_WORK iterations across all fix loops in this review pipeline (spec compliance + adversarial + bot self-heal). If 3 or more iterations occurred, output a suggestion:
+**See [workflow.md](workflow.md) "Frustration Signal" for full multi-signal detection logic.**
+
+Compute a weighted friction score from multiple signals gathered during the review pipeline:
+
+| Signal | Source | Weight |
+|--------|--------|--------|
+| `NEEDS_WORK_COUNT` | Fix loop iterations (spec + adversarial + bot) | 1x |
+| `SECURITY_FINDINGS` | Security scan confirmed vulnerabilities | 1x |
+| `BROWSER_QA_FAILURES` | Browser QA criteria that failed | 1x |
+| `SAME_CATEGORY_PITFALLS` | Learning capture pitfalls matching existing brain areas | 2x |
+
+```
+FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (SAME_CATEGORY_PITFALLS * 2)
+```
+
+**If `FRICTION_SCORE >= 3`**, output a suggestion with signal breakdown:
 
 ```
 ---
-**Friction detected**: This epic required {N} review fix iterations.
-Repeated rework may indicate workflow gaps — missing linters, outdated
-conventions, or tools that could catch these issues earlier.
+**Friction detected** (score: {FRICTION_SCORE}):
+- Review iterations: {NEEDS_WORK_COUNT}
+- Security findings: {SECURITY_FINDINGS}
+- Browser QA failures: {BROWSER_QA_FAILURES}
+- Repeated pitfall categories: {SAME_CATEGORY_PITFALLS} (2x weight)
 
 Consider running `/flux:improve` to analyze your patterns and get
 targeted recommendations from the Flux recommendations engine.

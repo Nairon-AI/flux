@@ -368,6 +368,8 @@ Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
 
+**Suggest reflection**: After shipping, suggest the user run `/flux:reflect` to capture learnings from this epic while context is fresh. This feeds the brain vault's continuous improvement loop (reflect → ruminate → meditate).
+
 ## Definition of Done
 
 Confirm before ship:
