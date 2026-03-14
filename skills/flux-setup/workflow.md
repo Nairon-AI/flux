@@ -1094,6 +1094,23 @@ Then ask for their Linear API key (needed for automated sync of epics/tasks to L
 }
 ```
 
+**Human review question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Human Review (Optional)",
+  "question": "After AI reviews finish, want to review diffs yourself in the terminal? Uses Critique — a beautiful TUI diff viewer with syntax highlighting and split view. Requires Bun.",
+  "options": [
+    {"label": "Yes", "description": "After each review, Flux prints the command to open the diff in Critique. Non-blocking — you review in a separate terminal."},
+    {"label": "No", "description": "Skip human review. AI reviews only."}
+  ],
+  "multiSelect": false
+}
+```
+
+Save to config:
+- "Yes" → `$FLUXCTL config set review.humanReview true`
+- "No" → `$FLUXCTL config set review.humanReview false`
+
 **Adversarial Reviewer 1 question** (include if review backend is NOT "None"):
 ```json
 {

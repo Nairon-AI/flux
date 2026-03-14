@@ -162,6 +162,40 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 ---
 
+## Human Review (After SHIP)
+
+**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
+
+After the reviewer returns `<verdict>SHIP</verdict>`, check config:
+
+```bash
+HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
+```
+
+If `HUMAN_REVIEW` is `true`, ask the user:
+
+> **Review passed — SHIP.** Want to review the diff yourself before moving on?
+
+If the user says yes, print the command and move on immediately (non-blocking):
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Run this in a separate terminal to review the diff │
+│                                                     │
+│  bunx critique ${BASE_COMMIT:-main}                 │
+│                                                     │
+│  Install Critique (requires Bun):                   │
+│  curl -fsSL https://bun.sh/install | bash           │
+│  bun install -g critique                            │
+└─────────────────────────────────────────────────────┘
+```
+
+If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
+
+**Do NOT wait for the user to finish reviewing. Move on immediately.**
+
+---
+
 ## Update Check (End of Command)
 
 **ALWAYS run at the very end of /flux:impl-review execution:**
