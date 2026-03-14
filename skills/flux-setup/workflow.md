@@ -1169,6 +1169,21 @@ Then ask for their Linear API key (needed for automated sync of epics/tasks to L
 }
 ```
 
+**Review Severity question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Review Severity Threshold",
+  "question": "Which issue severities should the self-heal loop fix? Select all that apply. Issues below your threshold are logged but not auto-fixed.",
+  "options": [
+    {"label": "Critical", "description": "Security vulnerabilities, data loss, crashes. Always recommended."},
+    {"label": "Major", "description": "Bugs, logic errors, missing validation, performance issues."},
+    {"label": "Minor", "description": "Edge cases, error handling gaps, suboptimal patterns."},
+    {"label": "Style", "description": "Naming conventions, formatting, code organization, readability."}
+  ],
+  "multiSelect": true
+}
+```
+
 **PR Template question** (always include):
 ```json
 {
@@ -1317,6 +1332,16 @@ esac
      ```
      Save config anyway — do not block setup.
 - If "None": `"${PLUGIN_ROOT}/scripts/fluxctl" config set review.bot "none" --json`
+
+**Review Severity** (if question was asked):
+Save the selected severities as a comma-separated list:
+```bash
+# Example: user selected Critical + Major + Minor
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.severities "critical,major,minor" --json
+```
+Map labels to lowercase values: Critical → `critical`, Major → `major`, Minor → `minor`, Style → `style`.
+
+If no selection was made, default to `critical,major`.
 
 **PR Template** (if question was asked):
 - If "Yes":
@@ -1559,6 +1584,7 @@ Configuration (use fluxctl config set to change):
 - Adversarial reviewer 1: <model> (Anthropic)
 - Adversarial reviewer 2: <model> (OpenAI)
 - Code review bot: <greptile|coderabbit|none>
+- Review severities: <critical,major,minor,style>
 - PR template: <created|skipped|already exists>
 
 Documentation updated:

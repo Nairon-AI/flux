@@ -31,6 +31,7 @@ def get_default_config() -> dict:
             "reviewer1": None,
             "reviewer2": None,
             "bot": None,
+            "severities": ["critical", "major"],
         },
         "scouts": {"github": False},
         "tracker": {"provider": None, "teamId": None},

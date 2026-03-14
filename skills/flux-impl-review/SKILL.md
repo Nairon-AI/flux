@@ -154,7 +154,19 @@ Flux uses **two models from different labs** to review the same code independent
 REVIEWER_1=$($FLUXCTL config get review.reviewer1 2>/dev/null | awk '{print $2}')
 REVIEWER_2=$($FLUXCTL config get review.reviewer2 2>/dev/null | awk '{print $2}')
 REVIEW_BOT=$($FLUXCTL config get review.bot 2>/dev/null | awk '{print $2}')
+SEVERITIES=$($FLUXCTL config get review.severities 2>/dev/null | awk '{print $2}')
 ```
+
+`SEVERITIES` is a comma-separated list (e.g. `critical,major,minor`). Default: `critical,major`.
+
+**Severity filtering**: Only issues at or above the configured threshold get auto-fixed. Lower-severity issues are logged in the review output but NOT fixed in the self-heal loop.
+
+| Severity | Description | Example |
+|----------|-------------|---------|
+| `critical` | Security vulnerabilities, data loss, crashes | SQL injection, unvalidated auth |
+| `major` | Bugs, logic errors, missing validation, perf issues | Race condition, missing null check |
+| `minor` | Edge cases, error handling gaps, suboptimal patterns | Missing timeout, unused import |
+| `style` | Naming, formatting, code organization, readability | Inconsistent casing, long function |
 
 If `REVIEWER_1` or `REVIEWER_2` is empty/not set, fall back to single-model review using the configured backend only (skip adversarial). This maintains backward compatibility.
 
@@ -182,15 +194,21 @@ Compare the two sets of findings:
 | **Only one** flags an issue | **Medium confidence** — still fix, but note it was single-model |
 | **Contradictory** findings | Flag for the fix loop — address the more conservative recommendation |
 
-Build a merged issue list sorted by: consensus issues first (Critical → Major → Minor), then single-model issues.
+Build a merged issue list sorted by: consensus issues first (Critical → Major → Minor → Style), then single-model issues.
+
+**Apply severity filter**: Split the merged list into two:
+- **Fix list**: issues whose severity is in `SEVERITIES` (these get auto-fixed)
+- **Log-only list**: issues below the threshold (shown in output but not fixed)
+
+If the fix list is empty, the review passes — issue SHIP even if log-only items exist.
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
-**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
+**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues at or above the severity threshold and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
 
 If verdict is NEEDS_WORK, loop internally until SHIP:
 
-1. **Parse issues** from merged adversarial findings (Consensus → Critical → Major → Minor)
+1. **Parse issues** from merged adversarial findings, filtered by `SEVERITIES` (Consensus → Critical → Major → Minor → Style)
 2. **Fix code** and run tests/lints
 3. **Commit fixes** (mandatory before re-review)
 4. **Re-review**:
