@@ -27,6 +27,7 @@ def get_default_config() -> dict:
             "reviewer2": None,
             "bot": None,
             "severities": ["critical", "major"],
+            "humanReview": False,
         },
         "scouts": {"github": False},
         "tracker": {"provider": None, "teamId": None},
