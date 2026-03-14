@@ -551,8 +551,8 @@ def test_user_context_integration():
 
     print(f"Recommendations: {all_recs}")
 
-    # Should recommend frontend-models for CSS and supermemory for forgetting
-    expected = ["frontend-models", "supermemory"]
+    # Should recommend frontend-models for CSS friction
+    expected = ["frontend-models"]
     found = [r for r in expected if r in all_recs]
 
     if len(found) >= 1:  # At least one expected recommendation

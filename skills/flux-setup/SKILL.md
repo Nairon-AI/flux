@@ -18,7 +18,6 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Context7** — no more hallucinated APIs, up-to-date library docs in every prompt
   - **Exa** — fastest AI web search, real-time research without leaving your session
   - **GitHub** — PRs, issues, actions directly in Claude, no context switching
-  - **Supermemory** — never re-explain context, persistent memory across sessions
 - **Optional** additional MCP:
   - **Firecrawl** — scrape websites and parse PDFs into LLM-ready markdown
 - **Optional** recommended CLI tools:

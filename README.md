@@ -152,7 +152,6 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 | [Context7](https://context7.com) | Up-to-date, version-specific library docs — no more hallucinated APIs |
 | [Exa](https://exa.ai) | Fastest AI web search — real-time research without leaving your session |
 | [GitHub](https://github.com/modelcontextprotocol/servers/tree/main/src/github) | PRs, issues, actions in Claude — no context switching to browser |
-| [Supermemory](https://supermemory.ai) | Persistent memory across sessions — never re-explain context |
 | [Firecrawl](https://firecrawl.dev) | Scrape websites and PDFs into clean markdown for agents |
 
 **CLI Tools** — terminal essentials:
