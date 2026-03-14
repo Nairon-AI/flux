@@ -108,6 +108,27 @@ If 3+ signals are present and zero engineer signals, ask:
 - If **stakeholder** → hand off to `flux-propose` skill with their input preserved. Stop here.
 - If **engineer** → continue with `/flux:scope` normally.
 
+## Detect Bug vs Feature
+
+After stakeholder detection, check if this is a bug report that should route to RCA.
+
+**Bug signals** (check the input text):
+- Contains error messages, stack traces, or exception names
+- Uses bug language: "broken", "not working", "crash", "fails", "regression", "wrong output", "bug"
+- Describes incorrect behavior: "X does Y instead of Z", "used to work but now..."
+- References a defect ticket or incident
+
+If bug signals are strong, ask:
+
+> "This looks like a bug report. Would you like me to run a root cause analysis instead of the standard scoping flow? RCA traces backward from the symptom to find the real source of the problem."
+
+- If **yes** → hand off to `flux-rca` skill with their input preserved. Stop here.
+- If **no** → continue with `/flux:scope` normally (user may want to scope a larger fix around the bug).
+
+If unclear (could be a bug or a feature gap), ask:
+
+> "Am I right in thinking this is a bug? Or is this more of a missing feature / improvement?"
+
 ## Detect Mode
 
 Parse arguments for `--deep` flag. Default is shallow mode.

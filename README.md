@@ -197,6 +197,7 @@ flowchart TD
     Pulse{"recommendation<br/>pulse"}
     Prime["Prime<br/>(readiness audit)"]
     Propose["Propose<br/>(stakeholder intake)"]
+    RCA["RCA<br/>(root cause analysis)"]
     Scope["Scope<br/>(problem definition)"]
     Work["Work<br/>(task loop)"]
     ImplReview["Impl Review<br/>(per-task, lightweight)"]
@@ -211,6 +212,8 @@ flowchart TD
     Prime --> Scope
     Scope -->|"non-technical user<br/>detected"| Propose
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
+    Scope -->|"bug detected"| RCA
+    RCA -->|"fix + regression test<br/>+ pitfall written"| Ship
     Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
 
     subgraph task_loop ["Task Loop (per task)"]
@@ -273,6 +276,7 @@ flowchart TD
 | **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain vault health (once/day). |
 | **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
 | **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR |
+| **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. Optionally uses RepoPrompt Investigate. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
@@ -437,6 +441,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:setup` | Initialize Flux in your project | 1. First time using Flux — scaffolds `.flux/`, configures preferences, installs tools |
 | `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) | 2. After setup — Flux detects unprimed repos and prompts you. Runs once per repo |
 | `/flux:propose` | Stakeholder feature proposal with engineering pushback | 2.5. A non-technical teammate describes a feature — Flux interviews them, pushes back on complexity/cost, documents the proposal, and creates a PR for engineering handoff. Also detected implicitly during `/flux:scope` |
+| `/flux:rca` | Root cause analysis for bugs | 2.5. You paste an error or describe a bug — Flux traces backward to the root cause, verifies with adversarial review, writes the fix with regression test, and embeds learnings. Also detected implicitly during `/flux:scope` |
 | `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux interviews you, creates an epic with sized tasks |
 | `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — skip the Double Diamond interview, go straight to task creation |
 | `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
