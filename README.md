@@ -234,6 +234,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:setup` | Initialize Flux in your project |
 | `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) |
 | `/flux:plan <idea>` | Create tasks only (skip interview) |
+| `/flux:recall <topic>` | Search prior work across Flux state, git, and memory |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |
 | `/flux:impl-review` | Implementation review |
