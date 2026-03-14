@@ -542,20 +542,59 @@ Restart Claude Code, run `/plugin add https://github.com/Nairon-AI/flux@latest`,
 
 ## FAQ
 
-**Do I have to follow every step Flux suggests?**
-No. Flux is a harness, not a straitjacket. Skip steps, override suggestions, or bail out of any flow at any time. The structured process exists so the agent doesn't freelance — but you're always in control. Most devs use `/flux:scope` for complex features and just talk naturally for quick fixes.
+<details>
+<summary><strong>Do I have to follow every step Flux suggests?</strong></summary>
 
-**Will Flux slow me down on small tasks?**
-Flux detects task size from your message. Say "fix the typo in header.tsx" and it routes straight to implementation — no interview, no scoping ceremony. The full Product OS flow only activates when you ask it to scope something or when the task is ambiguous enough to warrant it.
+No — Flux is a guide, not a gatekeeper. You can skip steps, override suggestions, or exit any flow whenever you want.
 
-**What data does Flux read?**
-Repo structure, installed MCPs, and optionally Claude Code session files (with consent). Everything stays project-local in `.flux/`. Nothing touches your global config unless you explicitly run `/flux:setup`.
+The reason Flux has structured flows is to stop the AI agent from going rogue — without guardrails, agents tend to start building before they understand what they're building, skip testing, or forget context halfway through. Flux prevents that. But **you** are always in control. If a step feels unnecessary for your situation, skip it.
 
-**Is any data sent externally?**
-Analysis runs locally. Network is only used to fetch the recommendations repo and check for plugin updates. No telemetry, no usage tracking. If you connect to Universe (opt-in), score data syncs to your profile — but that's a separate, explicit action.
+In practice, most devs use `/flux:scope` for complex or ambiguous features (where the interview catches blind spots), and just talk naturally for everything else ("fix the bug in auth.ts" — Flux routes straight to work, no ceremony).
+</details>
 
-**Can I use Flux with Beads?**
-Not recommended — both are task tracking systems and will confuse the agent. Pick one.
+<details>
+<summary><strong>Will Flux slow me down on small tasks?</strong></summary>
+
+No. Flux reads your message and figures out what kind of task it is.
+
+- **Quick fix** ("fix the typo in header.tsx") → goes straight to implementation. No scoping interview, no epic creation — just does the work.
+- **Clear task** ("add a loading spinner to the dashboard") → creates a lightweight plan and starts building.
+- **Ambiguous feature** ("add user notifications") → triggers the scoping flow to make sure you've thought through edge cases before the agent writes code.
+
+The full Product OS scoping flow (the interview, problem statement, task breakdown) only activates when you explicitly run `/flux:scope` or when the request is vague enough that building without clarification would waste time. For day-to-day work, Flux stays out of your way.
+</details>
+
+<details>
+<summary><strong>What data does Flux read and where does it store things?</strong></summary>
+
+Flux reads your **repo structure** (files, directories, dependencies), your **installed MCP servers** (from `.mcp.json`), and optionally your **Claude Code session transcripts** (only when you run `/flux:improve` and give explicit consent).
+
+Everything Flux creates lives in a `.flux/` directory inside your project — task state, brain vault notes, session metadata. It never writes to your home directory or global config. Each project gets its own independent Flux setup, so different repos can have different tools, skills, and configurations without interfering with each other.
+
+The only global change Flux makes is during `/flux:setup` if you choose to install CLI tools (like `jq` or `gh`) — but even that is opt-in and asks you first.
+</details>
+
+<details>
+<summary><strong>Is any data sent externally? Is there telemetry?</strong></summary>
+
+**No telemetry. No usage tracking. No analytics.**
+
+The only network requests Flux makes are:
+1. **Fetching the [recommendations repo](https://github.com/Nairon-AI/flux-recommendations)** — a public GitHub repo with tool suggestions, pulled during `/flux:improve`
+2. **Checking for plugin updates** — a version check against the GitHub release tag at the end of commands
+
+That's it. All analysis (session parsing, friction detection, scoring) runs entirely on your machine. Your code never leaves your laptop.
+
+If you choose to connect to [Nairon Universe](https://nairon.ai/universe) (opt-in via `/flux:login`), your Flux Score data syncs to your profile — but that's a separate, explicit action you have to initiate. It never happens automatically.
+</details>
+
+<details>
+<summary><strong>Can I use Flux alongside other task tracking tools (Beads, TodoWrite, etc.)?</strong></summary>
+
+Not recommended. Flux uses its own task tracking system (`.flux/` + `fluxctl`) to maintain state across sessions — what's been scoped, what's in progress, what's done. If you also use Beads, TodoWrite, or markdown TODO files, the agent will see two conflicting sources of truth and get confused about what to work on next.
+
+Pick one system and stick with it. If you prefer Beads, use Beads. If you want the full Flux workflow (scoping, brain vault, reviews, recommendations), use Flux. Mixing them creates more problems than it solves.
+</details>
 
 ---
 
