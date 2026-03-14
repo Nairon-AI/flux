@@ -69,6 +69,12 @@ Apply all changes directly. The user reviews the diff.
 
 Update `brain/index.md` for any files added or removed.
 
+Update meditate timestamp so the session health check knows when this last ran:
+```bash
+mkdir -p "$HOME/.flux"
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HOME/.flux/last_meditate"
+```
+
 ## Summary
 
 ```

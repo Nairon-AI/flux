@@ -157,6 +157,8 @@ After prime, just tell the agent what you want — *build a feature, fix a bug, 
 
 ```mermaid
 flowchart TD
+    SessionStart["Session Start\n(startup hook)"]
+    Pulse{"recommendation\npulse"}
     Prime["Prime\n(readiness audit)"]
     Scope["Scope\n(problem definition)"]
     Work["Work\n(task loop)"]
@@ -165,6 +167,10 @@ flowchart TD
     Quality["Quality\n(tests + desloppify scan)"]
     Ship["Ship\n(push + PR)"]
 
+    SessionStart --> Pulse
+    Pulse -->|"new tools?\nnudge /flux:improve"| Prime
+    Pulse -->|"brain bloated?\nnudge /flux:meditate"| Prime
+    Pulse -->|"all clear"| Prime
     Prime --> Scope
     Scope -->|"creates epic + tasks\n+ Browser QA checklist"| Work
 
@@ -199,8 +205,9 @@ flowchart TD
 
     EpicReview --> SpecCompliance
     FrustrationSignal -->|"no"| Quality
-    FrustrationSignal -->|"yes: suggest /flux:improve"| Quality
+    FrustrationSignal -->|"yes: suggest\n/flux:improve --user-context"| Quality
     Quality --> Ship
+    Ship -->|"suggest /flux:reflect"| Done["Done"]
 
     Brain["Brain Vault\n(pitfalls, principles,\nconventions, decisions)"]
 
@@ -218,21 +225,24 @@ flowchart TD
     Reflect -.->|"write"| Brain
     Ruminate -.->|"write"| Brain
     Meditate -.->|"prune/promote"| Brain
+    Pulse -.->|"nudge when\nbrain bloated"| Meditate
+    Pulse -.->|"nudge when\nnew tools"| Improve
 ```
 
 | Phase | What happens |
 |-------|-------------|
+| **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain vault health (once/day). |
 | **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
 | **Quality** | Tests, lint/format, desloppify scan on changed files |
-| **Ship** | Push, open PR, close epic |
+| **Ship** | Push, open PR, suggest `/flux:reflect` |
 | | |
-| **Reflect** | *Between epics:* capture session learnings to brain vault |
+| **Reflect** | *Between epics:* capture session learnings to brain vault. Suggested after every ship. |
 | **Ruminate** | *Between epics:* mine past conversations for missed patterns |
-| **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles |
-| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested when friction score >= 3 (weighted: review iterations + security findings + QA failures + repeated pitfalls). |
+| **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles. Auto-nudged when 5+ new pitfalls accumulate or 30+ days since last meditation. |
+| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested on friction (score >= 3) and via session start pulse when new tools are available. |
 
 ---
 
@@ -279,11 +289,23 @@ brain/
 
 These are maintenance skills designed to run between epics, not during active development. They audit, prune, and evolve the brain vault when you have breathing room.
 
-### Recommendation Engine
+### Self-Improving Harness
 
-`/flux:improve` analyzes your sessions and recommends tools mapped to your specific friction patterns — from MCP servers to CLI tools to workflow changes. Recommendations are community-driven via [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
+Flux autonomously finds ways to improve itself for every project it's used in. The recommendation engine surfaces at every natural touchpoint — not just when you ask for it:
 
-Flux also auto-detects frustration during epic review using two layers: a **quantitative friction score** (review iterations, security findings, QA failures, repeated pitfalls) and **qualitative analysis** that scans developer messages and reviewer feedback to identify *what* you're struggling with — not just *that* you're struggling. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
+| Touchpoint | What fires | How heavy |
+|---|---|---|
+| **Session start** | Recommendation pulse — checks for new tools and brain vault health | ~2s, once/day |
+| **During work** | Qualitative friction analysis — detects frustration topic from developer messages | Zero cost |
+| **After epic review** | Targeted `/flux:improve` suggestion with pre-filled friction context | Zero cost |
+| **After shipping** | `/flux:reflect` suggestion to capture learnings | Zero cost |
+| **Between epics** | Full `/flux:improve` analysis, `/flux:meditate` for brain pruning | Heavyweight |
+
+The **recommendation pulse** runs as a startup hook every session (rate-limited to once per day). It pulls the latest [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) repo, checks for new tools that match your stack, and checks if your brain vault needs pruning. If anything is actionable, it surfaces a brief nudge — you multi-select to install or dismiss.
+
+The **friction signal** fires during epic review using two layers: a quantitative friction score (review iterations, security findings, QA failures, repeated pitfalls) and qualitative analysis that scans developer messages and reviewer feedback to identify *what* you're struggling with. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
+
+The result: Flux gets smarter every session — new tools surface proactively, friction domains get diagnosed automatically, and the brain vault stays lean through meditate nudges. You don't have to remember to run maintenance commands.
 
 ### Desloppify
 
@@ -397,8 +419,8 @@ fluxctl config get tracker.provider   # Check current tracker config
 |---------|-------------|-----------------|
 | `/flux:reflect` | Capture session learnings to brain vault | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
 | `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
-| `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Between epics — audit `brain/` when it grows too large. Promotes recurring pitfalls into principles, prunes one-offs |
-| `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-suggested when epic review detects friction (score >= 3). Analyzes your sessions and recommends tools mapped to your specific pain points |
+| `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
+| `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
 
 **Utilities**
 

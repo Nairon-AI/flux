@@ -9,6 +9,11 @@
             "type": "command",
             "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/inject-brain.sh\" ] && \"$PLUGIN_ROOT/hooks/inject-brain.sh\" || true",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/recommendation-pulse.sh\" ] && \"$PLUGIN_ROOT/hooks/recommendation-pulse.sh\" || true",
+            "timeout": 10
           }
         ]
       }
