@@ -457,6 +457,62 @@ If the consensus + filtered issues produce a non-empty fix-list:
 
 ---
 
+## Security Scan Phase
+
+**Auto-triggered when changed files touch security-sensitive areas.**
+
+### Step 1: Detect Security-Sensitive Changes
+
+```bash
+DIFF_BASE="main"
+git rev-parse main >/dev/null 2>&1 || DIFF_BASE="master"
+CHANGED_FILES="$(git diff ${DIFF_BASE}..HEAD --name-only)"
+
+# Security-sensitive patterns
+SECURITY_FILES=$(echo "$CHANGED_FILES" | grep -iE '(auth|login|session|token|middleware|permission|rbac|acl|secret|credential|api[-_]?key|security|crypto|encrypt|password|oauth|jwt|cors|csrf|sanitiz|valid)' || echo "")
+```
+
+**If `SECURITY_FILES` is empty**: Skip to External Bot Self-Heal Phase.
+
+### Step 2: Run STRIDE Scan
+
+Invoke the `flux-security-review` skill in `staged` mode against the branch diff. This runs the full STRIDE analysis:
+
+- **S** — Spoofing: weak auth, session vulnerabilities, API key exposure
+- **T** — Tampering: SQL injection, command injection, XSS, mass assignment
+- **R** — Repudiation: missing audit logs, insufficient logging
+- **I** — Information Disclosure: IDOR, verbose errors, hardcoded secrets, data leaks
+- **D** — Denial of Service: missing rate limiting, ReDoS, resource exhaustion
+- **E** — Elevation of Privilege: missing authz checks, privilege escalation
+
+The skill outputs `.flux/security/validated-findings.json` with confirmed vulnerabilities (confidence >= 0.8).
+
+### Step 3: Process Findings
+
+```bash
+if [[ -f ".flux/security/validated-findings.json" ]]; then
+  FINDINGS_COUNT=$(jq '.summary.confirmed' .flux/security/validated-findings.json)
+  echo "Security scan: $FINDINGS_COUNT confirmed findings"
+fi
+```
+
+1. Parse findings from `validated-findings.json`
+2. Filter by severity threshold (same `SEVERITIES` config — map security severities: critical→critical, high→major, medium→minor, low→style)
+3. Auto-fix findings in fix-list
+4. Commit: `git commit -m "fix: address STRIDE security scan findings"`
+5. Re-scan if critical findings were found (max 1 re-scan)
+
+### Step 4: Log Security Summary
+
+Even if all findings are below threshold, log the summary:
+```
+Security scan complete: N files scanned, M findings (X fixed, Y logged)
+```
+
+Security findings are also captured in the Learning Capture phase.
+
+---
+
 ## External Bot Self-Heal Phase
 
 **Only runs if `REVIEW_BOT` is configured (`greptile` or `coderabbit`) AND a PR exists.**
@@ -564,7 +620,9 @@ If CodeRabbit flagged issues:
 
 **Only runs if ALL of these are true:**
 1. `agent-browser` is available: `command -v agent-browser >/dev/null 2>&1`
-2. Epic spec contains testable acceptance criteria (URLs, UI flows, visual checks)
+2. A "Browser QA Checklist" task exists for this epic (created during `/flux:scope`)
+
+During scoping, Flux auto-creates a Browser QA Checklist task for epics involving frontend/web changes. This task contains structured, testable criteria that this phase follows — no guesswork needed.
 
 ### Step 1: Check Prerequisites
 
@@ -573,51 +631,73 @@ if ! command -v agent-browser >/dev/null 2>&1; then
   echo "agent-browser not found. Skipping browser QA."
   # Skip to Learning Capture
 fi
+
+# Look for Browser QA Checklist task in this epic
+QA_TASK=$($FLUXCTL tasks --epic "$EPIC_ID" --json | jq -r '.[] | select(.title | test("Browser QA|browser.qa"; "i")) | .id' | head -1)
+
+if [[ -z "$QA_TASK" ]]; then
+  echo "No Browser QA Checklist task found for $EPIC_ID. Skipping browser QA."
+  # Skip to Learning Capture
+fi
 ```
 
-### Step 2: Extract Testable Criteria
+### Step 2: Read QA Checklist
 
-Read the epic spec and extract acceptance criteria that can be browser-tested:
-- URLs to visit
-- Elements to check (buttons, forms, text)
-- Visual states to verify
-- User flows to test (login, form submission, navigation)
+```bash
+# Get the QA task spec with acceptance criteria
+QA_SPEC=$($FLUXCTL task show "$QA_TASK" --json)
+```
 
-**Skip browser QA if no testable criteria found** (e.g., pure backend/CLI epics).
+The checklist task contains structured acceptance criteria like:
+```
+- [ ] Navigate to /dashboard — verify stats cards render with data
+- [ ] Click "Add Item" button — verify modal opens with form fields
+- [ ] Submit form with valid data — verify success toast and item appears in list
+- [ ] Navigate to /settings — verify all toggle switches reflect saved state
+```
+
+Each criterion specifies: URL/action, expected result, and what to verify.
 
 ### Step 3: Execute Browser Tests
 
-For each testable criterion:
+For each criterion in the checklist:
 
 ```bash
 # Open the target URL
 agent-browser open <url>
 agent-browser wait --load networkidle
 
-# Take snapshot to discover elements
+# Take snapshot to discover interactive elements
 agent-browser snapshot -i
 
-# Verify expected elements/text exist
-agent-browser get text @e1  # Check for expected content
+# Perform action (click, fill, navigate) based on criterion
+agent-browser click @e1  # or fill, select, etc.
+
+# Verify expected result
+agent-browser wait --text "Expected text"
+agent-browser snapshot -i  # Re-snapshot after action
 
 # Take screenshot for evidence
-agent-browser screenshot "/tmp/qa-${EPIC_ID}-${test_name}.png"
+agent-browser screenshot "/tmp/qa-${EPIC_ID}-${n}.png"
 ```
 
 ### Step 4: Handle Failures
 
 If any criterion fails:
 
-1. Log the failure with screenshot path
+1. Log the failure with screenshot path and expected vs actual
 2. Fix the code to address the UI issue
 3. Run tests/lints
 4. Commit: `git commit -m "fix: address browser QA failure - <criterion>"`
 5. Re-test the failing criterion
 6. Max 2 fix iterations per criterion
 
-### Step 5: Cleanup
+### Step 5: Mark QA Task Complete
+
+After all criteria pass:
 
 ```bash
+$FLUXCTL done "$QA_TASK"
 agent-browser close
 ```
 
@@ -633,8 +713,9 @@ Review all NEEDS_WORK iterations across the pipeline and extract generalizable p
 
 1. **Spec compliance gaps** — requirements that drifted from spec during implementation
 2. **Adversarial consensus patterns** — issues both models flagged (these are high-signal patterns the worker should learn)
-3. **Bot-caught patterns** — recurring issues Greptile/CodeRabbit caught that models missed
-4. **Browser QA failures** — UI/UX issues missed during implementation
+3. **Security scan findings** — STRIDE vulnerabilities caught post-implementation (auth gaps, injection vectors, data exposure)
+4. **Bot-caught patterns** — recurring issues Greptile/CodeRabbit caught that models missed
+5. **Browser QA failures** — UI/UX issues missed during implementation
 
 ### How to Capture
 
@@ -686,11 +767,17 @@ Only capture generalizable patterns, not one-off fixes.
 - **Skipping consensus merge** - Both responses must be parsed and merged
 - **Auto-fixing single-model minor issues** - Only consensus or above-threshold
 
+**Security scan:**
+- **Scanning non-security changes** - Only run when security-sensitive files are changed
+- **Ignoring confidence scores** - Only act on findings with confidence >= 0.8
+- **Re-scanning endlessly** - Max 1 re-scan after fixes
+
 **Bot self-heal:**
 - **Polling without timeout** - Always use max poll count
 - **Pushing without PR** - Bot needs a PR to review
 - **Infinite fix loops** - Max 2 iterations per bot
 
 **Browser QA:**
-- **Testing non-UI epics** - Skip if no testable criteria
+- **Testing without checklist** - Skip if no Browser QA Checklist task exists
+- **Guessing test criteria** - Always follow the checklist from scoping, don't invent tests
 - **Leaving browser open** - Always close session when done

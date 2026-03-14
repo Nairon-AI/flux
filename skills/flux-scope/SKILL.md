@@ -1378,6 +1378,53 @@ $FLUXCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/ac
 - [ ] Criterion 2
 ```
 
+## Step 10.5: Browser QA Checklist (if frontend/web)
+
+**Auto-create a Browser QA Checklist task when the epic involves frontend/web changes.**
+
+Detect if the epic touches frontend/web UI by checking:
+- Do any tasks reference UI components, pages, routes, views, forms, modals, dashboards?
+- Do file paths include patterns like `src/components/`, `pages/`, `app/`, `views/`, `*.tsx`, `*.vue`, `*.svelte`?
+- Does the problem statement or scope mention user-facing UI?
+
+**If YES** — create a Browser QA Checklist task:
+
+```bash
+$FLUXCTL task create --epic <epic-id> --title "Browser QA Checklist" --json
+```
+
+Set its spec with testable acceptance criteria derived from the epic's acceptance criteria and task specs. Each criterion must be concrete and browser-testable:
+
+```bash
+cat > /tmp/qa-desc.md << 'EOF'
+## Description
+Browser QA checklist for epic review. Each criterion is tested automatically by
+agent-browser during `/flux:epic-review`. Not an implementation task — this is
+a test checklist.
+
+**Size:** S
+EOF
+
+cat > /tmp/qa-acc.md << 'EOF'
+- [ ] Navigate to <URL> — verify <expected element/text> renders
+- [ ] Click "<button/link>" — verify <expected result>
+- [ ] Submit <form> with valid data — verify <success state>
+- [ ] Navigate to <URL> — verify <visual state> after changes
+- [ ] Check responsive layout at mobile width (375px)
+EOF
+
+$FLUXCTL task set-spec <qa-task-id> --description /tmp/qa-desc.md --acceptance /tmp/qa-acc.md --json
+```
+
+**Criteria guidelines:**
+- Each criterion = one URL + one action + one expected result
+- Use actual URLs/paths from the epic scope (e.g., `/dashboard`, `/settings`, `localhost:3000/login`)
+- Include the specific text, elements, or visual states to verify
+- Include at least one responsive/mobile check if applicable
+- Keep criteria to 5-10 items max — focused on acceptance-critical flows
+
+**If NO** (pure backend, CLI, library, or infrastructure epic) — skip this step.
+
 ## Step 11: Update Epic Spec
 
 Update epic with full scope and acceptance:

@@ -163,7 +163,7 @@ Prime → Scope → Work → Review → Improve → Reflect
 |------|-------------|
 | **Scope** | Guided interview: classify the work, surface blind spots, create an epic with sized tasks |
 | **Work** | Execute tasks with context reload and state tracking |
-| **Review** | Lightweight per-task, thorough per-epic (adversarial + BYORB + browser QA) |
+| **Review** | Lightweight per-task, thorough per-epic (adversarial + security + BYORB + browser QA) |
 | **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
 | **Reflect** | Capture learnings into persistent brain vault |
 
@@ -206,16 +206,6 @@ Systematic code quality improvement powered by [desloppify](https://github.com/p
 /flux:desloppify next     # Get next priority fix
 ```
 
-### Security
-
-STRIDE-based security analysis adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins). Findings are validated for exploitability with proof-of-concept generation.
-
-```bash
-/flux:threat-model           # Generate threat model
-/flux:security-scan PR #123  # Scan changes for vulnerabilities
-/flux:security-review        # Full security review
-```
-
 ### Reviews — Two-Tier Architecture
 
 Flux splits reviews into two tiers so you get fast feedback per-task without slowing down, and thorough verification per-epic before shipping.
@@ -231,11 +221,24 @@ Full pipeline that runs once when all epic tasks are done:
 | Spec compliance | Verify every requirement from the epic spec is implemented |
 | Adversarial review | Two models from different labs (Anthropic + OpenAI) review independently — consensus issues = high confidence |
 | Severity filtering | Only auto-fix issues at/above your configured threshold (critical, major, minor, style) |
+| Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
 | BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
-| Browser QA | Test acceptance criteria in an actual browser via [agent-browser](https://github.com/AgnBc/agent-browser) |
+| Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
 | Learning capture | Extract patterns from review feedback into `.flux/memory/pitfalls.md` |
 
 > **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
+
+#### Security — Built Into the Review Pipeline
+
+Security scanning is not a separate step you remember to run — it's baked into the epic review pipeline. When your changes touch security-sensitive files (auth, API routes, middleware, secrets, permissions), Flux automatically runs a [STRIDE](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)-based scan adapted from [Factory AI](https://github.com/Factory-AI/factory-plugins). Findings are validated for exploitability (confidence >= 0.8 only), filtered by your severity threshold, and auto-fixed.
+
+You can also run security tools standalone when needed:
+
+```bash
+/flux:threat-model           # Generate STRIDE threat model
+/flux:security-scan PR #123  # Scan PR changes
+/flux:security-review        # Full repository audit
+```
 
 #### BYORB — Bring Your Own Review Bot
 
@@ -247,6 +250,10 @@ Flux integrates with external code review bots that run on your PR. Configure du
 | [CodeRabbit](https://coderabbit.ai) | Posts review comments on your PR. Flux polls for comments (or uses the CLI), parses issues, and auto-fixes above threshold. |
 
 Bots catch patterns that LLMs miss — dependency conflicts, project-specific conventions, security rules from your org config. Combined with adversarial model review, you get three independent perspectives on every epic.
+
+#### Browser QA — Scoping Creates the Test Plan
+
+During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Browser QA Checklist** task with testable criteria (URLs, expected elements, user flows). At epic review time, `agent-browser` follows this checklist — no manual test plan needed.
 
 #### Learning Capture — Reviews That Pay for Themselves
 

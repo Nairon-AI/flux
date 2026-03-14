@@ -92,9 +92,10 @@ The epic review is a multi-phase pipeline:
 2. **Adversarial Review** — dual-model consensus review (if reviewer1 + reviewer2 configured)
 3. **Severity Filtering** — split issues into fix-list vs log-only based on configured threshold
 4. **Fix Loop** — auto-fix issues at/above threshold, re-review until SHIP
-5. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
-6. **Browser QA** — test acceptance criteria in browser (if agent-browser available)
-7. **Learning Capture** — extract patterns from NEEDS_WORK iterations to pitfalls.md
+5. **Security Scan** — STRIDE-based vulnerability scan on changed files (auto-triggered for security-sensitive changes)
+6. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
+7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
+8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to pitfalls.md
 
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
@@ -191,7 +192,33 @@ If verdict is NEEDS_WORK and fix-list is non-empty, loop internally until SHIP:
 
 **MAX ITERATIONS**: Limit fix+re-review cycles to **${MAX_REVIEW_ITERATIONS:-3}** iterations. If still NEEDS_WORK after max rounds, output `<promise>RETRY</promise>` and stop.
 
-### Step 6: External Bot Self-Heal (if configured)
+### Step 6: Security Scan (auto-triggered)
+
+**Runs automatically when changed files touch security-sensitive areas.**
+
+Detect if the epic's changed files include security-sensitive patterns:
+
+```bash
+CHANGED_FILES="$(git diff main..HEAD --name-only 2>/dev/null || git diff master..HEAD --name-only)"
+
+# Security-sensitive patterns: auth, API routes, middleware, config, secrets, permissions
+SECURITY_FILES=$(echo "$CHANGED_FILES" | grep -iE '(auth|login|session|token|middleware|permission|rbac|acl|secret|credential|api[-_]?key|security|crypto|encrypt|password|oauth|jwt|cors|csrf|sanitiz|valid)' || echo "")
+```
+
+**If `SECURITY_FILES` is non-empty**: Run the `flux-security-review` skill in `staged` mode against the branch diff. This invokes the full STRIDE scan (Spoofing, Tampering, Repudiation, Information Disclosure, DoS, Elevation of Privilege) with exploitability validation.
+
+**If `SECURITY_FILES` is empty**: Skip security scan (pure UI or non-security changes).
+
+After scan:
+1. Parse `validated-findings.json` for confirmed vulnerabilities (confidence >= 0.8)
+2. Filter by severity threshold (same `SEVERITIES` config)
+3. Auto-fix findings in fix-list
+4. Commit: `git commit -m "fix: address security scan findings"`
+5. Re-scan if critical findings were found (max 1 re-scan)
+
+Security findings are also captured in the Learning Capture phase.
+
+### Step 7: External Bot Self-Heal (if configured)
 
 **Only runs if `review.bot` is configured AND a PR exists for the branch.**
 
@@ -213,23 +240,27 @@ See [workflow.md](workflow.md) "External Bot Self-Heal Phase" for full details. 
 4. Fix any issues at/above severity threshold
 5. Push fixes and wait for re-review
 
-### Step 7: Browser QA (if agent-browser available)
+### Step 8: Browser QA (if applicable)
 
-**Only runs if `agent-browser` is detected on PATH and epic spec contains acceptance criteria with URLs or testable UI flows.**
+**Only runs if `agent-browser` is detected on PATH AND a Browser QA Checklist task exists for this epic.**
+
+During scoping (`/flux:scope`), Flux auto-creates a "Browser QA Checklist" task for epics that involve frontend/web changes. This task contains testable criteria — URLs, expected elements, user flows — that the browser QA phase follows.
 
 See [workflow.md](workflow.md) "Browser QA Phase" for full details. Summary:
 
 1. Check if `agent-browser` is available: `command -v agent-browser >/dev/null 2>&1`
-2. Extract testable acceptance criteria from epic spec (URLs, UI flows, visual checks)
-3. For each testable criterion:
+2. Look for a Browser QA Checklist task in the epic: `$FLUXCTL tasks --epic "$EPIC_ID" --json | jq '.[] | select(.title | test("Browser QA|browser.qa"; "i"))'`
+3. If no checklist task exists, skip browser QA
+4. Read the checklist task's acceptance criteria
+5. For each criterion:
    - Open URL with `agent-browser open <url>`
    - Take snapshot with `agent-browser snapshot -i`
    - Verify expected elements/text exist
-   - Take screenshot for evidence
-4. If any criterion fails: fix code, commit, re-test
-5. Close browser session when done
+   - Take screenshot for evidence: `agent-browser screenshot "/tmp/qa-${EPIC_ID}-${n}.png"`
+6. If any criterion fails: fix code, commit, re-test (max 2 iterations)
+7. Close browser session: `agent-browser close`
 
-### Step 8: Learning Capture
+### Step 9: Learning Capture
 
 After the full review pipeline reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them:
 
@@ -242,6 +273,7 @@ Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
 **What to capture:**
 - Spec compliance gaps — requirements that drifted from spec
 - Adversarial consensus patterns — issues both models flagged (high-signal)
+- Security scan findings — STRIDE vulnerabilities caught post-implementation
 - External bot patterns — recurring issues caught by Greptile/CodeRabbit
 - Browser QA failures — UI/UX issues missed during implementation
 
