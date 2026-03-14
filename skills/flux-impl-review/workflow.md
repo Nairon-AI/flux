@@ -195,6 +195,40 @@ Commits: [COMMIT SUMMARY]
 ## Review Focus
 [USER'S FOCUS AREAS]
 
+## Reviewer Mindset
+
+**Your job is to find problems, not confirm quality.** A review that finds zero issues is suspicious — look harder. Do not soften findings, hedge with "this might be fine", or defer to the author's intent. If something is wrong, say so directly with evidence. You are a reviewer, not a cheerleader.
+
+## Project-Specific Rules
+
+Before reviewing, load project-specific rules from the brain vault. These are hard-won lessons from this codebase — violations are likely real bugs, not style preferences.
+
+```bash
+# Load principles (non-negotiable project rules)
+cat brain/principles/*.md 2>/dev/null
+
+# Load pitfalls relevant to changed file domains
+# Match pitfall subdirectories to changed file paths (frontend/, backend/, api/, etc.)
+for area in $(git diff --name-only ${BASE_COMMIT:-main}..HEAD | sed 's|/.*||' | sort -u); do
+  cat brain/pitfalls/${area}/*.md 2>/dev/null
+done
+
+# Fallback: load all pitfalls if no area match
+ls brain/pitfalls/*/*.md >/dev/null 2>&1 || cat brain/pitfalls/*.md 2>/dev/null
+```
+
+If principles or pitfalls were loaded, add them to the review context:
+
+```
+## Project Principles (MUST NOT violate)
+[PASTE LOADED PRINCIPLES]
+
+## Known Pitfalls (check specifically for these)
+[PASTE LOADED PITFALLS]
+```
+
+Evaluate the code against these project-specific rules IN ADDITION to the standard criteria below. A principle violation is always at least Major severity.
+
 ## Review Criteria
 
 Conduct a John Carmack-level review:
