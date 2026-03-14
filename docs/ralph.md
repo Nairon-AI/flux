@@ -17,7 +17,7 @@ Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies mult
   - [Plan Review Gate](#plan-review-gate)
   - [Receipt-Based Gating](#2-receipt-based-gating)
   - [Review Loops Until SHIP](#3-review-loops-until-ship)
-  - [Memory Capture](#4-memory-capture-opt-in)
+  - [Learning Capture](#4-learning-capture)
 - [Configuration Reference](#configuration-reference)
 - [Review Backends](#review-backends)
   - [RepoPrompt](#repoprompt-integration)
@@ -415,7 +415,7 @@ Fix → re-review → fix → re-review... until the reviewer approves.
 > - Interactive prompt (a/b/c) → backend misconfigured
 > - No verdict → check iteration log
 
-### 4. Memory Capture (Opt-in)
+### 4. Learning Capture
 
 NEEDS_WORK reviews auto-capture learnings to the brain vault:
 

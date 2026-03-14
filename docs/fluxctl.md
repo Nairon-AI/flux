@@ -7,7 +7,7 @@ CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
 ```
 
 ## Multi-User Safety

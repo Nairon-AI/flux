@@ -19,7 +19,7 @@ Use fluxctl init (idempotent - safe to re-run, handles upgrades):
 ```
 
 This creates/upgrades:
-- `.flux/` directory structure (epics/, specs/, tasks/, memory/)
+- `.flux/` directory structure (epics/, specs/, tasks/)
 - `meta.json` with schema version
 - `config.json` with defaults (merges new keys on upgrade)
 
@@ -1556,7 +1556,6 @@ To use from command line:
 
 Configuration (use fluxctl config set to change):
 - Install scope: <project|user|global>
-- Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
 - GitHub scout: <enabled|disabled>
