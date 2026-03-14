@@ -331,35 +331,46 @@ fi
 
 ### Step 11: Frustration Signal
 
-**See [workflow.md](workflow.md) "Frustration Signal" for full multi-signal detection logic.**
+**See [workflow.md](workflow.md) "Frustration Signal" for full detection logic (quantitative + qualitative).**
 
-Compute a weighted friction score from multiple signals gathered during the review pipeline:
+Two-part detection system:
 
-| Signal | Source | Weight |
-|--------|--------|--------|
-| `NEEDS_WORK_COUNT` | Fix loop iterations (spec + adversarial + bot) | 1x |
-| `SECURITY_FINDINGS` | Security scan confirmed vulnerabilities | 1x |
-| `BROWSER_QA_FAILURES` | Browser QA criteria that failed | 1x |
-| `SAME_CATEGORY_PITFALLS` | Learning capture pitfalls matching existing brain areas | 2x |
+**Part 1 — Quantitative friction score** from pipeline counters:
 
 ```
 FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (SAME_CATEGORY_PITFALLS * 2)
 ```
 
-**If `FRICTION_SCORE >= 3`**, output a suggestion with signal breakdown:
+**Part 2 — Qualitative friction analysis** from three sources:
+1. **Developer messages** during fix loops — scan for frustration language and extract the *topic* (e.g., "wtf is this UI? Still not responsive" → `responsive, css_issues, ui_issues`)
+2. **Review issue categories** — classify reviewer feedback into domains (CSS/auth/testing/etc.)
+3. **Pitfall areas** from learning capture — `brain/pitfalls/frontend/` → `frontend, ui_issues`
+
+Combined into `FRICTION_DOMAINS` (what's broken) and `FRICTION_SIGNALS` (what `/flux:improve` should search for).
+
+**If `FRICTION_SCORE >= 3`**, output a **targeted** suggestion:
 
 ```
 ---
 **Friction detected** (score: {FRICTION_SCORE}):
+
+Quantitative:
 - Review iterations: {NEEDS_WORK_COUNT}
 - Security findings: {SECURITY_FINDINGS}
 - Browser QA failures: {BROWSER_QA_FAILURES}
 - Repeated pitfall categories: {SAME_CATEGORY_PITFALLS} (2x weight)
 
-Consider running `/flux:improve` to analyze your patterns and get
-targeted recommendations from the Flux recommendations engine.
+Diagnosis: {primary friction domain} — {one-sentence summary}
+Evidence:
+{top 2-3 quotes/issues/pitfalls}
+
+Consider running `/flux:improve --user-context "{FRICTION_DOMAINS}"` —
+this skips the pain-point interview and goes straight to targeted
+recommendations for your specific friction areas.
 ---
 ```
+
+The `--user-context` flag pre-fills the detected friction domains so `/flux:improve`'s matching engine can skip discovery and go straight to relevant tool recommendations.
 
 This is a suggestion only — do not auto-invoke `/flux:improve`.
 

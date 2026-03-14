@@ -283,7 +283,7 @@ These are maintenance skills designed to run between epics, not during active de
 
 `/flux:improve` analyzes your sessions and recommends tools mapped to your specific friction patterns — from MCP servers to CLI tools to workflow changes. Recommendations are community-driven via [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
 
-Flux also auto-detects frustration during epic review using a multi-signal friction score — review iterations, security findings, browser QA failures, and repeated pitfall categories (2x weight) combine into a weighted score. When the score hits 3+, Flux suggests running `/flux:improve` to find tools and patterns that could catch those issues earlier.
+Flux also auto-detects frustration during epic review using two layers: a **quantitative friction score** (review iterations, security findings, QA failures, repeated pitfalls) and **qualitative analysis** that scans developer messages and reviewer feedback to identify *what* you're struggling with — not just *that* you're struggling. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
 
 ### Desloppify
 
