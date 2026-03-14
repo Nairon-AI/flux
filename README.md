@@ -14,7 +14,7 @@ Build software reliably
 
 ## The Problem
 
-You're using an AI coding agent, but something's off:
+You're using Claude Code, but something's off:
 
 - **No structure** → You said "build me a dashboard" and came back to a mess of half-finished components
 - **Context amnesia** → You've explained the auth flow three times this week. To the same agent.
