@@ -172,7 +172,7 @@ $FIX_DESCRIPTION
 - [ ] Checked for regressions
 
 ## How to Verify
-1. Upgrade: \`/plugin uninstall flux@nairon-flux && /plugin install flux@nairon-flux\`
+1. Upgrade: \`/plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest\`
 2. Test: $VERIFICATION_STEPS
 
 ---
@@ -188,7 +188,7 @@ Show:
   ```
   Once merged, upgrade with:
   /plugin uninstall flux@nairon-flux
-  /plugin install flux@nairon-flux
+  /plugin add https://github.com/Nairon-AI/flux@latest
   ```
 
 ## Hard Rules
@@ -235,7 +235,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin uninstall flux@nairon-flux && /plugin install flux@nairon-flux
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
