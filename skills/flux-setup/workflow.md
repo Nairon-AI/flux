@@ -63,25 +63,7 @@ chmod +x .flux/bin/fluxctl
 
 Then read [templates/usage.md](templates/usage.md) and write it to `.flux/usage.md`.
 
-## Step 4b: Install default skill (Claudeception)
-
-Install Claudeception at project level if not already present:
-
-```bash
-mkdir -p ".claude/skills"
-
-if [ ! -d ".claude/skills/claudeception" ]; then
-  git clone --depth 1 https://github.com/blader/Claudeception.git ".claude/skills/claudeception" 2>/dev/null || true
-fi
-```
-
-If clone fails, continue setup and print this manual fallback command:
-
-```bash
-git clone https://github.com/blader/Claudeception.git .claude/skills/claudeception
-```
-
-## Step 4c: Install recommended MCP servers (Optional)
+## Step 4b: Install recommended MCP servers (Optional)
 
 Flux recommends MCP servers that enhance your AI development workflow. Installation is **optional** — users can skip or select which ones to install.
 
@@ -403,7 +385,7 @@ MCP servers (install manually in Claude Code):
   3. Restart Claude Code with `--resume` to pick up where you left off
 ```
 
-## Step 4d: Install recommended desktop applications (Optional)
+## Step 4c: Install recommended desktop applications (Optional)
 
 Flux recommends productivity applications that enhance AI-augmented development. Installation is **optional** — users can skip or select which ones to install.
 
@@ -583,11 +565,11 @@ Store for summary:
 - `SKIPPED_APPS` — list of apps user chose to skip
 - `CONFLICTS_APPS` — list of app conflicts and resolutions
 
-## Step 4e: Install recommended CLI tools (Optional)
+## Step 4d: Install recommended CLI tools (Optional)
 
 Flux recommends CLI tools that complement the AI development workflow.
 
-**Note:** This step uses `OS_TYPE` detected in Step 4d. CLI tools work on all platforms.
+**Note:** This step uses `OS_TYPE` detected in Step 4c. CLI tools work on all platforms.
 
 ### Available CLI Tools
 
@@ -790,7 +772,7 @@ Store for summary:
 - `INSTALLED_CLI` — list of CLI tools installed this session
 - `SKIPPED_CLI` — list of CLI tools user chose to skip
 
-## Step 4f: Install optional agent skills (Optional)
+## Step 4e: Install optional agent skills (Optional)
 
 Offer lightweight, generally useful agent skills that improve onboarding and execution quality across most repos.
 
@@ -1475,7 +1457,7 @@ MCP servers:
 - Firecrawl: <installed | installed + key | already installed | skipped>
 ```
 
-Use tracking variables from Step 4c to determine status:
+Use tracking variables from Step 4b to determine status:
 - "installed" — installed this session without API key/token
 - "installed + key/token" — installed this session with credentials configured
 - "already installed" — was already present before setup
@@ -1503,7 +1485,7 @@ Desktop applications (<OS_TYPE>):
 - Granola: <installed | already installed | skipped>
 ```
 
-Use tracking variables from Step 4d to determine status. Only show apps compatible with user's OS:
+Use tracking variables from Step 4c to determine status. Only show apps compatible with user's OS:
 - macOS: show all 5 apps
 - Linux: skip (no compatible apps)
 - Windows: show only Granola
@@ -1525,7 +1507,7 @@ CLI tools:
 - CLI Continues: <installed | already installed | skipped>
 ```
 
-Use tracking variables from Step 4e. If gh was already installed before setup, show "already installed".
+Use tracking variables from Step 4d. If gh was already installed before setup, show "already installed".
 
 **Agent skills section** (only show if offered):
 
@@ -1538,7 +1520,7 @@ Agent skills:
 - X Research Skill: <installed | already installed | skipped | failed>
 ```
 
-Use tracking variables from Step 4f.
+Use tracking variables from Step 4e.
 
 Continue summary:
 
@@ -1574,7 +1556,6 @@ Documentation updated:
 Notes:
 - Re-run /flux:setup after plugin updates to refresh scripts
 - Interested in autonomous mode? Run /flux:ralph-init
-- Default skill bootstrap: claudeception (installed if missing)
 - Optional agent skills can be installed/updated via /flux:setup
 - MCP servers installed at user scope are available in all projects
 - Desktop apps and CLI tools are optional productivity boosters

@@ -602,9 +602,6 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
         "agents-md-structure": [
             ("documentation", "no_agents_md", "AI knows your project")
         ],
-        "claudeception": [
-            ("documentation", "no_memory", "Extract and retain session learnings")
-        ],
         # Model recommendations
         "frontend-models": [
             (

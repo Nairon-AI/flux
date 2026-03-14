@@ -69,7 +69,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/` directory structure and bootstraps claudeception skill.
+Initializes Flux in your project. Creates `.flux/` directory structure, configures preferences, and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
 
 ### /flux:plan
 
