@@ -1,6 +1,6 @@
 ---
 name: flux-impl-review
-description: Adversarial implementation review using two models from different labs to reach consensus. Supports RepoPrompt, Codex, and external bots (Greptile, CodeRabbit). Self-heals until all major issues resolved. Triggers on /flux:impl-review.
+description: Per-task implementation review via RepoPrompt or Codex. Lightweight single-model pass to catch obvious issues before moving to next task. Full adversarial review runs at epic level. Triggers on /flux:impl-review.
 user-invocable: false
 ---
 
@@ -8,12 +8,10 @@ user-invocable: false
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Conduct an adversarial review of implementation changes using two models from different labs (Anthropic + OpenAI). Issues both models agree on get fixed automatically. Single-model findings are flagged but still addressed.
+Lightweight per-task review using a single model. Catches obvious bugs and issues before moving to the next task. The heavy-weight review (adversarial dual-model, external bot self-heal, browser QA, learning capture) runs once at epic completion via `/flux:epic-review`.
 
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
-**Adversarial**: Two reviewer models reach consensus (configured in `.flux/config.json`)
-**External bots**: Greptile (PR polling) or CodeRabbit (CLI or PR comments)
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
@@ -144,71 +142,13 @@ The workflow covers:
 
 **Return here only after workflow.md execution is complete.**
 
-## Adversarial Review
-
-Flux uses **two models from different labs** to review the same code independently. This eliminates single-model blind spots — issues both agree on are high-confidence and get fixed automatically.
-
-### Step A1: Load reviewer config
-
-```bash
-REVIEWER_1=$($FLUXCTL config get review.reviewer1 2>/dev/null | awk '{print $2}')
-REVIEWER_2=$($FLUXCTL config get review.reviewer2 2>/dev/null | awk '{print $2}')
-REVIEW_BOT=$($FLUXCTL config get review.bot 2>/dev/null | awk '{print $2}')
-SEVERITIES=$($FLUXCTL config get review.severities 2>/dev/null | awk '{print $2}')
-```
-
-`SEVERITIES` is a comma-separated list (e.g. `critical,major,minor`). Default: `critical,major`.
-
-**Severity filtering**: Only issues at or above the configured threshold get auto-fixed. Lower-severity issues are logged in the review output but NOT fixed in the self-heal loop.
-
-| Severity | Description | Example |
-|----------|-------------|---------|
-| `critical` | Security vulnerabilities, data loss, crashes | SQL injection, unvalidated auth |
-| `major` | Bugs, logic errors, missing validation, perf issues | Race condition, missing null check |
-| `minor` | Edge cases, error handling gaps, suboptimal patterns | Missing timeout, unused import |
-| `style` | Naming, formatting, code organization, readability | Inconsistent casing, long function |
-
-If `REVIEWER_1` or `REVIEWER_2` is empty/not set, fall back to single-model review using the configured backend only (skip adversarial). This maintains backward compatibility.
-
-### Step A2: Run first reviewer (Anthropic model)
-
-The agent performing this review IS the first reviewer (it runs on an Anthropic model). Conduct the review yourself using the configured backend (RP or Codex) as usual. Collect all findings as `REVIEW_1_ISSUES`.
-
-### Step A3: Run second reviewer (OpenAI model via Codex)
-
-Run the second review using the OpenAI model via Codex CLI:
-
-```bash
-$FLUXCTL codex impl-review "$TASK_ID" --base "${BASE_COMMIT:-main}" --model "$REVIEWER_2" --receipt "$RECEIPT_PATH"
-```
-
-Collect findings as `REVIEW_2_ISSUES`.
-
-### Step A4: Merge findings — consensus wins
-
-Compare the two sets of findings:
-
-| Scenario | Action |
-|----------|--------|
-| **Both agree** on same issue | **High confidence** — fix immediately, no debate |
-| **Only one** flags an issue | **Medium confidence** — still fix, but note it was single-model |
-| **Contradictory** findings | Flag for the fix loop — address the more conservative recommendation |
-
-Build a merged issue list sorted by: consensus issues first (Critical → Major → Minor → Style), then single-model issues.
-
-**Apply severity filter**: Split the merged list into two:
-- **Fix list**: issues whose severity is in `SEVERITIES` (these get auto-fixed)
-- **Log-only list**: issues below the threshold (shown in output but not fixed)
-
-If the fix list is empty, the review passes — issue SHIP even if log-only items exist.
-
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
-**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues at or above the severity threshold and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
+**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
 
 If verdict is NEEDS_WORK, loop internally until SHIP:
 
-1. **Parse issues** from merged adversarial findings, filtered by `SEVERITIES` (Consensus → Critical → Major → Minor → Style)
+1. **Parse issues** from reviewer feedback (Critical → Major → Minor)
 2. **Fix code** and run tests/lints
 3. **Commit fixes** (mandatory before re-review)
 4. **Re-review**:
@@ -218,97 +158,7 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
 
-## External Bot Self-Heal (Post-PR)
-
-After the internal review loop reaches SHIP and a PR has been created/pushed, check if an external review bot is configured.
-
-### Greptile Self-Heal
-
-If `REVIEW_BOT=greptile`:
-
-1. **Wait for Greptile** — poll the PR description every 15 seconds for the Greptile summary:
-   ```bash
-   gh pr view <PR_NUMBER> --json body --jq '.body'
-   ```
-   Look for `## Greptile Summary` or `Confidence Score:` in the body. If not found after 10 minutes, warn and continue.
-
-2. **Parse confidence score** — extract `Confidence Score: X/5` from the PR description.
-
-3. **If confidence < 5/5**:
-   - Parse the "Issue found:" section and bullet points under the Greptile summary
-   - Fix the identified issues
-   - Commit and push
-   - Re-trigger Greptile by commenting on the PR:
-     ```bash
-     gh pr comment <PR_NUMBER> --body "@greptile review"
-     ```
-   - Wait 15 seconds, then poll again for updated Greptile summary
-   - **Loop until confidence is 5/5** or max 5 iterations
-
-4. **If confidence = 5/5**: Self-heal complete. Continue to Learning Capture.
-
-### CodeRabbit Self-Heal
-
-If `REVIEW_BOT=coderabbit`:
-
-1. **Check if CodeRabbit CLI is available**:
-   ```bash
-   which coderabbit >/dev/null 2>&1 && HAVE_CR_CLI=1 || HAVE_CR_CLI=0
-   ```
-
-2. **If CLI available** — run locally:
-   ```bash
-   coderabbit review
-   ```
-   Parse output for issues. Fix, commit, re-run. Loop until clean.
-
-3. **If CLI not available** — poll PR comments:
-   ```bash
-   gh pr view <PR_NUMBER> --json comments --jq '.comments[] | select(.author.login == "coderabbitai") | .body'
-   ```
-   Parse CodeRabbit's review comments for actionable issues. Fix, commit, push. Wait for new CodeRabbit review. Loop until no major issues.
-
-4. **Max 5 iterations** for either path.
-
-### No Bot
-
-If `REVIEW_BOT=none` or not set: skip this section entirely.
-
-## Learning Capture
-
-**After every review cycle** (whether internal adversarial or external bot), extract learnings and persist them to `.flux/memory/pitfalls.md`.
-
-### What to capture
-
-From the review findings, extract **patterns** — not individual fixes, but reusable lessons:
-
-- Mistakes the models made that a reviewer caught (e.g. "raw SQL in handlers", "missing error boundary")
-- Patterns that triggered consensus issues (both models agreed = strong signal)
-- External bot findings that were valid (Greptile/CodeRabbit caught something the models missed)
-
-### How to capture
-
-```bash
-$FLUXCTL memory add pitfalls "<learning>"
-```
-
-Format each learning as:
-```
-[<date>] [<source>] <pattern>: <description>. Applies to: <file pattern or area>.
-```
-
-Examples:
-```
-[2026-03-14] [adversarial-consensus] avoid-raw-sql: Always use parameterized queries via ORM, never raw SQL in route handlers. Applies to: src/api/**
-[2026-03-14] [greptile] status-field-in-payload: Don't include status field in PATCH payloads unconditionally — check if it changed first. Applies to: src/api/listings/**
-[2026-03-14] [coderabbit] missing-error-boundary: Wrap async operations in try/catch with user-facing error states. Applies to: src/components/**
-```
-
-### When learnings are used
-
-These pitfalls are automatically loaded by `/flux:work` at the start of each task. The agent reads `.flux/memory/pitfalls.md` and actively avoids repeating the same mistakes. This creates a **feedback loop**: reviews catch issues → learnings prevent recurrence → fewer issues in future reviews.
-
-**Only capture learnings that are generalizable** — skip one-off typos or task-specific issues. The goal is patterns that apply to future work in this codebase.
+**Note**: This is a lightweight per-task pass. The full adversarial review (dual-model consensus, external bot self-heal, browser QA, learning capture) runs at epic completion via `/flux:epic-review`.
 
 ---
 

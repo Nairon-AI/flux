@@ -1,6 +1,6 @@
 ---
 name: flux-epic-review
-description: Epic completion review - verifies all epic tasks implement spec requirements. Triggers on /flux:epic-review.
+description: Epic completion review - adversarial dual-model review, external bot self-heal, browser QA, and learning capture. Full thorough review at epic level. Triggers on /flux:epic-review.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Verify that the combined implementation of all epic tasks satisfies the spec requirements. This is NOT a code quality review (that's impl-review's job) — this confirms spec compliance only.
+Thorough review at epic completion. Combines adversarial dual-model review (Anthropic + OpenAI consensus), external bot self-heal (Greptile/CodeRabbit), browser QA, and learning capture. Per-task lightweight reviews happen via `/flux:impl-review` — this is the heavy-weight pass.
 
 **Role**: Epic Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
@@ -82,9 +82,19 @@ Format: `<epic-id> [--review=rp|codex|none]`
 - Epic ID - Required, e.g. `fn-1` or `fn-22-53k`
 - `--review` - Optional backend override
 
-## Workflow
+## Workflow Overview
 
-**See [workflow.md](workflow.md) for full details on each backend.**
+**See [workflow.md](workflow.md) for full details on each phase.**
+
+The epic review is a multi-phase pipeline:
+
+1. **Spec Compliance Review** — verify all epic requirements are implemented (via backend)
+2. **Adversarial Review** — dual-model consensus review (if reviewer1 + reviewer2 configured)
+3. **Severity Filtering** — split issues into fix-list vs log-only based on configured threshold
+4. **Fix Loop** — auto-fix issues at/above threshold, re-review until SHIP
+5. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
+6. **Browser QA** — test acceptance criteria in browser (if agent-browser available)
+7. **Learning Capture** — extract patterns from NEEDS_WORK iterations to pitfalls.md
 
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
@@ -100,11 +110,26 @@ Parse $ARGUMENTS for:
 - `--review=<backend>` → backend override
 - Remaining args → focus areas
 
-### Step 1: Detect Backend
+### Step 1: Load Review Config
 
-Run backend detection from SKILL.md above. Then branch:
+```bash
+# Read adversarial reviewers and bot config
+REVIEWER1=$($FLUXCTL config get review.reviewer1 2>/dev/null || echo "")
+REVIEWER2=$($FLUXCTL config get review.reviewer2 2>/dev/null || echo "")
+REVIEW_BOT=$($FLUXCTL config get review.bot 2>/dev/null || echo "")
+SEVERITIES=$($FLUXCTL config get review.severities 2>/dev/null || echo "critical,major")
+```
 
-### Codex Backend
+- `REVIEWER1`: Anthropic model (e.g., `claude-sonnet-4-5-20250514`)
+- `REVIEWER2`: OpenAI model (e.g., `o3`)
+- `REVIEW_BOT`: `greptile`, `coderabbit`, or empty
+- `SEVERITIES`: comma-separated list of severity levels to auto-fix (e.g., `critical,major`)
+
+### Step 2: Detect Backend & Run Spec Compliance Review
+
+Run backend detection from above. Then branch:
+
+#### Codex Backend
 
 ```bash
 RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/completion-review-receipt.json}"
@@ -115,27 +140,46 @@ $FLUXCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
 
 On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
 
-### RepoPrompt Backend
+#### RepoPrompt Backend
 
-**⚠️ STOP: You MUST read and execute [workflow.md](workflow.md) now.**
+**Stop: You MUST read and execute [workflow.md](workflow.md) now.**
 
 Go to the "RepoPrompt Backend Workflow" section in workflow.md and execute those steps. Do not proceed here until workflow.md phases are complete.
 
-The workflow covers:
-1. Gather context (epic spec, tasks, changed files)
-2. Atomic setup (setup-review) → sets `$W` and `$T`
-3. Augment selection and build review prompt
-4. Send review and parse verdict
+**Return here only after workflow.md spec compliance review is complete.**
 
-**Return here only after workflow.md execution is complete.**
+### Step 3: Adversarial Review (if configured)
 
-## Fix Loop (INTERNAL - do not exit to Ralph)
+**Only runs if BOTH `reviewer1` AND `reviewer2` are configured.**
 
-**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues and re-review — our goal is complete spec compliance. Never use AskUserQuestion in this loop.**
+If only one reviewer or neither is configured, skip to Step 4.
 
-If verdict is NEEDS_WORK, loop internally until SHIP:
+See [workflow.md](workflow.md) "Adversarial Review Phase" for full details. Summary:
 
-1. **Parse issues** from reviewer feedback (missing requirements, incomplete implementations)
+1. **Reviewer 1** (Anthropic) reviews the diff independently via Codex/RP
+2. **Reviewer 2** (OpenAI) reviews the same diff independently via Codex
+3. **Consensus merge**: Issues flagged by BOTH reviewers = high-confidence (auto-fix). Issues flagged by only one = log-only (unless at/above severity threshold).
+
+The adversarial approach catches more issues than a single model while reducing false positives through consensus.
+
+### Step 4: Severity Filtering
+
+Split all issues (from spec review + adversarial review) into two buckets:
+
+- **Fix list**: Issues at or above the configured severity threshold → auto-fix
+- **Log only**: Issues below threshold → log to review output but don't fix
+
+Severity ranking: `critical` > `major` > `minor` > `style`
+
+If `SEVERITIES` = `["critical", "major"]`, then critical and major issues are auto-fixed; minor and style are logged only.
+
+### Step 5: Fix Loop (INTERNAL - do not exit to Ralph)
+
+**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL issues in the fix-list and re-review. Never use AskUserQuestion in this loop.**
+
+If verdict is NEEDS_WORK and fix-list is non-empty, loop internally until SHIP:
+
+1. **Parse issues** from reviewer feedback (filter by severity threshold)
 2. **Fix code** and run tests/lints
 3. **Commit fixes** (mandatory before re-review)
 4. **Re-review**:
@@ -145,9 +189,49 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
 
-## Learning Capture
+**MAX ITERATIONS**: Limit fix+re-review cycles to **${MAX_REVIEW_ITERATIONS:-3}** iterations. If still NEEDS_WORK after max rounds, output `<promise>RETRY</promise>` and stop.
 
-After the epic review cycle reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them:
+### Step 6: External Bot Self-Heal (if configured)
+
+**Only runs if `review.bot` is configured AND a PR exists for the branch.**
+
+See [workflow.md](workflow.md) "External Bot Self-Heal Phase" for full details. Summary:
+
+#### Greptile
+
+1. Push branch and ensure PR exists
+2. Poll PR description for Greptile confidence summary (check every 15s, timeout 5 min)
+3. Parse confidence score and issue list
+4. Fix any issues at/above severity threshold
+5. Push fixes and re-poll until confidence is acceptable
+
+#### CodeRabbit
+
+1. Push branch and ensure PR exists
+2. Run `coderabbit review` CLI or poll PR comments for CodeRabbit review
+3. Parse issue list from review output
+4. Fix any issues at/above severity threshold
+5. Push fixes and wait for re-review
+
+### Step 7: Browser QA (if agent-browser available)
+
+**Only runs if `agent-browser` is detected on PATH and epic spec contains acceptance criteria with URLs or testable UI flows.**
+
+See [workflow.md](workflow.md) "Browser QA Phase" for full details. Summary:
+
+1. Check if `agent-browser` is available: `command -v agent-browser >/dev/null 2>&1`
+2. Extract testable acceptance criteria from epic spec (URLs, UI flows, visual checks)
+3. For each testable criterion:
+   - Open URL with `agent-browser open <url>`
+   - Take snapshot with `agent-browser snapshot -i`
+   - Verify expected elements/text exist
+   - Take screenshot for evidence
+4. If any criterion fails: fix code, commit, re-test
+5. Close browser session when done
+
+### Step 8: Learning Capture
+
+After the full review pipeline reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them:
 
 ```bash
 $FLUXCTL memory add pitfalls "<learning>"
@@ -155,9 +239,13 @@ $FLUXCTL memory add pitfalls "<learning>"
 
 Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
 
-Focus on **spec compliance gaps** — patterns where the implementation drifted from spec. These are different from impl-review pitfalls (code quality) — epic-review catches architecture and requirements misses.
+**What to capture:**
+- Spec compliance gaps — requirements that drifted from spec
+- Adversarial consensus patterns — issues both models flagged (high-signal)
+- External bot patterns — recurring issues caught by Greptile/CodeRabbit
+- Browser QA failures — UI/UX issues missed during implementation
 
-Only capture generalizable patterns, not one-off fixes.
+Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `.flux/memory/pitfalls.md` which is read during re-anchor (Phase 1 of `/flux:work`).
 
 ---
 
