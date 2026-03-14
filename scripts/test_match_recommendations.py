@@ -194,20 +194,6 @@ class TestGapDetection:
         gaps = detect_sdlc_gaps(context)
         assert "no_agents_md" not in gaps["documentation"]
 
-    def test_supermemory_fills_memory_gap(self):
-        """Supermemory MCP fills memory gap."""
-        context = {
-            "installed": {
-                "mcps": ["supermemory"],
-                "plugins": [],
-                "cli_tools": [],
-                "applications": [],
-            },
-            "repo": {},
-        }
-        gaps = detect_sdlc_gaps(context)
-        assert "no_memory" not in gaps["documentation"]
-
     def test_context7_fills_doc_lookup_gap(self):
         """Context7 MCP fills doc lookup gap."""
         context = {
@@ -411,14 +397,6 @@ class TestRecommendationMatching:
         assert fills is True
         assert phase == "requirements"
 
-    def test_supermemory_matches_no_memory_gap(self):
-        """Supermemory should match when no memory tool detected."""
-        rec = {"name": "supermemory", "sdlc_phase": "documentation"}
-        gaps = {"documentation": ["no_memory"]}
-        fills, phase, reason = recommendation_fills_gap(rec, gaps)
-        assert fills is True
-        assert phase == "documentation"
-
     def test_context7_matches_no_doc_lookup_gap(self):
         """Context7 should match when no doc lookup detected."""
         rec = {"name": "context7", "sdlc_phase": "implementation"}
@@ -506,7 +484,6 @@ class TestFullMatchingPipeline:
                     "context7",
                     "linear",
                     "github",
-                    "supermemory",
                     "figma",
                     "excalidraw",
                 ],
@@ -543,7 +520,7 @@ class TestFullMatchingPipeline:
             },
             "repo": {},
             "preferences": {
-                "dismissed": ["exa", "lefthook", "supermemory"],
+                "dismissed": ["exa", "lefthook"],
                 "alternatives": {},
             },
         }
@@ -556,7 +533,6 @@ class TestFullMatchingPipeline:
 
         assert "exa" not in recommended_names
         assert "lefthook" not in recommended_names
-        assert "supermemory" not in recommended_names
 
         # Should be in skipped list
         skipped_names = [s["name"] for s in results["skipped"]]

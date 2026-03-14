@@ -427,12 +427,8 @@ def detect_sdlc_gaps(context: dict, user_context: str = "") -> dict:
 
         # --- Memory/Context Friction ---
         # "I already told you", "remember when", re-explaining
-        if (
-            friction.get("context_forgotten", 0) > 0
-            or friction.get("re_explaining", 0) > 0
-        ):
-            if "supermemory" not in installed_mcps:
-                gaps["documentation"].append("no_memory")
+        # Note: Flux brain vault handles persistent memory natively.
+        # No external memory MCP needed.
 
         # --- AGENTS.md Friction ---
         # "that's not how we do it", "wrong directory", model doesn't know project
@@ -623,10 +619,6 @@ def recommendation_fills_gap(rec: dict, gaps: dict) -> tuple[bool, str, str]:
                 "needs_reasoning_model",
                 "Use extended thinking for complex problems",
             ),
-        ],
-        "supermemory": [
-            ("documentation", "no_memory", "Persistent memory"),
-            ("documentation", "frequent_lookups", "Remember what you learned"),
         ],
         "context-management": [("documentation", "no_memory", "Session continuity")],
     }

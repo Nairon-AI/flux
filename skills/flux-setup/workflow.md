@@ -110,7 +110,6 @@ Use direct config updates to the project-level `.mcp.json` (preferred), then tel
 | `context7` | Context7 | search | **No more hallucinated APIs** — up-to-date, version-specific library docs in every prompt | Yes | Add `mcpServers.context7` to `.mcp.json` |
 | `exa` | Exa | search | **Fastest AI web search** — real-time research without leaving your session | Yes | Add `mcpServers.exa` to `.mcp.json` |
 | `github` | GitHub | dev | **PRs, issues, actions in Claude** — no context switching to browser | Yes | Add `mcpServers.github` to `.mcp.json` |
-| `supermemory` | Supermemory | memory | **Never re-explain context** — persistent memory across all sessions | Yes | Add `mcpServers.supermemory` to `.mcp.json` |
 | `firecrawl` | Firecrawl | search | **Clean markdown + PDF parsing for agents** — crawl and scrape hard websites | Freemium | Add `mcpServers.firecrawl` to `.mcp.json` |
 
 ### Conflict Detection
@@ -141,7 +140,6 @@ HAVE_FFF=$(echo "$MCP_LIST" | grep -qx "fff" && echo 1 || echo 0)
 HAVE_CONTEXT7=$(echo "$MCP_LIST" | grep -qx "context7" && echo 1 || echo 0)
 HAVE_EXA=$(echo "$MCP_LIST" | grep -qx "exa" && echo 1 || echo 0)
 HAVE_GITHUB=$(echo "$MCP_LIST" | grep -qx "github" && echo 1 || echo 0)
-HAVE_SUPERMEMORY=$(echo "$MCP_LIST" | grep -qx "supermemory" && echo 1 || echo 0)
 HAVE_FIRECRAWL=$(echo "$MCP_LIST" | grep -qx "firecrawl" && echo 1 || echo 0)
 
 # FFF binary check (installed separately from MCP config)
@@ -152,10 +150,6 @@ HAVE_PERPLEXITY=$(echo "$MCP_LIST" | grep -qx "perplexity" && echo 1 || echo 0)
 HAVE_TAVILY=$(echo "$MCP_LIST" | grep -qx "tavily" && echo 1 || echo 0)
 HAVE_BRAVE=$(echo "$MCP_LIST" | grep -qx "brave" && echo 1 || echo 0)
 HAVE_SERPER=$(echo "$MCP_LIST" | grep -qx "serper" && echo 1 || echo 0)
-
-# Memory category conflicts
-HAVE_MEM0=$(echo "$MCP_LIST" | grep -qx "mem0" && echo 1 || echo 0)
-HAVE_LANGMEM=$(echo "$MCP_LIST" | grep -Eiq "^langmem$|langchain.*memory" && echo 1 || echo 0)
 
 # Docs category conflicts
 HAVE_DEVDOCS=$(echo "$MCP_LIST" | grep -qx "devdocs" && echo 1 || echo 0)
@@ -208,7 +202,6 @@ For **available** MCPs (no conflict):
 {"label": "Context7", "description": "No more hallucinated APIs — up-to-date library docs (free)"}
 {"label": "Exa", "description": "Fastest AI web search — real-time research (free)"}
 {"label": "GitHub", "description": "PRs, issues, actions without leaving Claude (free)"}
-{"label": "Supermemory", "description": "Never re-explain context — persistent memory (free)"}
 {"label": "Firecrawl", "description": "Scrape websites/PDFs into clean markdown for agents (freemium)"}
 ```
 
@@ -223,20 +216,6 @@ For MCPs with **conflicts**, use a separate question per conflict:
     {"label": "Keep Perplexity", "description": "Don't install Exa, keep your current setup"},
     {"label": "Switch to Exa", "description": "Remove Perplexity, install Exa (recommended for speed)"},
     {"label": "Keep both", "description": "Install Exa alongside Perplexity (may cause duplicate results)"},
-    {"label": "Skip", "description": "Decide later"}
-  ]
-}
-```
-
-**Example: Supermemory conflicts with mem0:**
-```json
-{
-  "header": "Memory MCP Conflict",
-  "question": "You have mem0 installed. Supermemory offers cross-app sync and knowledge graphs. How to proceed?",
-  "options": [
-    {"label": "Keep mem0", "description": "Don't install Supermemory"},
-    {"label": "Switch to Supermemory", "description": "Remove mem0, install Supermemory"},
-    {"label": "Keep both", "description": "Use both memory systems (may duplicate memories)"},
     {"label": "Skip", "description": "Decide later"}
   ]
 }
@@ -322,12 +301,6 @@ tmp=$(mktemp)
 jq '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"]}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
-**Supermemory:**
-```bash
-tmp=$(mktemp)
-jq '.mcpServers = (.mcpServers // {}) | .mcpServers.supermemory = {"type":"http","url":"https://mcp.supermemory.ai/mcp"}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
-```
-
 **Firecrawl:**
 ```bash
 tmp=$(mktemp)
@@ -365,7 +338,7 @@ tmp=$(mktemp)
 jq --arg token "<user_provided_token>" '.mcpServers = (.mcpServers // {}) | .mcpServers.github = {"command":"npx","args":["-y","@modelcontextprotocol/server-github"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":$token}}' "$MCP_FILE" > "$tmp" && mv "$tmp" "$MCP_FILE"
 ```
 
-**Context7 / Exa / Supermemory / Firecrawl API keys:**
+**Context7 / Exa / Firecrawl API keys:**
 
 These work without keys but keys unlock higher rate limits. Only ask if user installed them:
 
@@ -378,7 +351,6 @@ These work without keys but keys unlock higher rate limits. Only ask if user ins
     // Only show options for MCPs that were just installed
     {"label": "Context7 key", "description": "Higher rate limits (free key from context7.com/dashboard)"},
     {"label": "Exa key", "description": "Higher rate limits (free key from exa.ai)"},
-    {"label": "Supermemory key", "description": "Higher rate limits (free key from supermemory.ai)"},
     {"label": "Firecrawl key", "description": "Required for higher quotas (free tier at firecrawl.dev)"},
     {"label": "Skip", "description": "Use free tier for all (can add keys later)"}
   ]
@@ -402,7 +374,6 @@ set_mcp_env_key() {
 
 # Call based on user selections:
 # set_mcp_env_key "exa" "EXA_API_KEY" "<user_provided_exa_key>"
-# set_mcp_env_key "supermemory" "SUPERMEMORY_API_KEY" "<user_provided_supermemory_key>"
 # set_mcp_env_key "firecrawl" "FIRECRAWL_API_KEY" "<user_provided_firecrawl_key>"
 # Context7 key support may vary by provider release; skip if no documented env var.
 ```
@@ -427,7 +398,6 @@ MCP servers (install manually in Claude Code):
      - fff: Install binary first (curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff.nvim/main/install-mcp.sh | bash), then add MCP with command "fff-mcp"
      - context7: https://mcp.context7.com/mcp
      - exa: https://mcp.exa.ai/mcp
-     - supermemory: https://mcp.supermemory.ai/mcp
      - firecrawl: npx -y firecrawl-mcp
      - github: npx -y @modelcontextprotocol/server-github
   3. Restart Claude Code with `--resume` to pick up where you left off
@@ -966,7 +936,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "setup_version": "<PLUGIN_VERSION>",
   "setup_date": "<ISO_DATE>",
   "installed_by_flux": {
-    "mcp_servers": ["<list of MCP server names installed this session, e.g. context7, exa, github, supermemory, firecrawl>"],
+    "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, wispr-flow, granola>"],
     "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"]
@@ -1498,10 +1468,10 @@ Installed:
 
 ```
 MCP servers:
+- FFF: <installed | already installed | skipped>
 - Context7: <installed | installed + key | already installed | skipped>
 - Exa: <installed | installed + key | already installed | skipped>
 - GitHub: <installed | installed + token | already installed | skipped>
-- Supermemory: <installed | installed + key | already installed | skipped>
 - Firecrawl: <installed | installed + key | already installed | skipped>
 ```
 
@@ -1516,7 +1486,6 @@ Use tracking variables from Step 4c to determine status:
 ```
 Conflicts resolved:
 - Switched from Perplexity to Exa (faster, AI-optimized)
-- Kept mem0 alongside Supermemory
 ```
 
 If all were skipped, show:

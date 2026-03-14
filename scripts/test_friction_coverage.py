@@ -74,7 +74,7 @@ FRICTION_SCENARIOS = [
                 "tool_errors": {"total": 0},
             },
         },
-        "expected_tools": ["context7", "supermemory"],
+        "expected_tools": ["context7"],
         "expected_phase": "implementation",
     },
     # -------------------------------------------------------------------------
@@ -85,15 +85,6 @@ FRICTION_SCENARIOS = [
         "context": make_context({"search_needed": 3}),
         "expected_tools": ["exa"],
         "expected_phase": "requirements",
-    },
-    # -------------------------------------------------------------------------
-    # MEMORY & CONTEXT ISSUES
-    # -------------------------------------------------------------------------
-    {
-        "name": "Model forgets project context",
-        "context": make_context({"context_forgotten": 2, "re_explaining": 3}),
-        "expected_tools": ["supermemory"],
-        "expected_phase": "documentation",
     },
     {
         "name": "No AGENTS.md - model doesn't know project conventions",

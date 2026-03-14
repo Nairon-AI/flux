@@ -36,13 +36,13 @@ def test_build_queries_with_user_context_keywords():
 
 
 def test_extract_tool_candidates_from_text_and_url():
-    text = "Try @context7 and install supermemory for this workflow"
-    url = "https://github.com/supermemoryai/supermemory"
+    text = "Try @context7 and install firecrawl for this workflow"
+    url = "https://github.com/mendableai/firecrawl"
     tools = discover_community.extract_tool_candidates(text, url)
 
     lowered = [t.lower() for t in tools]
     assert "context7" in lowered
-    assert "supermemory" in lowered
+    assert "firecrawl" in lowered
 
 
 def test_discovery_score_prefers_retweets_and_likes():
