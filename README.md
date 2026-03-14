@@ -8,7 +8,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
 **The missing (self-improving) harness for Claude Code.**<br>
-Build software reliably (Self-improving)
+Build software reliably
 
 </div>
 
