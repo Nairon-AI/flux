@@ -8,12 +8,7 @@ We welcome contributions, but we have **strict requirements** designed to filter
 
 ### 1. You MUST use Flux
 
-You must use Flux to help build Flux. Dogfood the product. The workflow is:
-
-1. **`/flux:scope`** — Plan your feature (decomposes into tasks with specs)
-2. **`/flux:work`** — Execute tasks (implementation + impl-review + epic-review all run automatically within this command)
-
-That's it. Two commands. `/flux:work` handles the full loop: implement → test → impl-review → fix until SHIP → next task → epic-review when all tasks are done. You don't need to invoke reviews manually.
+You must use Flux to help build Flux. Dogfood the product. Just describe what you want to build — Flux auto-routes to the right step (planning, implementation, review, etc.) based on context. You don't need to memorize commands or manually invoke specific skills.
 
 If you're not using Flux to contribute to Flux, you're not a real contributor.
 
@@ -68,7 +63,7 @@ Your PR description must include:
 [Link to your social media post about this contribution]
 
 ## Checklist
-- [ ] I used `/flux:scope` + `/flux:work` to build this
+- [ ] I used Flux to build this
 - [ ] I exported and linked my conversation history
 - [ ] I included a demo video
 - [ ] I posted to social media and linked it above
