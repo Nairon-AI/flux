@@ -210,7 +210,7 @@ flowchart TD
     Pulse -->|"all clear"| Prime
     Prime --> Scope
     Scope -->|"non-technical user<br/>detected"| Propose
-    Propose -->|"creates proposal PR<br/>for engineering"| Done
+    Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
 
     subgraph task_loop ["Task Loop (per task)"]

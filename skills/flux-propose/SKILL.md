@@ -229,6 +229,16 @@ Does this capture everything? Anything you'd like to add or change?
 
 Wait for confirmation. Iterate until they're satisfied.
 
+### Step 9.5: Handoff Gate
+
+After the summary is confirmed, ask:
+
+> "This proposal looks solid. Would you like me to hand this off to the engineering team now? I'll create a document and a pull request they can review. Or would you like to continue refining?"
+
+- If **yes, hand off** → proceed to Step 10
+- If **not yet** → ask what they'd like to change or add, loop back to the relevant phase
+- If **they want to end without creating a PR** → respect that, summarize what was discussed, suggest they come back when ready
+
 ### Step 10: Document and Create PR
 
 Once confirmed:
@@ -245,15 +255,28 @@ Once confirmed:
    - If only `docs/` exists → create `docs/proposals/`
    - If no docs directory → create `docs/proposals/`
 
-2. **Write the proposal document** as `[directory]/YYYY-MM-DD-feature-name.md` using the confirmed summary, formatted as a clean markdown document.
-
-3. **Create a branch and PR**:
+2. **Check for duplicate/related proposals**:
    ```bash
-   # Create branch
+   # Look for existing proposals that might overlap
+   ls docs/proposals/*.md docs/features/*.md docs/rfcs/*.md 2>/dev/null
+   ```
+   If related proposals exist, read them and tell the stakeholder:
+   > "I found an existing proposal that looks related: [title]. Would you like to update that one instead of creating a new one, or is this a separate feature?"
+
+4. **Write the proposal document** as `[directory]/YYYY-MM-DD-feature-name.md` using the confirmed summary, formatted as a clean markdown document.
+
+5. **Create a branch and PR**:
+
+   First, stash any uncommitted changes to avoid conflicts:
+   ```bash
+   git stash --include-untracked 2>/dev/null
+   ```
+
+   Create the branch and commit:
+   ```bash
    BRANCH_NAME="propose/$(echo '[feature-name]' | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-')"
    git checkout -b "$BRANCH_NAME"
 
-   # Stage and commit
    git add [proposal-file]
    git commit -m "docs: feature proposal — [feature name]
 
@@ -262,30 +285,25 @@ Once confirmed:
 
    Co-Authored-By: Claude <noreply@anthropic.com>"
 
-   # Push and create PR
    git push -u origin "$BRANCH_NAME"
+   ```
+
+   Restore stashed changes after pushing:
+   ```bash
+   git stash pop 2>/dev/null
    ```
 
    Create PR with:
    - **Title**: `proposal: [Feature Name]`
-   - **Body**: Include the full proposal summary + a note for engineers:
-     ```
-     ## Feature Proposal
+   - **Body** (use a HEREDOC to avoid nested markdown issues):
 
-     [Full proposal content]
+   The PR body should contain:
+   - The full proposal content (problem, outcome, users, engineering notes, etc.)
+   - A horizontal rule separator
+   - A note for engineers: "To scope this feature, run: `/flux:scope docs/proposals/YYYY-MM-DD-feature-name.md`"
+   - A note that the proposal was created during a stakeholder conversation with Flux
 
-     ---
-
-     **For the engineering team**: To scope this feature, run:
-     ```
-     /flux:scope docs/proposals/YYYY-MM-DD-feature-name.md
-     ```
-
-     This proposal was created during a stakeholder conversation with Flux.
-     Review the proposal, merge if accepted, then scope and plan implementation.
-     ```
-
-4. **Tell the stakeholder**:
+6. **Tell the stakeholder**:
    ```
    Done! I've created a pull request for the engineering team:
    [PR URL]
