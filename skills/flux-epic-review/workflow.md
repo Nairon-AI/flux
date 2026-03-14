@@ -372,18 +372,43 @@ git diff ${DIFF_BASE}..HEAD --stat > /tmp/adversarial-stat.txt
 EPIC_SPEC="$($FLUXCTL cat "$EPIC_ID")"
 ```
 
+### Step 1.5: Load Brain Vault Rules
+
+Load project-specific rules that both reviewers must evaluate against:
+
+```bash
+# Load principles (non-negotiable project rules)
+PRINCIPLES=$(cat brain/principles/*.md 2>/dev/null)
+
+# Load pitfalls relevant to changed file domains
+PITFALLS=""
+for area in $(git diff ${DIFF_BASE}..HEAD --name-only | sed 's|/.*||' | sort -u); do
+  PITFALLS="${PITFALLS}$(cat brain/pitfalls/${area}/*.md 2>/dev/null)"
+done
+# Fallback: load all pitfalls if no area match
+[ -z "$PITFALLS" ] && PITFALLS=$(cat brain/pitfalls/*.md 2>/dev/null)
+```
+
 ### Step 2: Build Adversarial Review Prompt
 
-Write a prompt that both models receive (identical input):
+Write a prompt that both models receive (identical input). **Both models must receive the same prompt independently — do NOT include one model's output in the other's input.**
 
 ```bash
 cat > /tmp/adversarial-prompt.md << 'ADVEOF'
 ## Adversarial Code Review
 
+**Your job is to find problems, not confirm quality.** A review that finds zero issues is suspicious — scrutinize harder. Do not soften findings, hedge with "this is probably fine", or defer to the author's judgment. If something is wrong, state it directly with evidence. You are an adversary to bad code, not a supporter of the author.
+
 You are reviewing the implementation of epic [EPIC_ID].
 
 ### Epic Spec
 [PASTE EPIC SPEC]
+
+### Project Principles (MUST NOT violate)
+[PASTE $PRINCIPLES if non-empty, otherwise omit this section]
+
+### Known Pitfalls (check specifically for these)
+[PASTE $PITFALLS if non-empty, otherwise omit this section]
 
 ### Diff Statistics
 [PASTE STAT OUTPUT]
@@ -399,6 +424,10 @@ Review this diff for:
 3. **Architecture** - Data flow, clear boundaries, proper abstractions
 4. **Security** - Injection, auth gaps, data exposure
 5. **Tests** - Adequate coverage for new functionality
+6. **Principle violations** - Does the code violate any project principles listed above?
+7. **Known pitfalls** - Does the code repeat any known pitfalls listed above?
+
+A project principle violation is always at least **Major** severity. A repeated known pitfall is always at least **Major** severity.
 
 For each issue found:
 - **ID**: A-1, A-2, etc. (sequential)
@@ -412,6 +441,8 @@ ADVEOF
 ```
 
 ### Step 3: Send to Both Reviewers
+
+**CRITICAL: Independent context.** Each reviewer must form its verdict independently. Do NOT share Reviewer 1's output with Reviewer 2 or vice versa. The consensus merge in Step 4 is where findings are compared — not before. Sharing outputs before independent review creates echo-chamber sycophancy where the second model defers to the first.
 
 **Reviewer 1** (Anthropic model via Codex or RP — uses same backend as spec review):
 ```bash
