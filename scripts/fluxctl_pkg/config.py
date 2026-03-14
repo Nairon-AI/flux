@@ -26,7 +26,12 @@ def get_default_config() -> dict:
     return {
         "memory": {"enabled": True},
         "planSync": {"enabled": True, "crossEpic": False},
-        "review": {"backend": None},
+        "review": {
+            "backend": None,
+            "reviewer1": None,
+            "reviewer2": None,
+            "bot": None,
+        },
         "scouts": {"github": False},
         "tracker": {"provider": None, "teamId": None},
         "workflow": {

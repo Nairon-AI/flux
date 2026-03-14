@@ -145,6 +145,19 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
 
+## Learning Capture
+
+After the epic review cycle reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them:
+
+```bash
+$FLUXCTL memory add pitfalls "<learning>"
+```
+
+Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
+
+Focus on **spec compliance gaps** — patterns where the implementation drifted from spec. These are different from impl-review pitfalls (code quality) — epic-review catches architecture and requirements misses.
+
+Only capture generalizable patterns, not one-off fixes.
 
 ---
 
