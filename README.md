@@ -252,7 +252,7 @@ flowchart TD
     LearningCapture -.->|"write: pitfalls<br/>by area"| Brain
 
     subgraph maintenance ["Between Epics"]
-        Reflect["Reflect<br/>(session learnings)"]
+        Reflect["Reflect<br/>(learnings + skills)"]
         Ruminate["Ruminate<br/>(mine past sessions)"]
         Meditate["Meditate<br/>(prune + promote)"]
         Improve["Improve<br/>(recommendations engine)"]
@@ -275,7 +275,7 @@ flowchart TD
 | **Quality** | Tests, lint/format, desloppify scan on changed files |
 | **Ship** | Push, open PR, suggest `/flux:reflect` |
 | | |
-| **Reflect** | *Between epics:* capture session learnings to brain vault. Suggested after every ship. |
+| **Reflect** | *Between epics:* capture session learnings to brain vault and extract reusable skills from the session. Suggested after every ship. |
 | **Ruminate** | *Between epics:* mine past conversations for missed patterns |
 | **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles. Auto-nudged when 5+ new pitfalls accumulate or 30+ days since last meditation. |
 | **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested on friction (score >= 3) and via session start pulse when new tools are available. |
@@ -318,7 +318,7 @@ brain/
 ```
 
 ```bash
-/flux:reflect    # Capture session learnings to brain
+/flux:reflect    # Capture session learnings + extract reusable skills
 /flux:ruminate   # Mine past conversations for missed patterns
 /flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
@@ -453,7 +453,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 
 | Command | What it does | When it happens |
 |---------|-------------|-----------------|
-| `/flux:reflect` | Capture session learnings to brain vault | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
+| `/flux:reflect` | Capture session learnings to brain vault and extract reusable skills | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
 | `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
 | `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
 | `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
