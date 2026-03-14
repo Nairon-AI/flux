@@ -64,6 +64,9 @@ detect_cli_tools() {
     # Task tracking
     cmd_exists bd && tools+=("beads")
 
+    # File search
+    cmd_exists fff-mcp && tools+=("fff-mcp")
+
     # Agent workflow automation
     cmd_exists agent-browser && tools+=("agent-browser")
     if cmd_exists continues || cmd_exists cont; then
