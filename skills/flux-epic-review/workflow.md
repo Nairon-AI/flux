@@ -769,6 +769,61 @@ Only capture generalizable patterns, not one-off fixes.
 
 ---
 
+## Desloppify Scan Phase
+
+**Optional. Only runs if `desloppify` is installed. Scan-only — no fix loop.**
+
+The purpose is to surface quality regressions (dead code, duplication, complexity) introduced during the epic, not to fix them inline.
+
+```bash
+if command -v desloppify >/dev/null 2>&1; then
+  # Get top-level directories touched in this epic
+  CHANGED_DIRS=$(git diff "${DIFF_BASE}"..HEAD --name-only | xargs -I{} dirname {} | sort -u | grep -v '^\.$')
+
+  if [ -n "$CHANGED_DIRS" ]; then
+    echo "=== Desloppify Scan (changed directories) ==="
+    for DIR in $CHANGED_DIRS; do
+      if [ -d "$DIR" ]; then
+        desloppify scan --path "$DIR" 2>/dev/null
+      fi
+    done
+  fi
+fi
+```
+
+- If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
+- Do NOT auto-install desloppify — skip silently if not available.
+- Do NOT enter a fix loop — this is informational only.
+
+---
+
+## Frustration Signal
+
+Track `NEEDS_WORK_COUNT` across all fix loops in this pipeline (spec compliance, adversarial, bot self-heal). Increment the counter each time a NEEDS_WORK verdict is received from any reviewer or bot.
+
+If `NEEDS_WORK_COUNT >= 3` after the pipeline completes, output:
+
+```
+---
+**Friction detected**: This epic required {NEEDS_WORK_COUNT} review fix iterations.
+Repeated rework may indicate workflow gaps — missing linters, outdated
+conventions, or tools that could catch these issues earlier.
+
+Consider running `/flux:improve` to analyze your patterns and get
+targeted recommendations from the Flux recommendations engine.
+---
+```
+
+This is a suggestion only — do not auto-invoke `/flux:improve`. The user decides whether to act on it.
+
+Common causes of high iteration counts:
+- Missing lint/format rules that reviewers keep catching
+- Stale brain pitfalls that haven't been promoted to structural enforcement
+- Missing test coverage for edge cases
+- Tools that could pre-validate (e.g., desloppify, security-scan) not installed
+
+---
+
 ## Anti-patterns
 
 **All backends:**

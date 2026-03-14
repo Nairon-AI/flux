@@ -342,6 +342,7 @@ After all tasks complete (or periodically for large epics):
 
 - Run relevant tests
 - Run lint/format per repo
+- If `desloppify` is installed, run `desloppify scan` on changed directories and log the score. If score is below 85, suggest `/flux:desloppify` to the user.
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues

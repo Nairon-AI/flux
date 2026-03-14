@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.7-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.0.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -155,17 +155,84 @@ After prime, just tell the agent what you want — *build a feature, fix a bug, 
 
 ## Core Workflow
 
-```
-Prime → Scope → Work → Review → Improve → Reflect
+```mermaid
+flowchart TD
+    Prime["Prime\n(readiness audit)"]
+    Scope["Scope\n(problem definition)"]
+    Work["Work\n(task loop)"]
+    ImplReview["Impl Review\n(per-task, lightweight)"]
+    EpicReview["Epic Review\n(per-epic, thorough)"]
+    Quality["Quality\n(tests + desloppify scan)"]
+    Ship["Ship\n(push + PR)"]
+
+    Prime --> Scope
+    Scope -->|"creates epic + tasks\n+ Browser QA checklist"| Work
+
+    subgraph task_loop ["Task Loop (per task)"]
+        Work -->|"spawn worker"| ImplReview
+        ImplReview -->|"NEEDS_WORK"| Work
+        ImplReview -->|"SHIP"| NextTask["Next Task"]
+        NextTask -->|"more tasks"| Work
+    end
+
+    NextTask -->|"all tasks done"| EpicReview
+
+    subgraph review_pipeline ["Epic Review Pipeline"]
+        direction TB
+        SpecCompliance["Spec Compliance"]
+        Adversarial["Adversarial Review\n(Anthropic + OpenAI)"]
+        SecurityScan["STRIDE Security Scan"]
+        BotSelfHeal["BYORB Self-Heal\n(Greptile / CodeRabbit)"]
+        BrowserQA["Browser QA"]
+        LearningCapture["Learning Capture"]
+        DesloppifyScan["Desloppify Scan"]
+        FrustrationSignal{"3+ fix\niterations?"}
+
+        SpecCompliance --> Adversarial
+        Adversarial --> SecurityScan
+        SecurityScan --> BotSelfHeal
+        BotSelfHeal --> BrowserQA
+        BrowserQA --> LearningCapture
+        LearningCapture --> DesloppifyScan
+        DesloppifyScan --> FrustrationSignal
+    end
+
+    EpicReview --> SpecCompliance
+    FrustrationSignal -->|"no"| Quality
+    FrustrationSignal -->|"yes: suggest /flux:improve"| Quality
+    Quality --> Ship
+
+    Brain["Brain Vault\n(pitfalls, principles,\nconventions, decisions)"]
+
+    Brain -.->|"read: principles +\nrelevant pitfalls"| Scope
+    Brain -.->|"read: re-anchor\nper task"| Work
+    LearningCapture -.->|"write: pitfalls\nby area"| Brain
+
+    subgraph maintenance ["Between Epics"]
+        Reflect["Reflect\n(session learnings)"]
+        Ruminate["Ruminate\n(mine past sessions)"]
+        Meditate["Meditate\n(prune + promote)"]
+        Improve["Improve\n(recommendations engine)"]
+    end
+
+    Reflect -.->|"write"| Brain
+    Ruminate -.->|"write"| Brain
+    Meditate -.->|"prune/promote"| Brain
 ```
 
-| Step | What happens |
-|------|-------------|
-| **Scope** | Guided interview: classify the work, surface blind spots, create an epic with sized tasks |
-| **Work** | Execute tasks with context reload and state tracking |
-| **Review** | Lightweight per-task, thorough per-epic (adversarial + security + BYORB + browser QA) |
-| **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
-| **Reflect** | Capture learnings into persistent brain vault |
+| Phase | What happens |
+|-------|-------------|
+| **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
+| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
+| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
+| **Quality** | Tests, lint/format, desloppify scan on changed files |
+| **Ship** | Push, open PR, close epic |
+| | |
+| **Reflect** | *Between epics:* capture session learnings to brain vault |
+| **Ruminate** | *Between epics:* mine past conversations for missed patterns |
+| **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles |
+| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested when 3+ review fix iterations occur. |
 
 ---
 
@@ -210,13 +277,19 @@ brain/
 /flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
 
+These are maintenance skills designed to run between epics, not during active development. They audit, prune, and evolve the brain vault when you have breathing room.
+
 ### Recommendation Engine
 
 `/flux:improve` analyzes your sessions and recommends tools mapped to your specific friction patterns — from MCP servers to CLI tools to workflow changes. Recommendations are community-driven via [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations).
 
+Flux also auto-detects frustration during epic review — when 3+ NEEDS_WORK fix iterations occur, it suggests running `/flux:improve` to find tools and patterns that could catch those issues earlier.
+
 ### Desloppify
 
 Systematic code quality improvement powered by [desloppify](https://github.com/peteromallet/desloppify). Combines mechanical detection with LLM-based review. The scoring system resists gaming — you can't suppress warnings, you have to actually fix the code.
+
+When installed, Flux automatically runs a lightweight desloppify scan after epic review to surface quality regressions introduced during the epic. If the score drops below 85, it suggests a full fix pass.
 
 ```bash
 /flux:desloppify scan     # See your score
@@ -295,25 +368,42 @@ fluxctl config get tracker.provider   # Check current tracker config
 
 ## Commands
 
+**Core SDLC**
+
 | Command | What it does |
 |---------|-------------|
 | `/flux:setup` | Initialize Flux in your project |
+| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
 | `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) |
 | `/flux:plan <idea>` | Create tasks only (skip interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |
 | `/flux:impl-review` | Lightweight per-task review (single model) |
-| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning) |
-| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
-| `/flux:desloppify` | Code quality improvement |
-| `/flux:improve` | Analyze sessions, recommend tools |
-| `/flux:reflect` | Capture session learnings |
-| `/flux:ruminate` | Mine past conversations for patterns |
-| `/flux:meditate` | Prune brain vault, extract principles |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) |
+| `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) |
+
+**Security**
+
+| Command | What it does |
+|---------|-------------|
 | `/flux:threat-model` | STRIDE-based threat model |
 | `/flux:security-scan` | Scan for vulnerabilities |
 | `/flux:security-review` | Full security review |
 | `/flux:vuln-validate` | Validate findings with PoC |
+
+**Maintenance (between epics)**
+
+| Command | What it does |
+|---------|-------------|
+| `/flux:reflect` | Capture session learnings to brain vault |
+| `/flux:ruminate` | Mine past conversations for missed patterns |
+| `/flux:meditate` | Prune brain vault, promote pitfalls to principles |
+| `/flux:improve` | Analyze sessions, recommend tools (auto-suggested on friction) |
+
+**Utilities**
+
+| Command | What it does |
+|---------|-------------|
 | `/flux:score` | AI-native capability score |
 | `/flux:profile` | Export/share SDLC profile |
 | `/flux:contribute` | Report bug and auto-create fix PR |
@@ -402,11 +492,11 @@ Not recommended — both are task tracking systems and will confuse the agent. P
 
 ## Roadmap
 
-### v2.0 — Relay
+### Next — Relay
 
 A fully autonomous orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
 
-Relay coordinates multiple agents working in parallel across worktrees, manages task dependencies, and handles handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
+Relay will coordinate multiple agents working in parallel across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
 
 ### Feature Roadmap
 
