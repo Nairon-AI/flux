@@ -17,7 +17,7 @@ Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies mult
   - [Plan Review Gate](#plan-review-gate)
   - [Receipt-Based Gating](#2-receipt-based-gating)
   - [Review Loops Until SHIP](#3-review-loops-until-ship)
-  - [Memory Capture](#4-memory-capture-opt-in)
+  - [Learning Capture](#4-learning-capture)
 - [Configuration Reference](#configuration-reference)
 - [Review Backends](#review-backends)
   - [RepoPrompt](#repoprompt-integration)
@@ -415,17 +415,13 @@ Fix → re-review → fix → re-review... until the reviewer approves.
 > - Interactive prompt (a/b/c) → backend misconfigured
 > - No verdict → check iteration log
 
-### 4. Memory Capture (Opt-in)
+### 4. Learning Capture
 
-When enabled, NEEDS_WORK reviews auto-capture learnings:
+NEEDS_WORK reviews auto-capture learnings to the brain vault:
 
-```bash
-fluxctl config set memory.enabled true
-```
+Builds `brain/pitfalls/` — things reviewers catch that models miss. Over time, `/flux:meditate` promotes recurring pitfalls into principles and prunes one-offs.
 
-Builds `.flux/memory/pitfalls.md` — things reviewers catch that models miss.
-
-> **Note:** Memory config is in `.flux/config.json`, separate from Ralph's `config.env`.
+> **Note:** Learnings are stored in `brain/pitfalls/` (one file per pattern, organized by area).
 
 ---
 

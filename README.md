@@ -149,7 +149,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 
 After prime, just tell the agent what you want — *build a feature, fix a bug, refactor something, continue work*. Flux uses repo state plus your message to decide whether to scope, resume, review, or hand off.
 
-> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During reviews, Flux uses the Codex CLI as an adversarial reviewer — a second model with different training data and biases. Multiple models reaching consensus catches blind spots that no single model finds alone.
+> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During epic reviews, Flux runs adversarial dual-model review — two models with different training data review independently and consensus issues get auto-fixed. You can also bring your own review bot (Greptile, CodeRabbit) for a third perspective. See [Reviews](#reviews--two-tier-architecture) below.
 
 ---
 
@@ -163,7 +163,7 @@ Prime → Scope → Work → Review → Improve → Reflect
 |------|-------------|
 | **Scope** | Guided interview: classify the work, surface blind spots, create an epic with sized tasks |
 | **Work** | Execute tasks with context reload and state tracking |
-| **Review** | Adversarial multi-model review of your implementation |
+| **Review** | Lightweight per-task, thorough per-epic (adversarial + security + BYORB + browser QA) |
 | **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
 | **Reflect** | Capture learnings into persistent brain vault |
 
@@ -173,7 +173,7 @@ Prime → Scope → Work → Review → Improve → Reflect
 
 ### Deterministic State Engine
 
-`.flux/` is the canonical workflow memory. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. Startup hooks realign the agent with Flux state before acting on new requests.
+`.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `brain/` is the persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
 
 ### Built-in Agentmap
 
@@ -183,14 +183,31 @@ Flux generates YAML repo maps from git-tracked files for faster agent navigation
 fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 ```
 
-### Brain Vault
+### Brain Vault — Single Knowledge Store
 
-Persistent memory that makes the agent smarter over time. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing).
+Flux's brain is an Obsidian-compatible vault (`brain/`) that serves as the single knowledge store for the entire system. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
+
+- **Scoping** reads brain principles and pitfalls to ground research and plan structure
+- **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
+- **Epic review** writes learnings back to `brain/pitfalls/<area>/` after SHIP, categorized by domain
+- **Meditate** promotes recurring pitfalls into proper principles and prunes one-offs
+
+```
+brain/
+  principles/    # Engineering principles (curated via meditate)
+  pitfalls/      # Auto-captured from review iterations, organized by area
+    frontend/    #   e.g., missing-error-states.md
+    security/    #   e.g., greptile-auth-gap.md
+    async/       #   e.g., consensus-race-condition.md
+  conventions/   # Project-specific patterns
+  decisions/     # Architectural decisions with rationale
+  plans/         # From scope/plan
+```
 
 ```bash
-/flux:reflect    # Capture session learnings
-/flux:ruminate   # Mine past conversations for patterns
-/flux:meditate   # Prune stale notes, extract principles
+/flux:reflect    # Capture session learnings to brain
+/flux:ruminate   # Mine past conversations for missed patterns
+/flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
 
 ### Recommendation Engine
@@ -206,14 +223,63 @@ Systematic code quality improvement powered by [desloppify](https://github.com/p
 /flux:desloppify next     # Get next priority fix
 ```
 
-### Security
+### Reviews — Two-Tier Architecture
 
-STRIDE-based security analysis adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins). Findings are validated for exploitability with proof-of-concept generation.
+Flux splits reviews into two tiers so you get fast feedback per-task without slowing down, and thorough verification per-epic before shipping.
+
+**Per-task: Lightweight** (`/flux:impl-review`)
+Single-model pass after each task. Catches obvious bugs, logic errors, and spec drift in seconds. Fast enough to run on every task without breaking flow.
+
+**Per-epic: Thorough** (`/flux:epic-review`)
+Full pipeline that runs once when all epic tasks are done:
+
+| Phase | What happens |
+|-------|-------------|
+| Spec compliance | Verify every requirement from the epic spec is implemented |
+| Adversarial review | Two models from different labs (Anthropic + OpenAI) review independently — consensus issues = high confidence |
+| Severity filtering | Only auto-fix issues at/above your configured threshold (critical, major, minor, style) |
+| Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
+| BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
+| Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
+| Learning capture | Extract patterns from review feedback into `brain/pitfalls/` |
+
+> **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
+
+#### Security — Built Into the Review Pipeline
+
+Security scanning is not a separate step you remember to run — it's baked into the epic review pipeline. When your changes touch security-sensitive files (auth, API routes, middleware, secrets, permissions), Flux automatically runs a [STRIDE](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)-based scan adapted from [Factory AI](https://github.com/Factory-AI/factory-plugins). Findings are validated for exploitability (confidence >= 0.8 only), filtered by your severity threshold, and auto-fixed.
+
+You can also run security tools standalone when needed:
 
 ```bash
-/flux:threat-model           # Generate threat model
-/flux:security-scan PR #123  # Scan changes for vulnerabilities
-/flux:security-review        # Full security review
+/flux:threat-model           # Generate STRIDE threat model
+/flux:security-scan PR #123  # Scan PR changes
+/flux:security-review        # Full repository audit
+```
+
+#### BYORB — Bring Your Own Review Bot
+
+Flux integrates with external code review bots that run on your PR. Configure during `/flux:setup`:
+
+| Bot | How it works |
+|-----|-------------|
+| [Greptile](https://greptile.com) | Attaches a confidence summary to your PR description. Flux polls for it, parses the score and issue list, and auto-fixes issues above your severity threshold. |
+| [CodeRabbit](https://coderabbit.ai) | Posts review comments on your PR. Flux polls for comments (or uses the CLI), parses issues, and auto-fixes above threshold. |
+
+Bots catch patterns that LLMs miss — dependency conflicts, project-specific conventions, security rules from your org config. Combined with adversarial model review, you get three independent perspectives on every epic.
+
+#### Browser QA — Scoping Creates the Test Plan
+
+During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Browser QA Checklist** task with testable criteria (URLs, expected elements, user flows). At epic review time, `agent-browser` follows this checklist — no manual test plan needed.
+
+#### Learning Capture — Reviews That Pay for Themselves
+
+Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `brain/pitfalls/`. The worker reads these during re-anchor at the start of every task. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs — the brain gets smarter, not bigger.
+
+**The result:** mistakes caught in review today are avoided in implementation tomorrow. Over time, you get fewer NEEDS_WORK iterations, shorter review cycles, and lower token spend — regardless of which review strategy you use. The learning feedback loop works with single-model, adversarial, or bot-assisted reviews.
+
+```bash
+/flux:setup   # Configure reviewers, bots, and severity threshold
 ```
 
 ### Linear Integration
@@ -236,8 +302,8 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:plan <idea>` | Create tasks only (skip interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |
-| `/flux:impl-review` | Implementation review |
-| `/flux:epic-review <epic>` | Verify epic completion |
+| `/flux:impl-review` | Lightweight per-task review (single model) |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning) |
 | `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
 | `/flux:desloppify` | Code quality improvement |
 | `/flux:improve` | Analyze sessions, recommend tools |

@@ -47,7 +47,6 @@ META_FILE = "meta.json"
 EPICS_DIR = "epics"
 SPECS_DIR = "specs"
 TASKS_DIR = "tasks"
-MEMORY_DIR = "memory"
 ARTIFACTS_DIR = "artifacts"
 CONFIG_FILE = "config.json"
 

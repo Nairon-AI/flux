@@ -32,17 +32,28 @@ Use the FLUXCTL path and IDs from your prompt:
 git status
 git log -5 --oneline
 
-# 3. Check memory system
-<FLUXCTL> config get memory.enabled --json
+# 3. Read brain vault (persistent knowledge)
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
-**If memory.enabled is true**, read relevant memory:
+**Read brain pitfalls and principles:**
 ```bash
-cat .flux/memory/pitfalls.md 2>/dev/null || true
-cat .flux/memory/conventions.md 2>/dev/null || true
-cat .flux/memory/decisions.md 2>/dev/null || true
+# Engineering principles
+cat "$REPO_ROOT/brain/principles.md" 2>/dev/null || true
+
+# Known pitfalls — organized by area (brain/pitfalls/<area>/<pattern>.md)
+# List available areas, then read ONLY areas relevant to this task
+ls "$REPO_ROOT/brain/pitfalls" 2>/dev/null || true
+# e.g., for a frontend task: read brain/pitfalls/frontend/
+# e.g., for an API task: read brain/pitfalls/api/ and brain/pitfalls/security/
+for f in "$REPO_ROOT/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do cat "$f"; done
+
+# Project conventions
+for f in "$REPO_ROOT/brain/conventions"/*.md 2>/dev/null; do cat "$f"; done
+# Architectural decisions
+for f in "$REPO_ROOT/brain/decisions"/*.md 2>/dev/null; do cat "$f"; done
 ```
-Look for entries relevant to your task's technology/domain.
+Determine relevant pitfall areas by analyzing the task spec — file paths, technology, acceptance criteria. Only load matching areas to keep context lean. Read individual principle files in full if they relate to the task.
 
 Parse the spec carefully. Identify:
 - Acceptance criteria

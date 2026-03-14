@@ -1,6 +1,6 @@
 ---
 name: flux-impl-review
-description: John Carmack-level implementation review via RepoPrompt or Codex. Use when reviewing code changes, PRs, or implementations. Triggers on /flux:impl-review.
+description: Per-task implementation review via RepoPrompt or Codex. Lightweight single-model pass to catch obvious issues before moving to next task. Full adversarial review runs at epic level. Triggers on /flux:impl-review.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Conduct a John Carmack-level review of implementation changes on the current branch.
+Lightweight per-task review using a single model. Catches obvious bugs and issues before moving to the next task. The heavy-weight review (adversarial dual-model, external bot self-heal, browser QA, learning capture) runs once at epic completion via `/flux:epic-review`.
 
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
@@ -157,6 +157,8 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 5. **Repeat** until `<verdict>SHIP</verdict>`
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
+
+**Note**: This is a lightweight per-task pass. The full adversarial review (dual-model consensus, external bot self-heal, browser QA, learning capture) runs at epic completion via `/flux:epic-review`.
 
 ---
 

@@ -7,7 +7,7 @@ CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
 ```
 
 ## Multi-User Safety
@@ -30,7 +30,6 @@ Works out of the box for parallel branches. No setup required.
 ├── specs/fn-N-slug.md      # Epic spec (markdown)
 ├── tasks/fn-N-slug.M.json  # Task state (e.g., fn-1-add-oauth.1.json)
 ├── tasks/fn-N-slug.M.md    # Task spec (markdown)
-├── memory/                 # Agent memory (reserved)
 ├── bin/                    # (optional) Local fluxctl install via /flux:setup
 │   ├── fluxctl
 │   └── fluxctl.py
@@ -453,22 +452,19 @@ Manage project configuration stored in `.flux/config.json`.
 
 ```bash
 # Get a config value
-fluxctl config get memory.enabled [--json]
 fluxctl config get review.backend [--json]
 
 # Set a config value
-fluxctl config set memory.enabled true [--json]
 fluxctl config set review.backend codex [--json]  # rp, codex, or none
 
 # Toggle boolean config
-fluxctl config toggle memory.enabled [--json]
+fluxctl config toggle planSync.enabled [--json]
 ```
 
 **Available settings:**
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `memory.enabled` | bool | `false` | Enable memory system |
 | `planSync.enabled` | bool | `false` | Enable plan-sync after task completion |
 | `scouts.github` | bool | `false` | Enable github-scout during planning (requires gh CLI) |
 | `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLUX_REVIEW_BACKEND`. |
@@ -477,26 +473,7 @@ Priority: `--review=...` argument > `FLUX_REVIEW_BACKEND` env > `.flux/config.js
 
 No auto-detect. Run `/flux:setup` (or `fluxctl config set review.backend ...`) to configure.
 
-### memory
-
-Manage persistent learnings in `.flux/memory/`.
-
-```bash
-# Initialize memory directory
-fluxctl memory init [--json]
-
-# Add entries
-fluxctl memory add --type pitfall "Always use fluxctl rp wrappers" [--json]
-fluxctl memory add --type convention "Tests in __tests__ dirs" [--json]
-fluxctl memory add --type decision "SQLite for simplicity" [--json]
-
-# Query
-fluxctl memory list [--json]
-fluxctl memory search "pattern" [--json]
-fluxctl memory read --type pitfalls [--json]
-```
-
-Types: `pitfall`, `convention`, `decision`
+> **Note:** Learnings (pitfalls, conventions, decisions) are stored in the `brain/` vault, not `.flux/`. See `brain/index.md`.
 
 ### prep-chat
 

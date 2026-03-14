@@ -19,7 +19,7 @@ Use fluxctl init (idempotent - safe to re-run, handles upgrades):
 ```
 
 This creates/upgrades:
-- `.flux/` directory structure (epics/, specs/, tasks/, memory/)
+- `.flux/` directory structure (epics/, specs/, tasks/)
 - `meta.json` with schema version
 - `config.json` with defaults (merges new keys on upgrade)
 
@@ -958,12 +958,14 @@ HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 # Read current config values if they exist
 CURRENT_SCOPE=$("${PLUGIN_ROOT}/scripts/fluxctl" config get install.scope --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
-CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/fluxctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/fluxctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_SCOUT_MODEL=$("${PLUGIN_ROOT}/scripts/fluxctl" config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_TRACKER=$("${PLUGIN_ROOT}/scripts/fluxctl" config get tracker.provider --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_REVIEWER1=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.reviewer1 --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_REVIEWER2=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.reviewer2 --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_REVIEW_BOT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.bot --json 2>/dev/null | jq -r '.value // empty')
 ```
 
 Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
@@ -989,7 +991,6 @@ If ANY config values are already set, print a notice before asking questions:
 ```
 Current configuration:
 - Install scope: project (always project-local)
-- Memory: <enabled|disabled> (change with: fluxctl config set memory.enabled <true|false>)
 - Plan-Sync: <enabled|disabled> (change with: fluxctl config set planSync.enabled <true|false>)
 - Plan-Sync cross-epic: <enabled|disabled> (change with: fluxctl config set planSync.crossEpic <true|false>)
 - Review backend: <codex|rp|none> (change with: fluxctl config set review.backend <codex|rp|none>)
@@ -1007,19 +1008,6 @@ Build the questions array dynamically. **Only include questions for config value
 **Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory.
 
 Available questions (include only if corresponding config is unset):
-
-**Memory question** (include if CURRENT_MEMORY is empty):
-```json
-{
-  "header": "Memory",
-  "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
-  "options": [
-    {"label": "Yes (Recommended)", "description": "Auto-capture pitfalls and conventions from review feedback"},
-    {"label": "No", "description": "Disable with: fluxctl config set memory.enabled false"}
-  ],
-  "multiSelect": false
-}
-```
 
 **Plan-Sync question** (include if CURRENT_PLANSYNC is empty):
 ```json
@@ -1122,6 +1110,78 @@ Then ask for their Linear API key (needed for automated sync of epics/tasks to L
 }
 ```
 
+**Adversarial Reviewer 1 question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Adversarial Reviewer 1 (Anthropic)",
+  "question": "Pick the first reviewer model. Flux uses two models from different labs to reach consensus — issues both agree on get fixed automatically.",
+  "options": [
+    {"label": "claude-opus-4-6", "description": "Most capable. Best for complex architecture reviews."},
+    {"label": "claude-sonnet-4-6", "description": "Fast and capable. Good balance of speed and depth."},
+    {"label": "claude-haiku-4-5", "description": "Fastest. Good for quick reviews on smaller changes."},
+    {"label": "claude-sonnet-4-5", "description": "Previous generation Sonnet. Solid reviewer."}
+  ],
+  "multiSelect": false
+}
+```
+
+**Adversarial Reviewer 2 question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Adversarial Reviewer 2 (OpenAI)",
+  "question": "Pick the second reviewer model from a different lab. Cross-lab consensus eliminates single-model blind spots.",
+  "options": [
+    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Pro."},
+    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Pro."},
+    {"label": "gpt-5.3-codex-spark", "description": "Fastest OpenAI model. Requires ChatGPT Pro."},
+    {"label": "o4-mini", "description": "Reasoning model. Good for logic-heavy reviews."}
+  ],
+  "multiSelect": false
+}
+```
+
+**Code Review Bot question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Code Review Bot",
+  "question": "Do you use an external code review bot on your PRs? Flux will poll for its feedback and self-heal until all major issues are resolved.",
+  "options": [
+    {"label": "Greptile", "description": "AI code review bot. Posts summary + confidence score to PR description. Flux polls and self-heals until 5/5 confidence."},
+    {"label": "CodeRabbit", "description": "AI code review via CLI or GitHub bot. Flux runs coderabbit locally or reads PR comments."},
+    {"label": "None", "description": "No external bot. Flux uses its built-in adversarial review only."}
+  ],
+  "multiSelect": false
+}
+```
+
+**Review Severity question** (include if review backend is NOT "None"):
+```json
+{
+  "header": "Review Severity Threshold",
+  "question": "Which issue severities should the self-heal loop fix? Select all that apply. Issues below your threshold are logged but not auto-fixed.",
+  "options": [
+    {"label": "Critical", "description": "Security vulnerabilities, data loss, crashes. Always recommended."},
+    {"label": "Major", "description": "Bugs, logic errors, missing validation, performance issues."},
+    {"label": "Minor", "description": "Edge cases, error handling gaps, suboptimal patterns."},
+    {"label": "Style", "description": "Naming conventions, formatting, code organization, readability."}
+  ],
+  "multiSelect": true
+}
+```
+
+**PR Template question** (always include):
+```json
+{
+  "header": "PR Template",
+  "question": "Create a structured PR template? This ensures all PRs include context, testing checklist, and rollout plan.",
+  "options": [
+    {"label": "Yes", "description": "Creates .github/pull_request_template.md with structured sections"},
+    {"label": "No", "description": "Skip PR template"}
+  ],
+  "multiSelect": false
+}
+```
+
 **Docs question** (always include):
 ```json
 {
@@ -1159,10 +1219,6 @@ Use `AskUserQuestion` with the built questions array.
 ## Step 7: Process Answers
 
 Only process answers for questions that were asked (config values that were unset). Skip processing for config that was already set.
-
-**Memory** (if question was asked):
-- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled true --json`
-- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set memory.enabled false --json`
 
 **Plan-Sync** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set planSync.enabled true --json`
@@ -1234,6 +1290,92 @@ esac
 
 "${PLUGIN_ROOT}/scripts/fluxctl" config set review.backend "$REVIEW_BACKEND" --json
 ```
+
+**Adversarial Reviewers** (if questions were asked):
+```bash
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer1 "<chosen_anthropic_model>" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer2 "<chosen_openai_model>" --json
+```
+
+**Code Review Bot** (if question was asked):
+- If "Greptile": `"${PLUGIN_ROOT}/scripts/fluxctl" config set review.bot "greptile" --json`
+- If "CodeRabbit":
+  1. `"${PLUGIN_ROOT}/scripts/fluxctl" config set review.bot "coderabbit" --json`
+  2. Check CodeRabbit CLI is installed:
+     ```bash
+     which coderabbit >/dev/null 2>&1 && echo "CODERABBIT_OK=1" || echo "CODERABBIT_OK=0"
+     ```
+     If not installed, tell the user:
+     ```
+     ⚠️  CodeRabbit CLI is optional but recommended for local reviews.
+     Install: npm install -g coderabbit
+     Without it, Flux will read CodeRabbit's PR comments from GitHub instead.
+     ```
+     Save config anyway — do not block setup.
+- If "None": `"${PLUGIN_ROOT}/scripts/fluxctl" config set review.bot "none" --json`
+
+**Review Severity** (if question was asked):
+Save the selected severities as a comma-separated list:
+```bash
+# Example: user selected Critical + Major + Minor
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.severities "critical,major,minor" --json
+```
+Map labels to lowercase values: Critical → `critical`, Major → `major`, Minor → `minor`, Style → `style`.
+
+If no selection was made, default to `critical,major`.
+
+**PR Template** (if question was asked):
+- If "Yes":
+  1. Create `.github/pull_request_template.md` if it doesn't already exist:
+     ```bash
+     mkdir -p .github
+     ```
+  2. Write the PR template (only if file doesn't exist — never overwrite an existing template):
+     ```markdown
+     ## TL;DR (Non-Technical)
+     - What problem does this fix for users?
+     - What changes in the user experience/flow?
+     - Any risk to current behavior?
+
+     ## Context
+     - Linear issue(s):
+     - Epic/initiative:
+     - Why now:
+
+     ## What This PR Changes
+     -
+     -
+     -
+
+     ## Product Decisions + Why
+     - Decision:
+       - Why:
+
+     ## Caveats / Tradeoffs
+     -
+
+     ## Testing Checklist
+
+     ### Automated
+     - [ ] Type check passes
+     - [ ] Targeted tests run and pass
+
+     ### Manual
+     - [ ] Happy path verified
+     - [ ] Key edge case(s) verified
+     - [ ] No regression in adjacent flow(s)
+
+     ## Rollout + Verification
+     - Rollout plan:
+     - Verification steps post-merge:
+     - Rollback plan:
+
+     ## Notes for Reviewers
+     - Most important file(s) to review first:
+     - Anything tricky to pay attention to:
+     ```
+  3. If file already exists, show: `PR template already exists at .github/pull_request_template.md — skipping.`
+- If "No": skip.
 
 **Docs:**
 For each chosen file (CLAUDE.md and/or AGENTS.md):
@@ -1414,12 +1556,16 @@ To use from command line:
 
 Configuration (use fluxctl config set to change):
 - Install scope: <project|user|global>
-- Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
 - GitHub scout: <enabled|disabled>
 - Scout model: <claude-haiku-4-5|gpt-5.3-codex-spark>
 - Review backend: <codex|rp|none>
+- Adversarial reviewer 1: <model> (Anthropic)
+- Adversarial reviewer 2: <model> (OpenAI)
+- Code review bot: <greptile|coderabbit|none>
+- Review severities: <critical,major,minor,style>
+- PR template: <created|skipped|already exists>
 
 Documentation updated:
 - <files updated or "none">
