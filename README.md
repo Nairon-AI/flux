@@ -149,7 +149,7 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 
 After prime, just tell the agent what you want — *build a feature, fix a bug, refactor something, continue work*. Flux uses repo state plus your message to decide whether to scope, resume, review, or hand off.
 
-> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During reviews, Flux uses the Codex CLI as an adversarial reviewer — a second model with different training data and biases. Multiple models reaching consensus catches blind spots that no single model finds alone.
+> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During epic reviews, Flux runs adversarial dual-model review — two models with different training data review independently and consensus issues get auto-fixed. You can also bring your own review bot (Greptile, CodeRabbit) for a third perspective. See [Reviews](#reviews--two-tier-architecture) below.
 
 ---
 
@@ -163,7 +163,7 @@ Prime → Scope → Work → Review → Improve → Reflect
 |------|-------------|
 | **Scope** | Guided interview: classify the work, surface blind spots, create an epic with sized tasks |
 | **Work** | Execute tasks with context reload and state tracking |
-| **Review** | Adversarial multi-model review of your implementation |
+| **Review** | Lightweight per-task, thorough per-epic (adversarial + BYORB + browser QA) |
 | **Improve** | Analyze sessions, detect inefficiencies, get tool recommendations |
 | **Reflect** | Capture learnings into persistent brain vault |
 
@@ -216,6 +216,48 @@ STRIDE-based security analysis adapted from [Factory AI security-engineer plugin
 /flux:security-review        # Full security review
 ```
 
+### Reviews — Two-Tier Architecture
+
+Flux splits reviews into two tiers so you get fast feedback per-task without slowing down, and thorough verification per-epic before shipping.
+
+**Per-task: Lightweight** (`/flux:impl-review`)
+Single-model pass after each task. Catches obvious bugs, logic errors, and spec drift in seconds. Fast enough to run on every task without breaking flow.
+
+**Per-epic: Thorough** (`/flux:epic-review`)
+Full pipeline that runs once when all epic tasks are done:
+
+| Phase | What happens |
+|-------|-------------|
+| Spec compliance | Verify every requirement from the epic spec is implemented |
+| Adversarial review | Two models from different labs (Anthropic + OpenAI) review independently — consensus issues = high confidence |
+| Severity filtering | Only auto-fix issues at/above your configured threshold (critical, major, minor, style) |
+| BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
+| Browser QA | Test acceptance criteria in an actual browser via [agent-browser](https://github.com/AgnBc/agent-browser) |
+| Learning capture | Extract patterns from review feedback into `.flux/memory/pitfalls.md` |
+
+> **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
+
+#### BYORB — Bring Your Own Review Bot
+
+Flux integrates with external code review bots that run on your PR. Configure during `/flux:setup`:
+
+| Bot | How it works |
+|-----|-------------|
+| [Greptile](https://greptile.com) | Attaches a confidence summary to your PR description. Flux polls for it, parses the score and issue list, and auto-fixes issues above your severity threshold. |
+| [CodeRabbit](https://coderabbit.ai) | Posts review comments on your PR. Flux polls for comments (or uses the CLI), parses issues, and auto-fixes above threshold. |
+
+Bots catch patterns that LLMs miss — dependency conflicts, project-specific conventions, security rules from your org config. Combined with adversarial model review, you get three independent perspectives on every epic.
+
+#### Learning Capture — Reviews That Pay for Themselves
+
+Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `.flux/memory/pitfalls.md`. The worker reads this file during re-anchor at the start of every task.
+
+**The result:** mistakes caught in review today are avoided in implementation tomorrow. Over time, you get fewer NEEDS_WORK iterations, shorter review cycles, and lower token spend — regardless of which review strategy you use. The learning feedback loop works with single-model, adversarial, or bot-assisted reviews.
+
+```bash
+/flux:setup   # Configure reviewers, bots, and severity threshold
+```
+
 ### Linear Integration
 
 Connect Flux to [Linear](https://linear.app) during `/flux:setup` — epics auto-create Linear projects, tasks auto-create issues, and status changes (start, done, block) sync in real-time. Your team gets full visibility without leaving Linear.
@@ -236,8 +278,8 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:plan <idea>` | Create tasks only (skip interview) |
 | `/flux:work <task>` | Execute task with context reload |
 | `/flux:sync <epic>` | Sync specs after drift |
-| `/flux:impl-review` | Implementation review |
-| `/flux:epic-review <epic>` | Verify epic completion |
+| `/flux:impl-review` | Lightweight per-task review (single model) |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning) |
 | `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
 | `/flux:desloppify` | Code quality improvement |
 | `/flux:improve` | Analyze sessions, recommend tools |
