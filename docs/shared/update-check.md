@@ -14,7 +14,7 @@ UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 ```
 ---
 Flux update available: vX.Y.Z → vA.B.C
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin install flux@nairon-flux
 Then restart Claude Code for changes to take effect.
 ---
 ```
