@@ -1295,6 +1295,30 @@ $FLUXCTL config get scouts.github --json
 $FLUXCTL epic set-branch <epic-id> --branch "<epic-id>" --json
 ```
 
+**Read brain vault** (before scouts, fast local read):
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# Read engineering principles to ground scoping decisions
+if [ -f "$REPO_ROOT/brain/principles.md" ]; then
+  cat "$REPO_ROOT/brain/principles.md"
+fi
+
+# Read known pitfalls — organized by area (brain/pitfalls/<area>/<pattern>.md)
+# List areas, then read the ones relevant to the problem being scoped
+if [ -d "$REPO_ROOT/brain/pitfalls" ]; then
+  ls "$REPO_ROOT/brain/pitfalls"
+  # Read pitfalls from areas relevant to the problem domain
+  # e.g., scoping a frontend feature → read brain/pitfalls/frontend/
+  for f in "$REPO_ROOT/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do
+    cat "$f"
+  done
+fi
+```
+
+Use brain principles to guide research direction and plan structure. Read relevant individual principle files in full if the problem domain maps to specific principles (e.g., `experience-first.md` for UX work, `boundary-discipline.md` for API design).
+
 **Run scouts in parallel** (same as flux-plan):
 
 | Scout | Purpose | Required |

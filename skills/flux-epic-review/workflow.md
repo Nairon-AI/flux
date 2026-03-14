@@ -8,7 +8,7 @@ Epic completion review is the thorough review gate. It combines:
 - **Severity filtering** — only auto-fix issues at/above configured threshold
 - **External bot self-heal** — Greptile/CodeRabbit catch what models miss
 - **Browser QA** — verify acceptance criteria in actual browser
-- **Learning capture** — feed patterns back into worker memory
+- **Learning capture** — feed patterns back into brain vault (pitfalls + principles)
 
 Per-task lightweight reviews happen via `/flux:impl-review`. This is the heavy-weight pass that runs once when all epic tasks are done.
 
@@ -719,23 +719,51 @@ Review all NEEDS_WORK iterations across the pipeline and extract generalizable p
 
 ### How to Capture
 
+Write each learning to a separate file in `brain/pitfalls/<area>/`, organized by area of concern:
+
 ```bash
-$FLUXCTL memory add pitfalls "<learning>"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+PITFALLS_DIR="$REPO_ROOT/brain/pitfalls"
+
+# 1. Determine the area from the pitfall's domain
+#    Check existing areas first: ls "$PITFALLS_DIR"
+#    Common areas: frontend, backend, security, async, api, database, testing, infra
+#    Create new area directory if none of the existing ones fit
+AREA="frontend"
+mkdir -p "$PITFALLS_DIR/$AREA"
+
+# 2. One file per learning, filename = pattern slug
+cat > "$PITFALLS_DIR/$AREA/missing-error-states.md" << 'EOF'
+# Missing Error States
+
+UI components lacked error/empty states specified in acceptance criteria.
+
+**Source**: epic-review (fn-3-dashboard)
+**Date**: 2026-03-14
+EOF
 ```
 
-Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
+**Area selection rules:**
+1. Check existing area directories in `brain/pitfalls/` — use one if it fits
+2. If no existing area matches, create a new directory with a short, descriptive slug
+3. Keep areas broad enough to group related pitfalls (e.g., `frontend` not `react-forms`)
+4. When in doubt, check what's already there: `ls brain/pitfalls/`
+
+After writing pitfall files, update `brain/index.md` to include new entries under the `## Pitfalls` section.
 
 Examples:
-- `[2026-03-14] [epic-review] missing-error-states: UI components lacked error/empty states specified in acceptance criteria. Applies to: frontend.`
-- `[2026-03-14] [epic-review] consensus-race-condition: Both models flagged unsynchronized state updates in event handlers. Applies to: async.`
-- `[2026-03-14] [epic-review] greptile-auth-gap: Greptile caught missing auth check on new API endpoint. Applies to: security.`
+- `brain/pitfalls/frontend/missing-error-states.md` — UI components lacked error/empty states
+- `brain/pitfalls/async/consensus-race-condition.md` — Both models flagged unsynchronized state updates
+- `brain/pitfalls/security/greptile-auth-gap.md` — Greptile caught missing auth check on new endpoint
 
 ### Feedback Loop
 
 These pitfalls feed back into the worker automatically:
-- Worker reads `.flux/memory/pitfalls.md` during re-anchor (Phase 1 of `/flux:work`)
-- Future tasks benefit from patterns learned in past epic reviews
+- Worker reads only the relevant `brain/pitfalls/<area>/` subdirectories during re-anchor (matched to the current task's domain)
+- Worker reads `brain/principles/` for engineering principles that guide implementation
+- Future tasks benefit from patterns learned in past epic reviews — without loading irrelevant pitfalls
 - Over time, fewer NEEDS_WORK iterations as the worker learns common mistakes
+- `/flux:meditate` periodically promotes recurring pitfalls into proper principles and prunes one-offs
 
 Only capture generalizable patterns, not one-off fixes.
 

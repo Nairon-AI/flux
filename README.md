@@ -173,7 +173,7 @@ Prime → Scope → Work → Review → Improve → Reflect
 
 ### Deterministic State Engine
 
-`.flux/` is the canonical workflow memory. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. Startup hooks realign the agent with Flux state before acting on new requests.
+`.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `brain/` is the persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
 
 ### Built-in Agentmap
 
@@ -183,14 +183,31 @@ Flux generates YAML repo maps from git-tracked files for faster agent navigation
 fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 ```
 
-### Brain Vault
+### Brain Vault — Single Knowledge Store
 
-Persistent memory that makes the agent smarter over time. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing).
+Flux's brain is an Obsidian-compatible vault (`brain/`) that serves as the single knowledge store for the entire system. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
+
+- **Scoping** reads brain principles and pitfalls to ground research and plan structure
+- **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
+- **Epic review** writes learnings back to `brain/pitfalls/<area>/` after SHIP, categorized by domain
+- **Meditate** promotes recurring pitfalls into proper principles and prunes one-offs
+
+```
+brain/
+  principles/    # Engineering principles (curated via meditate)
+  pitfalls/      # Auto-captured from review iterations, organized by area
+    frontend/    #   e.g., missing-error-states.md
+    security/    #   e.g., greptile-auth-gap.md
+    async/       #   e.g., consensus-race-condition.md
+  conventions/   # Project-specific patterns
+  decisions/     # Architectural decisions with rationale
+  plans/         # From scope/plan
+```
 
 ```bash
-/flux:reflect    # Capture session learnings
-/flux:ruminate   # Mine past conversations for patterns
-/flux:meditate   # Prune stale notes, extract principles
+/flux:reflect    # Capture session learnings to brain
+/flux:ruminate   # Mine past conversations for missed patterns
+/flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
 
 ### Recommendation Engine
@@ -224,7 +241,7 @@ Full pipeline that runs once when all epic tasks are done:
 | Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
 | BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
 | Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
-| Learning capture | Extract patterns from review feedback into `.flux/memory/pitfalls.md` |
+| Learning capture | Extract patterns from review feedback into `brain/pitfalls/` |
 
 > **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
 
@@ -257,7 +274,7 @@ During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Brows
 
 #### Learning Capture — Reviews That Pay for Themselves
 
-Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `.flux/memory/pitfalls.md`. The worker reads this file during re-anchor at the start of every task.
+Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `brain/pitfalls/`. The worker reads these during re-anchor at the start of every task. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs — the brain gets smarter, not bigger.
 
 **The result:** mistakes caught in review today are avoided in implementation tomorrow. Over time, you get fewer NEEDS_WORK iterations, shorter review cycles, and lower token spend — regardless of which review strategy you use. The learning feedback loop works with single-model, adversarial, or bot-assisted reviews.
 

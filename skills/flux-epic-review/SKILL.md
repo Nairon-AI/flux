@@ -95,7 +95,7 @@ The epic review is a multi-phase pipeline:
 5. **Security Scan** — STRIDE-based vulnerability scan on changed files (auto-triggered for security-sensitive changes)
 6. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
 7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
-8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to pitfalls.md
+8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `brain/pitfalls/`
 
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
@@ -262,13 +262,40 @@ See [workflow.md](workflow.md) "Browser QA Phase" for full details. Summary:
 
 ### Step 9: Learning Capture
 
-After the full review pipeline reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them:
+After the full review pipeline reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them to the brain vault.
+
+Pitfalls are organized by area of concern under `brain/pitfalls/<area>/`. The agent decides the area intelligently based on the pitfall's domain.
 
 ```bash
-$FLUXCTL memory add pitfalls "<learning>"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+PITFALLS_DIR="$REPO_ROOT/brain/pitfalls"
+
+# Determine area from the pitfall's domain
+# Common areas: frontend, backend, security, async, api, database, testing, infra
+# Create new area if none of the existing ones fit
+AREA="<area>"  # e.g., "frontend", "security", "async"
+mkdir -p "$PITFALLS_DIR/$AREA"
+
+# Write one file per learning (slug from pattern name)
+cat > "$PITFALLS_DIR/$AREA/<pattern-slug>.md" << 'EOF'
+# <Pattern Name>
+
+<description>
+
+**Source**: epic-review (<epic-id>)
+**Date**: <date>
+EOF
 ```
 
-Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
+**Area selection rules:**
+1. Check existing area directories in `brain/pitfalls/` — use one if it fits
+2. If no existing area matches, create a new directory with a short, descriptive slug
+3. Keep areas broad enough to group related pitfalls (e.g., `frontend` not `react-forms`)
+4. When in doubt, check what's already there: `ls brain/pitfalls/`
+
+Update `brain/index.md` to include new pitfall area entries.
+
+Format: one file per pattern, organized by area (e.g., `brain/pitfalls/frontend/missing-error-states.md`).
 
 **What to capture:**
 - Spec compliance gaps — requirements that drifted from spec
@@ -277,7 +304,7 @@ Format: `[<date>] [epic-review] <pattern>: <description>. Applies to: <area>.`
 - External bot patterns — recurring issues caught by Greptile/CodeRabbit
 - Browser QA failures — UI/UX issues missed during implementation
 
-Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `.flux/memory/pitfalls.md` which is read during re-anchor (Phase 1 of `/flux:work`).
+Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `brain/pitfalls/` which is read during re-anchor — but only the relevant area subdirectories are loaded, keeping context lean. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs.
 
 ---
 

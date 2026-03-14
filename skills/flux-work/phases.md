@@ -113,6 +113,64 @@ RALPH_MODE: true|false
 Follow your phases in worker.md exactly.
 ```
 
+### 3c-1. Brain Re-Anchor (before worker starts implementing)
+
+The worker reads the brain vault at the start of each task for accumulated knowledge:
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# Read engineering principles index
+if [ -f "$REPO_ROOT/brain/principles.md" ]; then
+  echo "=== Brain: Engineering Principles ==="
+  cat "$REPO_ROOT/brain/principles.md"
+fi
+
+# Read pitfalls — only from areas relevant to this task's domain
+# Pitfalls are organized: brain/pitfalls/<area>/<pattern>.md
+# e.g., brain/pitfalls/frontend/, brain/pitfalls/security/, brain/pitfalls/api/
+if [ -d "$REPO_ROOT/brain/pitfalls" ]; then
+  echo "=== Brain: Available Pitfall Areas ==="
+  ls "$REPO_ROOT/brain/pitfalls"
+
+  # Read pitfalls from relevant areas based on task context
+  # Example: a frontend task reads brain/pitfalls/frontend/
+  # Example: an API task reads brain/pitfalls/api/ and brain/pitfalls/security/
+  for AREA in <relevant-areas>; do
+    if [ -d "$REPO_ROOT/brain/pitfalls/$AREA" ] && [ "$(ls -A "$REPO_ROOT/brain/pitfalls/$AREA" 2>/dev/null)" ]; then
+      echo "=== Pitfalls: $AREA ==="
+      for f in "$REPO_ROOT/brain/pitfalls/$AREA"/*.md; do
+        cat "$f"
+        echo "---"
+      done
+    fi
+  done
+fi
+```
+
+**Area matching**: The worker determines relevant areas by analyzing the task spec — file paths, technology stack, acceptance criteria. For example:
+- Task touching `src/components/` → read `frontend/`
+- Task adding API endpoints → read `api/`, `security/`
+- Task with async/event logic → read `async/`
+- When unsure, read all areas (still cheaper than loading irrelevant pitfalls in a flat dir)
+
+The worker also reads conventions and decisions if they exist:
+
+```bash
+# Project conventions
+for f in "$REPO_ROOT/brain/conventions"/*.md 2>/dev/null; do cat "$f"; done
+# Architectural decisions
+for f in "$REPO_ROOT/brain/decisions"/*.md 2>/dev/null; do cat "$f"; done
+```
+
+This re-anchor step gives the worker context about:
+- **Pitfalls** — patterns caught in past reviews, filtered to the relevant domain
+- **Principles** — engineering principles that guide implementation decisions
+- **Conventions** — project-specific patterns and standards
+- **Decisions** — architectural decisions with rationale
+
+The worker should read relevant principle files in full if the current task relates to them (e.g., read `boundary-discipline.md` when working on API boundaries).
+
 **Worker returns**: Summary of implementation, files changed, test results, review verdict.
 
 ### 3d. Verify Completion
