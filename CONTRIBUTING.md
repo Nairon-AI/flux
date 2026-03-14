@@ -38,8 +38,6 @@ The video proves the feature works and shows you actually tested it.
 Help us with visibility. Before your PR can be merged, you must post about your contribution on at least one of:
 - Twitter/X
 - LinkedIn
-- Bluesky
-- Threads
 
 Include a link to the PR and tag [@_7obaid_](https://x.com/_7obaid_). Add the link to your social post in the PR description.
 
