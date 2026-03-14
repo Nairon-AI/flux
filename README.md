@@ -174,11 +174,6 @@ The `/plugin update` command resolves from a stale marketplace cache. **Do not u
 | [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
 | [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
 
-**Agent Skills**:
-
-| Skill | Why |
-|-------|-----|
-| [Claudeception](https://github.com/blader/Claudeception) | Continuous learning — extracts reusable knowledge from work sessions |
 
 </details>
 
