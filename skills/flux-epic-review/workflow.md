@@ -734,6 +734,68 @@ agent-browser close
 
 ---
 
+## Desloppify Scan Phase
+
+**Optional. Only runs if `desloppify` is installed. Scan-only — no fix loop.**
+
+The purpose is to surface quality regressions (dead code, duplication, complexity) introduced during the epic, not to fix them inline.
+
+```bash
+if command -v desloppify >/dev/null 2>&1; then
+  # Get top-level directories touched in this epic
+  CHANGED_DIRS=$(git diff "${DIFF_BASE}"..HEAD --name-only | xargs -I{} dirname {} | sort -u | grep -v '^\.$')
+
+  if [ -n "$CHANGED_DIRS" ]; then
+    echo "=== Desloppify Scan (changed directories) ==="
+    for DIR in $CHANGED_DIRS; do
+      if [ -d "$DIR" ]; then
+        desloppify scan --path "$DIR" 2>/dev/null
+      fi
+    done
+  fi
+fi
+```
+
+- If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
+- Do NOT auto-install desloppify — skip silently if not available.
+- Do NOT enter a fix loop — this is informational only.
+
+---
+
+## Human Review Phase
+
+**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
+
+After all automated review passes are complete (spec compliance, adversarial, security, bot self-heal, browser QA, desloppify scan), check config:
+
+```bash
+HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
+```
+
+If `HUMAN_REVIEW` is `true`, ask the user:
+
+> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off?
+
+If the user says yes, print the command and move on immediately (non-blocking):
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  Run this in a separate terminal to review the full diff │
+│                                                          │
+│  bunx critique main                                      │
+│                                                          │
+│  Install Critique (requires Bun):                        │
+│  curl -fsSL https://bun.sh/install | bash                │
+│  bun install -g critique                                 │
+└──────────────────────────────────────────────────────────┘
+```
+
+If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
+
+**Do NOT wait for the user to finish reviewing. Proceed directly to Learning Capture.**
+
+---
+
 ## Learning Capture Phase
 
 **Always runs after the full pipeline reaches SHIP (or after max iterations).**
@@ -797,68 +859,6 @@ These pitfalls feed back into the worker automatically:
 - `/flux:meditate` periodically promotes recurring pitfalls into proper principles and prunes one-offs
 
 Only capture generalizable patterns, not one-off fixes.
-
----
-
-## Desloppify Scan Phase
-
-**Optional. Only runs if `desloppify` is installed. Scan-only — no fix loop.**
-
-The purpose is to surface quality regressions (dead code, duplication, complexity) introduced during the epic, not to fix them inline.
-
-```bash
-if command -v desloppify >/dev/null 2>&1; then
-  # Get top-level directories touched in this epic
-  CHANGED_DIRS=$(git diff "${DIFF_BASE}"..HEAD --name-only | xargs -I{} dirname {} | sort -u | grep -v '^\.$')
-
-  if [ -n "$CHANGED_DIRS" ]; then
-    echo "=== Desloppify Scan (changed directories) ==="
-    for DIR in $CHANGED_DIRS; do
-      if [ -d "$DIR" ]; then
-        desloppify scan --path "$DIR" 2>/dev/null
-      fi
-    done
-  fi
-fi
-```
-
-- If score is below 85, suggest: `"Consider running /flux:desloppify to address quality issues introduced in this epic."`
-- Do NOT auto-install desloppify — skip silently if not available.
-- Do NOT enter a fix loop — this is informational only.
-
----
-
-## Human Review Phase
-
-**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
-
-After all automated review passes are complete (spec compliance, adversarial, security, bot self-heal, browser QA, desloppify scan), check config:
-
-```bash
-HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
-```
-
-If `HUMAN_REVIEW` is `true`, ask the user:
-
-> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off?
-
-If the user says yes, print the command and move on immediately (non-blocking):
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  Run this in a separate terminal to review the full diff │
-│                                                          │
-│  bunx critique main                                      │
-│                                                          │
-│  Install Critique (requires Bun):                        │
-│  curl -fsSL https://bun.sh/install | bash                │
-│  bun install -g critique                                 │
-└──────────────────────────────────────────────────────────┘
-```
-
-If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
-
-**Do NOT wait for the user to finish reviewing. Proceed directly to Frustration Signal.**
 
 ---
 
