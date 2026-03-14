@@ -21,8 +21,6 @@ Every PR must include a link to the exported conversation(s) that helped you imp
 
 **How to export:**
 - Claude Code: Use `/export` or copy the conversation
-- Cursor: Export chat history
-- Other tools: Screenshot or export however you can
 
 Upload to a gist, paste.gg, or include in the PR description.
 
