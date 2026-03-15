@@ -281,6 +281,26 @@ flowchart TD
 | **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
 | **Improve** | *Auto on friction (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations), matches detected friction domains to tools, presents top matches for the user to install. | When the same friction keeps recurring (3+ review iterations, repeated security findings, browser QA failures), the problem isn't the code — it's a missing tool. Improve connects the dots: "you keep failing on CSS responsiveness → here's a visual regression tool that prevents that." |
 
+### What's Automatic vs Manual
+
+| Action | Trigger | Type |
+|--------|---------|------|
+| **Session start hook** | Every session | Automatic — injects brain vault index + workflow state |
+| **Recommendation pulse** | Every session (rate-limited 1x/day) | Automatic — nudges for new tools, brain vault health |
+| **`session-state` routing** | Before any work-like request | Automatic — routes to prime/scope/work/review |
+| **Reflect** | After PR is submitted | Automatic — captures learnings while context is fresh |
+| **Meditate** | After Reflect, if 20+ pitfall files | Automatic — prunes stale, promotes patterns |
+| **Ruminate** | After Prime, if brain thin + past sessions exist | Automatic — bootstraps brain from conversation history |
+| **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
+| **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
+| **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
+| **Scope** (`/flux:scope`) | Start new work | Manual |
+| **Work** (`/flux:work`) | Execute a plan | Manual |
+| **Upgrade** (`/flux:upgrade`) | Get latest Flux version | Manual |
+| **Gate** (`/flux:gate`) | Validate staging after merge | Manual (or CI auto) |
+
+After upgrading, if your project's setup version is behind the plugin version, Flux will nudge you to re-run `/flux:setup` to pick up new configuration options.
+
 ---
 
 ## Features

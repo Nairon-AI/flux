@@ -89,7 +89,19 @@ jq --arg v "$NEW_VERSION" \
 echo "Install record updated to $NEW_VERSION"
 ```
 
-### Step 6: Restart
+### Step 6: Check if setup needs re-run
+
+Compare the new plugin version to `setup_version` in `.flux/meta.json`:
+
+```bash
+SETUP_VER=$(jq -r '.setup_version // "none"' .flux/meta.json 2>/dev/null || echo "none")
+echo "Setup version: $SETUP_VER"
+echo "Plugin version: $NEW_VERSION"
+```
+
+If `SETUP_VER` != `NEW_VERSION` (or is "none"), the upgrade may include new setup options.
+
+### Step 7: Report result
 
 Tell the user to restart Claude Code to load the new version:
 
@@ -98,4 +110,11 @@ Tell the user to restart Claude Code to load the new version:
 
 Restart Claude Code now to load the new version (use --resume to keep context).
 Your project setup (.flux/, brain vault, CLAUDE.md) was not modified.
+```
+
+If setup version is stale, add:
+
+```
+⚠️ Your project setup (v{SETUP_VER}) is behind the plugin (v{NEW_VERSION}).
+New configuration options may be available. Run /flux:setup after restart to update.
 ```
