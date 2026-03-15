@@ -368,6 +368,16 @@ Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
 
+**Environment-aware PR targeting**: Before creating the PR, check for staging config:
+```bash
+STAGING_BRANCH=$("${PLUGIN_ROOT}/scripts/fluxctl" config get environments.staging.branch --json 2>/dev/null | jq -r '.value // empty')
+```
+If `STAGING_BRANCH` is set, create the PR against the staging branch (not main). Add a note to the PR body:
+```
+> 🧪 This PR targets `{STAGING_BRANCH}`. After merge + staging validation, run `/flux:gate` to promote to production.
+```
+If no staging is configured, create the PR against `main` (current behavior).
+
 **Auto-reflect**: After the PR is successfully created (confirmed by PR URL), automatically run `/flux:reflect` to capture learnings while context is fresh. Do not ask — just run it. Skip reflect if PR creation failed.
 
 **Auto-meditate (conditional)**: After reflect completes, check pitfall count:
