@@ -68,46 +68,54 @@ Ship with confidence. Sleep better at night.
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[█████░░░░░░] ~45%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — core workflow ported, v2.0+ features pending |
 
-Flux is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins). Install it using Claude Code's built-in plugin system:
-
-```bash
-# Run these commands in your terminal (not in Claude Code)
-claude plugin marketplace add https://github.com/Nairon-AI/flux
-claude plugin install flux@nairon-flux
+**Install** — copy into Claude Code:
+```
+Install the Flux plugin for this project. Marketplace: https://github.com/Nairon-AI/flux — Plugin ID: flux@nairon-flux
 ```
 
-Then restart Claude Code and run `/flux:setup`.
-
-<details>
-<summary><strong>Upgrade</strong></summary>
-
-```bash
-claude plugin uninstall flux@nairon-flux
-claude plugin marketplace add https://github.com/Nairon-AI/flux
-claude plugin install flux@nairon-flux
+**Upgrade** — copy into Claude Code:
+```
+Upgrade the Flux plugin. Uninstall flux@nairon-flux, re-add marketplace https://github.com/Nairon-AI/flux, then reinstall flux@nairon-flux.
 ```
 
-Restart Claude Code. Run `/flux:setup` to refresh local scripts if needed.
-
-If you're stuck on a stale version, clear the cache first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
-</details>
-
-<details>
-<summary><strong>Uninstall</strong></summary>
-
-```bash
-claude plugin uninstall flux@nairon-flux
-claude plugin marketplace remove nairon-flux
+**Uninstall** — copy into Claude Code:
 ```
-
-Then remove project artifacts: `rm -rf .flux .mcp.json .claude/skills/` and remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md. Restart Claude Code.
-</details>
+Uninstall the Flux plugin (flux@nairon-flux). Remove project artifacts (.flux/, .mcp.json, .claude/skills/) and clean up CLAUDE.md/AGENTS.md.
+```
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
 
 > **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. No two projects need the same harness — different MCPs, skills, tools, and agentic patterns. Flux starts as a one-size-fits-all setup, then self-improves daily into the best harness for *that specific project*.
 
+<details>
+<summary><strong>Plugin CLI Reference</strong></summary>
+
+Flux uses Claude Code's [plugin system](https://docs.anthropic.com/en/docs/claude-code/plugins). These are the `claude plugin` CLI commands used for install, upgrade, and uninstall. They can be run in a terminal or via Claude Code's bash tool.
+
+#### Install
+```bash
+claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+claude plugin install flux@nairon-flux 2>&1
+```
+After install, restart Claude Code (with `--resume` to keep context), then run `/flux:setup` to scaffold `.flux/` and configure preferences. If setup installs new MCP servers, restart once more. Run `/flux:prime` if the repo hasn't been primed yet.
+
+#### Upgrade
+```bash
+claude plugin uninstall flux@nairon-flux 2>&1
+claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+claude plugin install flux@nairon-flux 2>&1
+```
+Restart Claude Code. Run `/flux:setup` to refresh local scripts if needed. If stuck on a stale version, clear the plugin cache first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+
+#### Uninstall
+```bash
+claude plugin uninstall flux@nairon-flux 2>&1
+claude plugin marketplace remove nairon-flux 2>&1
+```
+Remove project artifacts: `rm -rf .flux .mcp.json .claude/skills/` and remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md. Restart Claude Code.
+
 For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
+</details>
 
 ---
 
