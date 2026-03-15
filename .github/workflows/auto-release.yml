@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   auto-release:
@@ -45,18 +44,15 @@ jobs:
             RANGE="${TAG}..HEAD"
           fi
 
-          # Collect commit subjects
           COMMITS=$(git log "$RANGE" --pretty=format:"%s" 2>/dev/null || echo "")
           if [ -z "$COMMITS" ]; then
             echo "release_needed=false" >> "$GITHUB_OUTPUT"
-            echo "No commits since last release"
             exit 0
           fi
 
           echo "Commits since $TAG:"
           echo "$COMMITS"
 
-          # Determine bump type from conventional commits
           HAS_BREAKING=false
           HAS_FEAT=false
           HAS_FIX=false
@@ -74,15 +70,12 @@ jobs:
           if $HAS_BREAKING; then
             echo "bump=major" >> "$GITHUB_OUTPUT"
             echo "release_needed=true" >> "$GITHUB_OUTPUT"
-            echo "Bump: major (breaking change)"
           elif $HAS_FEAT; then
             echo "bump=minor" >> "$GITHUB_OUTPUT"
             echo "release_needed=true" >> "$GITHUB_OUTPUT"
-            echo "Bump: minor (new feature)"
           elif $HAS_FIX; then
             echo "bump=patch" >> "$GITHUB_OUTPUT"
             echo "release_needed=true" >> "$GITHUB_OUTPUT"
-            echo "Bump: patch (bug fix)"
           else
             echo "release_needed=false" >> "$GITHUB_OUTPUT"
             echo "No releasable commits (only docs/chore/ci)"
@@ -94,8 +87,6 @@ jobs:
         run: |
           TAG="${{ steps.last_tag.outputs.tag }}"
           BUMP="${{ steps.analyze.outputs.bump }}"
-
-          # Strip 'v' prefix
           CURRENT="${TAG#v}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
@@ -106,57 +97,9 @@ jobs:
           esac
 
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-          echo "Next version: $NEXT"
+          echo "Next version: v$NEXT ($BUMP bump)"
 
-      - name: Create release branch and bump versions
-        if: steps.analyze.outputs.release_needed == 'true'
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Create release branch
-          git checkout -b "release/v${VERSION}"
-
-          # 1. package.json
-          jq --arg v "$VERSION" '.version = $v' package.json > tmp && mv tmp package.json
-
-          # 2. plugin.json
-          jq --arg v "$VERSION" '.version = $v' .claude-plugin/plugin.json > tmp && mv tmp .claude-plugin/plugin.json
-
-          # 3. marketplace.json
-          jq --arg v "$VERSION" '.plugins[0].version = $v' .claude-plugin/marketplace.json > tmp && mv tmp .claude-plugin/marketplace.json
-
-          # 4. README badge
-          sed -i "s/version-v[0-9]*\.[0-9]*\.[0-9]*[^-]*/version-v${VERSION}/" README.md
-
-          # 5. CHANGELOG — move [Unreleased] entries under new version heading
-          DATE=$(date +%Y-%m-%d)
-          sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [${VERSION}] - ${DATE}/" CHANGELOG.md
-
-          git add package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json README.md CHANGELOG.md
-          git commit -m "release: v${VERSION}"
-          git push origin "release/v${VERSION}"
-
-      - name: Create and merge release PR
-        if: steps.analyze.outputs.release_needed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-
-          # Create PR
-          PR_URL=$(gh pr create \
-            --head "release/v${VERSION}" \
-            --base main \
-            --title "release: v${VERSION}" \
-            --body "Automated release — bumps version to ${VERSION} in all manifest files.")
-
-          # Auto-merge (admin bypass for branch protection)
-          gh pr merge "$PR_URL" --squash --admin --delete-branch
-
-      - name: Tag and create GitHub release
+      - name: Create tag and GitHub release
         if: steps.analyze.outputs.release_needed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -164,18 +107,16 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           TAG="${{ steps.last_tag.outputs.tag }}"
 
-          # Fetch the merged commit
-          git fetch origin main
-          git checkout main
-          git pull origin main
-
-          # Tag the merge commit
+          # Tag current HEAD on main
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
 
-          # Create GitHub release
+          # Create GitHub release with auto-generated notes
           gh release create "v${VERSION}" \
             --target main \
             --title "v${VERSION}" \
             --generate-notes \
             ${TAG:+--notes-start-tag "$TAG"}
+
+          echo "Released v${VERSION}"
+          echo "post-release-bump.yml will auto-bump manifests to next -dev version"
