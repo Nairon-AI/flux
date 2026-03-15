@@ -93,19 +93,31 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 Flux uses Claude Code's [plugin system](https://docs.anthropic.com/en/docs/claude-code/plugins). These are the `claude plugin` CLI commands used for install, upgrade, and uninstall. They can be run in a terminal or via Claude Code's bash tool.
 
 #### Install
-```bash
-claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
-claude plugin install flux@nairon-flux 2>&1
-```
-After install, restart Claude Code (with `--resume` to keep context), then run `/flux:setup` to scaffold `.flux/` and configure preferences. If setup installs new MCP servers, restart once more. Run `/flux:prime` if the repo hasn't been primed yet.
+1. Add the marketplace and install the plugin:
+   ```bash
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
+   ```
+2. Clear any stale cache and re-clone to ensure the latest version:
+   ```bash
+   rm -rf ~/.claude/plugins/cache/nairon-flux
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   ```
+3. Tell the user to restart their agent/session with `--resume` to load the plugin.
+4. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
+5. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
+6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 #### Upgrade
-```bash
-claude plugin uninstall flux@nairon-flux 2>&1
-claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
-claude plugin install flux@nairon-flux 2>&1
-```
-Restart Claude Code. Run `/flux:setup` to refresh local scripts if needed. If stuck on a stale version, clear the plugin cache first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+1. Uninstall, clear cache, and reinstall to get the latest version:
+   ```bash
+   claude plugin uninstall flux@nairon-flux 2>&1
+   rm -rf ~/.claude/plugins/cache/nairon-flux
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
+   ```
+2. Tell the user to restart their agent/session with `--resume`.
+3. Run `/flux:setup` to refresh local scripts if needed.
 
 #### Uninstall
 1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
