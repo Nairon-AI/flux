@@ -1032,16 +1032,17 @@ Available questions (include only if corresponding config is unset):
 }
 ```
 
-**Scout Model question** (include if CURRENT_SCOUT_MODEL is empty):
+**Sub-Agent Model question** (include if CURRENT_SCOUT_MODEL is empty):
 ```json
 {
-  "header": "Scout Model",
-  "question": "Which model should scout agents use? (Scouts analyze your codebase during /flux:prime)",
+  "header": "Sub-Agent Model",
+  "question": "Which model should Flux use for sub-agents? (Scouts, background analysis, and other lightweight tasks)",
   "options": [
     {"label": "claude-haiku-4-5 (Recommended)", "description": "Fast and cost-effective. Works with any Anthropic API access."},
-    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro subscription."},
-    {"label": "gpt-5.3-codex", "description": "OpenAI's balanced model. Requires ChatGPT Pro subscription."},
-    {"label": "gpt-5.4", "description": "OpenAI's most capable model. Requires ChatGPT Pro subscription."}
+    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro."},
+    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "o4-mini", "description": "OpenAI reasoning model. Requires ChatGPT Plus or higher."}
   ],
   "multiSelect": false
 }
@@ -1132,10 +1133,10 @@ Save to config:
   "header": "Adversarial Reviewer 2 (OpenAI)",
   "question": "Pick the second reviewer model from a different lab. Cross-lab consensus eliminates single-model blind spots.",
   "options": [
-    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Pro."},
-    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Pro."},
+    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
     {"label": "gpt-5.3-codex-spark", "description": "Fastest OpenAI model. Requires ChatGPT Pro."},
-    {"label": "o4-mini", "description": "Reasoning model. Good for logic-heavy reviews."}
+    {"label": "o4-mini", "description": "Reasoning model. Requires ChatGPT Plus or higher."}
   ],
   "multiSelect": false
 }
@@ -1233,11 +1234,12 @@ Only process answers for questions that were asked (config values that were unse
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github true --json`
 - If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github false --json`
 
-**Scout Model** (if question was asked):
+**Sub-Agent Model** (if question was asked):
 - If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
 - If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
 - If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
 - If "gpt-5.4": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.4" --json`
+- If "o4-mini": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "o4-mini" --json`
 
 **Task Tracker** (if question was asked):
 - If "Linear":
