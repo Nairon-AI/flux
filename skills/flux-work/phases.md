@@ -202,17 +202,22 @@ Check the worker's output (tool errors, build failures, repeated retries) agains
 # - context_forgotten: agent repeated mistakes or contradicted itself
 ```
 
-**Check dismissed signals first:**
+**Check signal cooldown status:**
+
+For each detected friction signal, check if it's currently in cooldown (dismissed within the last 7 days):
 
 ```bash
-DISMISSED_SIGNALS=$("${PLUGIN_ROOT}/scripts/manage-preferences.sh" list 2>/dev/null | jq -r '.dismissed_signals // [] | .[]')
+"${PLUGIN_ROOT}/scripts/manage-preferences.sh" is-signal-dismissed "{signal_type}"
+# Exit 0 = in cooldown (suppress), exit 1 = expired or never dismissed (show)
 ```
 
-Skip any friction signal that appears in `dismissed_signals`.
+**Three states per signal:**
 
-**If undismissed friction signals detected:**
+1. **Never dismissed** → show recommendation normally
+2. **Dismissed < 7 days ago** → suppress silently (in cooldown)
+3. **Dismissed >= 7 days ago** → cooldown expired, resurface with a different prompt
 
-Present a brief inline recommendation (do NOT run the full `/flux:improve` flow — just surface the most relevant match):
+**If signal is active (never dismissed):**
 
 ```
 Friction detected: {signal_type} ({count}x this session)
@@ -220,17 +225,35 @@ Suggested tool: {recommendation_name} — {one_line_description}
 
   [i] Install now
   [s] Skip for now
-  [d] Don't suggest for this signal again
+  [d] Snooze this signal (resurfaces in 7 days)
 ```
 
-- `i` → Run the install flow from `/flux:improve` for that specific recommendation
-- `s` → Continue to next step (feel check). Signal may trigger again on future tasks.
-- `d` → Dismiss this signal permanently:
+**If signal cooldown has expired (>= 7 days):**
+
+```
+It's been a week since we last looked for optimizations for {signal_type}.
+The tooling ecosystem moves fast — want to check for new recommendations?
+
+  [y] Yes, search for new optimizations
+  [n] No, snooze for another 7 days
+```
+
+- `y` → Run `/flux:improve` filtered to this signal's friction domain. Then re-dismiss with fresh timestamp regardless of outcome.
+- `n` → Re-dismiss with fresh timestamp (resets the 7-day cooldown):
   ```bash
   "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
   ```
 
-**If no friction signals detected (or all dismissed):** Continue silently to 3e.
+**Actions for active signals:**
+
+- `i` → Run the install flow from `/flux:improve` for that specific recommendation
+- `s` → Continue to next step (feel check). Signal may trigger again on future tasks.
+- `d` → Dismiss with 7-day cooldown:
+  ```bash
+  "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
+  ```
+
+**If no friction signals detected (or all in cooldown):** Continue silently to 3e.
 
 **Rate limiting:** Only surface one recommendation per task completion. If multiple signals fire, pick the highest-count one. This prevents recommendation fatigue.
 
