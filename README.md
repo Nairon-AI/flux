@@ -108,11 +108,20 @@ claude plugin install flux@nairon-flux 2>&1
 Restart Claude Code. Run `/flux:setup` to refresh local scripts if needed. If stuck on a stale version, clear the plugin cache first: `rm -rf ~/.claude/plugins/cache/nairon-flux`
 
 #### Uninstall
-```bash
-claude plugin uninstall flux@nairon-flux 2>&1
-claude plugin marketplace remove nairon-flux 2>&1
-```
-Remove project artifacts: `rm -rf .flux .mcp.json .claude/skills/` and remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md. Restart Claude Code.
+1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
+2. Ask the user per-category what to keep vs. remove (MCP servers, skills, desktop apps, CLI tools) — many aren't Flux-specific.
+3. Uninstall the plugin and remove the marketplace:
+   ```bash
+   claude plugin uninstall flux@nairon-flux 2>&1
+   claude plugin marketplace remove nairon-flux 2>&1
+   ```
+4. Remove project artifacts:
+   ```bash
+   rm -rf .flux .mcp.json .claude/skills/
+   ```
+5. Remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md.
+6. Optionally remove plugin cache: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+7. Restart Claude Code.
 
 For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
 </details>
