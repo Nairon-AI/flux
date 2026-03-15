@@ -8,6 +8,7 @@ on:
     paths:
       - 'package.json'
       - '.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
 
 permissions:
   contents: read
@@ -26,6 +27,7 @@ jobs:
         run: |
           PKG_VERSION=$(jq -r '.version' package.json)
           PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+          MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
 
           FAILED=0
 
@@ -39,6 +41,11 @@ jobs:
             FAILED=1
           fi
 
+          if [[ "$MARKETPLACE_VERSION" != *-dev ]]; then
+            echo "::error::marketplace.json version '${MARKETPLACE_VERSION}' is missing -dev suffix on main"
+            FAILED=1
+          fi
+
           if [[ "$FAILED" -eq 1 ]]; then
             echo ""
             echo "Versions on main must always end in '-dev' to prevent stale plugin cache hits."
@@ -47,7 +54,7 @@ jobs:
             exit 1
           fi
 
-          echo "Versions OK: package.json=${PKG_VERSION}, plugin.json=${PLUGIN_VERSION}"
+          echo "Versions OK: package.json=${PKG_VERSION}, plugin.json=${PLUGIN_VERSION}, marketplace.json=${MARKETPLACE_VERSION}"
 
       - name: Open issue if guard fails
         if: failure() && github.event_name == 'push'

@@ -40,11 +40,16 @@ jobs:
           NEXT="${{ steps.next.outputs.version }}"
           jq --arg v "$NEXT" '.version = $v' .claude-plugin/plugin.json > plugin.tmp && mv plugin.tmp .claude-plugin/plugin.json
 
+      - name: Update marketplace.json
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          jq --arg v "$NEXT" '.plugins[0].version = $v' .claude-plugin/marketplace.json > marketplace.tmp && mv marketplace.tmp .claude-plugin/marketplace.json
+
       - name: Commit and push
         run: |
           NEXT="${{ steps.next.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json .claude-plugin/plugin.json
+          git add package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json
           git commit -m "chore: bump version to ${NEXT} [skip ci]"
           git push
