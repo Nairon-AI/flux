@@ -183,6 +183,59 @@ $FLUXCTL show <task-id> --json
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
 
+### 3d-1. Inline Friction Check
+
+**Purpose**: Detect frustration signals from the worker's output *while they're happening* and offer targeted recommendations to unblock. This runs after every task, not just at epic review.
+
+**Scan the worker output for friction signals:**
+
+Check the worker's output (tool errors, build failures, repeated retries) against known friction patterns:
+
+```bash
+# Friction signals to detect (from parse-sessions.py patterns)
+# - api_hallucination: TypeScript/Python property/module/type errors
+# - lint_errors: eslint, prettier, format failures
+# - css_issues: postcss, tailwind, CSS parse errors
+# - regressions: test failures, assertion errors
+# - ci_failures: build errors, npm errors
+# - search_needed: agent couldn't find files/code
+# - context_forgotten: agent repeated mistakes or contradicted itself
+```
+
+**Check dismissed signals first:**
+
+```bash
+DISMISSED_SIGNALS=$("${PLUGIN_ROOT}/scripts/manage-preferences.sh" list 2>/dev/null | jq -r '.dismissed_signals // [] | .[]')
+```
+
+Skip any friction signal that appears in `dismissed_signals`.
+
+**If undismissed friction signals detected:**
+
+Present a brief inline recommendation (do NOT run the full `/flux:improve` flow — just surface the most relevant match):
+
+```
+Friction detected: {signal_type} ({count}x this session)
+Suggested tool: {recommendation_name} — {one_line_description}
+
+  [i] Install now
+  [s] Skip for now
+  [d] Don't suggest for this signal again
+```
+
+- `i` → Run the install flow from `/flux:improve` for that specific recommendation
+- `s` → Continue to next step (feel check). Signal may trigger again on future tasks.
+- `d` → Dismiss this signal permanently:
+  ```bash
+  "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
+  ```
+
+**If no friction signals detected (or all dismissed):** Continue silently to 3e.
+
+**Rate limiting:** Only surface one recommendation per task completion. If multiple signals fire, pick the highest-count one. This prevents recommendation fatigue.
+
+**Ralph mode:** In Ralph mode, skip inline friction check entirely — Ralph runs unattended and can't prompt the user.
+
 ### 3e. Feel Check (human-in-the-loop)
 
 **Purpose**: Catch issues early. Small feedback loops beat big batch reviews.
@@ -281,7 +334,7 @@ Plan-sync returns summary. Log it but don't block - task updates are best-effort
 
 ### 3h. Loop or Finish
 
-**IMPORTANT**: Steps 3d→3e→3f→3g ALWAYS run after worker returns, regardless of mode. Only the loop-back behavior differs:
+**IMPORTANT**: Steps 3d→3d-1→3e→3f→3g ALWAYS run after worker returns, regardless of mode (except Ralph mode skips 3d-1 and 3e). Only the loop-back behavior differs:
 
 **SINGLE_TASK_MODE**: After 3d→3g, go to Phase 4 (Quality). No loop.
 
