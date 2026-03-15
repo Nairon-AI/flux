@@ -131,3 +131,17 @@ Follow-up work that can't be done during reflection — bugs, non-trivial rewrit
 - Structural: [rules/scripts/checks added]
 - Todos: [follow-up items filed]
 ```
+
+## Auto-Meditate (conditional)
+
+After reflection is complete, check if the brain vault needs maintenance:
+
+```bash
+PITFALL_COUNT=$(find .flux/brain/pitfalls -name "*.md" 2>/dev/null | wc -l | xargs)
+```
+
+If `PITFALL_COUNT >= 20`, automatically run `/flux:meditate` to prune stale content and promote recurring patterns to principles. Do not ask — just run it. If meditate fails, report the error but do not fail the overall reflect. Tell the user:
+
+```
+Brain vault has {PITFALL_COUNT} pitfalls — running meditate to prune and promote...
+```

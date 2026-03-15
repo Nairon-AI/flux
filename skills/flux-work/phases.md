@@ -368,7 +368,13 @@ Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
 
-**Auto-reflect**: After submitting the PR, automatically run `/flux:reflect` to capture learnings while context is fresh. Do not ask — just run it. If the brain vault has 20+ pitfall files after reflection, also run `/flux:meditate` to prune and promote.
+**Auto-reflect**: After the PR is successfully created (confirmed by PR URL), automatically run `/flux:reflect` to capture learnings while context is fresh. Do not ask — just run it. Skip reflect if PR creation failed.
+
+**Auto-meditate (conditional)**: After reflect completes, check pitfall count:
+```bash
+PITFALL_COUNT=$(find .flux/brain/pitfalls -name "*.md" 2>/dev/null | wc -l | xargs)
+```
+If `PITFALL_COUNT >= 20`, run `/flux:meditate` to prune and promote. Otherwise skip silently.
 
 ## Definition of Done
 

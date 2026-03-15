@@ -369,17 +369,21 @@ Auto-searching for recommendations to address this...
 ---
 ```
 
-2. Fresh-fetch the latest recommendations index:
+2. Fresh-fetch the latest recommendations index (with timeout and error handling):
 ```bash
-RECS_RAW=$(curl -sL "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+RECS_RAW=$(curl -sL --connect-timeout 10 --max-time 30 "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+CURL_EXIT=$?
 ```
+If `CURL_EXIT != 0` or `RECS_RAW` is empty, tell the user recommendations are unavailable and skip steps 3-4. Do not fail the entire epic review.
 
-3. Search the recommendations for entries matching `FRICTION_DOMAINS` and `FRICTION_SIGNALS`. Score each recommendation by how many friction signals it addresses. Present the top 3-5 matches with:
+3. Guard against empty friction domains — if `FRICTION_DOMAINS` is empty but score >= 3 (can happen when score comes purely from quantitative counters), use the quantitative signal types as search terms instead (e.g., `NEEDS_WORK` → "linting, formatting", `SECURITY_FINDINGS` → "security scanning", `BROWSER_QA_FAILURES` → "visual regression testing").
+
+4. Search the recommendations for entries matching `FRICTION_DOMAINS` and `FRICTION_SIGNALS`. Score each recommendation by how many friction signals it addresses. Present the top 3-5 matches with:
    - Tool name and what it does
    - Which specific friction it addresses
    - Install command or setup steps
 
-4. Ask the user which (if any) to install now. Do not auto-install — the user picks.
+5. Ask the user which (if any) to install now. Do not auto-install — the user picks.
 
 The `--user-context` flag pre-fills the detected friction domains so `/flux:improve`'s matching engine can skip discovery and go straight to relevant tool recommendations.
 

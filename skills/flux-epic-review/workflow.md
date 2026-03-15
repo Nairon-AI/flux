@@ -993,16 +993,35 @@ Then **auto-trigger** the recommendation search:
 #### Step 1: Fresh-fetch recommendations
 
 ```bash
-RECS_RAW=$(curl -sL "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+RECS_RAW=$(curl -sL --connect-timeout 10 --max-time 30 "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+CURL_EXIT=$?
 ```
 
-This always fetches the latest index — no stale cache.
+If `CURL_EXIT != 0` or `RECS_RAW` is empty/invalid JSON, tell the user:
+```
+Could not fetch recommendations (network issue). Skipping auto-improve.
+Run /flux:improve manually when connectivity is restored.
+```
+Do not fail the epic review — continue to the next step.
 
-#### Step 2: Match friction to recommendations
+#### Step 2: Guard against empty friction domains
 
-Parse `RECS_RAW` and score each recommendation by how many `FRICTION_SIGNALS` it matches. A recommendation matches if its `tags`, `categories`, or `solves` fields overlap with the detected friction domains.
+If `FRICTION_DOMAINS` is empty but `FRICTION_SCORE >= 3` (score came purely from quantitative counters), map counter types to search terms:
+- `NEEDS_WORK_COUNT >= 2` → add signals: `linting, formatting, pre-commit`
+- `SECURITY_FINDINGS >= 1` → add signals: `security-scanning, sast, dependency-audit`
+- `BROWSER_QA_FAILURES >= 1` → add signals: `visual-regression, e2e-testing, responsive`
+- `SAME_CATEGORY_PITFALLS >= 1` → add signals based on the pitfall category names
 
-#### Step 3: Present top matches
+#### Step 3: Match friction to recommendations
+
+Parse `RECS_RAW` as JSON. For each recommendation entry, compute a match score:
+- +2 for each `FRICTION_DOMAIN` that appears in the entry's `tags`, `categories`, or `solves` fields
+- +1 for each `FRICTION_SIGNAL` that appears in the entry's `tags` or `keywords` fields
+- Entries with score 0 are excluded
+
+Sort by score descending. Take the top 3-5.
+
+#### Step 4: Present top matches
 
 Show the top 3-5 recommendations ranked by match score:
 
@@ -1016,7 +1035,13 @@ Show the top 3-5 recommendations ranked by match score:
 2. ...
 ```
 
-#### Step 4: User picks
+If no recommendations match (score 0 for all entries), tell the user:
+```
+No matching recommendations found for your friction areas.
+Run /flux:improve for a broader search.
+```
+
+#### Step 5: User picks
 
 Ask the user which (if any) to install now using AskUserQuestion. Do not auto-install — the user decides.
 
