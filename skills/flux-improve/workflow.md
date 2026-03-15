@@ -279,38 +279,45 @@ Context now contains:
 
 ## Step 6: Fetch Recommendations
 
-Fetch all recommendation files from the database with offline graceful handling:
+Fetch recommendations with a three-tier fallback: remote Pro repo → cached clone → bundled free set.
 
 ```bash
-# Clone/update recommendations repo (shallow)
+# Bundled free recommendations ship with the plugin
+BUNDLED_RECS_DIR="$PLUGIN_ROOT/recommendations"
+
+# Pro recommendations (remote repo, requires valid license)
 RECS_DIR="${HOME}/.flux/recommendations"
 OFFLINE_MODE=false
+USING_BUNDLED=false
 
 if [ -d "$RECS_DIR/.git" ]; then
   # Try to update, but don't fail if offline
   if ! git -C "$RECS_DIR" pull --ff-only 2>/dev/null; then
-    echo "Note: Could not update recommendations (offline?). Using cached version."
+    echo "Note: Could not update recommendations. Using cached version."
     OFFLINE_MODE=true
   fi
 else
-  # Try to clone
+  # Try to clone (will fail if repo is private and user has no access)
   if ! git clone --depth 1 https://github.com/Nairon-AI/flux-recommendations.git "$RECS_DIR" 2>/dev/null; then
     # Check if we have a cached version from a previous install
     if [ -d "$RECS_DIR" ] && [ "$(find "$RECS_DIR" -name "*.yaml" 2>/dev/null | wc -l)" -gt 0 ]; then
-      echo "Note: Could not fetch recommendations (offline?). Using cached version."
+      echo "Note: Could not fetch recommendations. Using cached version."
       OFFLINE_MODE=true
     else
-      echo "Error: Cannot fetch recommendations and no cache exists."
-      echo ""
-      echo "Please connect to the internet and try again, or manually clone:"
-      echo "  git clone https://github.com/Nairon-AI/flux-recommendations.git ~/.flux/recommendations"
-      exit 1
+      # Fall back to bundled free set
+      RECS_DIR="$BUNDLED_RECS_DIR"
+      USING_BUNDLED=true
     fi
   fi
 fi
 
-# Show offline warning if applicable
-if [ "$OFFLINE_MODE" = "true" ]; then
+# Show status
+if [ "$USING_BUNDLED" = "true" ]; then
+  BUNDLED_COUNT=$(find "$RECS_DIR" -name "*.yaml" 2>/dev/null | wc -l | tr -d ' ')
+  echo "Using bundled recommendations ($BUNDLED_COUNT tools)"
+  echo "Tip: Flux Pro unlocks the full curated database with 50+ recommendations."
+  echo ""
+elif [ "$OFFLINE_MODE" = "true" ]; then
   CACHE_DATE=$(stat -f "%Sm" -t "%Y-%m-%d" "$RECS_DIR" 2>/dev/null || stat -c "%y" "$RECS_DIR" 2>/dev/null | cut -d' ' -f1)
   echo "Using cached recommendations from: $CACHE_DATE"
   echo ""
@@ -358,6 +365,9 @@ Run the matching script with context and optional user input:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+
+# Export RECS_DIR so match-recommendations.py uses the correct source
+export FLUX_RECS_DIR="$RECS_DIR"
 
 # Include user context if provided (dramatically improves accuracy)
 if [ -n "$USER_CONTEXT" ]; then

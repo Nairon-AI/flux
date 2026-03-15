@@ -1,0 +1,15 @@
+name: anti-slop
+category: plugin
+tagline: Auto-close low-quality AI-generated pull requests
+sdlc_phase: review
+solves: Spam and low-quality AI-generated PRs cluttering repos
+tags: [github, pr, quality, review]
+source: manual
+source_url: https://github.com/anthropics/anti-slop-action
+pricing:
+  model: free
+  details: Free GitHub Action
+install:
+  type: plugin
+  command: Add anti-slop GitHub Action to .github/workflows/
+  verify: Check .github/workflows/ for anti-slop action

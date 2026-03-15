@@ -1,0 +1,14 @@
+name: frontend-models
+category: workflow-pattern
+tagline: Use Opus 4.6 or Gemini 3.1 Pro for frontend/UI work
+sdlc_phase: implementation
+solves: Suboptimal model choice for CSS/styling/UI tasks
+tags: [frontend, css, ui, models]
+source: manual
+pricing:
+  model: free
+  details: Model selection guidance
+install:
+  type: pattern
+  command: Switch to claude-opus-4-6 or gemini-3.1-pro for UI-heavy tasks
+  verify: Check current model in Claude Code settings

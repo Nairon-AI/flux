@@ -1,0 +1,14 @@
+name: reasoning-models
+category: workflow-pattern
+tagline: Use extended thinking for complex logic and architecture
+sdlc_phase: planning
+solves: Shallow answers and missed edge cases in complex problems
+tags: [reasoning, thinking, architecture, planning]
+source: manual
+pricing:
+  model: free
+  details: Model selection guidance
+install:
+  type: pattern
+  command: Enable extended thinking in Claude Code for complex tasks
+  verify: Check thinking mode is enabled

@@ -77,7 +77,10 @@ If user passes `--skip-sessions`, skip the consent question entirely.
 
 ## Recommendations Database
 
-Fetched from: `https://github.com/Nairon-AI/flux-recommendations`
+**Free tier**: Bundled with the plugin at `recommendations/` (~16 curated tools).
+**Pro tier**: Extended database from `nairon-ai/flux-recommendations` (50+ tools, requires Flux Pro).
+
+Fallback order: remote Pro repo → cached clone → bundled free set.
 
 Categories:
 - `mcps/` - Model Context Protocol servers
