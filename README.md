@@ -68,19 +68,19 @@ Ship with confidence. Sleep better at night.
 | [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[█████░░░░░░] ~45%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — core workflow ported, v2.0+ features pending |
 
-**Install** — copy into Claude Code:
+**Install** — say this in Claude Code:
 ```
-Install the Flux plugin for this project. Marketplace: https://github.com/Nairon-AI/flux — Plugin ID: flux@nairon-flux
-```
-
-**Upgrade** — copy into Claude Code:
-```
-Upgrade the Flux plugin. Uninstall flux@nairon-flux, re-add marketplace https://github.com/Nairon-AI/flux, then reinstall flux@nairon-flux.
+Install the Flux plugin. Here's the README: https://github.com/Nairon-AI/flux
 ```
 
-**Uninstall** — copy into Claude Code:
+**Upgrade** — say this in Claude Code:
 ```
-Uninstall the Flux plugin (flux@nairon-flux). Remove project artifacts (.flux/, .mcp.json, .claude/skills/) and clean up CLAUDE.md/AGENTS.md.
+Upgrade my Flux plugin to the latest version. README: https://github.com/Nairon-AI/flux
+```
+
+**Uninstall** — say this in Claude Code:
+```
+Uninstall the Flux plugin and clean up. README: https://github.com/Nairon-AI/flux
 ```
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
