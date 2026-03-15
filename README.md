@@ -73,12 +73,7 @@ Ship with confidence. Sleep better at night.
 Install the Flux plugin. Here's the README: https://github.com/Nairon-AI/flux
 ```
 
-**Upgrade** — run this in your terminal, then restart Claude Code:
-```bash
-rm -rf ~/.claude/plugins/cache/nairon-flux
-claude plugin marketplace add https://github.com/Nairon-AI/flux
-```
-Your project setup (`.flux/`, brain vault, CLAUDE.md, MCP servers) is untouched — only the plugin code is refreshed.
+**Upgrade** — type `/flux:upgrade` in Claude Code, then restart. Your project setup (`.flux/`, brain vault, CLAUDE.md) is untouched.
 
 **Uninstall** — say this in Claude Code:
 ```
