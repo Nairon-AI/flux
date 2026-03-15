@@ -13,7 +13,12 @@ mkdir -p "$(dirname "$PREFS_FILE")"
 # Initialize preferences if not exists
 init_prefs() {
     if [ ! -f "$PREFS_FILE" ]; then
-        echo '{"dismissed":[],"alternatives":{},"always_allow_sessions":false,"last_updated":""}' > "$PREFS_FILE"
+        echo '{"dismissed":[],"dismissed_signals":[],"alternatives":{},"always_allow_sessions":false,"last_updated":""}' > "$PREFS_FILE"
+    fi
+    # Migrate: add dismissed_signals if missing from existing prefs
+    if ! jq -e '.dismissed_signals' "$PREFS_FILE" >/dev/null 2>&1; then
+        local migrated=$(jq '. + {dismissed_signals: []}' "$PREFS_FILE")
+        echo "$migrated" > "$PREFS_FILE"
     fi
 }
 
@@ -65,6 +70,34 @@ add_alternative() {
     echo "Added alternative: $recommendation -> $alternative"
 }
 
+# Dismiss a friction signal (don't trigger recommendations for this signal)
+dismiss_signal() {
+    local signal="$1"
+    init_prefs
+
+    local updated=$(jq --arg signal "$signal" '
+        .dismissed_signals = (.dismissed_signals + [$signal] | unique) |
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+    ' "$PREFS_FILE")
+
+    echo "$updated" > "$PREFS_FILE"
+    echo "Dismissed signal: $signal"
+}
+
+# Remove a signal dismissal
+undismiss_signal() {
+    local signal="$1"
+    init_prefs
+
+    local updated=$(jq --arg signal "$signal" '
+        .dismissed_signals = (.dismissed_signals | map(select(. != $signal))) |
+        .last_updated = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+    ' "$PREFS_FILE")
+
+    echo "$updated" > "$PREFS_FILE"
+    echo "Undismissed signal: $signal"
+}
+
 # List all preferences
 list() {
     init_prefs
@@ -98,16 +131,24 @@ usage() {
 Flux Preferences Manager
 
 Usage:
-  $0 dismiss <name>              Don't recommend this again
+  $0 dismiss <name>              Don't recommend this tool again
+  $0 dismiss-signal <signal>     Don't trigger recommendations for this friction signal
   $0 alternative <rec> <alt>     I use <alt> instead of <rec>
-  $0 undismiss <name>            Show recommendation again
+  $0 undismiss <name>            Show tool recommendation again
+  $0 undismiss-signal <signal>   Re-enable recommendations for this friction signal
   $0 list                        Show all preferences
   $0 clear                       Clear all preferences
   $0 sessions always             Always allow session analysis
   $0 sessions ask                Ask each time (default)
 
+Friction signals:
+  api_hallucination, lint_errors, css_issues, regressions,
+  ci_failures, search_needed, context_forgotten, slow_builds,
+  shallow_answers, edge_case_misses, outdated_docs, ui_issues
+
 Examples:
   $0 dismiss granola             # Don't recommend Granola
+  $0 dismiss-signal css_issues   # Stop suggesting tools for CSS friction
   $0 alternative granola otter   # I use Otter instead of Granola
   $0 sessions always             # Never ask about sessions again
 EOF
@@ -123,9 +164,17 @@ case "${1:-}" in
         [ -z "${2:-}" ] || [ -z "${3:-}" ] && { echo "Error: recommendation and alternative required"; exit 1; }
         add_alternative "$2" "$3"
         ;;
+    dismiss-signal)
+        [ -z "${2:-}" ] && { echo "Error: signal name required"; exit 1; }
+        dismiss_signal "$2"
+        ;;
     undismiss)
         [ -z "${2:-}" ] && { echo "Error: name required"; exit 1; }
         undismiss "$2"
+        ;;
+    undismiss-signal)
+        [ -z "${2:-}" ] && { echo "Error: signal name required"; exit 1; }
+        undismiss_signal "$2"
         ;;
     list)
         list
