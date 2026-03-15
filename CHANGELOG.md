@@ -4,15 +4,169 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Version guard CI now runs on PRs (not just push to main) to catch missing `-dev` suffix before merge
+
+## [2.3.1] - 2026-03-14
+
+### Fixed
+
+- Reordered epic-review pipeline: Desloppify → Human Review → Learning Capture → Frustration Signal (was Learning Capture first)
+- Reverted "Sub-Agent Model" label back to "Scout Model" (config only applies to prime scouts)
+- Added `-dev` suffix to version files on main to fix version guard CI
+
+## [2.3.0] - 2026-03-14
+
+### Added
+
+- **Human Review via Critique TUI** — opt-in during `/flux:setup`, non-blocking terminal diff review after AI reviews finish
+  - Per-task: after impl-review SHIP verdict
+  - Per-epic: after all automated passes complete
+  - Prints `bunx critique main` command for a separate terminal
+
+## [2.2.1] - 2026-03-14
+
+### Fixed
+
+- **Anti-sycophancy review hardening** — addresses the problem where AI reviewers confirm rather than challenge
+  - Brain vault principles + pitfalls now loaded into review prompts as evaluation criteria
+  - Anti-sycophancy preamble: "Your job is to find problems, not confirm quality"
+  - Adversarial reviewers must form independent verdicts before consensus merge
+
+## [2.2.0] - 2026-03-14
+
+### Added
+
+- **`/flux:rca`** — dedicated root cause analysis workflow for bugs
+  - Flow: Reproduce → Investigate → Root Cause → Verify → Fix → Desloppify → Learn
+  - Implicit detection: `/flux:scope` catches bug signals and routes to RCA
+  - Three severity tiers: Quick, Standard, Critical
+  - Two investigation engines: Flux backward trace or RepoPrompt Investigate
+  - Mandatory regression testing (manual checklist if no test infra)
+  - Embedded learning: pitfall notes + structural prevention proposals
+
+## [2.1.0] - 2026-03-14
+
+### Added
+
+- **`/flux:propose`** — stakeholder feature proposal skill
+  - Implicit detection in `/flux:scope` for non-technical users
+  - Engineering pushback with codebase-grounded assessments and cost research
+  - Conservative complexity/time estimates with vibe-coding grounding statement
+  - Outputs to `docs/proposals/` with PR for engineering handoff
+  - Duplicate proposal detection
+
+## [2.0.4] - 2026-03-14
+
 ### Changed
 
-- `fluxctl agentmap` now uses a built-in Flux implementation instead of requiring an external `agentmap` CLI in `PATH`
-- `/flux:setup` no longer recommends or installs `agentmap` as a separate tool
+- Removed Claudeception (redundant with brain vault + reflect)
+- Enhanced `/flux:reflect` with skill extraction capability (ported from Claudeception)
+
+## [2.0.3] - 2026-03-14
+
+### Changed
+
+- Removed Supermemory MCP (redundant with brain vault and `.flux/` state)
+- Recommended MCPs now: FFF, Context7, Exa, GitHub, Firecrawl
+
+## [2.0.2] - 2026-03-14
+
+### Added
+
+- **FFF (Fast File Finder) MCP** — 10x faster fuzzy file search, recommended during `/flux:setup`
+- README setup section now lists every recommended tool with descriptions
+
+## [2.0.1] - 2026-03-14
 
 ### Improved
 
-- setup docs now describe agentmap generation as a native Flux capability
-- built-in tests now validate actual map generation logic instead of a stubbed external binary
+- **Progressive disclosure for `/flux:scope`** — split from 1,709 → 208 lines (88% reduction)
+  - Reference files loaded on-demand: `linear.md`, `explore-steps.md`, `solution.md`, `completion.md`
+  - Follows Anthropic's 500-line SKILL.md guideline
+
+## [2.0.0] - 2026-03-14
+
+### Added
+
+- **Two-tier review architecture**
+  - `/flux:impl-review` — lightweight per-task review
+  - `/flux:epic-review` — full 9-phase pipeline (spec compliance → adversarial → security → bot self-heal → browser QA → desloppify → human review → learning capture → frustration signal)
+- **Adversarial dual-model review** — configure two reviewer models (Anthropic + OpenAI), independent verdicts with consensus merge
+- **BYORB (Bring Your Own Review Bot)** — Greptile and CodeRabbit integration with self-heal loop
+- **Browser QA** — agent-browser testing during epic review, checklist generated during scoping
+- **Security scan in review pipeline** — auto-triggered STRIDE analysis on security-sensitive changes
+- **Brain vault as single knowledge store** — replaced `.flux/memory/` with `brain/` (pitfalls, principles, conventions, decisions)
+  - Area-organized pitfalls: `brain/pitfalls/<area>/<pattern>.md`
+  - Wired into scope (read), work (re-anchor), review (write), meditate (prune/promote)
+- **Self-improving harness**
+  - Recommendation pulse at session start (once/day)
+  - Two-layer frustration detection (quantitative + qualitative)
+  - Meditate auto-nudge when brain vault is stale
+  - `/flux:reflect` suggestion after shipping
+- **Configurable review severity threshold** — multi-select which severities to auto-fix (critical, major, minor, style)
+- **SDLC state engine mermaid diagram** in README
+- **Desloppify scan** integrated into epic-review pipeline
+- **`/flux:release` skill** — version-safe releases with manifest sync
+
+### Changed
+
+- Deprecated `.flux/memory/` subsystem (replaced by brain vault)
+- Removed `memory-scout` agent and `fluxctl memory` CLI commands
+
+## [1.9.10] - 2026-03-13
+
+### Added
+
+- Ralph mode prompt after scoping — asks if you want to run the epic autonomously overnight
+
+### Fixed
+
+- `/plugin remove` → `/plugin uninstall` across all 19 skill files
+
+## [1.9.9] - 2026-03-13
+
+### Added
+
+- **Linear task tracker integration** — epics sync as projects, tasks as issues, status changes auto-update
+- Linear CLI skill installed via `npx skills add` during setup
+- Tracker hooks in `fluxctl_pkg/tracker.py`
+
+## [1.9.8] - 2026-03-13
+
+### Changed
+
+- **fluxctl modular refactor** — 9,095-line monolith split into 10 focused modules under `fluxctl_pkg/`
+- Renamed all `flow` → `flux` references (22 files, env vars, function names)
+- Agent-driven uninstall flow — agent handles cleanup, user only runs `/plugin uninstall`
+
+## [1.9.7] - 2026-03-13
+
+### Added
+
+- **Codex-powered scouts** — `/flux:prime` respects configured scout model with preflight check and graceful fallback
+- Codex auth verification during `/flux:setup`
+- Browser automation detection in prime testing scout
+- **Project-local installs** — all MCPs, skills, and config are project-scoped (nothing touches global config)
+
+### Changed
+
+- README restructured: "The Problem" leads, bullet-point overview, `--resume` in all restart instructions
+- Removed Ghostty and unused `assets/` directory
+
+## [1.9.6] - 2026-03-12
+
+### Added
+
+- **Plugin cache guard** — post-release bump + version guard CI
+- **Adversarial multi-model reviews** — plans and implementations reviewed by a second model
+- Clear "what to do next" after `/flux:setup`
+
+### Changed
+
+- Claude Code is now the only supported platform (removed Factory Droid and Codex platform support)
+- Removed Cartographer skill (redundant with built-in agentmap)
 
 ## [1.9.5] - 2026-03-12
 
@@ -21,127 +175,49 @@ All notable changes to Flux will be documented in this file.
 - **Native `agentmap` wrapper in `fluxctl`**
   - `fluxctl agentmap --check` reports whether `agentmap` is available in `PATH`
   - `fluxctl agentmap --write` writes a project-local map to `.flux/context/agentmap.yaml`
-  - filter and ignore patterns can now be passed through Flux instead of invoking `agentmap` manually
-- **Project-local agentmap guidance**
-  - setup templates now teach agents to use `.flux/context/agentmap.yaml` as a fast structural overview when present
-  - `.flux/usage.md` now documents the new `fluxctl agentmap` workflow
-
-### Improved
-
-- `docs/fluxctl.md` now documents the `agentmap` command and its default artifact path
-- script tests now cover `fluxctl agentmap --check` and `fluxctl agentmap --write` with a stubbed binary
 
 ### Changed
 
-- Version synchronized to `1.9.5` across package metadata and Claude plugin manifests.
+- `fluxctl agentmap` now uses a built-in implementation instead of requiring an external CLI
+- `/flux:setup` no longer recommends `agentmap` as a separate tool
 
 ## [1.9.4] - 2026-03-11
 
 ### Added
 
-- **Deterministic workflow state engine** in `fluxctl`
-  - `session-state` for startup and natural-language routing
-  - `scope-status` for active objective, phase, progress, and next action
-  - active objective support plus objective switching and Product OS-style phase artifacts
-- **Product OS-style scope persistence**
-  - scoped objectives now track feature/bug/refactor kind, shallow vs deep mode, technical level, implementation target, workflow phase, workflow step, and next action
-  - `.flux/artifacts/` now stores human-readable phase outputs for resumable scoping
-
-### Improved
-
-- Session startup now explicitly prints Flux realignment guidance plus current `session-state` and `scope-status`
-- `/flux:setup` now installs stricter Claude instructions so work-like prompts realign with Flux state before acting
-- README and command docs now explain the deterministic state engine, active-objective alignment, and Product OS-style scoping behavior
-
-### Changed
-
-- Version synchronized to `1.9.4` across package metadata and Claude plugin manifests.
+- **Deterministic workflow state engine** — `session-state` for startup routing, `scope-status` for active objective tracking
+- **Product OS-style scope persistence** — `.flux/artifacts/` stores resumable scoping phase outputs
 
 ## [1.9.3] - 2026-03-10
 
-### Added
-
-- Post-setup guidance now explicitly starts with `/flux:prime` before feature execution.
-- End-of-session guidance now explicitly includes `/flux:reflect` after review/improvement.
-- `/flux:improve` guidance now calls out high-signal breakdown outputs:
-  - what you do most frequently,
-  - what should become skills/plugins/agents,
-  - what belongs in `CLAUDE.md`.
-
 ### Improved
 
-- Core workflow messaging now consistently reflects:
-  - `Prime -> Scope -> Work -> Impl-Review -> Improve`
-  - `Reflect` at end of session.
-- `/flux:setup` final reminder now prints the full sequence (`/flux:prime`, core loop, `/flux:reflect`) plus Superset orchestrator guidance.
-- `/flux:setup` skill menu no longer includes Adversarial Spec or Trail of Bits Skills.
-
-### Changed
-
-- Version synchronized to `1.9.3` across package metadata and Claude plugin manifests.
+- Core workflow messaging: `Prime → Scope → Work → Impl-Review → Improve`, `Reflect` at end of session
+- `/flux:setup` final reminder prints the full sequence plus Superset orchestrator guidance
 
 ## [1.9.2] - 2026-03-10
 
 ### Added
 
-- Expanded `/flux:setup` optional install packs for agentic workflows:
-  - MCP: Firecrawl
-  - CLI: jq, fzf, Lefthook, Agent Browser, CLI Continues, Agentmap
-  - Desktop orchestrator: Superset (macOS only)
-  - Skills: Cartographer, UI Skills, Taste Skill, Semver Changelog, Agent Skills (Vercel), Adversarial Spec, Trail of Bits Skills, X Research Skill
-
-### Improved
-
-- `/flux:setup` now includes richer install prompts with clearer benefits, optional API key handling for Firecrawl, broader setup summaries, and platform-aware recommendations for installable tools.
-- `/flux:setup` now ends with an explicit Superset orchestrator reminder for parallel Claude Code workflows.
-- `/flux:setup` desktop apps step now explicitly runs on supported OS and surfaces productivity app recommendations (Superset, Raycast, Ghostty, Wispr Flow, Granola) without silent skipping.
-- `/flux:setup` skill installs now use non-interactive UI Skills install flow and corrected Taste Skill source path, with explicit post-install verification + failed status reporting.
-- Installed-tool detection now recognizes `agent-browser`, `cli-continues`, `agentmap`, and Superset.app on macOS.
-
-### Changed
-
-- Version synchronized to `1.9.2` across package metadata and Claude plugin manifests.
+- Expanded `/flux:setup` optional install packs: Firecrawl MCP, jq, fzf, Lefthook, Agent Browser, CLI Continues, Agentmap, Superset, and 8 agent skills
 
 ## [1.9.1] - 2026-03-08
 
 ### Fixed
 
-- **Safe upgrade path unified** — all update prompts now use `/plugin add https://github.com/Nairon-AI/flux@latest`
-  - Prevents stale guidance from older `/plugin marketplace update ...` instructions
-  - Keeps upgrade behavior consistent with install behavior
-
-- **Nested session install failures in setup guidance** — `/flux:setup` MCP setup instructions now avoid nested `claude` CLI calls
-  - Uses `~/.claude/settings.json` MCP updates as the in-session-safe path
-  - Documents `/mcp` UI flow and external-terminal fallback for `claude mcp add`
-
-- **Plugin helper install output** — `scripts/install-plugin.sh` now always emits `/plugin add ...@latest` guidance
-  - Normalizes owner/repo and URL inputs
-  - Explicitly tells users to run slash commands in Claude chat input (not bash)
-
-### Changed
-
-- Version synchronized to `1.9.1` across package metadata and Claude plugin manifests
+- Safe upgrade path unified — all update prompts use `/plugin add https://github.com/Nairon-AI/flux@latest`
+- Nested session install failures in setup guidance
+- Plugin helper install output normalization
 
 ## [1.9.0] - 2026-03-03
 
 ### Added
 
-- **Universe Authentication** — Connect Flux to your Universe profile
-  - `/flux:login` — Device flow authentication for Universe sync
-  - `/flux:logout` — Disconnect from Universe on this machine
-  - `/flux:status` — Check connection state and auth status
-  - Initial score sync runs automatically after first login
+- **Universe Authentication** — `/flux:login`, `/flux:logout`, `/flux:status`
 
 ### Fixed
 
-- **Plugin Installation** — Fixed silent enable failure during `/plugin add`
-  - Added `$schema` and `category` fields to marketplace.json (required by Claude Code)
-  - Synchronized version numbers across all config files
-  - Added troubleshooting section to README for edge cases
-
-### Changed
-
-- Commands reference updated with auth commands documentation
+- Plugin installation — added `$schema` and `category` fields to marketplace.json
 
 ### Contributors
 
@@ -153,8 +229,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Fixed
 
-- Install command documentation updated to use `/plugin add` (not `/install`)
-- Added explicit version tag `@v1.8.0` to install commands
+- Install command documentation updated to use `/plugin add`
 - Added cache clearing instructions for version upgrades
 
 ---
@@ -163,33 +238,7 @@ All notable changes to Flux will be documented in this file.
 
 ### Added
 
-- **STRIDE Security Analysis** — Comprehensive security scanning and threat modeling
-  - Generate STRIDE-based threat models for your codebase
-  - Scan code changes for vulnerabilities (SQL injection, XSS, IDOR, etc.)
-  - Validate findings for exploitability with proof-of-concept generation
-  - Filter false positives automatically with confidence scoring
-
-- **`/flux:threat-model`** — Generate security threat model
-  - Analyzes repository architecture and data flows
-  - Creates `.flux/threat-model.md` with STRIDE analysis
-  - Generates `.flux/security-config.json` for severity thresholds
-  - Includes vulnerability pattern library for your tech stack
-
-- **`/flux:security-scan`** — Scan code changes for vulnerabilities
-  - PR review, commit range, staged changes, or full repository
-  - STRIDE-based analysis (Spoofing, Tampering, Repudiation, Information Disclosure, DoS, Elevation of Privilege)
-  - CWE mapping and severity classification
-
-- **`/flux:security-review`** — Comprehensive security review
-  - Combines scanning with validation
-  - Generates validated findings with exploitation paths
-  - Filters false positives based on context
-
-- **`/flux:vuln-validate`** — Validate security findings
-  - Reachability analysis (can attackers reach this code?)
-  - Control flow tracing (can they control the input?)
-  - Proof-of-concept generation
-  - CVSS 3.1 scoring
+- **STRIDE Security Analysis** — `/flux:threat-model`, `/flux:security-scan`, `/flux:security-review`, `/flux:vuln-validate`
 
 ### Credits
 
@@ -201,28 +250,8 @@ Security skills adapted from [Factory AI security-engineer plugin](https://githu
 
 ### Added
 
-- **Brain Vault** — Persistent memory system that makes the agent smarter over time
-  - Obsidian-compatible markdown vault at `brain/`
-  - 16 battle-tested engineering principles included as starter content
-  - Session-start hook auto-injects brain index for context
-  - Auto-index hook maintains `brain/index.md` when files change
-
-- **`/flux:reflect`** — Capture learnings from current session
-  - Scans conversation for mistakes, corrections, and knowledge gained
-  - Routes learnings to brain, skills, or structural enforcement
-  - Run at end of sessions or after corrections
-
-- **`/flux:ruminate`** — Mine past Claude Code conversations
-  - Extracts uncaptured patterns from conversation history
-  - Cross-references with existing brain content
-  - Filters by frequency and impact
-
-- **`/flux:meditate`** — Audit and evolve the brain vault
-  - Prunes outdated/redundant notes
-  - Discovers cross-cutting principles from patterns
-  - Reviews skills for structural encoding opportunities
-
-- **`flux-brain` skill** — Conventions for reading/writing brain files
+- **Brain Vault** — Obsidian-compatible persistent memory at `brain/`
+- **`/flux:reflect`**, **`/flux:ruminate`**, **`/flux:meditate`** — learning capture, history mining, vault auditing
 
 ### Credits
 
@@ -232,40 +261,13 @@ Brain vault system adapted from [brainmaxxing](https://github.com/poteto/brainma
 
 ## [1.0.0] - 2026-02-23
 
-### Rebrand: Flux → Flux
-
-Flux is the new name. Same workflow engine, now with AI-native capability scoring.
-
 ### Added
 
-- **Flux Score** (`/flux:score`) — Compute your AI-native capability score from Claude Code session data
-  - 5 dimensions: Interview Depth, Pushback Ratio, Prompt Quality, Iteration Efficiency, Tool Breadth
-  - Weighted composite score (0-100) with letter grades (S/A/B/C/D/F)
-  - Output formats: table, JSON, YAML
-  - Date filtering: `--since`, `--until`
-  - Evidence export for recruiting: `--export evidence.yaml`
-
-- **Score Schema** (`docs/flux-score-schema.md`) — Full specification of scoring dimensions with SQL queries and evidence format
-
-- **Session Analysis Script** (`scripts/flux-score.py`) — Python implementation based on ccql patterns
-  - Loads history, transcripts, todos from `~/.claude/projects/`
-  - Computes all 5 dimension scores
-  - CLI with flexible output options
+- **Flux Score** (`/flux:score`) — AI-native capability scoring (5 dimensions, letter grades, evidence export)
 
 ### Changed
 
-- All commands renamed: `/flux:*` → `/flux:*`
-- Plugin name: `flux` → `flux`
-- GitHub repos renamed:
-  - `Nairon-AI/flux` → `Nairon-AI/flux`
-  - `Nairon-AI/flux-recommendations` → `Nairon-AI/flux-recommendations`
-
-### Migration
-
-If upgrading from Flux:
-1. Uninstall old plugin: `/plugin uninstall nairon-flux`
-2. Install Flux: `/plugin marketplace add Nairon-AI/flux`
-3. Commands work the same, just with `/flux:` prefix
+- Rebranded from Flux to Flux with `/flux:*` command prefix
 
 ---
 
@@ -273,224 +275,60 @@ If upgrading from Flux:
 
 ### Added
 
-- **Community Discord** — Join at [discord.gg/CEQMd6fmXk](https://discord.gg/CEQMd6fmXk)
-- README polish: "I'm tired, boss" gif and Community section
-
-### Changed
-
-- Edge-case hardening in `detect-installed.sh`:
-  - Graceful handling of malformed `~/.mcp.json`, `~/.claude.json`, `~/.claude/preferences.json`
-  - Warnings output in JSON diagnostics instead of crash
-- AUDIT.md updated with completion status emojis
+- Community Discord
 
 ### Fixed
 
 - Malformed JSON no longer crashes detection scripts
 
-## [flux 0.8.0] - 2026-02-22
+## [0.8.0] - 2026-02-22
 
 ### Added
 
-- **Profile workflows** via `/flux:profile`:
-  - export machine setup as immutable public-anonymous snapshots
-  - import teammate profiles with compatible-only filtering + per-item consent
-  - view snapshots and owner tombstone support
-  - app curation memory (`~/.flux/profile-state.json`) and skills scope selection (`global|project|both`)
+- **Profile workflows** (`/flux:profile`) — export/import/view machine setup snapshots
+- **Community discovery** for `/flux:improve` — `--discover` flag with Exa/Twitter search
+- **Explainability mode** — `--explain` for recommendation transparency
 
-- **New script**: `scripts/profile-manager.py`
-  - setup detection for MCP/CLI/skills/apps/patterns/model preferences
-  - auto-redaction of sensitive values before publish
-  - link service integration: publish, fetch, tombstone
-  - import planning + install orchestration helpers
-
-- **New tests/docs**:
-  - `scripts/test_profile_manager.py`
-  - profile coverage in `tests/scripts.test.ts`
-  - `docs/profile-command-spec.md`, `docs/profile-schema.md`, `docs/profile-launch-checklist.md`
-
-- **Community discovery mode** for `/flux:improve`:
-  - `--discover` enables optional live search for novel optimizations from X/Twitter sources
-  - Exa-first search with Twitter API fallback
-  - BYOK support via `~/.flux/config.json` (`exa_api_key`, `twitter_api_key`)
-
-- **Explainability mode** for recommendation transparency:
-  - `--explain` includes top friction signals and detected gap summary
-  - recommendation output now includes source metadata (`source`, `source_url`)
-
-- **New script**: `scripts/discover-community.py`
-  - friction-aware query generation
-  - URL canonical dedupe + ranking
-  - non-blocking failure behavior
-
-- **New tests**:
-  - `scripts/test_discover_community.py`
-  - explain/source assertions in `scripts/test_e2e.py`
-
-### Changed
-
-- README onboarding and quick demo flow clarified
-- full command reference added in `docs/commands-reference.md`
-- privacy copy updated to reflect optional external search behavior
-
-## [flux 0.7.0] - 2026-02-22
+## [0.7.0] - 2026-02-22
 
 ### Added
 
-- **Optional user context boost** for `/flux:improve`:
-  - asks user for short pain-point description
-  - maps plain-language frustrations into friction signals
-  - significantly improves recommendation precision when provided
+- Optional `--user-context` for `/flux:improve` — maps plain-language frustrations to friction signals
 
-- `--user-context` support in `match-recommendations.py`
-
-- Extended end-to-end tests for user-context parsing and integration
-
-### Changed
-
-- README restructured around interview -> plan -> implement -> review workflow
-- Added product vision section for engineering observability
-
-## [flux 0.6.0] - 2026-02-21
+## [0.6.0] - 2026-02-21
 
 ### Added
 
-- **Friction-first recommendation engine**
-  - recommendations are triggered by detected friction, not just missing tools
-  - expanded friction signal mapping for docs, linting, CI, memory, UI, and reasoning gaps
+- Friction-first recommendation engine — recommendations triggered by detected friction, not just missing tools
 
-- **Session analysis enhancements**
-  - broader pattern detection for user frustration, tool output errors, and agent confusion
-  - stronger end-to-end coverage and friction coverage tests
-
-### Changed
-
-- `/flux:improve` output and docs improved for clarity and FAQ coverage
-
-## [flux 0.5.0] - 2026-02-21
+## [0.5.0] - 2026-02-21
 
 ### Added
 
-- **Session analysis** — `parse-sessions.py` analyzes Claude Code sessions to detect pain points:
-  - API errors and retry patterns
-  - Tool failures (is_error, exit codes, file not found)
-  - Knowledge gaps ("I don't know how to...", repeated lookups)
-  - Tool usage statistics across sessions
+- Session analysis (`parse-sessions.py`) — detects API errors, tool failures, knowledge gaps
+- Pattern-to-recommendation mapping
 
-- **Pattern-to-recommendation mapping** — Session insights now drive recommendations:
-  - `unknown_skill` errors → plugin management suggestions
-  - `file_not_found` patterns → file navigation tools (fzf)
-  - `timeout` issues → performance optimizations
-  - Knowledge gaps → documentation tools (context7, supermemory)
-
-- **9 new tests** for session analysis in `tests/scripts.test.ts`
-
-### Changed
-
-- `analyze-sessions.sh` now delegates to Python parser for full analysis
-- `match-recommendations.py` integrates session insights into gap detection
-
-## [flux 0.4.0] - 2026-02-21
+## [0.4.0] - 2026-02-21
 
 ### Added
 
-- **E2E test suite** — Comprehensive tests using tuistory (Playwright for TUIs):
-  - `tests/scripts.test.ts` — 25 fast tests for all Flux scripts (detect-installed, analyze-context, manage-preferences, etc.)
-  - `tests/claude-commands.test.ts` — 13 tests for Claude Code command invocation
-  - Verifies plugin installation, skill loading, and command execution
+- E2E test suite with tuistory (Playwright for TUIs) — 25 script tests + 13 command tests
 
-- **Test infrastructure** — Added `package.json` with test scripts:
-  - `bun test:scripts` — Fast CI-friendly tests (~1s)
-  - `bun test:claude` — Full E2E tests with Claude Code (~98s)
-  - `bun test:all` — Complete test suite
-
-### Developer Experience
-
-- All `/flux:*` commands verified working via automated tests
-- tuistory enables TUI testing for Claude Code plugins
-- Scripts output validated (JSON structure, expected fields)
-
-## [flux 0.3.0] - 2026-02-21
+## [0.3.0] - 2026-02-21
 
 ### Added
 
-- **SDLC-aware recommendation engine** — Analyzes gaps across requirements, planning, implementation, review, testing, and documentation phases. Only recommends tools that fill actual workflow gaps.
+- SDLC-aware recommendation engine with installed tools detection and user preferences
 
-- **Installed tools detection** — `detect-installed.sh` auto-detects CLI tools, macOS/Linux applications, MCPs, and plugins. Skips recommendations for tools you already have.
-
-- **Equivalent tool detection** — Recognizes alternatives (e.g., if you have ESLint, won't recommend OxLint/Biome). Prevents redundant suggestions.
-
-- **User preferences system** — `manage-preferences.sh` for persistent settings:
-  - Dismiss recommendations you don't want
-  - Record alternatives ("I use Otter instead of Granola")
-  - "Always allow" session analysis (skip consent prompt)
-  - Stored in `~/.flux/preferences.json`
-
-- **New command flags**:
-  - `--detect` — Show detected installed tools
-  - `--preferences` — Show/manage user preferences  
-  - `--dismiss <name>` — Dismiss a recommendation
-  - `--alternative <rec> <alt>` — Record that you use an alternative
-  - `--sessions always|ask` — Control session consent behavior
-
-- **Pricing information** — Each recommendation includes pricing model (free, freemium, paid, open-source) and cost details.
-
-- **"Solves" field** — Each recommendation explains what specific workflow problem it addresses.
-
-### Changed
-
-- **Recommendations reorganized** — MCPs split into design/, search/, productivity/, dev/. Applications split into individual/ vs collaboration/. CLI tools grouped by function.
-
-- **Smarter matching** — Reduced from spray-and-pray to targeted recommendations based on detected SDLC gaps.
-
-## [flux 0.2.0] - 2026-02-21
+## [0.2.0] - 2026-02-21
 
 ### Added
 
-- **`/flux:improve` command** — Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Fetches recommendations from `Nairon-AI/flux-recommendations` database.
+- `/flux:improve` command, session analysis consent flow, installer scripts, rollback system
 
-- **Session analysis consent flow** — Privacy-first approach using `mcp_question` for explicit user consent before analyzing Claude Code sessions. Displays what data is analyzed and confirms local-only processing.
-
-- **`analyze-sessions.sh` script** — Stub for Phase 3 pattern detection. Scans `~/.claude/projects/` for recent sessions and returns structured JSON for error patterns, knowledge gaps, and repeated queries.
-
-- **`analyze-context.sh` enhancements** — New `--include-sessions` flag integrates session analysis. Output now includes `session_insights` field when user consents.
-
-- **Installer scripts** — Complete installation tooling:
-  - `install-mcp.sh` — Merges MCP config into `~/.mcp.json`
-  - `install-cli.sh` — Runs brew/npm install commands
-  - `install-plugin.sh` — Claude Code plugin installation instructions
-  - `install-skill.sh` — Copies skills to `~/.claude/skills/`
-
-- **Verification script** — `verify-install.sh` confirms installations via command existence, config checks, or MCP connectivity.
-
-- **Rollback system** — `rollback.sh` restores from timestamped snapshots in `~/.flux/snapshots/`.
-
-- **23 recommendations** in flux-recommendations database:
-  - MCPs (7): context7, exa, linear, supermemory, github, figma, excalidraw
-  - CLI tools (6): lefthook, oxlint, beads, biome, jq, fzf
-  - Applications (4): wispr-flow, granola, raycast, dia
-  - Skills (3): stagehand-e2e, remotion, repoprompt
-  - Workflow patterns (5): agents-md-structure, pre-commit-hooks, test-first-debugging, atomic-commits, context-management
-
-### Changed
-
-- **Context analysis output** — Now includes `session_insights` in JSON output structure.
-
-## [flux 0.1.0] - 2026-02-20
+## [0.1.0] - 2026-02-20
 
 ### Added
 
-- **Initial release** — AI-augmented SDLC workflow plugin for Claude Code.
-
-- **`/flux:plan`** — AI-augmented planning with spec validation and worker subagent architecture.
-
-- **`/flux:work`** — Worker subagent execution per task with context isolation.
-
-- **`/flux:prime`** — Codebase health assessment.
-
-- **`/flux:sync`** — State synchronization across sessions.
-
-- **`/flux:setup`** — Project initialization and configuration.
-
-- **Subagent architecture** — Context isolation per task prevents cross-contamination.
-
-- **Skills** — `flux-plan-check`, `flux-pr-integration` for plan validation and PR workflows.
+- Initial release — `/flux:plan`, `/flux:work`, `/flux:prime`, `/flux:sync`, `/flux:setup`
+- Subagent architecture with context isolation per task

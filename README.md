@@ -10,6 +10,8 @@
 **The missing (self-improving) harness for Claude Code.**<br>
 Build software reliably.
 
+> Recommended orchestrator: [SuperSet](https://superset.sh/) — parallel Claude Code sessions with git worktree isolation.
+
 </div>
 
 ## The Problem
