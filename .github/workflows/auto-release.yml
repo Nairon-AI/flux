@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   auto-release:
@@ -107,10 +108,16 @@ jobs:
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "Next version: $NEXT"
 
-      - name: Bump version in all manifest files
+      - name: Create release branch and bump versions
         if: steps.analyze.outputs.release_needed == 'true'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create release branch
+          git checkout -b "release/v${VERSION}"
 
           # 1. package.json
           jq --arg v "$VERSION" '.version = $v' package.json > tmp && mv tmp package.json
@@ -128,24 +135,46 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           sed -i "s/## \[Unreleased\]/## [Unreleased]\n\n## [${VERSION}] - ${DATE}/" CHANGELOG.md
 
-      - name: Commit and tag
+          git add package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json README.md CHANGELOG.md
+          git commit -m "release: v${VERSION}"
+          git push origin "release/v${VERSION}"
+
+      - name: Create and merge release PR
         if: steps.analyze.outputs.release_needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json README.md CHANGELOG.md
-          git commit -m "release: v${VERSION} [skip ci]"
-          git tag "v${VERSION}"
-          git push origin main --tags
 
-      - name: Create GitHub release
+          # Create PR
+          PR_URL=$(gh pr create \
+            --head "release/v${VERSION}" \
+            --base main \
+            --title "release: v${VERSION}" \
+            --body "Automated release — bumps version to ${VERSION} in all manifest files." \
+            --label "release")
+
+          # Auto-merge (admin bypass for branch protection)
+          gh pr merge "$PR_URL" --squash --admin --delete-branch
+
+      - name: Tag and create GitHub release
         if: steps.analyze.outputs.release_needed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           TAG="${{ steps.last_tag.outputs.tag }}"
+
+          # Fetch the merged commit
+          git fetch origin main
+          git checkout main
+          git pull origin main
+
+          # Tag the merge commit
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+
+          # Create GitHub release
           gh release create "v${VERSION}" \
             --target main \
             --title "v${VERSION}" \
