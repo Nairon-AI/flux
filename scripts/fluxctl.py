@@ -8,7 +8,7 @@ import sys
 import os
 
 # Ensure the scripts directory is on the path so fluxctl_pkg is importable
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 from fluxctl_pkg.__main__ import main
 
