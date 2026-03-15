@@ -3,6 +3,11 @@ name: Version Guard
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - '.claude-plugin/plugin.json'
 
 permissions:
   contents: read
@@ -45,7 +50,7 @@ jobs:
           echo "Versions OK: package.json=${PKG_VERSION}, plugin.json=${PLUGIN_VERSION}"
 
       - name: Open issue if guard fails
-        if: failure()
+        if: failure() && github.event_name == 'push'
         uses: actions/github-script@v7
         with:
           script: |
