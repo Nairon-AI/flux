@@ -65,7 +65,7 @@ Ship with confidence. Sleep better at night.
 
 | Agent | Status | Install |
 |-------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
+| [Claude Code](https://claude.ai/code) | ✅ First-Class Support | `/plugin add https://github.com/Nairon-AI/flux@latest` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[█████░░░░░░] ~45%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — core workflow ported, v2.0+ features pending |
 
 **Install** — paste this into your agent:
