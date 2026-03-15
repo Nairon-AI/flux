@@ -909,6 +909,226 @@ Store for summary:
 - `INSTALLED_SKILLS` — list of skills installed this session
 - `SKIPPED_SKILLS` — list of skills user chose to skip
 
+## Step 4f: Infrastructure & Environment Detection (Optional)
+
+Detect the deployment platform and environments before asking configuration questions. This enables environment-aware workflows (staging → production, preview URLs, browser QA against deployed environments).
+
+### Auto-detect deployment platform
+
+Scan the codebase for deployment platform markers:
+
+```bash
+PLATFORM=""
+[ -f vercel.json ]                    && PLATFORM="vercel"
+[ -f railway.toml ] || [ -f railway.json ] && PLATFORM="railway"
+[ -f fly.toml ]                       && PLATFORM="fly"
+[ -f netlify.toml ]                   && PLATFORM="netlify"
+[ -f serverless.yml ] || [ -f serverless.yaml ] && PLATFORM="aws-serverless"
+[ -d terraform ]                      && PLATFORM="aws-terraform"
+[ -f render.yaml ]                    && PLATFORM="render"
+# Cloudflare — distinguish Pages vs Workers
+if [ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ]; then
+  # pages_build_output_dir in config → Pages project; otherwise Workers
+  if grep -q 'pages_build_output_dir\|"pages_build_output_dir"' wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null; then
+    PLATFORM="cloudflare-pages"
+  else
+    PLATFORM="cloudflare-workers"
+  fi
+fi
+# Cloudflare Pages without wrangler config — framework adapters, functions dir, or _routes.json
+[ -z "$PLATFORM" ] && [ -f package.json ] && grep -qE '"@cloudflare/next-on-pages"|"@opennextjs/cloudflare"|"@sveltejs/adapter-cloudflare"|"@astrojs/cloudflare"' package.json 2>/dev/null && PLATFORM="cloudflare-pages"
+[ -z "$PLATFORM" ] && { [ -d functions ] && [ -f package.json ] && grep -q '"@cloudflare' package.json 2>/dev/null; } && PLATFORM="cloudflare-pages"
+[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare-pages"
+# Fallback: check GitHub Actions for deploy workflows
+if [ -z "$PLATFORM" ]; then
+  DEPLOY_WORKFLOW=$(grep -rl "vercel/action\|railway\|aws-actions\|fly-apps\|netlify/actions\|cloudflare/wrangler-action\|cloudflare/pages-action" .github/workflows/ 2>/dev/null | head -1)
+  if [ -n "$DEPLOY_WORKFLOW" ]; then
+    grep -q "vercel" "$DEPLOY_WORKFLOW" && PLATFORM="vercel"
+    grep -q "railway" "$DEPLOY_WORKFLOW" && PLATFORM="railway"
+    grep -q "aws-actions" "$DEPLOY_WORKFLOW" && PLATFORM="aws-serverless"
+    grep -q "fly-apps" "$DEPLOY_WORKFLOW" && PLATFORM="fly"
+    grep -q "netlify" "$DEPLOY_WORKFLOW" && PLATFORM="netlify"
+    if grep -q "cloudflare/pages-action" "$DEPLOY_WORKFLOW"; then
+      PLATFORM="cloudflare-pages"
+    elif grep -q "cloudflare/wrangler-action" "$DEPLOY_WORKFLOW"; then
+      PLATFORM="cloudflare-workers"
+    fi
+  fi
+fi
+# Check for generic Docker/self-hosted
+if [ -z "$PLATFORM" ]; then
+  [ -f docker-compose.yml ] || [ -f docker-compose.yaml ] || [ -f Dockerfile ] && PLATFORM="docker"
+fi
+echo "Detected platform: ${PLATFORM:-none}"
+```
+
+### If no platform detected
+
+This is fine — the project may be new, a library, or locally-only. Tell the user:
+
+```
+No deployment infrastructure detected — that's fine. Flux will work with your local setup.
+When you add deployment later, re-run /flux:setup to configure environments.
+```
+
+Skip the rest of Step 4f and continue to Step 5.
+
+### If platform detected — confirm and install CLI
+
+Tell the user what was found and confirm:
+
+```
+Detected deployment platform: {PLATFORM}
+Is this correct? (yes/no/other)
+```
+
+If confirmed, check if the platform CLI is installed and offer to install if missing:
+
+| Platform | CLI | Install command | Auth command | Auth check |
+|----------|-----|----------------|-------------|-----------|
+| vercel | `vercel` | `npm i -g vercel` | `vercel login` | `vercel whoami` |
+| railway | `railway` | `npm i -g @railway/cli` | `railway login` | `railway whoami` |
+| netlify | `netlify` | `npm i -g netlify-cli` | `netlify login` | `netlify status` |
+| fly | `fly` | `brew install flyctl` | `fly auth login` | `fly auth whoami` |
+| aws-serverless / aws-terraform | `aws` | `brew install awscli` | `aws configure` | `aws sts get-caller-identity` |
+| render | `render` | `brew install render` | `render login` | `render whoami` |
+| cloudflare-pages | `wrangler` | `npm i -g wrangler` | `wrangler login` | `wrangler whoami` |
+| cloudflare-workers | `wrangler` | `npm i -g wrangler` | `wrangler login` | `wrangler whoami` |
+| docker | `docker` | (usually pre-installed) | N/A | `docker info` |
+
+```bash
+CLI_NAME="vercel"  # example
+if ! command -v "$CLI_NAME" >/dev/null 2>&1; then
+  # Ask user if they want to install
+  # If yes, run the install command from the table above
+  # Verify installation
+fi
+```
+
+After CLI is installed, guide auth:
+
+```
+To connect Flux to your {PLATFORM} account, run this in a separate terminal:
+
+  {AUTH_COMMAND}
+
+I'll verify the connection when you're done.
+```
+
+Wait for user to confirm, then verify:
+
+```bash
+# Run auth check command from table above
+{AUTH_CHECK} 2>&1
+```
+
+If auth fails, mark `infrastructure.authenticated: false` in config and continue. Environment features will be disabled until auth is resolved.
+
+### Query platform for environments
+
+Once authenticated, query the platform CLI to discover environments automatically:
+
+```bash
+# Vercel — list projects, domains, and deployment targets
+vercel project ls --json 2>/dev/null
+vercel domains ls --json 2>/dev/null
+
+# Railway — list environments
+railway environment ls 2>/dev/null
+
+# Netlify — get site info including deploy contexts
+netlify api getSite --data '{}' 2>/dev/null | jq '{ssl_url, deploy_ssl_url, build_settings}'
+
+# Fly.io — list apps (staging is often a separate app like "myapp-staging")
+fly apps list --json 2>/dev/null
+
+# AWS — check for stage-specific stacks or parameter store
+aws ssm get-parameters-by-path --path "/" --recursive 2>/dev/null | jq '.Parameters[].Name' | head -20
+
+# Render — list services
+render services list --json 2>/dev/null
+
+# Cloudflare Pages — list projects, branch deploy config, custom domains
+# Extract project name from wrangler config
+CF_PROJECT_NAME=$(grep -m1 'name' wrangler.toml 2>/dev/null | sed 's/.*=\s*"\?\([^"]*\)"\?/\1/' || jq -r '.name // empty' wrangler.json 2>/dev/null)
+wrangler pages project list 2>/dev/null
+wrangler pages deployment list --project-name "$CF_PROJECT_NAME" 2>/dev/null
+# Preview URL pattern: https://{branch}.{project}.pages.dev
+
+# Cloudflare Workers — list deployments, routes, custom domains
+wrangler deployments list 2>/dev/null
+# Workers environments are configured in wrangler config [env.staging] / [env.production]
+grep -E '^\[env\.' wrangler.toml 2>/dev/null || jq -r '.env // {} | keys[]' wrangler.json 2>/dev/null
+```
+
+### Present findings
+
+Show what was discovered and ask user to confirm:
+
+```
+Found environments:
+  • staging → staging.myapp.com (auto-deploy: yes)
+  • production → myapp.com (auto-deploy: yes)
+  • preview URLs: enabled (auto per PR)
+
+Branch mapping:
+  • staging branch: staging
+  • production branch: main
+
+Is this correct? Adjust anything?
+```
+
+If the CLI query returned nothing useful, fall back to asking manually:
+
+```
+Couldn't auto-detect environments from {PLATFORM}. Let me ask:
+
+1. Do you have a staging environment?
+   → If yes: What branch deploys to staging? (default: staging)
+   → If yes: Staging URL?
+2. Production URL?
+3. Does your platform create preview URLs for PRs?
+```
+
+### Check for preview environment support
+
+For platforms with built-in preview/deploy-preview support:
+
+| Platform | Preview support | How to detect |
+|----------|----------------|---------------|
+| Vercel | Yes (auto per PR) | Always on for GitHub-connected projects |
+| Netlify | Yes (deploy previews) | `netlify api getSite` → `build_settings.deploy_preview` |
+| Railway | Yes (via PR environments) | `railway environment ls` shows PR envs |
+| Render | Yes (preview environments) | Check render.yaml for `previewsEnabled` |
+| Cloudflare Pages | Yes (branch deploys) | Always on — `https://{branch}.{project}.pages.dev` |
+| Cloudflare Workers | No (use [env.*] in config) | Environments defined in wrangler config, not per-PR previews |
+| Fly.io | No (manual) | — |
+| AWS | No (manual) | — |
+| Docker | No | — |
+
+### Save environment config
+
+Store results in `.flux/config.json`:
+
+```bash
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.platform "$PLATFORM" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.staging.branch "$STAGING_BRANCH" --json  # if detected
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.staging.url "$STAGING_URL" --json        # if detected
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.production.branch "$PROD_BRANCH" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.production.url "$PROD_URL" --json        # if detected
+"${PLUGIN_ROOT}/scripts/fluxctl" config set environments.preview.enabled "$PREVIEW_ENABLED" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set infrastructure.cli "$CLI_NAME" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set infrastructure.authenticated "$AUTH_OK" --json
+```
+
+### Track installation results
+
+Store for summary:
+- `DETECTED_PLATFORM` — platform name or "none"
+- `INSTALLED_INFRA_CLI` — CLI installed this session (if any)
+- `DETECTED_ENVIRONMENTS` — list of environments found
+- `INFRA_AUTHENTICATED` — true/false
+
 ## Step 5: Update meta.json
 
 Read current `.flux/meta.json`, add/update these fields (preserve all others):
@@ -921,7 +1141,8 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, wispr-flow, granola>"],
-    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"]
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"],
+    "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
 }
 ```

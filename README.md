@@ -279,7 +279,28 @@ flowchart TD
 | **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
 | **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
 | **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
+| **Gate** | *After staging merge:* verifies staging deployment is live, runs browser QA or manual review against staging URL, then creates promotion PR (staging → production). | Code that passes CI can still break in staging — env variables differ, APIs behave differently, CDN caching causes stale assets. Gate is the checkpoint between "code compiles" and "code actually works in a real environment." Without it, production deploys are a leap of faith. |
 | **Improve** | *Auto on friction (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations), matches detected friction domains to tools, presents top matches for the user to install. | When the same friction keeps recurring (3+ review iterations, repeated security findings, browser QA failures), the problem isn't the code — it's a missing tool. Improve connects the dots: "you keep failing on CSS responsiveness → here's a visual regression tool that prevents that." |
+
+### What's Automatic vs Manual
+
+| Action | Trigger | Type |
+|--------|---------|------|
+| **Session start hook** | Every session | Automatic — injects brain vault index + workflow state |
+| **Recommendation pulse** | Every session (rate-limited 1x/day) | Automatic — nudges for new tools, brain vault health |
+| **`session-state` routing** | Before any work-like request | Automatic — routes to prime/scope/work/review |
+| **Reflect** | After PR is submitted | Automatic — captures learnings while context is fresh |
+| **Meditate** | After Reflect, if 20+ pitfall files | Automatic — prunes stale, promotes patterns |
+| **Ruminate** | After Prime, if brain thin + past sessions exist | Automatic — bootstraps brain from conversation history |
+| **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
+| **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
+| **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
+| **Scope** (`/flux:scope`) | Start new work | Manual |
+| **Work** (`/flux:work`) | Execute a plan | Manual |
+| **Upgrade** (`/flux:upgrade`) | Get latest Flux version | Manual |
+| **Gate** (`/flux:gate`) | Validate staging after merge | Manual (or CI auto) |
+
+After upgrading, if your project's setup version is behind the plugin version, Flux will nudge you to re-run `/flux:setup` to pick up new configuration options.
 
 ---
 

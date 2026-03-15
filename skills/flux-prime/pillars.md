@@ -15,7 +15,7 @@ Automated tools that catch bugs instantly. Without them, agents waste cycles on 
 | SV1 | Linter configured | ESLint, Biome, oxlint, Flake8, Ruff, golangci-lint, or Clippy config exists |
 | SV2 | Formatter configured | Prettier, Biome, Black, gofmt, or rustfmt config/usage detected |
 | SV3 | Type checking | TypeScript strict, mypy, pyright, or language with static types |
-| SV4 | Pre-commit hooks | Husky, pre-commit, lefthook, or similar configured |
+| SV4 | Pre-commit hooks | Husky, pre-commit, lefthook, or similar configured with lint + typecheck |
 | SV5 | Lint script exists | `lint` command in package.json, Makefile, or equivalent |
 | SV6 | Format script exists | `format` command available |
 
@@ -176,6 +176,8 @@ Team processes and automation.
 | WP4 | Automated PR review | CodeRabbit, Greptile, or similar configured |
 | WP5 | Release automation | Semantic-release, changesets, or similar |
 | WP6 | CONTRIBUTING.md | Contribution guidelines present |
+| WP7 | CI builds on PRs | GitHub Actions (or equivalent) runs build + typecheck on pull requests |
+| WP8 | Branch protection | Main/production branch requires PR reviews and passing CI |
 
 ### Status Indicators
 - ✅ Configured
