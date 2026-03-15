@@ -368,7 +368,7 @@ Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
 
-**Suggest reflection**: After shipping, suggest the user run `/flux:reflect` to capture learnings from this epic while context is fresh. This feeds the brain vault's continuous improvement loop (reflect → ruminate → meditate).
+**Auto-reflect**: After submitting the PR, automatically run `/flux:reflect` to capture learnings while context is fresh. Do not ask — just run it. If the brain vault has 20+ pitfall files after reflection, also run `/flux:meditate` to prune and promote.
 
 ## Definition of Done
 
