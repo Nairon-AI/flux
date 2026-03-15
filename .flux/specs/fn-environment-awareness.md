@@ -95,9 +95,12 @@ Flux can't help with deployment testing, staging validation, or production monit
 [ -f netlify.toml ]       && PLATFORM="netlify"
 [ -f serverless.yml ]     && PLATFORM="aws-serverless"
 [ -f terraform/ ]         && PLATFORM="aws-terraform"
-[ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ] && PLATFORM="cloudflare"
-# Cloudflare Pages without wrangler config
-[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare"
+# Cloudflare — distinguish Pages vs Workers
+if [ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ]; then
+  grep -q 'pages_build_output_dir' wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null \
+    && PLATFORM="cloudflare-pages" || PLATFORM="cloudflare-workers"
+fi
+[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare-pages"
 [ -f docker-compose.yml ] && PLATFORM="docker"
 [ -f Dockerfile ]         && PLATFORM="docker"
 # Check GitHub Actions for deploy workflows
@@ -121,8 +124,9 @@ grep -r "VERCEL\|RAILWAY\|AWS_\|CF_API_TOKEN\|CLOUDFLARE_" .env* 2>/dev/null
    netlify api getSite --data '{}' 2>/dev/null | jq '.ssl_url, .deploy_url'
    # Fly.io — list apps (staging is often a separate app)
    fly apps list --json 2>/dev/null
-   # Cloudflare — list Pages projects and Workers
+   # Cloudflare Pages — list projects and branch deploys
    wrangler pages project list 2>/dev/null
+   # Cloudflare Workers — list deployments and named environments
    wrangler deployments list 2>/dev/null
    ```
 4. Present findings: "Found staging (staging.myapp.com, branch: staging) and production (myapp.com, branch: main). Preview URLs enabled. Correct?"
@@ -189,10 +193,10 @@ When `environments.preview.enabled`:
   vercel ls --meta pullRequestId=$PR_NUMBER 2>&1
   # Netlify
   netlify api listSiteDeploys --data '{"site_id":"..."}' | jq '.[0].deploy_ssl_url'
-  # Cloudflare Pages (branch deploy preview URLs)
+  # Cloudflare Pages — branch deploy preview URLs (always on)
+  # URL pattern: https://{branch}.{project-name}.pages.dev
   wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null | head -3
-  # Preview URL pattern: https://{commit-hash}.{project-name}.pages.dev
-  # Or branch alias: https://{branch}.{project-name}.pages.dev
+  # Note: Cloudflare Workers don't have automatic preview URLs — they use [env.*] named environments
   ```
 - Run browser QA against preview URL (lightweight smoke test)
 - Comment preview QA results on the PR
@@ -244,7 +248,8 @@ jobs:
 | AWS | `serverless.yml`, `terraform/` | `aws` | `aws-mcp` | No | `aws configure` |
 | Docker/self-hosted | `Dockerfile`, `docker-compose.yml` | `docker` | — | No | N/A |
 | Render | `render.yaml` | `render` | — | Yes (via API) | `render login` |
-| Cloudflare | `wrangler.toml`, `wrangler.json`, `wrangler.jsonc`, `_routes.json` | `wrangler` | — | Yes (Pages branch deploys) | `wrangler login` |
+| Cloudflare Pages | `wrangler.{toml,json,jsonc}` + `pages_build_output_dir`, `_routes.json` | `wrangler` | — | Yes (branch deploys: `{branch}.{project}.pages.dev`) | `wrangler login` |
+| Cloudflare Workers | `wrangler.{toml,json,jsonc}` (no `pages_build_output_dir`) | `wrangler` | — | No (use `[env.*]` named environments) | `wrangler login` |
 
 ---
 
@@ -430,7 +435,7 @@ Two paths:
 - **CI**: GitHub Action on push to staging branch auto-runs tests and creates promotion PR
 
 ### Preview environments
-Supported for Vercel/Netlify/Render/Cloudflare (auto-detect). Flux runs lightweight smoke test against preview URL and comments on the PR.
+Supported for Vercel/Netlify/Render/Cloudflare Pages (auto-detect). Cloudflare Workers use named environments (`[env.staging]`) instead of preview URLs. Flux runs lightweight smoke test against preview URL and comments on the PR.
 
 ### Failure path
 Staging test failures → Flux creates fix tasks in the current epic. User fixes on a new branch → PR against staging → re-test. No auto-revert (too risky). The staging environment exists precisely so problems can be found and fixed there.

@@ -46,11 +46,12 @@ railway status 2>/dev/null
 # Netlify
 netlify api getSite --data '{}' 2>/dev/null | jq '.published_deploy.state'
 
-# Cloudflare Pages
+# Cloudflare Pages — check latest branch deploy status
 wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null | head -5
 
-# Cloudflare Workers
+# Cloudflare Workers — check latest deployment to named environment
 wrangler deployments list 2>/dev/null | head -5
+# Workers staging is typically: wrangler deploy --env staging
 
 # Generic fallback
 curl -s -o /dev/null -w "%{http_code}" "$STAGING_URL"

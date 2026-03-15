@@ -926,10 +926,18 @@ PLATFORM=""
 [ -f serverless.yml ] || [ -f serverless.yaml ] && PLATFORM="aws-serverless"
 [ -d terraform ]                      && PLATFORM="aws-terraform"
 [ -f render.yaml ]                    && PLATFORM="render"
-[ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ] && PLATFORM="cloudflare"
-# Cloudflare Pages without wrangler config (functions dir or _routes.json)
-[ -z "$PLATFORM" ] && { [ -d functions ] && [ -f package.json ] && grep -q '"@cloudflare' package.json 2>/dev/null; } && PLATFORM="cloudflare"
-[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare"
+# Cloudflare — distinguish Pages vs Workers
+if [ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ]; then
+  # pages_build_output_dir in config → Pages project; otherwise Workers
+  if grep -q 'pages_build_output_dir\|"pages_build_output_dir"' wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null; then
+    PLATFORM="cloudflare-pages"
+  else
+    PLATFORM="cloudflare-workers"
+  fi
+fi
+# Cloudflare Pages without wrangler config (functions dir with @cloudflare packages, or _routes.json)
+[ -z "$PLATFORM" ] && { [ -d functions ] && [ -f package.json ] && grep -q '"@cloudflare' package.json 2>/dev/null; } && PLATFORM="cloudflare-pages"
+[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare-pages"
 # Fallback: check GitHub Actions for deploy workflows
 if [ -z "$PLATFORM" ]; then
   DEPLOY_WORKFLOW=$(grep -rl "vercel/action\|railway\|aws-actions\|fly-apps\|netlify/actions\|cloudflare/wrangler-action\|cloudflare/pages-action" .github/workflows/ 2>/dev/null | head -1)
@@ -939,7 +947,11 @@ if [ -z "$PLATFORM" ]; then
     grep -q "aws-actions" "$DEPLOY_WORKFLOW" && PLATFORM="aws-serverless"
     grep -q "fly-apps" "$DEPLOY_WORKFLOW" && PLATFORM="fly"
     grep -q "netlify" "$DEPLOY_WORKFLOW" && PLATFORM="netlify"
-    grep -q "cloudflare\|wrangler" "$DEPLOY_WORKFLOW" && PLATFORM="cloudflare"
+    if grep -q "cloudflare/pages-action" "$DEPLOY_WORKFLOW"; then
+      PLATFORM="cloudflare-pages"
+    elif grep -q "cloudflare\|wrangler" "$DEPLOY_WORKFLOW"; then
+      PLATFORM="cloudflare-workers"
+    fi
   fi
 fi
 # Check for generic Docker/self-hosted
@@ -979,7 +991,8 @@ If confirmed, check if the platform CLI is installed and offer to install if mis
 | fly | `fly` | `brew install flyctl` | `fly auth login` | `fly auth whoami` |
 | aws-serverless / aws-terraform | `aws` | `brew install awscli` | `aws configure` | `aws sts get-caller-identity` |
 | render | `render` | `brew install render` | `render login` | `render whoami` |
-| cloudflare | `wrangler` | `npm i -g wrangler` | `wrangler login` | `wrangler whoami` |
+| cloudflare-pages | `wrangler` | `npm i -g wrangler` | `wrangler login` | `wrangler whoami` |
+| cloudflare-workers | `wrangler` | `npm i -g wrangler` | `wrangler login` | `wrangler whoami` |
 | docker | `docker` | (usually pre-installed) | N/A | `docker info` |
 
 ```bash
@@ -1034,11 +1047,15 @@ aws ssm get-parameters-by-path --path "/" --recursive 2>/dev/null | jq '.Paramet
 # Render — list services
 render services list --json 2>/dev/null
 
-# Cloudflare — list workers and pages projects, detect type
+# Cloudflare Pages — list projects, branch deploy config, custom domains
 wrangler pages project list 2>/dev/null
+wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null
+# Preview URL pattern: https://{branch}.{project}.pages.dev
+
+# Cloudflare Workers — list deployments, routes, custom domains
 wrangler deployments list 2>/dev/null
-# Detect Workers vs Pages from wrangler config
-grep -q 'pages_build_output_dir\|"pages_build_output_dir"' wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null && echo "type: pages" || echo "type: workers"
+# Workers environments are configured in wrangler config [env.staging] / [env.production]
+grep -E '^\[env\.' wrangler.toml 2>/dev/null || jq -r '.env | keys[]' wrangler.json 2>/dev/null
 ```
 
 ### Present findings
@@ -1080,7 +1097,8 @@ For platforms with built-in preview/deploy-preview support:
 | Netlify | Yes (deploy previews) | `netlify api getSite` → `build_settings.deploy_preview` |
 | Railway | Yes (via PR environments) | `railway environment ls` shows PR envs |
 | Render | Yes (preview environments) | Check render.yaml for `previewsEnabled` |
-| Cloudflare | Yes (Pages branch deploys) | Always on for Pages projects |
+| Cloudflare Pages | Yes (branch deploys) | Always on — `https://{branch}.{project}.pages.dev` |
+| Cloudflare Workers | No (use [env.*] in config) | Environments defined in wrangler config, not per-PR previews |
 | Fly.io | No (manual) | — |
 | AWS | No (manual) | — |
 | Docker | No | — |
