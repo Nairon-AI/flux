@@ -25,6 +25,7 @@ These files contain the version string and MUST stay in sync:
 1. **`package.json`** → `"version": "X.Y.Z"`
 2. **`.claude-plugin/plugin.json`** → `"version": "X.Y.Z"`
 3. **`README.md`** → version badge `version-vX.Y.Z-green`
+4. **`CHANGELOG.md`** → move `[Unreleased]` entries under a new `[X.Y.Z] - YYYY-MM-DD` heading
 
 ## Workflow
 
@@ -59,16 +60,17 @@ fi
 
 ### Step 3: Bump Version in All Files
 
-Update all three files with the new version:
+Update all four files with the new version:
 
 1. **`package.json`** — update the `"version"` field to `"$VERSION"`
 2. **`.claude-plugin/plugin.json`** — update the `"version"` field to `"$VERSION"`
 3. **`README.md`** — update the badge from `version-v*-green` to `version-v$VERSION-green`
+4. **`CHANGELOG.md`** — move everything under `## [Unreleased]` into a new `## [$VERSION] - YYYY-MM-DD` section (use today's date). Add a fresh empty `## [Unreleased]` heading at the top. If there are no unreleased entries, create the version heading with a summary of what's in this release based on the GitHub release notes.
 
 ### Step 4: Commit
 
 ```bash
-git add package.json .claude-plugin/plugin.json README.md
+git add package.json .claude-plugin/plugin.json README.md CHANGELOG.md
 git commit -m "release: v$VERSION"
 git push origin "$BRANCH"
 ```
