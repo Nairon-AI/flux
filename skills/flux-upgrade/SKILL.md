@@ -89,15 +89,13 @@ jq --arg v "$NEW_VERSION" \
 echo "Install record updated to $NEW_VERSION"
 ```
 
-### Step 6: Reload plugins
+### Step 6: Restart
 
-Tell the user to run `/reload-plugins` to pick up the new version without restarting:
+Tell the user to restart Claude Code to load the new version:
 
 ```
 ✅ Flux upgraded: v{OLD_VERSION} → v{NEW_VERSION}
 
-Run /reload-plugins now to load the new version (no restart needed).
+Restart Claude Code now to load the new version (use --resume to keep context).
 Your project setup (.flux/, brain vault, CLAUDE.md) was not modified.
 ```
-
-If `/reload-plugins` doesn't work or skills seem stale, tell the user to restart Claude Code with `--resume`.
