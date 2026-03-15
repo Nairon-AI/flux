@@ -97,7 +97,7 @@ The epic review is a multi-phase pipeline:
 7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
 8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `brain/pitfalls/`
 9. **Desloppify Scan** — lightweight quality scan on changed files (if desloppify installed)
-10. **Frustration Signal** — suggest `/flux:improve` if 3+ fix iterations occurred
+10. **Frustration Signal** — auto-trigger recommendation search if friction score >= 3
 
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
@@ -348,8 +348,9 @@ FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (S
 
 Combined into `FRICTION_DOMAINS` (what's broken) and `FRICTION_SIGNALS` (what `/flux:improve` should search for).
 
-**If `FRICTION_SCORE >= 3`**, output a **targeted** suggestion:
+**If `FRICTION_SCORE >= 3`**, auto-trigger `/flux:improve` with the detected friction context:
 
+1. Tell the user what friction was detected:
 ```
 ---
 **Friction detected** (score: {FRICTION_SCORE}):
@@ -364,15 +365,23 @@ Diagnosis: {primary friction domain} — {one-sentence summary}
 Evidence:
 {top 2-3 quotes/issues/pitfalls}
 
-Consider running `/flux:improve --user-context "{FRICTION_DOMAINS}"` —
-this skips the pain-point interview and goes straight to targeted
-recommendations for your specific friction areas.
+Auto-searching for recommendations to address this...
 ---
 ```
 
-The `--user-context` flag pre-fills the detected friction domains so `/flux:improve`'s matching engine can skip discovery and go straight to relevant tool recommendations.
+2. Fresh-fetch the latest recommendations index:
+```bash
+RECS_RAW=$(curl -sL "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+```
 
-This is a suggestion only — do not auto-invoke `/flux:improve`.
+3. Search the recommendations for entries matching `FRICTION_DOMAINS` and `FRICTION_SIGNALS`. Score each recommendation by how many friction signals it addresses. Present the top 3-5 matches with:
+   - Tool name and what it does
+   - Which specific friction it addresses
+   - Install command or setup steps
+
+4. Ask the user which (if any) to install now. Do not auto-install — the user picks.
+
+The `--user-context` flag pre-fills the detected friction domains so `/flux:improve`'s matching engine can skip discovery and go straight to relevant tool recommendations.
 
 ---
 

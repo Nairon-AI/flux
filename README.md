@@ -197,17 +197,22 @@ flowchart TD
     ImplReview["Impl Review<br/>(per-task, lightweight)"]
     EpicReview["Epic Review<br/>(per-epic, thorough)"]
     Quality["Quality<br/>(tests + desloppify scan)"]
-    Ship["Ship<br/>(push + PR)"]
+    Submit["Submit<br/>(push + PR)"]
+    Reflect["Reflect<br/>(capture learnings)"]
+    Meditate["Meditate<br/>(prune + promote)"]
+    Ruminate["Ruminate<br/>(mine past sessions)"]
+    Improve["Improve<br/>(recommendations engine)"]
 
     SessionStart --> Pulse
     Pulse -->|"new tools?<br/>nudge /flux:improve"| Prime
-    Pulse -->|"brain bloated?<br/>nudge /flux:meditate"| Prime
     Pulse -->|"all clear"| Prime
-    Prime --> Scope
+    Prime -->|"brain thin +<br/>past sessions exist"| Ruminate
+    Prime -->|"brain ready"| Scope
+    Ruminate -->|"bootstrap brain<br/>from history"| Scope
     Scope -->|"non-technical user<br/>detected"| Propose
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"bug detected"| RCA
-    RCA -->|"fix + regression test<br/>+ pitfall written"| Ship
+    RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
     Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
 
     subgraph task_loop ["Task Loop (per task)"]
@@ -241,27 +246,21 @@ flowchart TD
 
     EpicReview --> SpecCompliance
     FrustrationSignal -->|"no"| Quality
-    FrustrationSignal -->|"yes: suggest<br/>/flux:improve --user-context"| Quality
-    Quality --> Ship
-    Ship -->|"suggest /flux:reflect"| Done["Done"]
+    FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| Quality
+    Quality --> Submit
+    Submit --> Reflect
+    Reflect -->|"20+ pitfall files"| Meditate
+    Reflect -->|"brain healthy"| Done["Done"]
+    Meditate --> Done
 
     Brain["Brain Vault<br/>(pitfalls, principles,<br/>conventions, decisions)"]
 
     Brain -.->|"read: principles +<br/>relevant pitfalls"| Scope
     Brain -.->|"read: re-anchor<br/>per task"| Work
     LearningCapture -.->|"write: pitfalls<br/>by area"| Brain
-
-    subgraph maintenance ["Between Epics"]
-        Reflect["Reflect<br/>(learnings + skills)"]
-        Ruminate["Ruminate<br/>(mine past sessions)"]
-        Meditate["Meditate<br/>(prune + promote)"]
-        Improve["Improve<br/>(recommendations engine)"]
-    end
-
-    Reflect -.->|"write"| Brain
-    Ruminate -.->|"write"| Brain
+    Reflect -.->|"write: learnings<br/>+ skills"| Brain
+    Ruminate -.->|"write: mined<br/>patterns"| Brain
     Meditate -.->|"prune/promote"| Brain
-    Pulse -.->|"nudge when<br/>brain bloated"| Meditate
     Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
 
@@ -269,18 +268,18 @@ flowchart TD
 |-------|-------------|
 | **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain vault health (once/day). |
 | **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
+| **Ruminate** | *Auto after Prime (first session only):* mines past Claude Code conversations to bootstrap the brain vault when it's empty/thin. Skipped if brain already has content. |
 | **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. Optionally uses RepoPrompt Investigate. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
 | **Quality** | Tests, lint/format, desloppify scan on changed files |
-| **Ship** | Push, open PR, suggest `/flux:reflect` |
-| | |
-| **Reflect** | *Between epics:* capture session learnings to brain vault and extract reusable skills from the session. Suggested after every ship. |
-| **Ruminate** | *Between epics:* mine past conversations for missed patterns |
-| **Meditate** | *Between epics:* audit brain vault — prune stale notes, promote pitfalls to principles. Auto-nudged when 5+ new pitfalls accumulate or 30+ days since last meditation. |
-| **Improve** | *On friction:* analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations). Auto-suggested on friction (score >= 3) and via session start pulse when new tools are available. |
+| **Submit** | Push + open PR. Code is ready for review/merge. |
+| **Reflect** | *Auto after Submit:* capture session learnings to brain vault and extract reusable skills while context is fresh. |
+| **Meditate** | *Auto after Reflect (conditional):* prune stale notes, promote pitfalls to principles. Triggers when 20+ pitfall files accumulate. |
+| **Ship** | PR merged + deployed (happens outside Flux's session scope). |
+| **Improve** | *Auto on friction (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations), matches detected friction domains to tools, presents top matches for the user to install. Also nudged via session start pulse when new tools are available. |
 
 ---
 

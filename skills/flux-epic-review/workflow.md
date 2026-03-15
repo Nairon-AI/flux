@@ -984,15 +984,43 @@ Diagnosis: {FRICTION_DOMAINS[0]} — {one-sentence summary of what kept going wr
 Evidence:
 {top 2-3 FRICTION_EVIDENCE entries}
 
-Consider running `/flux:improve --user-context "{FRICTION_DOMAINS joined by comma}"` —
-this will skip the pain-point interview and go straight to recommendations
-for {FRICTION_DOMAINS[0]} tooling ({FRICTION_SIGNALS joined by comma}).
+Auto-searching for recommendations to address this...
 ---
 ```
 
-**Key difference from a generic suggestion**: The `--user-context` flag is pre-filled with the detected friction domains. When the developer runs this command, `/flux:improve` skips the "describe your frustrations" step and immediately maps these signals to relevant recommendations — responsive design libraries, CSS frameworks, visual regression tools, etc.
+Then **auto-trigger** the recommendation search:
 
-This is a suggestion only — do not auto-invoke `/flux:improve`. The user decides whether to act on it.
+#### Step 1: Fresh-fetch recommendations
+
+```bash
+RECS_RAW=$(curl -sL "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+```
+
+This always fetches the latest index — no stale cache.
+
+#### Step 2: Match friction to recommendations
+
+Parse `RECS_RAW` and score each recommendation by how many `FRICTION_SIGNALS` it matches. A recommendation matches if its `tags`, `categories`, or `solves` fields overlap with the detected friction domains.
+
+#### Step 3: Present top matches
+
+Show the top 3-5 recommendations ranked by match score:
+
+```
+**Recommended tools for your friction areas:**
+
+1. **{tool_name}** — {description}
+   Addresses: {which FRICTION_DOMAINS it matches}
+   Install: {install command}
+
+2. ...
+```
+
+#### Step 4: User picks
+
+Ask the user which (if any) to install now using AskUserQuestion. Do not auto-install — the user decides.
+
+**Key difference from a generic suggestion**: The friction domains are already detected. The recommendation engine skips the "describe your frustrations" step and immediately maps signals to relevant tools — responsive design libraries, CSS frameworks, visual regression tools, etc.
 
 ### Why This Works
 

@@ -505,3 +505,26 @@ If yes, run Phase 1-4 again and show:
 ```
 
 Without this step, `session-state` will always report `needs_prime` and block the user from scoping or implementation.
+
+---
+
+## Phase 9: Auto-Ruminate (conditional)
+
+After marking prime complete, check if the brain vault is thin and past conversations exist. If so, auto-run `/flux:ruminate` to bootstrap the brain vault from conversation history.
+
+**Trigger conditions** (ALL must be true):
+1. Brain vault has fewer than 5 files in `brain/pitfalls/` and `brain/principles/`
+2. Past Claude Code conversations exist (`~/.claude/projects/` has session data for this project)
+3. This is the first prime for this project
+
+```bash
+BRAIN_FILES=$(find .flux/brain/pitfalls .flux/brain/principles -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+PROJECT_PATH=$(pwd | sed 's|/|-|g')
+PAST_SESSIONS=$(ls ~/.claude/projects/*${PROJECT_PATH}*/*.jsonl 2>/dev/null | wc -l | tr -d ' ')
+```
+
+If `BRAIN_FILES < 5` and `PAST_SESSIONS > 0`, run `/flux:ruminate` automatically. Do not ask — just run it. Tell the user:
+
+```
+Brain vault is thin — mining past conversations to bootstrap knowledge...
+```
