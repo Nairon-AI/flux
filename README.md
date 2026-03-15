@@ -233,7 +233,7 @@ flowchart TD
         SpecCompliance["Spec Compliance"]
         Adversarial["Adversarial Review<br/>(Anthropic + OpenAI)"]
         SecurityScan["STRIDE Security Scan"]
-        BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)"]
+        BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)<br/><i>optional</i>"]
         BrowserQA["Browser QA"]
         LearningCapture["Learning Capture"]
         DesloppifyScan["Desloppify Scan"]
@@ -242,6 +242,7 @@ flowchart TD
         SpecCompliance --> Adversarial
         Adversarial --> SecurityScan
         SecurityScan --> BotSelfHeal
+        SecurityScan -->|"no bot configured"| BrowserQA
         BotSelfHeal --> BrowserQA
         BrowserQA --> LearningCapture
         LearningCapture --> DesloppifyScan
@@ -277,7 +278,7 @@ flowchart TD
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. In Ralph mode, this loop runs autonomously through every task without stopping — plan review, implementation, code review, and completion review all happen unattended. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Brain re-anchor reminds each worker of relevant pitfalls and conventions. |
-| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (Claude + GPT) catches what single-model review misses. BYORB and browser QA catch what code review can't see at all. |
+| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB *optional*, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (Claude + GPT) catches what single-model review misses. BYORB (Greptile, CodeRabbit, etc.) is optional — skipped if no bot is configured. Browser QA catches what code review can't see at all. |
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
 | **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
