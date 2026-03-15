@@ -73,7 +73,7 @@ Ship with confidence. Sleep better at night.
 Install the Flux plugin. Here's the README: https://github.com/Nairon-AI/flux
 ```
 
-**Upgrade** — type `/flux:upgrade` in Claude Code, then restart. Your project setup (`.flux/`, brain vault, CLAUDE.md) is untouched.
+**Upgrade** — type `/flux:upgrade` in Claude Code, then `/reload-plugins`. No restart needed. Your project setup is untouched.
 
 **Uninstall** — say this in Claude Code:
 ```
@@ -106,13 +106,9 @@ Flux uses Claude Code's [plugin system](https://docs.anthropic.com/en/docs/claud
 6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 #### Upgrade
-1. Clear the plugin cache and refresh the marketplace to pick up the latest version:
-   ```bash
-   rm -rf ~/.claude/plugins/cache/nairon-flux
-   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
-   ```
-2. Tell the user to restart Claude Code (with `--resume` to keep context).
-3. Project-local files (`.flux/`, brain vault, CLAUDE.md, MCP servers) are not affected.
+Run `/flux:upgrade` inside Claude Code. It refreshes the marketplace, clears the plugin cache, and updates the install record automatically. Then run `/reload-plugins` to load the new version — no restart needed.
+
+Project-local files (`.flux/`, brain vault, CLAUDE.md, MCP servers) are never affected.
 
 #### Uninstall
 1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
