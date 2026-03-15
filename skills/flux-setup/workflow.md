@@ -1087,7 +1087,7 @@ Then ask for their Linear API key (needed for automated sync of epics/tasks to L
   "header": "Review",
   "question": "Which review backend for Carmack-level reviews?",
   "options": [
-    {"label": "Codex CLI", "description": "Cross-platform, uses GPT 5.2 High for reviews. Simple setup, works everywhere. <detected if HAVE_CODEX=1, (not detected) if HAVE_CODEX=0>"},
+    {"label": "Codex CLI", "description": "Cross-platform CLI for code reviews. Simple setup, works everywhere. <detected if HAVE_CODEX=1, (not detected) if HAVE_CODEX=0>"},
     {"label": "RepoPrompt", "description": "macOS only. Auto-discovers git diffs + context, reviews scoped to actual changes, ~65% fewer tokens than traditional approaches. <detected if HAVE_RP=1, (not detected) if HAVE_RP=0>"},
     {"label": "None", "description": "Skip reviews, can configure later with --review flag"}
   ],
