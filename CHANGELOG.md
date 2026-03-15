@@ -4,6 +4,8 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-03-15
+
 ### Fixed
 
 - Version guard CI now runs on PRs (not just push to main) to catch missing `-dev` suffix before merge
