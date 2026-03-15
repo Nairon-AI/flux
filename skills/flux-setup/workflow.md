@@ -1032,11 +1032,11 @@ Available questions (include only if corresponding config is unset):
 }
 ```
 
-**Sub-Agent Model question** (include if CURRENT_SCOUT_MODEL is empty):
+**Scout Model question** (include if CURRENT_SCOUT_MODEL is empty):
 ```json
 {
-  "header": "Sub-Agent Model",
-  "question": "Which model should Flux use for sub-agents? (Scouts, background analysis, and other lightweight tasks)",
+  "header": "Scout Model",
+  "question": "Which model should scout agents use? (Scouts analyze your codebase during /flux:prime)",
   "options": [
     {"label": "claude-haiku-4-5 (Recommended)", "description": "Fast and cost-effective. Works with any Anthropic API access."},
     {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro."},
@@ -1234,7 +1234,7 @@ Only process answers for questions that were asked (config values that were unse
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github true --json`
 - If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github false --json`
 
-**Sub-Agent Model** (if question was asked):
+**Scout Model** (if question was asked):
 - If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
 - If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
 - If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
