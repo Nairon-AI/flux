@@ -213,7 +213,11 @@ flowchart TD
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"bug detected"| RCA
     RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
-    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| Work
+    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| ExecChoice{"Execute how?"}
+
+    ExecChoice -->|"task-by-task<br/>(interactive)"| Work
+    ExecChoice -->|"ralph mode<br/>(autonomous)"| Ralph["Ralph<br/>(autonomous harness)"]
+    Ralph -->|"runs all tasks<br/>+ reviews unattended"| EpicReview
 
     subgraph task_loop ["Task Loop (per task)"]
         Work -->|"spawn worker"| ImplReview
@@ -271,8 +275,8 @@ flowchart TD
 | **Ruminate** | *Auto after Prime (conditional):* mines past Claude Code conversations to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
 | **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets. Propose forces clarity and estimates before engineering time is spent. |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
-| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
-| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Brain re-anchor reminds each worker of relevant pitfalls and conventions. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
+| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. In Ralph mode, this loop runs autonomously through every task without stopping — plan review, implementation, code review, and completion review all happen unattended. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Brain re-anchor reminds each worker of relevant pitfalls and conventions. |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (Claude + GPT) catches what single-model review misses. BYORB and browser QA catch what code review can't see at all. |
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
@@ -296,7 +300,8 @@ flowchart TD
 | **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
 | **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
 | **Scope** (`/flux:scope`) | Start new work | Manual |
-| **Work** (`/flux:work`) | Execute a plan | Manual |
+| **Work** (`/flux:work`) | Execute a plan task-by-task | Manual |
+| **Ralph** (`/flux:ralph-init`) | Execute an entire epic autonomously | Manual — offered after scoping |
 | **Upgrade** (`/flux:upgrade`) | Get latest Flux version | Manual |
 | **Gate** (`/flux:gate`) | Validate staging after merge | Manual (or CI auto) |
 
@@ -610,15 +615,37 @@ Not recommended. Flux uses its own task tracking system (`.flux/` + `fluxctl`) t
 Pick one system and stick with it. If you prefer Beads, use Beads. If you want the full Flux workflow (scoping, brain vault, reviews, recommendations), use Flux. Mixing them creates more problems than it solves.
 </details>
 
+<details>
+<summary><strong>Can Flux run autonomously without me watching?</strong></summary>
+
+Yes — that's what Ralph mode is for. After scoping an epic, Flux offers you two execution modes:
+
+1. **Task-by-task** (`/flux:work`) — you stay in the loop, review each task as it completes, and guide the agent interactively.
+2. **Ralph mode** (`/flux:ralph-init`) — a repo-local autonomous harness that works through every task in the epic unattended. It runs plan review, implementation, code review, and completion review for each task without stopping. You start it from your terminal (`./scripts/ralph/ralph.sh`) and check results in the morning.
+
+Ralph uses multi-model review gates (Claude + GPT via RepoPrompt or Codex) and produces receipts as proof-of-work. It can be paused and resumed at any point.
+</details>
+
+<details>
+<summary><strong>Why does the version on main show "X.Y.Z-dev" instead of matching the latest release?</strong></summary>
+
+By design. When a release is published (e.g., `v2.7.0`), a post-release workflow automatically bumps the version on main to `2.7.1-dev`. This ensures:
+
+1. **Cache prevention** — the `-dev` suffix gives the plugin a distinct semver on main so users installing `@latest` always get the actual release, not a development snapshot.
+2. **Development clarity** — you can immediately tell whether you're looking at released code (`2.7.0`) or in-progress development (`2.7.1-dev`).
+
+The `0.0.1` difference is just a placeholder — the next release will be whatever the conventional commits dictate (patch, minor, or major), not necessarily `2.7.1`.
+</details>
+
 ---
 
 ## Roadmap
 
 ### Next — Relay
 
-A fully autonomous orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
+A parallel orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
 
-Relay will coordinate multiple agents working in parallel across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR. Human-in-the-loop when you want it, fully autonomous when you don't.
+Ralph already handles autonomous *serial* execution (one task at a time, unattended). Relay will coordinate multiple agents working *in parallel* across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR.
 
 ### Feature Roadmap
 
