@@ -935,7 +935,8 @@ if [ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ]; then
     PLATFORM="cloudflare-workers"
   fi
 fi
-# Cloudflare Pages without wrangler config (functions dir with @cloudflare packages, or _routes.json)
+# Cloudflare Pages without wrangler config — framework adapters, functions dir, or _routes.json
+[ -z "$PLATFORM" ] && [ -f package.json ] && grep -qE '"@cloudflare/next-on-pages"|"@opennextjs/cloudflare"|"@sveltejs/adapter-cloudflare"|"@astrojs/cloudflare"' package.json 2>/dev/null && PLATFORM="cloudflare-pages"
 [ -z "$PLATFORM" ] && { [ -d functions ] && [ -f package.json ] && grep -q '"@cloudflare' package.json 2>/dev/null; } && PLATFORM="cloudflare-pages"
 [ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare-pages"
 # Fallback: check GitHub Actions for deploy workflows
@@ -1048,8 +1049,10 @@ aws ssm get-parameters-by-path --path "/" --recursive 2>/dev/null | jq '.Paramet
 render services list --json 2>/dev/null
 
 # Cloudflare Pages — list projects, branch deploy config, custom domains
+# Extract project name from wrangler config
+CF_PROJECT_NAME=$(grep -m1 'name' wrangler.toml 2>/dev/null | sed 's/.*=\s*"\?\([^"]*\)"\?/\1/' || jq -r '.name // empty' wrangler.json 2>/dev/null)
 wrangler pages project list 2>/dev/null
-wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null
+wrangler pages deployment list --project-name "$CF_PROJECT_NAME" 2>/dev/null
 # Preview URL pattern: https://{branch}.{project}.pages.dev
 
 # Cloudflare Workers — list deployments, routes, custom domains

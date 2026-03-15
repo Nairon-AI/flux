@@ -47,7 +47,8 @@ railway status 2>/dev/null
 netlify api getSite --data '{}' 2>/dev/null | jq '.published_deploy.state'
 
 # Cloudflare Pages — check latest branch deploy status
-wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null | head -5
+CF_PROJECT_NAME=$(grep -m1 'name' wrangler.toml 2>/dev/null | sed 's/.*=\s*"\?\([^"]*\)"\?/\1/' || jq -r '.name // empty' wrangler.json 2>/dev/null)
+wrangler pages deployment list --project-name "$CF_PROJECT_NAME" 2>/dev/null | head -5
 
 # Cloudflare Workers — check latest deployment to named environment
 wrangler deployments list 2>/dev/null | head -5
