@@ -281,7 +281,7 @@ Informational only. No fixes offered — address independently if desired.
 [Key observations from Pillars 6-8 that the team should be aware of]
 ```
 
-**If `--report-only`**: Stop here. Show report and exit.
+**If `--report-only`**: Show report, then skip to Phase 8 (mark prime complete) and exit.
 
 ---
 
@@ -493,3 +493,15 @@ If yes, run Phase 1-4 again and show:
 - New Agent Readiness score and maturity level
 - Score changes per pillar
 - Remaining recommendations
+
+---
+
+## Phase 8: Mark Prime Complete
+
+**CRITICAL**: After Phase 7 (or Phase 4 if `--report-only`), mark prime as done so `session-state` knows priming has completed:
+
+```bash
+.flux/bin/fluxctl prime-mark --status done --version "$(date +%Y-%m-%d)"
+```
+
+Without this step, `session-state` will always report `needs_prime` and block the user from scoping or implementation.
