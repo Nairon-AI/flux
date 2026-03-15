@@ -46,6 +46,12 @@ railway status 2>/dev/null
 # Netlify
 netlify api getSite --data '{}' 2>/dev/null | jq '.published_deploy.state'
 
+# Cloudflare Pages
+wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null | head -5
+
+# Cloudflare Workers
+wrangler deployments list 2>/dev/null | head -5
+
 # Generic fallback
 curl -s -o /dev/null -w "%{http_code}" "$STAGING_URL"
 ```

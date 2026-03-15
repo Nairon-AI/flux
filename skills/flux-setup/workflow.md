@@ -926,17 +926,20 @@ PLATFORM=""
 [ -f serverless.yml ] || [ -f serverless.yaml ] && PLATFORM="aws-serverless"
 [ -d terraform ]                      && PLATFORM="aws-terraform"
 [ -f render.yaml ]                    && PLATFORM="render"
-[ -f wrangler.toml ]                  && PLATFORM="cloudflare"
+[ -f wrangler.toml ] || [ -f wrangler.json ] || [ -f wrangler.jsonc ] && PLATFORM="cloudflare"
+# Cloudflare Pages without wrangler config (functions dir or _routes.json)
+[ -z "$PLATFORM" ] && { [ -d functions ] && [ -f package.json ] && grep -q '"@cloudflare' package.json 2>/dev/null; } && PLATFORM="cloudflare"
+[ -z "$PLATFORM" ] && [ -f _routes.json ] && PLATFORM="cloudflare"
 # Fallback: check GitHub Actions for deploy workflows
 if [ -z "$PLATFORM" ]; then
-  DEPLOY_WORKFLOW=$(grep -rl "vercel/action\|railway\|aws-actions\|fly-apps\|netlify/actions\|cloudflare/wrangler-action" .github/workflows/ 2>/dev/null | head -1)
+  DEPLOY_WORKFLOW=$(grep -rl "vercel/action\|railway\|aws-actions\|fly-apps\|netlify/actions\|cloudflare/wrangler-action\|cloudflare/pages-action" .github/workflows/ 2>/dev/null | head -1)
   if [ -n "$DEPLOY_WORKFLOW" ]; then
     grep -q "vercel" "$DEPLOY_WORKFLOW" && PLATFORM="vercel"
     grep -q "railway" "$DEPLOY_WORKFLOW" && PLATFORM="railway"
     grep -q "aws-actions" "$DEPLOY_WORKFLOW" && PLATFORM="aws-serverless"
     grep -q "fly-apps" "$DEPLOY_WORKFLOW" && PLATFORM="fly"
     grep -q "netlify" "$DEPLOY_WORKFLOW" && PLATFORM="netlify"
-    grep -q "cloudflare" "$DEPLOY_WORKFLOW" && PLATFORM="cloudflare"
+    grep -q "cloudflare\|wrangler" "$DEPLOY_WORKFLOW" && PLATFORM="cloudflare"
   fi
 fi
 # Check for generic Docker/self-hosted
@@ -1031,8 +1034,11 @@ aws ssm get-parameters-by-path --path "/" --recursive 2>/dev/null | jq '.Paramet
 # Render — list services
 render services list --json 2>/dev/null
 
-# Cloudflare — list workers/pages projects
+# Cloudflare — list workers and pages projects, detect type
 wrangler pages project list 2>/dev/null
+wrangler deployments list 2>/dev/null
+# Detect Workers vs Pages from wrangler config
+grep -q 'pages_build_output_dir\|"pages_build_output_dir"' wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null && echo "type: pages" || echo "type: workers"
 ```
 
 ### Present findings

@@ -73,6 +73,13 @@ detect_cli_tools() {
         tools+=("cli-continues")
     fi
     
+    # Deployment CLIs
+    cmd_exists vercel && tools+=("vercel")
+    cmd_exists wrangler && tools+=("wrangler")
+    cmd_exists netlify && tools+=("netlify")
+    cmd_exists railway && tools+=("railway")
+    cmd_exists fly && tools+=("fly")
+
     # Package managers
     cmd_exists bun && tools+=("bun")
     cmd_exists pnpm && tools+=("pnpm")
