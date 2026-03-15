@@ -984,15 +984,68 @@ Diagnosis: {FRICTION_DOMAINS[0]} — {one-sentence summary of what kept going wr
 Evidence:
 {top 2-3 FRICTION_EVIDENCE entries}
 
-Consider running `/flux:improve --user-context "{FRICTION_DOMAINS joined by comma}"` —
-this will skip the pain-point interview and go straight to recommendations
-for {FRICTION_DOMAINS[0]} tooling ({FRICTION_SIGNALS joined by comma}).
+Auto-searching for recommendations to address this...
 ---
 ```
 
-**Key difference from a generic suggestion**: The `--user-context` flag is pre-filled with the detected friction domains. When the developer runs this command, `/flux:improve` skips the "describe your frustrations" step and immediately maps these signals to relevant recommendations — responsive design libraries, CSS frameworks, visual regression tools, etc.
+Then **auto-trigger** the recommendation search:
 
-This is a suggestion only — do not auto-invoke `/flux:improve`. The user decides whether to act on it.
+#### Step 1: Fresh-fetch recommendations
+
+```bash
+RECS_RAW=$(curl -sL --connect-timeout 10 --max-time 30 "https://raw.githubusercontent.com/Nairon-AI/flux-recommendations/main/recommendations.json")
+CURL_EXIT=$?
+```
+
+If `CURL_EXIT != 0` or `RECS_RAW` is empty/invalid JSON, tell the user:
+```
+Could not fetch recommendations (network issue). Skipping auto-improve.
+Run /flux:improve manually when connectivity is restored.
+```
+Do not fail the epic review — continue to the next step.
+
+#### Step 2: Guard against empty friction domains
+
+If `FRICTION_DOMAINS` is empty but `FRICTION_SCORE >= 3` (score came purely from quantitative counters), map counter types to search terms:
+- `NEEDS_WORK_COUNT >= 2` → add signals: `linting, formatting, pre-commit`
+- `SECURITY_FINDINGS >= 1` → add signals: `security-scanning, sast, dependency-audit`
+- `BROWSER_QA_FAILURES >= 1` → add signals: `visual-regression, e2e-testing, responsive`
+- `SAME_CATEGORY_PITFALLS >= 1` → add signals based on the pitfall category names
+
+#### Step 3: Match friction to recommendations
+
+Parse `RECS_RAW` as JSON. For each recommendation entry, compute a match score:
+- +2 for each `FRICTION_DOMAIN` that appears in the entry's `tags`, `categories`, or `solves` fields
+- +1 for each `FRICTION_SIGNAL` that appears in the entry's `tags` or `keywords` fields
+- Entries with score 0 are excluded
+
+Sort by score descending. Take the top 3-5.
+
+#### Step 4: Present top matches
+
+Show the top 3-5 recommendations ranked by match score:
+
+```
+**Recommended tools for your friction areas:**
+
+1. **{tool_name}** — {description}
+   Addresses: {which FRICTION_DOMAINS it matches}
+   Install: {install command}
+
+2. ...
+```
+
+If no recommendations match (score 0 for all entries), tell the user:
+```
+No matching recommendations found for your friction areas.
+Run /flux:improve for a broader search.
+```
+
+#### Step 5: User picks
+
+Ask the user which (if any) to install now using AskUserQuestion. Do not auto-install — the user decides.
+
+**Key difference from a generic suggestion**: The friction domains are already detected. The recommendation engine skips the "describe your frustrations" step and immediately maps signals to relevant tools — responsive design libraries, CSS frameworks, visual regression tools, etc.
 
 ### Why This Works
 
