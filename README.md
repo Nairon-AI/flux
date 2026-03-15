@@ -264,22 +264,22 @@ flowchart TD
     Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
 
-| Phase | What happens |
-|-------|-------------|
-| **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain vault health (once/day). |
-| **Prime** | One-time readiness audit: 8 pillars, 48 criteria. Flux detects when needed. |
-| **Ruminate** | *Auto after Prime (first session only):* mines past Claude Code conversations to bootstrap the brain vault when it's empty/thin. Skipped if brain already has content. |
-| **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR |
-| **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. Optionally uses RepoPrompt Investigate. |
-| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks |
-| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each |
-| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture) |
-| **Quality** | Tests, lint/format, desloppify scan on changed files |
-| **Submit** | Push + open PR. Code is ready for review/merge. |
-| **Reflect** | *Auto after Submit:* capture session learnings to brain vault and extract reusable skills while context is fresh. |
-| **Meditate** | *Auto after Reflect (conditional):* prune stale notes, promote pitfalls to principles. Triggers when 20+ pitfall files accumulate. |
-| **Ship** | PR merged + deployed (happens outside Flux's session scope). |
-| **Improve** | *Auto on friction (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations), matches detected friction domains to tools, presents top matches for the user to install. Also nudged via session start pulse when new tools are available. |
+| Phase | What happens | Why it exists |
+|-------|-------------|---------------|
+| **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain health (once/day). | Without this, every session starts from zero — the agent doesn't know what it learned yesterday, what work is in progress, or what the project's conventions are. The hook gives it continuity. |
+| **Prime** | One-time readiness audit: 8 pillars, 48 criteria. | Agents routinely skip foundational setup (testing, CI, linting, security) and jump straight to features. Prime forces a baseline before any real work starts, catching gaps that would otherwise surface as bugs weeks later. |
+| **Ruminate** | *Auto after Prime (conditional):* mines past Claude Code conversations to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
+| **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets. Propose forces clarity and estimates before engineering time is spent. |
+| **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
+| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Brain re-anchor reminds each worker of relevant pitfalls and conventions. |
+| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (Claude + GPT) catches what single-model review misses. BYORB and browser QA catch what code review can't see at all. |
+| **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
+| **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
+| **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
+| **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
+| **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
+| **Improve** | *Auto on friction (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations), matches detected friction domains to tools, presents top matches for the user to install. | When the same friction keeps recurring (3+ review iterations, repeated security findings, browser QA failures), the problem isn't the code — it's a missing tool. Improve connects the dots: "you keep failing on CSS responsiveness → here's a visual regression tool that prevents that." |
 
 ---
 
