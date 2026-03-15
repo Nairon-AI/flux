@@ -949,7 +949,7 @@ if [ -z "$PLATFORM" ]; then
     grep -q "netlify" "$DEPLOY_WORKFLOW" && PLATFORM="netlify"
     if grep -q "cloudflare/pages-action" "$DEPLOY_WORKFLOW"; then
       PLATFORM="cloudflare-pages"
-    elif grep -q "cloudflare\|wrangler" "$DEPLOY_WORKFLOW"; then
+    elif grep -q "cloudflare/wrangler-action" "$DEPLOY_WORKFLOW"; then
       PLATFORM="cloudflare-workers"
     fi
   fi
@@ -1055,7 +1055,7 @@ wrangler pages deployment list --project-name "$PROJECT_NAME" 2>/dev/null
 # Cloudflare Workers — list deployments, routes, custom domains
 wrangler deployments list 2>/dev/null
 # Workers environments are configured in wrangler config [env.staging] / [env.production]
-grep -E '^\[env\.' wrangler.toml 2>/dev/null || jq -r '.env | keys[]' wrangler.json 2>/dev/null
+grep -E '^\[env\.' wrangler.toml 2>/dev/null || jq -r '.env // {} | keys[]' wrangler.json 2>/dev/null
 ```
 
 ### Present findings
