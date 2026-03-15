@@ -151,8 +151,7 @@ jobs:
             --head "release/v${VERSION}" \
             --base main \
             --title "release: v${VERSION}" \
-            --body "Automated release — bumps version to ${VERSION} in all manifest files." \
-            --label "release")
+            --body "Automated release — bumps version to ${VERSION} in all manifest files.")
 
           # Auto-merge (admin bypass for branch protection)
           gh pr merge "$PR_URL" --squash --admin --delete-branch
