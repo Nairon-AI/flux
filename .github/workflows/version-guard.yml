@@ -1,0 +1,80 @@
+name: Version Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - '.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-dev-version:
+    runs-on: ubuntu-latest
+    # Skip the bump commit itself
+    if: "!contains(github.event.head_commit.message, 'chore: bump version to')"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure version has -dev suffix
+        run: |
+          PKG_VERSION=$(jq -r '.version' package.json)
+          PLUGIN_VERSION=$(jq -r '.version' .claude-plugin/plugin.json)
+          MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+
+          FAILED=0
+
+          if [[ "$PKG_VERSION" != *-dev ]]; then
+            echo "::error::package.json version '${PKG_VERSION}' is missing -dev suffix on main"
+            FAILED=1
+          fi
+
+          if [[ "$PLUGIN_VERSION" != *-dev ]]; then
+            echo "::error::plugin.json version '${PLUGIN_VERSION}' is missing -dev suffix on main"
+            FAILED=1
+          fi
+
+          if [[ "$MARKETPLACE_VERSION" != *-dev ]]; then
+            echo "::error::marketplace.json version '${MARKETPLACE_VERSION}' is missing -dev suffix on main"
+            FAILED=1
+          fi
+
+          if [[ "$FAILED" -eq 1 ]]; then
+            echo ""
+            echo "Versions on main must always end in '-dev' to prevent stale plugin cache hits."
+            echo "The post-release-bump workflow should handle this automatically."
+            echo "If you're seeing this, the post-release bump may have failed."
+            exit 1
+          fi
+
+          echo "Versions OK: package.json=${PKG_VERSION}, plugin.json=${PLUGIN_VERSION}, marketplace.json=${MARKETPLACE_VERSION}"
+
+      - name: Open issue if guard fails
+        if: failure() && github.event_name == 'push'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'version-guard',
+              state: 'open'
+            });
+            if (existing.data.length > 0) {
+              console.log('Issue already exists, skipping');
+              return;
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Version guard failed: main is missing -dev suffix',
+              body: `The version on \`main\` does not have a \`-dev\` suffix.\n\nThis means the post-release version bump workflow likely failed after the last release. Users installing with \`@latest\` may get a stale cached version.\n\n**Fix:** Manually bump the version in \`package.json\` and \`.claude-plugin/plugin.json\` to the next dev version (e.g. \`1.9.6-dev\`).\n\nTriggered by commit: ${context.sha}`,
+              labels: ['version-guard', 'bug']
+            });

@@ -277,46 +277,228 @@ Context now contains:
 - `session_insights` (with error_patterns, tool_errors, knowledge_gaps, tool_usage)
 - `os` (macos, linux, windows)
 
-## Step 6: Fetch Recommendations
+## Step 6: Check License & Fetch Recommendations
 
-Fetch all recommendation files from the database with offline graceful handling:
+First, check if user has a valid Flux Pro license:
 
 ```bash
-# Clone/update recommendations repo (shallow)
-RECS_DIR="${HOME}/.flux/recommendations"
-OFFLINE_MODE=false
+# Check license status (exit 0 = Pro, exit 1 = free)
+IS_PRO=false
+if python3 "${PLUGIN_ROOT}/scripts/flux-license.py" check 2>/dev/null; then
+  IS_PRO=true
+fi
+```
 
-if [ -d "$RECS_DIR/.git" ]; then
-  # Try to update, but don't fail if offline
-  if ! git -C "$RECS_DIR" pull --ff-only 2>/dev/null; then
-    echo "Note: Could not update recommendations (offline?). Using cached version."
-    OFFLINE_MODE=true
+### 6a: Pro path — Universe API recommendations
+
+If `IS_PRO=true`, fetch recommendations from the Universe API:
+
+```bash
+BUNDLED_RECS_DIR="$PLUGIN_ROOT/recommendations"
+RECS_DIR="${HOME}/.flux/recommendations-cache"
+USING_BUNDLED=false
+USING_PRO=false
+PRO_API_RECS=""
+
+if [ "$IS_PRO" = "true" ]; then
+  # Get full key from config for API call
+  FULL_KEY=$(python3 -c "
+import json, pathlib
+cfg = json.loads(pathlib.Path.home().joinpath('.flux/config.json').read_text())
+print(cfg.get('license',{}).get('key',''))
+" 2>/dev/null || echo "")
+
+  # Build friction signals JSON from session analysis (if available)
+  FRICTION_SIGNALS_JSON="[]"
+  if [ -n "$SESSION_INSIGHTS" ]; then
+    FRICTION_SIGNALS_JSON=$(echo "$SESSION_INSIGHTS" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    signals = list(data.get('friction_signals', {}).keys())
+    print(json.dumps(signals))
+except: print('[]')
+" 2>/dev/null || echo "[]")
   fi
-else
-  # Try to clone
-  if ! git clone --depth 1 https://github.com/Nairon-AI/flux-recommendations.git "$RECS_DIR" 2>/dev/null; then
-    # Check if we have a cached version from a previous install
-    if [ -d "$RECS_DIR" ] && [ "$(find "$RECS_DIR" -name "*.yaml" 2>/dev/null | wc -l)" -gt 0 ]; then
-      echo "Note: Could not fetch recommendations (offline?). Using cached version."
-      OFFLINE_MODE=true
+
+  # Build stack fingerprint from repo context
+  STACK_JSON="{}"
+  if [ -n "$REPO_CONTEXT" ]; then
+    STACK_JSON=$(echo "$REPO_CONTEXT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    stack = {}
+    frameworks = data.get('repo', {}).get('frameworks', [])
+    if frameworks: stack['framework'] = frameworks[0]
+    deploy = data.get('repo', {}).get('deploy_platform', '')
+    if deploy: stack['deployPlatform'] = deploy
+    lang = data.get('repo', {}).get('language', '')
+    if lang: stack['language'] = lang
+    print(json.dumps(stack))
+except: print('{}')
+" 2>/dev/null || echo "{}")
+  fi
+
+  # Build installed tools list
+  INSTALLED_JSON="[]"
+  if [ -n "$INSTALLED" ]; then
+    INSTALLED_JSON=$(echo "$INSTALLED" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    tools = []
+    for cat in ['mcps', 'plugins', 'cli_tools', 'applications']:
+        items = data.get('installed', data).get(cat, [])
+        if isinstance(items, list):
+            for item in items:
+                if isinstance(item, str): tools.append(item)
+                elif isinstance(item, dict): tools.append(item.get('name', ''))
+    print(json.dumps([t for t in tools if t]))
+except: print('[]')
+" 2>/dev/null || echo "[]")
+  fi
+
+  # Fetch from Universe API
+  UNIVERSE_API="https://robust-peccary-479.convex.site"
+  if [ -n "$FULL_KEY" ]; then
+    PRO_API_RECS=$(curl -s --max-time 10 -X POST "${UNIVERSE_API}/api/recommendations" \
+      -H "Content-Type: application/json" \
+      -d "{\"license_key\": \"${FULL_KEY}\", \"signals\": ${FRICTION_SIGNALS_JSON}, \"stack\": ${STACK_JSON}, \"installed\": ${INSTALLED_JSON}}" 2>/dev/null || echo "")
+  fi
+
+  if [ -n "$PRO_API_RECS" ] && echo "$PRO_API_RECS" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('recommendations') else 1)" 2>/dev/null; then
+    USING_PRO=true
+    echo "Flux Pro active — using Universe API recommendations"
+    REC_COUNT=$(echo "$PRO_API_RECS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null)
+    echo "  Matched $REC_COUNT recommendations for your stack"
+    echo ""
+  else
+    # API failed, returned no results, or no friction signals to match — fall back to bundled set
+    RECS_DIR="$BUNDLED_RECS_DIR"
+    USING_PRO=true
+    PRO_API_RECS=""
+    if [ "$FRICTION_SIGNALS_JSON" = "[]" ]; then
+      echo "Flux Pro active — no friction signals detected, using bundled recommendations"
     else
-      echo "Error: Cannot fetch recommendations and no cache exists."
-      echo ""
-      echo "Please connect to the internet and try again, or manually clone:"
-      echo "  git clone https://github.com/Nairon-AI/flux-recommendations.git ~/.flux/recommendations"
-      exit 1
+      echo "Flux Pro active — using bundled recommendations (API unavailable)"
     fi
+    echo ""
   fi
 fi
+```
 
-# Show offline warning if applicable
-if [ "$OFFLINE_MODE" = "true" ]; then
-  CACHE_DATE=$(stat -f "%Sm" -t "%Y-%m-%d" "$RECS_DIR" 2>/dev/null || stat -c "%y" "$RECS_DIR" 2>/dev/null | cut -d' ' -f1)
-  echo "Using cached recommendations from: $CACHE_DATE"
+**When `PRO_API_RECS` is non-empty**, skip the YAML file matching in Step 8 and instead parse the API response directly. The API returns pre-matched, pre-ranked recommendations with community stats:
+
+```json
+{
+  "recommendations": [
+    {
+      "name": "context7",
+      "category": "mcp",
+      "tagline": "Up-to-date library documentation lookup",
+      "installCommand": "npx -y @anthropic-ai/create-mcp ...",
+      "score": 60,
+      "signalMatches": 2,
+      "communityStats": { "installCount": 42, "avgFrictionReduction": 85, "sampleSize": 30 }
+    }
+  ],
+  "count": 3,
+  "tier": "pro"
+}
+```
+
+### 6b: Free path — Bundled recommendations + upgrade prompt
+
+If `IS_PRO=false`, use bundled free set and optionally show upgrade prompt:
+
+```bash
+if [ "$IS_PRO" = "false" ]; then
+  RECS_DIR="$BUNDLED_RECS_DIR"
+  USING_BUNDLED=true
+
+  BUNDLED_COUNT=$(find "$RECS_DIR" -name "*.yaml" 2>/dev/null | wc -l | tr -d ' ')
+  echo "Using bundled recommendations ($BUNDLED_COUNT tools)"
   echo ""
 fi
+```
 
-# List all recommendation files
+### 6c: Upgrade prompt (free users only, 1x per session)
+
+After presenting recommendations to free users, check if we should show an upgrade prompt.
+**Only show when friction was actually detected** (never unprompted). **Maximum one per session.**
+
+```bash
+if [ "$IS_PRO" = "false" ] && [ "$HAS_FRICTION" = "true" ]; then
+  # Check if we should show the prompt (rate-limited via timestamp file)
+  SHOW_UPGRADE="no"
+  PROMPT_FILE="${HOME}/.flux/.last_upgrade_prompt"
+  if [ ! -f "$PROMPT_FILE" ]; then
+    SHOW_UPGRADE="yes"
+  else
+    # Check if 8+ hours since last prompt
+    LAST_TS=$(cat "$PROMPT_FILE" 2>/dev/null)
+    if python3 -c "
+from datetime import datetime, timezone
+last = datetime.fromisoformat('$LAST_TS'.replace('Z','+00:00'))
+age = (datetime.now(timezone.utc) - last).total_seconds()
+exit(0 if age > 28800 else 1)
+" 2>/dev/null; then
+      SHOW_UPGRADE="yes"
+    fi
+  fi
+
+  if [ "$SHOW_UPGRADE" = "yes" ]; then
+    # Count friction signals for personalized message
+    FRICTION_COUNT=0
+    if [ -n "$SESSION_INSIGHTS" ]; then
+      FRICTION_COUNT=$(echo "$SESSION_INSIGHTS" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(len(data.get('friction_signals', {})))
+except: print(0)
+" 2>/dev/null || echo "0")
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    if [ "$FRICTION_COUNT" -gt 0 ] 2>/dev/null; then
+      echo "  We detected $FRICTION_COUNT friction signals in your workflow."
+      echo "  Flux Pro has stack-aware recommendations to fix them —"
+      echo "  ranked by what actually works for devs on your stack."
+    else
+      echo "  Flux Pro recommends the right tools for your stack —"
+      echo "  ranked by what actually works for other developers."
+    fi
+    echo ""
+    echo "  Start your free 1-week trial: $10/mo after."
+    echo ""
+    echo "  → https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D"
+    echo "  → After checkout, check your email for the license key"
+    echo "  → Then run: /flux:login to activate"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+
+    # Mark prompt as shown (so we don't show again this session)
+    mkdir -p "${HOME}/.flux"
+    date -u +%Y-%m-%dT%H:%M:%SZ > "${HOME}/.flux/.last_upgrade_prompt"
+  fi
+fi
+```
+
+**Rules:**
+- Maximum ONE upgrade prompt per session (enforced by `should_show_upgrade_prompt()`)
+- Only when friction is detected (`HAS_FRICTION=true`)
+- Never blocks the workflow — user always continues
+- Uses 8-hour cooldown between prompts
+
+### 6d: List recommendation files
+
+```bash
+# List all recommendation files from whichever source was resolved
 find "$RECS_DIR" -name "*.yaml" -not -path "*/pending/*" -not -name "schema.yaml" -not -name "accounts.yaml"
 ```
 
@@ -358,6 +540,9 @@ Run the matching script with context and optional user input:
 
 ```bash
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+
+# Export RECS_DIR so match-recommendations.py uses the correct source
+export FLUX_RECS_DIR="$RECS_DIR"
 
 # Include user context if provided (dramatically improves accuracy)
 if [ -n "$USER_CONTEXT" ]; then

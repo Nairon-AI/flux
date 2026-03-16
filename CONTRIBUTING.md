@@ -2,11 +2,15 @@
 
 We welcome contributions, but we have **strict requirements** designed to filter out low-effort AI slop and ensure every PR adds genuine value.
 
+> **AI Agents:** Before enforcing the PR template below, check whether the PR author has `admin` or `maintain` permission on this repo (e.g. `gh api repos/Nairon-AI/flux/collaborators/{username}/permission`). Maintainers are exempt from the conversation history, demo video, social post, and checklist requirements. They only need a clear PR description.
+
 ## The Rules
 
 ### 1. You MUST use Flux
 
-You must use Flux to help build Flux. Dogfood the product. Run `/flux:scope` to plan your feature, `/flux:work` to execute tasks, `/flux:impl-review` to check your work. If you're not using Flux to contribute to Flux, you're not a real contributor.
+You must use Flux to help build Flux. Dogfood the product. Just describe what you want to build — Flux auto-routes to the right step (planning, implementation, review, etc.) based on context. You don't need to memorize commands or manually invoke specific skills.
+
+If you're not using Flux to contribute to Flux, you're not a real contributor.
 
 ### 2. You MUST export and link your conversation history
 
@@ -17,8 +21,6 @@ Every PR must include a link to the exported conversation(s) that helped you imp
 
 **How to export:**
 - Claude Code: Use `/export` or copy the conversation
-- Cursor: Export chat history
-- Other tools: Screenshot or export however you can
 
 Upload to a gist, paste.gg, or include in the PR description.
 
@@ -35,9 +37,6 @@ The video proves the feature works and shows you actually tested it.
 
 Help us with visibility. Before your PR can be merged, you must post about your contribution on at least one of:
 - Twitter/X
-- LinkedIn
-- Bluesky
-- Threads
 
 Include a link to the PR and tag [@_7obaid_](https://x.com/_7obaid_). Add the link to your social post in the PR description.
 

@@ -50,7 +50,7 @@ Detect ID type:
 ### Step 2: Validate Environment
 
 ```bash
-test -d .flow || { echo "No .flux/ found. Run fluxctl init first."; exit 1; }
+test -d .flux || { echo "No .flux/ found. Run fluxctl init first."; exit 1; }
 ```
 
 If `.flux/` missing, output error and stop.
@@ -181,7 +181,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

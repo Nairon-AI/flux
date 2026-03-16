@@ -19,7 +19,6 @@ Task tracking for AI agents. All state lives in `.flux/`.
 ├── specs/fn-N-slug.md      # Epic specifications
 ├── tasks/fn-N-slug.M.json  # Task metadata (e.g., fn-1-add-oauth.1.json)
 ├── tasks/fn-N-slug.M.md    # Task specifications
-├── memory/                 # Context memory
 └── meta.json               # Project metadata
 ```
 
@@ -83,7 +82,7 @@ Task tracking for AI agents. All state lives in `.flux/`.
 
 ## Parallel Worktrees
 
-Runtime state (status, assignee, etc.) is stored in `.git/flow-state/`, shared across worktrees:
+Runtime state (status, assignee, etc.) is stored in `.git/flux-state/`, shared across worktrees:
 
 ```bash
 .flux/bin/fluxctl state-path              # Show state directory

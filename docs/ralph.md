@@ -17,7 +17,7 @@ Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies mult
   - [Plan Review Gate](#plan-review-gate)
   - [Receipt-Based Gating](#2-receipt-based-gating)
   - [Review Loops Until SHIP](#3-review-loops-until-ship)
-  - [Memory Capture](#4-memory-capture-opt-in)
+  - [Learning Capture](#4-learning-capture)
 - [Configuration Reference](#configuration-reference)
 - [Review Backends](#review-backends)
   - [RepoPrompt](#repoprompt-integration)
@@ -415,17 +415,13 @@ Fix → re-review → fix → re-review... until the reviewer approves.
 > - Interactive prompt (a/b/c) → backend misconfigured
 > - No verdict → check iteration log
 
-### 4. Memory Capture (Opt-in)
+### 4. Learning Capture
 
-When enabled, NEEDS_WORK reviews auto-capture learnings:
+NEEDS_WORK reviews auto-capture learnings to the brain vault:
 
-```bash
-fluxctl config set memory.enabled true
-```
+Builds `brain/pitfalls/` — things reviewers catch that models miss. Over time, `/flux:meditate` promotes recurring pitfalls into principles and prunes one-offs.
 
-Builds `.flux/memory/pitfalls.md` — things reviewers catch that models miss.
-
-> **Note:** Memory config is in `.flux/config.json`, separate from Ralph's `config.env`.
+> **Note:** Learnings are stored in `brain/pitfalls/` (one file per pattern, organized by area).
 
 ---
 
@@ -487,7 +483,7 @@ Edit `scripts/ralph/config.env`:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CODEX_SANDBOX` | `auto` | `read-only`, `workspace-write`, `danger-full-access`, `auto` |
-| `FLOW_CODEX_EMBED_MAX_BYTES` | `500000` | Max bytes embedded in prompts |
+| `FLUX_CODEX_EMBED_MAX_BYTES` | `500000` | Max bytes embedded in prompts |
 
 > **Windows:** Use `auto` or `danger-full-access`. The `read-only` mode blocks all shell commands.
 
@@ -623,7 +619,7 @@ Use alternate config files for different platforms or review backends without ed
 ### Verbose Logging
 
 ```bash
-FLOW_RALPH_VERBOSE=1 scripts/ralph/ralph.sh
+FLUX_RALPH_VERBOSE=1 scripts/ralph/ralph.sh
 ```
 
 Detailed logs → `scripts/ralph/runs/<run>/ralph.log`
@@ -631,9 +627,9 @@ Detailed logs → `scripts/ralph/runs/<run>/ralph.log`
 ### Debug Environment Variables
 
 ```bash
-FLOW_RALPH_CLAUDE_MODEL=claude-opus-4-5-20251101
-FLOW_RALPH_CLAUDE_DEBUG=hooks
-FLOW_RALPH_CLAUDE_PERMISSION_MODE=bypassPermissions
+FLUX_RALPH_CLAUDE_MODEL=claude-opus-4-5-20251101
+FLUX_RALPH_CLAUDE_DEBUG=hooks
+FLUX_RALPH_CLAUDE_PERMISSION_MODE=bypassPermissions
 ```
 
 ---
@@ -700,7 +696,7 @@ rm -rf ~/.config/dcg/
 
 Plugin hooks enforce workflow rules deterministically.
 
-> **Only active when `FLOW_RALPH=1`** — zero overhead for non-Ralph users.
+> **Only active when `FLUX_RALPH=1`** — zero overhead for non-Ralph users.
 
 | Rule | Purpose |
 |------|---------|
@@ -717,7 +713,7 @@ plugins/flux/
   scripts/hooks/ralph-guard.py  # Logic
 ```
 
-**Disable temporarily:** Unset `FLOW_RALPH`
+**Disable temporarily:** Unset `FLUX_RALPH`
 
 **Disable permanently:** Delete `hooks/` directory
 

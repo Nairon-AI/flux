@@ -64,12 +64,22 @@ detect_cli_tools() {
     # Task tracking
     cmd_exists bd && tools+=("beads")
 
+    # File search
+    cmd_exists fff-mcp && tools+=("fff-mcp")
+
     # Agent workflow automation
     cmd_exists agent-browser && tools+=("agent-browser")
     if cmd_exists continues || cmd_exists cont; then
         tools+=("cli-continues")
     fi
     
+    # Deployment CLIs
+    cmd_exists vercel && tools+=("vercel")
+    cmd_exists wrangler && tools+=("wrangler")
+    cmd_exists netlify && tools+=("netlify")
+    cmd_exists railway && tools+=("railway")
+    cmd_exists fly && tools+=("fly")
+
     # Package managers
     cmd_exists bun && tools+=("bun")
     cmd_exists pnpm && tools+=("pnpm")
@@ -193,7 +203,7 @@ detect_plugins() {
 }
 
 # Load user preferences (dismissed recommendations, alternatives)
-# Uses project-local .flux/preferences.json (like flow-next uses .flow/)
+# Uses project-local .flux/preferences.json (like flux uses .flow/)
 load_preferences() {
     local prefs_file=".flux/preferences.json"
     

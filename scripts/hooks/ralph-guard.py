@@ -2,7 +2,7 @@
 """
 Ralph Guard - Hook script for enforcing Ralph workflow rules.
 
-Only runs when FLOW_RALPH=1 is set. Exits silently otherwise to avoid
+Only runs when FLUX_RALPH=1 is set. Exits silently otherwise to avoid
 polluting context for non-Ralph users.
 
 Enforces:
@@ -103,16 +103,10 @@ def get_repo_root() -> Path:
         return Path.cwd()
 
 
-def is_memory_enabled() -> bool:
-    """Check if memory is enabled in .flux/config.json."""
-    config_path = get_repo_root() / ".flux" / "config.json"
-    if not config_path.exists():
-        return False
-    try:
-        config = json.loads(config_path.read_text())
-        return config.get("memory", {}).get("enabled", False)
-    except (json.JSONDecodeError, Exception):
-        return False
+def has_brain_vault() -> bool:
+    """Check if brain vault exists in repo."""
+    brain_dir = get_repo_root() / "brain"
+    return brain_dir.is_dir()
 
 
 def output_json(data: dict) -> None:
@@ -477,16 +471,15 @@ def handle_post_tool_use(data: dict) -> None:
 
         # Prompt Claude to capture learnings from NEEDS_WORK/MAJOR_RETHINK
         elif verdict_match.group(1) in ("NEEDS_WORK", "MAJOR_RETHINK"):
-            if is_memory_enabled():
+            if has_brain_vault():
                 output_json(
                     {
                         "hookSpecificOutput": {
                             "hookEventName": "PostToolUse",
                             "additionalContext": (
-                                "MEMORY: Review returned NEEDS_WORK. After fixing, consider if any lessons are "
-                                "GENERALIZABLE (apply beyond this task). If so, capture with:\n"
-                                '  fluxctl memory add --type <type> "<one-line lesson>"\n'
-                                "Types: pitfall (gotchas/mistakes), convention (patterns to follow), decision (architectural choices)\n"
+                                "BRAIN: Review returned NEEDS_WORK. After fixing, if any lessons are "
+                                "GENERALIZABLE (apply beyond this task), capture as a pitfall in brain/pitfalls/<area>/<slug>.md.\n"
+                                "Areas: frontend, backend, security, async, api, database, testing, infra (or create new).\n"
                                 "Skip: task-specific fixes, typos, style issues, or 'fine as-is' explanations."
                             ),
                         }
@@ -585,12 +578,12 @@ def main():
     # Debug logging - always write to see if hook is being called
     debug_file = Path("/tmp/ralph-guard-debug.log")
     with debug_file.open("a") as f:
-        f.write(f"[{os.environ.get('FLOW_RALPH', 'unset')}] Hook called\n")
+        f.write(f"[{os.environ.get('FLUX_RALPH', 'unset')}] Hook called\n")
 
     # Early exit if not in Ralph mode - no output, no context pollution
-    if os.environ.get("FLOW_RALPH") != "1":
+    if os.environ.get("FLUX_RALPH") != "1":
         with debug_file.open("a") as f:
-            f.write("  -> Exiting: FLOW_RALPH not set to 1\n")
+            f.write("  -> Exiting: FLUX_RALPH not set to 1\n")
         sys.exit(0)
 
     # Read input

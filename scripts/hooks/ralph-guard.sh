@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Only active in Ralph mode
-if [[ -z "${FLOW_RALPH:-}" && -z "${REVIEW_RECEIPT_PATH:-}" ]]; then
+if [[ -z "${FLUX_RALPH:-}" && -z "${REVIEW_RECEIPT_PATH:-}" ]]; then
   exit 0
 fi
 

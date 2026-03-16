@@ -99,7 +99,6 @@ Use `fluxctl scope-status` to render a progress card after each major transition
 | epic-scout | Dependencies on other epics |
 | docs-gap-scout | Docs that need updating |
 | github-scout | Cross-repo patterns (optional) |
-| memory-scout | Project memory (optional) |
 
 **Exit Signal**: Clear understanding of existing code, patterns to follow, and risks.
 

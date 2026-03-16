@@ -209,7 +209,7 @@ TASK2_2="$(echo "$TASK2_2_JSON" | extract_id)"
 write_config "rp" "rp" "1" "new" "6" "5" "2"
 STUB_MODE=success STUB_WRITE_RECEIPT=1 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
 # Use fluxctl show to get merged state (definition + runtime)
-# Note: Definition files don't store status; runtime state is in .git/flow-state/
+# Note: Definition files don't store status; runtime state is in .git/flux-state/
 for tid in "$TASK2_1" "$TASK2_2"; do
   status=$(scripts/ralph/fluxctl show "$tid" --json | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin)['status'])")
   if [[ "$status" != "done" ]]; then

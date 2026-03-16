@@ -24,7 +24,7 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 **Priority** (first match wins):
 1. `--review=rp|codex|export|none` argument
-2. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
+2. `FLUX_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
 3. `.flux/config.json` → `review.backend`
 4. **Error** - no auto-detection
 
@@ -199,7 +199,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

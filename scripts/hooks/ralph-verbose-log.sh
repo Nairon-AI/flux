@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ -z "${FLOW_RALPH_VERBOSE:-}" ]]; then
+if [[ -z "${FLUX_RALPH_VERBOSE:-}" ]]; then
   exit 0
 fi
 

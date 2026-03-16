@@ -22,7 +22,7 @@ If cancel → stop.
 
 Only removes Flux artifacts from the current repo. Does NOT touch global state — other projects using Flux are unaffected.
 
-Generate the appropriate commands and print them for the user to run manually. Destructive commands like `rm -rf` should have human hands on the keyboard.
+Try to execute each cleanup step directly. If any command is denied or blocked (e.g., by permission settings or a destructive command guard), collect it into a "manual steps" list instead.
 
 ### Remove project artifacts
 
@@ -51,7 +51,7 @@ rm -rf .claude/skills/
 
 ### Clean up docs
 
-For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). Use the Edit tool for this — it does not require Bash and is safe for the AI to execute directly.
+For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive). Use the Edit tool for this — it does not require Bash.
 
 ### Report (project uninstall)
 
@@ -59,17 +59,11 @@ For CLAUDE.md and AGENTS.md: if file exists, remove everything between `<!-- BEG
 Flux removed from this project.
 
 Cleaned up:
-- Flux sections from docs (if existed)
-
-Run these commands manually to complete removal:
-<commands from above>
+- <list items the agent successfully executed>
 
 Note: The global Flux plugin is still installed. Other projects
 using Flux are unaffected. To remove Flux from your entire machine,
 run /flux uninstall again and choose "Everything on this machine".
-
-Why manual? Destructive commands like rm -rf should have human hands on the keyboard.
-If you use DCG (Destructive Command Guard), it will block these commands from AI agents — this is intentional protection.
 ```
 
 ---
@@ -100,7 +94,7 @@ Use `AskUserQuestion`:
 
 ### Execute full cleanup
 
-**Step 1 — Project cleanup** (same commands as project uninstall above, printed for user to run manually)
+**Step 1 — Project cleanup** (same as project uninstall above)
 
 **Step 2 — Global cleanup:**
 ```bash
@@ -114,10 +108,7 @@ rm -rf ~/.claude/plugins/cache/nairon-flux
 Flux fully uninstalled from this machine.
 
 Cleaned up:
-- Flux sections from docs (if existed)
-
-Run these commands manually to complete removal:
-<all commands from above, including global cleanup>
+- <list items the agent successfully executed>
 
 Manual steps remaining:
 - <list any commands that were blocked — print the exact commands>

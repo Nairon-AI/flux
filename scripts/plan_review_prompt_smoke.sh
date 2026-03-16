@@ -140,10 +140,10 @@ PLUGINS_DIR: $(dirname "$PLUGIN_ROOT")
 
 Interactive run (ensure plugin available):
   cd "$TEST_DIR/repo"
-  FLOW_RALPH=1 REVIEW_RECEIPT_PATH="$RECEIPT_PATH" $CLAUDE_BIN --plugin-dir "$(dirname "$PLUGIN_ROOT")"
+  FLUX_RALPH=1 REVIEW_RECEIPT_PATH="$RECEIPT_PATH" $CLAUDE_BIN --plugin-dir "$(dirname "$PLUGIN_ROOT")"
   Then paste: \`cat $PROMPT_OUT\`
 
 Auto (headless) run (ensure plugin available):
   cd "$TEST_DIR/repo"
-  FLOW_RALPH=1 REVIEW_RECEIPT_PATH="$RECEIPT_PATH" $CLAUDE_BIN --plugin-dir "$(dirname "$PLUGIN_ROOT")" -p "\$(cat $PROMPT_OUT)"
+  FLUX_RALPH=1 REVIEW_RECEIPT_PATH="$RECEIPT_PATH" $CLAUDE_BIN --plugin-dir "$(dirname "$PLUGIN_ROOT")" -p "\$(cat $PROMPT_OUT)"
 EOF

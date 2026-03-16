@@ -1,6 +1,6 @@
 ---
 name: flux-impl-review
-description: John Carmack-level implementation review via RepoPrompt or Codex. Use when reviewing code changes, PRs, or implementations. Triggers on /flux:impl-review.
+description: Per-task implementation review via RepoPrompt or Codex. Lightweight single-model pass to catch obvious issues before moving to next task. Full adversarial review runs at epic level. Triggers on /flux:impl-review.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Conduct a John Carmack-level review of implementation changes on the current branch.
+Lightweight per-task review using a single model. Catches obvious bugs and issues before moving to the next task. The heavy-weight review (adversarial dual-model, external bot self-heal, browser QA, learning capture) runs once at epic completion via `/flux:epic-review`.
 
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
@@ -24,7 +24,7 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 **Priority** (first match wins):
 1. `--review=rp|codex|export|none` argument
-2. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
+2. `FLUX_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
 3. `.flux/config.json` → `review.backend`
 4. **Error** - no auto-detection
 
@@ -158,6 +158,42 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
 
+**Note**: This is a lightweight per-task pass. The full adversarial review (dual-model consensus, external bot self-heal, browser QA, learning capture) runs at epic completion via `/flux:epic-review`.
+
+---
+
+## Human Review (After SHIP)
+
+**Only runs if `review.humanReview` is `true` in `.flux/config.json`.**
+
+After the reviewer returns `<verdict>SHIP</verdict>`, check config:
+
+```bash
+HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false")
+```
+
+If `HUMAN_REVIEW` is `true`, ask the user:
+
+> **Review passed — SHIP.** Want to review the diff yourself before moving on?
+
+If the user says yes, print the command and move on immediately (non-blocking):
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Run this in a separate terminal to review the diff │
+│                                                     │
+│  bunx critique ${BASE_COMMIT:-main}                 │
+│                                                     │
+│  Install Critique (requires Bun):                   │
+│  curl -fsSL https://bun.sh/install | bash           │
+│  bun install -g critique                            │
+└─────────────────────────────────────────────────────┘
+```
+
+If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
+
+**Do NOT wait for the user to finish reviewing. Move on immediately.**
+
 ---
 
 ## Update Check (End of Command)
@@ -178,7 +214,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

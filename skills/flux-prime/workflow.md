@@ -2,15 +2,34 @@
 
 Execute these phases in order. Reference [pillars.md](pillars.md) for scoring criteria and [remediation.md](remediation.md) for fix templates.
 
-**Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts run as sonnet for quality.
+**Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts use the model configured during `/flux:setup`.
+
+---
+
+## Phase 0: Read Scout Model Config
+
+Before launching scouts, read the configured scout model:
+
+```bash
+SCOUT_MODEL=$(.flux/bin/fluxctl config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
+```
+
+If `SCOUT_MODEL` is empty, default to `claude-sonnet-4-6`.
+
+Determine the scout backend:
+- If `SCOUT_MODEL` starts with `claude-` → use **Claude backend** (Task tool with agent definitions)
+- If `SCOUT_MODEL` starts with `gpt-` or `o1` or `o3` or `o4` → use **Codex backend** (`codex exec` CLI)
+- Otherwise → use **Claude backend** as fallback
 
 ---
 
 ## Phase 1: Parallel Assessment
 
-Run all 9 scouts in parallel using the Task tool:
+### Claude backend (default)
 
-### Agent Readiness Scouts (Pillars 1-5)
+If using Claude backend, run all 9 scouts in parallel using the Task tool:
+
+#### Agent Readiness Scouts (Pillars 1-5)
 
 ```
 Task flux:tooling-scout    # linters, formatters, pre-commit, type checking
@@ -21,13 +40,92 @@ Task flux:build-scout      # build system, scripts, CI
 Task flux:docs-gap-scout   # README, ADRs, architecture docs
 ```
 
-### Production Readiness Scouts (Pillars 6-8)
+#### Production Readiness Scouts (Pillars 6-8)
 
 ```
 Task flux:observability-scout  # logging, tracing, metrics, health
 Task flux:security-scout       # branch protection, CODEOWNERS, secrets
 Task flux:workflow-scout       # CI/CD, templates, automation
 ```
+
+### Codex backend
+
+If using Codex backend, first run a single preflight check to verify codex + model access before launching all 9 scouts:
+
+#### Preflight check
+
+```bash
+# 1. Is codex installed?
+which codex >/dev/null 2>&1 && echo "CODEX_OK" || echo "CODEX_MISSING"
+```
+
+If `CODEX_MISSING`: skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Codex CLI not found. Falling back to Claude scouts.
+Install codex: npm install -g @openai/codex
+Then run: codex login
+```
+
+```bash
+# 2. Is codex authenticated?
+codex login status 2>&1
+```
+
+If not authenticated (output doesn't contain "Logged in"): skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Codex CLI not authenticated. Falling back to Claude scouts.
+Run in a separate terminal: codex login
+```
+
+```bash
+# 3. Can we reach the configured model? (single quick probe)
+timeout 30 codex exec -m "$SCOUT_MODEL" --ephemeral --sandbox read-only -o /dev/null "Say ok" 2>&1 | head -3
+```
+
+If the probe fails (timeout, error, or model access denied): skip Codex backend, fall back to Claude backend, and warn:
+
+```
+⚠️  Cannot access model <SCOUT_MODEL>. This may require a ChatGPT Pro subscription.
+Falling back to Claude scouts for this run.
+
+To fix permanently, run: .flux/bin/fluxctl config set scouts.model "claude-haiku-4-5"
+Or upgrade your OpenAI plan and retry.
+```
+
+**Only proceed with Codex scouts if all 3 checks pass.** On any failure, fall through to the Claude backend section above — do not fail the entire prime.
+
+#### Launch scouts (after preflight passes)
+
+Run all 9 in parallel using background Bash commands:
+
+```bash
+# Read each scout's prompt from agents/*.md (strip the YAML frontmatter)
+# Launch all 9 concurrently, each writing to a temp output file
+
+SCOUT_MODEL="<configured model>"  # e.g. gpt-5.3-codex-spark
+
+for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout docs-gap-scout observability-scout security-scout workflow-scout; do
+  PROMPT=$(sed '1,/^---$/{ /^---$/!d; /^---$/d; }' "agents/${scout}.md" | sed '/^---$/d')
+  codex exec -m "$SCOUT_MODEL" --sandbox read-only --ephemeral -o "/tmp/flux-scout-${scout}.md" "$PROMPT" &
+done
+wait
+```
+
+After all complete, read each output file:
+
+```bash
+for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout docs-gap-scout observability-scout security-scout workflow-scout; do
+  echo "=== ${scout} ==="
+  cat "/tmp/flux-scout-${scout}.md" 2>/dev/null || echo "(no output)"
+  echo ""
+done
+```
+
+If any individual scout output is empty or missing, note the failure but continue with the scouts that did produce output.
+
+### Common
 
 **Important**: Launch all 9 scouts in parallel for speed (~15-20 seconds total).
 
@@ -183,7 +281,7 @@ Informational only. No fixes offered — address independently if desired.
 [Key observations from Pillars 6-8 that the team should be aware of]
 ```
 
-**If `--report-only`**: Stop here. Show report and exit.
+**If `--report-only`**: Show report, then skip to Phase 8 (mark prime complete) and exit.
 
 ---
 
@@ -279,7 +377,39 @@ Ask ONE question per category that has recommendations. Skip categories with no 
 }
 ```
 
-**Question 4: Environment (if gaps exist)**
+**Question 4: Browser Automation (if web app detected AND no browser automation tool)**
+
+Only ask this if the testing scout detected a web app (React, Next, Vue, Svelte, etc.) but found no browser automation tool (Playwright, Cypress, Puppeteer, Stagehand, agent-browser).
+
+```json
+{
+  "questions": [{
+    "question": "Your web app has no browser automation tool. This means agents can't visually verify UI changes or run E2E tests. Install one?",
+    "header": "Browser",
+    "multiSelect": true,
+    "options": [
+      {
+        "label": "Install agent-browser (Recommended)",
+        "description": "Browser automation CLI built for coding agents. Enables visual QA and reproducible evidence. Install: npm i -g agent-browser"
+      },
+      {
+        "label": "Skip",
+        "description": "Set up browser automation later"
+      }
+    ]
+  }]
+}
+```
+
+If "Install agent-browser" selected, run in Phase 6:
+
+```bash
+npm i -g agent-browser 2>&1 | tail -5
+# Verify install
+which agent-browser >/dev/null 2>&1 && echo "agent-browser installed successfully" || echo "agent-browser install failed"
+```
+
+**Question 5: Environment (if gaps exist)**
 
 ```json
 {
@@ -363,3 +493,54 @@ If yes, run Phase 1-4 again and show:
 - New Agent Readiness score and maturity level
 - Score changes per pillar
 - Remaining recommendations
+
+---
+
+## Phase 8: Mark Prime Complete
+
+**CRITICAL**: After Phase 7 (or Phase 4 if `--report-only`), mark prime as done so `session-state` knows priming has completed:
+
+```bash
+.flux/bin/fluxctl prime-mark --status done --version "$(date +%Y-%m-%d)"
+```
+
+Without this step, `session-state` will always report `needs_prime` and block the user from scoping or implementation.
+
+---
+
+## Phase 9: Auto-Ruminate (conditional)
+
+After marking prime complete, check if the brain vault is thin and past conversations exist. If so, auto-run `/flux:ruminate` to bootstrap the brain vault from conversation history.
+
+**Trigger conditions** (ALL must be true):
+1. Brain vault has fewer than 5 files across `brain/pitfalls/` and `brain/principles/`
+2. Past Claude Code conversations exist (`~/.claude/projects/` has session data for this project)
+
+```bash
+# Count brain files (directories may not exist yet — 2>/dev/null handles this)
+BRAIN_FILES=$(find .flux/brain/pitfalls .flux/brain/principles -name "*.md" 2>/dev/null | wc -l | xargs)
+
+# Match project sessions — use the absolute repo path as-is for the Claude projects dir name
+REPO_ROOT="$(pwd)"
+PROJECT_DIR="$HOME/.claude/projects"
+PAST_SESSIONS=0
+if [ -d "$PROJECT_DIR" ]; then
+  # Claude stores projects under a sanitized path — find dirs containing our repo path
+  for d in "$PROJECT_DIR"/*; do
+    # The dir name is the repo path with / replaced by -
+    SANITIZED=$(echo "$REPO_ROOT" | sed 's|^/||; s|/|-|g')
+    if [ -d "$d" ] && echo "$(basename "$d")" | grep -q "$SANITIZED"; then
+      PAST_SESSIONS=$(find "$d" -name "*.jsonl" 2>/dev/null | wc -l | xargs)
+      break
+    fi
+  done
+fi
+```
+
+If `BRAIN_FILES < 5` and `PAST_SESSIONS > 0`, run `/flux:ruminate` automatically. Do not ask — just run it. Tell the user:
+
+```
+Brain vault is thin — mining past conversations to bootstrap knowledge...
+```
+
+If the trigger conditions are not met, skip silently and continue to Scope.

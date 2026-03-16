@@ -145,7 +145,7 @@ import json, sys
 from pathlib import Path
 root = Path(sys.argv[1])
 epics_file = sys.argv[2] if len(sys.argv) > 2 else ""
-flow_dir = root / ".flux"
+flux_dir = root / ".flux"
 
 # Get scoped epics or all
 scoped = []
@@ -155,8 +155,8 @@ if epics_file:
     except:
         pass
 
-epics_dir = flow_dir / "epics"
-tasks_dir = flow_dir / "tasks"
+epics_dir = flux_dir / "epics"
+tasks_dir = flux_dir / "tasks"
 if not epics_dir.exists():
     print("0|0|0|0")
     sys.exit(0)
@@ -466,7 +466,7 @@ sanitize_id() {
 }
 
 get_actor() {
-  if [[ -n "${FLOW_ACTOR:-}" ]]; then echo "$FLOW_ACTOR"; return; fi
+  if [[ -n "${FLUX_ACTOR:-}" ]]; then echo "$FLUX_ACTOR"; return; fi
   if actor="$(git -C "$ROOT_DIR" config user.email 2>/dev/null)"; then
     [[ -n "$actor" ]] && { echo "$actor"; return; }
   fi
@@ -922,7 +922,7 @@ while (( iter <= MAX_ITERATIONS )); do
     export EPIC_ID="$epic_id"
     export PLAN_REVIEW
     export REQUIRE_PLAN_REVIEW
-    export FLOW_REVIEW_BACKEND="$PLAN_REVIEW"  # Skills read this
+    export FLUX_REVIEW_BACKEND="$PLAN_REVIEW"  # Skills read this
     if [[ "$PLAN_REVIEW" != "none" ]]; then
       export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/plan-${epic_id}.json"
     else
@@ -940,7 +940,7 @@ while (( iter <= MAX_ITERATIONS )); do
     fi
     export BRANCH_MODE_EFFECTIVE
     export WORK_REVIEW
-    export FLOW_REVIEW_BACKEND="$WORK_REVIEW"  # Skills read this
+    export FLUX_REVIEW_BACKEND="$WORK_REVIEW"  # Skills read this
     if [[ "$WORK_REVIEW" != "none" ]]; then
       export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/impl-${task_id}.json"
     else
@@ -952,7 +952,7 @@ while (( iter <= MAX_ITERATIONS )); do
   elif [[ "$status" == "completion_review" ]]; then
     export EPIC_ID="$epic_id"
     export COMPLETION_REVIEW
-    export FLOW_REVIEW_BACKEND="$COMPLETION_REVIEW"  # Skills read this
+    export FLUX_REVIEW_BACKEND="$COMPLETION_REVIEW"  # Skills read this
     if [[ "$COMPLETION_REVIEW" != "none" ]]; then
       export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/completion-${epic_id}.json"
     else
@@ -965,13 +965,13 @@ while (( iter <= MAX_ITERATIONS )); do
     fail "invalid selector status: $status"
   fi
 
-  export FLOW_RALPH="1"
+  export FLUX_RALPH="1"
   claude_args=(-p)
   # Always use stream-json for logs (TUI needs it), watch mode only controls terminal display
   claude_args+=(--output-format stream-json)
 
   # Autonomous mode system prompt - critical for preventing drift
-  claude_args+=(--append-system-prompt "AUTONOMOUS MODE ACTIVE (FLOW_RALPH=1). You are running unattended. CRITICAL RULES:
+  claude_args+=(--append-system-prompt "AUTONOMOUS MODE ACTIVE (FLUX_RALPH=1). You are running unattended. CRITICAL RULES:
 1. EXECUTE COMMANDS EXACTLY as shown in prompts. Do not paraphrase or improvise.
 2. VERIFY OUTCOMES by running the verification commands (fluxctl show, git status).
 3. NEVER CLAIM SUCCESS without proof. If fluxctl done was not run, the task is NOT done.
@@ -981,19 +981,19 @@ Violations break automation and leave the user with incomplete work. Be precise,
 
   [[ -n "${MAX_TURNS:-}" ]] && claude_args+=(--max-turns "$MAX_TURNS")
   [[ "$YOLO" == "1" ]] && claude_args+=(--dangerously-skip-permissions)
-  [[ -n "${FLOW_RALPH_CLAUDE_PLUGIN_DIR:-}" ]] && claude_args+=(--plugin-dir "$FLOW_RALPH_CLAUDE_PLUGIN_DIR")
-  [[ -n "${FLOW_RALPH_CLAUDE_MODEL:-}" ]] && claude_args+=(--model "$FLOW_RALPH_CLAUDE_MODEL")
-  [[ -n "${FLOW_RALPH_CLAUDE_SESSION_ID:-}" ]] && claude_args+=(--session-id "$FLOW_RALPH_CLAUDE_SESSION_ID")
-  [[ -n "${FLOW_RALPH_CLAUDE_PERMISSION_MODE:-}" ]] && claude_args+=(--permission-mode "$FLOW_RALPH_CLAUDE_PERMISSION_MODE")
-  [[ "${FLOW_RALPH_CLAUDE_NO_SESSION_PERSISTENCE:-}" == "1" ]] && claude_args+=(--no-session-persistence)
-  if [[ -n "${FLOW_RALPH_CLAUDE_DEBUG:-}" ]]; then
-    if [[ "${FLOW_RALPH_CLAUDE_DEBUG}" == "1" ]]; then
+  [[ -n "${FLUX_RALPH_CLAUDE_PLUGIN_DIR:-}" ]] && claude_args+=(--plugin-dir "$FLUX_RALPH_CLAUDE_PLUGIN_DIR")
+  [[ -n "${FLUX_RALPH_CLAUDE_MODEL:-}" ]] && claude_args+=(--model "$FLUX_RALPH_CLAUDE_MODEL")
+  [[ -n "${FLUX_RALPH_CLAUDE_SESSION_ID:-}" ]] && claude_args+=(--session-id "$FLUX_RALPH_CLAUDE_SESSION_ID")
+  [[ -n "${FLUX_RALPH_CLAUDE_PERMISSION_MODE:-}" ]] && claude_args+=(--permission-mode "$FLUX_RALPH_CLAUDE_PERMISSION_MODE")
+  [[ "${FLUX_RALPH_CLAUDE_NO_SESSION_PERSISTENCE:-}" == "1" ]] && claude_args+=(--no-session-persistence)
+  if [[ -n "${FLUX_RALPH_CLAUDE_DEBUG:-}" ]]; then
+    if [[ "${FLUX_RALPH_CLAUDE_DEBUG}" == "1" ]]; then
       claude_args+=(--debug)
     else
-      claude_args+=(--debug "$FLOW_RALPH_CLAUDE_DEBUG")
+      claude_args+=(--debug "$FLUX_RALPH_CLAUDE_DEBUG")
     fi
   fi
-  [[ "${FLOW_RALPH_CLAUDE_VERBOSE:-}" == "1" ]] && claude_args+=(--verbose)
+  [[ "${FLUX_RALPH_CLAUDE_VERBOSE:-}" == "1" ]] && claude_args+=(--verbose)
 
   # Block Explore subagent auto-delegation - causes READ-ONLY failures in autonomous mode
   # Worker already has disallowedTools: Task but CLI-level is more reliable (precedence 2 vs 6)

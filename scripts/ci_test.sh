@@ -159,28 +159,13 @@ set -e
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}--- Config System ---${NC}"
 
-fluxctl config set memory.enabled true --json >/dev/null && pass "config set" || fail "config set"
+fluxctl config set planSync.enabled true --json >/dev/null && pass "config set" || fail "config set"
 
-CONFIG_VAL="$(fluxctl config get memory.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
+CONFIG_VAL="$(fluxctl config get planSync.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
 [[ "$CONFIG_VAL" == "True" ]] && pass "config get" || fail "config get (got $CONFIG_VAL)"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. Memory System
-# ─────────────────────────────────────────────────────────────────────────────
-echo -e "\n${YELLOW}--- Memory System ---${NC}"
-
-fluxctl memory init --json >/dev/null && pass "memory init" || fail "memory init"
-
-fluxctl memory add --type pitfall "Never use sync IO in async handlers" --json >/dev/null && pass "memory add pitfall" || fail "memory add pitfall"
-fluxctl memory add --type convention "Use snake_case for functions" --json >/dev/null && pass "memory add convention" || fail "memory add convention"
-
-MEM_LIST="$(fluxctl memory list --json)"
-# memory list returns {counts: {pitfalls.md: N, conventions.md: M, ...}, total: X}
-MEM_TOTAL="$("$PYTHON_BIN" -c "import json,sys; d=json.load(sys.stdin); print(d.get('total', 0))" <<< "$MEM_LIST")"
-[[ "$MEM_TOTAL" -ge 2 ]] && pass "memory list ($MEM_TOTAL total)" || fail "memory list (got $MEM_TOTAL)"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 6. Symbol Extraction
+# 5. Symbol Extraction
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}--- Symbol Extraction ---${NC}"
 

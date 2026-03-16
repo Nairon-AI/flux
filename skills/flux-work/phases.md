@@ -113,6 +113,64 @@ RALPH_MODE: true|false
 Follow your phases in worker.md exactly.
 ```
 
+### 3c-1. Brain Re-Anchor (before worker starts implementing)
+
+The worker reads the brain vault at the start of each task for accumulated knowledge:
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# Read engineering principles index
+if [ -f "$REPO_ROOT/brain/principles.md" ]; then
+  echo "=== Brain: Engineering Principles ==="
+  cat "$REPO_ROOT/brain/principles.md"
+fi
+
+# Read pitfalls — only from areas relevant to this task's domain
+# Pitfalls are organized: brain/pitfalls/<area>/<pattern>.md
+# e.g., brain/pitfalls/frontend/, brain/pitfalls/security/, brain/pitfalls/api/
+if [ -d "$REPO_ROOT/brain/pitfalls" ]; then
+  echo "=== Brain: Available Pitfall Areas ==="
+  ls "$REPO_ROOT/brain/pitfalls"
+
+  # Read pitfalls from relevant areas based on task context
+  # Example: a frontend task reads brain/pitfalls/frontend/
+  # Example: an API task reads brain/pitfalls/api/ and brain/pitfalls/security/
+  for AREA in <relevant-areas>; do
+    if [ -d "$REPO_ROOT/brain/pitfalls/$AREA" ] && [ "$(ls -A "$REPO_ROOT/brain/pitfalls/$AREA" 2>/dev/null)" ]; then
+      echo "=== Pitfalls: $AREA ==="
+      for f in "$REPO_ROOT/brain/pitfalls/$AREA"/*.md; do
+        cat "$f"
+        echo "---"
+      done
+    fi
+  done
+fi
+```
+
+**Area matching**: The worker determines relevant areas by analyzing the task spec — file paths, technology stack, acceptance criteria. For example:
+- Task touching `src/components/` → read `frontend/`
+- Task adding API endpoints → read `api/`, `security/`
+- Task with async/event logic → read `async/`
+- When unsure, read all areas (still cheaper than loading irrelevant pitfalls in a flat dir)
+
+The worker also reads conventions and decisions if they exist:
+
+```bash
+# Project conventions
+for f in "$REPO_ROOT/brain/conventions"/*.md 2>/dev/null; do cat "$f"; done
+# Architectural decisions
+for f in "$REPO_ROOT/brain/decisions"/*.md 2>/dev/null; do cat "$f"; done
+```
+
+This re-anchor step gives the worker context about:
+- **Pitfalls** — patterns caught in past reviews, filtered to the relevant domain
+- **Principles** — engineering principles that guide implementation decisions
+- **Conventions** — project-specific patterns and standards
+- **Decisions** — architectural decisions with rationale
+
+The worker should read relevant principle files in full if the current task relates to them (e.g., read `boundary-discipline.md` when working on API boundaries).
+
 **Worker returns**: Summary of implementation, files changed, test results, review verdict.
 
 ### 3d. Verify Completion
@@ -124,6 +182,116 @@ $FLUXCTL show <task-id> --json
 ```
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
+
+### 3d-1. Inline Friction Check
+
+**Purpose**: Detect frustration signals from the worker's output *while they're happening* and offer targeted recommendations to unblock. This runs after every task, not just at epic review.
+
+**Scan the worker output for friction signals:**
+
+Check the worker's output (tool errors, build failures, repeated retries) against known friction patterns:
+
+```bash
+# Friction signals to detect (from parse-sessions.py patterns)
+# - api_hallucination: TypeScript/Python property/module/type errors
+# - lint_errors: eslint, prettier, format failures
+# - css_issues: postcss, tailwind, CSS parse errors
+# - regressions: test failures, assertion errors
+# - ci_failures: build errors, npm errors
+# - search_needed: agent couldn't find files/code
+# - context_forgotten: agent repeated mistakes or contradicted itself
+```
+
+**Check signal cooldown status:**
+
+For each detected friction signal, check if it's currently in cooldown (dismissed within the last 7 days):
+
+```bash
+"${PLUGIN_ROOT}/scripts/manage-preferences.sh" is-signal-dismissed "{signal_type}"
+# Exit 0 = in cooldown (suppress), exit 1 = expired or never dismissed (show)
+```
+
+**Three states per signal:**
+
+1. **Never dismissed** → show recommendation normally
+2. **Dismissed < 7 days ago** → suppress silently (in cooldown)
+3. **Dismissed >= 7 days ago** → cooldown expired, resurface with a different prompt
+
+**Check license tier first:**
+
+```bash
+IS_PRO=false
+if python3 "${PLUGIN_ROOT}/scripts/flux-license.py" check 2>/dev/null; then
+  IS_PRO=true
+fi
+```
+
+**If signal is active (never dismissed) — Pro user:**
+
+```
+Friction detected: {signal_type} ({count}x this session)
+Suggested tool: {recommendation_name} — {one_line_description}
+
+  [i] Install now
+  [s] Skip for now
+  [d] Snooze this signal (resurfaces in 7 days)
+```
+
+**If signal is active (never dismissed) — Free user:**
+
+Show the friction signal but offer upgrade instead of a specific tool recommendation (max 1x per session):
+
+```
+Friction detected: {signal_type} ({count}x this session)
+
+Flux Pro can recommend the right tool for this — matched to your stack,
+ranked by what actually works for other developers.
+
+Start your free 1-week trial ($10/mo after):
+→ https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D
+→ Check your email for the license key, then run /flux:login
+
+  [s] Skip for now
+  [d] Snooze this signal (resurfaces in 7 days)
+```
+
+Only show the upgrade line once per session (check `should_show_upgrade_prompt()`). On subsequent friction signals in the same session, just show the signal without the upgrade prompt.
+
+**If signal cooldown has expired (>= 7 days):**
+
+```
+It's been a week since we last looked for optimizations for {signal_type}.
+The tooling ecosystem moves fast — want to check for new recommendations?
+
+  [y] Yes, search for new optimizations
+  [n] No, snooze for another 7 days
+```
+
+- `y` → Run `/flux:improve` filtered to this signal's friction domain. Then re-dismiss with fresh timestamp regardless of outcome.
+- `n` → Re-dismiss with fresh timestamp (resets the 7-day cooldown):
+  ```bash
+  "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
+  ```
+
+**Actions for active signals (Pro):**
+
+- `i` → Run the install flow from `/flux:improve` for that specific recommendation
+- `s` → Continue to next step (feel check). Signal may trigger again on future tasks.
+- `d` → Dismiss with 7-day cooldown:
+  ```bash
+  "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
+  ```
+
+**Actions for active signals (Free):**
+
+- `s` → Continue to next step. Signal may trigger again on future tasks.
+- `d` → Dismiss with 7-day cooldown (same as Pro)
+
+**If no friction signals detected (or all in cooldown):** Continue silently to 3e.
+
+**Rate limiting:** Only surface one recommendation per task completion. If multiple signals fire, pick the highest-count one. This prevents recommendation fatigue.
+
+**Ralph mode:** In Ralph mode, skip inline friction check entirely — Ralph runs unattended and can't prompt the user.
 
 ### 3e. Feel Check (human-in-the-loop)
 
@@ -223,7 +391,7 @@ Plan-sync returns summary. Log it but don't block - task updates are best-effort
 
 ### 3h. Loop or Finish
 
-**IMPORTANT**: Steps 3d→3e→3f→3g ALWAYS run after worker returns, regardless of mode. Only the loop-back behavior differs:
+**IMPORTANT**: Steps 3d→3d-1→3e→3f→3g ALWAYS run after worker returns, regardless of mode (except Ralph mode skips 3d-1 and 3e). Only the loop-back behavior differs:
 
 **SINGLE_TASK_MODE**: After 3d→3g, go to Phase 4 (Quality). No loop.
 
@@ -274,7 +442,7 @@ Context optimization. Each task gets fresh context:
 - Review cycles stay isolated
 - Main conversation stays lean (just summaries)
 
-**Ralph mode**: Worker inherits `bypassPermissions` from parent. FLOW_RALPH=1 and REVIEW_RECEIPT_PATH are passed through.
+**Ralph mode**: Worker inherits `bypassPermissions` from parent. FLUX_RALPH=1 and REVIEW_RECEIPT_PATH are passed through.
 
 **Interactive mode**: Permission prompts pass through to user. Worker runs in foreground (blocking).
 
@@ -284,6 +452,7 @@ After all tasks complete (or periodically for large epics):
 
 - Run relevant tests
 - Run lint/format per repo
+- If `desloppify` is installed, run `desloppify scan` on changed directories and log the score. If score is below 85, suggest `/flux:desloppify` to the user.
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues
@@ -308,6 +477,24 @@ git commit -m "<final summary>"
 Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
+
+**Environment-aware PR targeting**: Before creating the PR, check for staging config:
+```bash
+STAGING_BRANCH=$("${PLUGIN_ROOT}/scripts/fluxctl" config get environments.staging.branch --json 2>/dev/null | jq -r '.value // empty')
+```
+If `STAGING_BRANCH` is set, create the PR against the staging branch (not main). Add a note to the PR body:
+```
+> 🧪 This PR targets `{STAGING_BRANCH}`. After merge + staging validation, run `/flux:gate` to promote to production.
+```
+If no staging is configured, create the PR against `main` (current behavior).
+
+**Auto-reflect**: After the PR is successfully created (confirmed by PR URL), automatically run `/flux:reflect` to capture learnings while context is fresh. Do not ask — just run it. Skip reflect if PR creation failed.
+
+**Auto-meditate (conditional)**: After reflect completes, check pitfall count:
+```bash
+PITFALL_COUNT=$(find .flux/brain/pitfalls -name "*.md" 2>/dev/null | wc -l | xargs)
+```
+If `PITFALL_COUNT >= 20`, run `/flux:meditate` to prune and promote. Otherwise skip silently.
 
 ## Definition of Done
 

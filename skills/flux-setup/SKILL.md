@@ -13,12 +13,10 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
 - `fluxctl` accessible from command line (add `.flux/bin` to PATH)
 - Other AI agents (Codex, Cursor, etc.) can read instructions from CLAUDE.md/AGENTS.md
 - Works without Claude Code plugin installed
-- Installs `claudeception` by default (if missing) for continuous learning
 - **Optional** recommended MCP servers (user chooses which to install, all free):
   - **Context7** — no more hallucinated APIs, up-to-date library docs in every prompt
   - **Exa** — fastest AI web search, real-time research without leaving your session
   - **GitHub** — PRs, issues, actions directly in Claude, no context switching
-  - **Supermemory** — never re-explain context, persistent memory across sessions
 - **Optional** additional MCP:
   - **Firecrawl** — scrape websites and parse PDFs into LLM-ready markdown
 - **Optional** recommended CLI tools:
@@ -29,17 +27,17 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **CLI Continues** — resume/switch session context across agent CLIs
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Claude Code sessions using git worktrees
-  - **Ghostty** — fast terminal for split-pane workflows
   - **Raycast** — launcher/snippets/clipboard productivity layer
   - **Wispr Flow** — voice-to-text acceleration (macOS)
   - **Granola** — AI meeting notes companion (macOS/Windows)
 - **Optional** additional agent skill:
-  - **Cartographer** — parallel codebase mapping for faster onboarding
   - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Agent Skills (Vercel)** — broad reusable skills catalog
   - **X Research Skill** — structured X/Twitter research and summarization
+- **Optional** task tracker integration:
+  - **Linear** — installs the [Linear CLI skill](https://skills.sh/schpet/linear-cli/linear-cli) so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
 
 ## Workflow
@@ -51,7 +49,7 @@ Read [workflow.md](workflow.md) and follow each step in order.
 - **Fully optional** - standard plugin usage works without local setup
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
-- In active Claude Code sessions, configure MCPs via `~/.claude/settings.json` updates (do not invoke nested `claude` CLI commands)
+- All MCPs, skills, and config install project-local (`.mcp.json`, `.claude/skills/`, `.flux/`) — never touches global `~/.claude/settings.json`
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 
@@ -75,7 +73,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```

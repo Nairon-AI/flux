@@ -7,7 +7,7 @@ CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
 ```
 
 ## Multi-User Safety
@@ -16,7 +16,7 @@ Works out of the box for parallel branches. No setup required.
 
 - **ID allocation**: Scans existing files to determine next ID (merge-safe)
 - **Soft claims**: Tasks have `assignee` field to prevent duplicate work
-- **Actor resolution**: `FLOW_ACTOR` env → git email → git name → `$USER` → "unknown"
+- **Actor resolution**: `FLUX_ACTOR` env → git email → git name → `$USER` → "unknown"
 - **Local validation**: `fluxctl validate --all` catches issues before commit
 
 **Optional**: Add CI gate with `docs/ci-workflow-example.yml` to block bad PRs.
@@ -30,7 +30,6 @@ Works out of the box for parallel branches. No setup required.
 ├── specs/fn-N-slug.md      # Epic spec (markdown)
 ├── tasks/fn-N-slug.M.json  # Task state (e.g., fn-1-add-oauth.1.json)
 ├── tasks/fn-N-slug.M.md    # Task spec (markdown)
-├── memory/                 # Agent memory (reserved)
 ├── bin/                    # (optional) Local fluxctl install via /flux:setup
 │   ├── fluxctl
 │   └── fluxctl.py
@@ -128,7 +127,7 @@ fluxctl epic close fn-1 [--json]
 
 ### epic set-backend
 
-Set default backend specs for impl/review/sync workers. Used by orchestration products (e.g., flow-swarm).
+Set default backend specs for impl/review/sync workers. Used by orchestration products (e.g., flux-swarm).
 
 ```bash
 fluxctl epic set-backend fn-1 --impl codex:gpt-5.2-codex [--json]
@@ -194,7 +193,7 @@ Use `--cascade` to also reset dependent tasks within the same epic.
 
 ### task set-backend
 
-Set backend specs for impl/review/sync workers. Used by orchestration products (e.g., flow-swarm).
+Set backend specs for impl/review/sync workers. Used by orchestration products (e.g., flux-swarm).
 
 ```bash
 fluxctl task set-backend fn-1.1 --impl codex:gpt-5.2-high [--json]
@@ -211,7 +210,7 @@ Format: `backend:model` where backend is a CLI name and model is backend-specifi
 
 ### task show-backend
 
-Show effective backend specs for a task. Reports task-level and epic-level specs only (config-level resolution happens in flow-swarm).
+Show effective backend specs for a task. Reports task-level and epic-level specs only (config-level resolution happens in flux-swarm).
 
 ```bash
 fluxctl task show-backend fn-1.1 [--json]
@@ -453,50 +452,28 @@ Manage project configuration stored in `.flux/config.json`.
 
 ```bash
 # Get a config value
-fluxctl config get memory.enabled [--json]
 fluxctl config get review.backend [--json]
 
 # Set a config value
-fluxctl config set memory.enabled true [--json]
 fluxctl config set review.backend codex [--json]  # rp, codex, or none
 
 # Toggle boolean config
-fluxctl config toggle memory.enabled [--json]
+fluxctl config toggle planSync.enabled [--json]
 ```
 
 **Available settings:**
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `memory.enabled` | bool | `false` | Enable memory system |
 | `planSync.enabled` | bool | `false` | Enable plan-sync after task completion |
 | `scouts.github` | bool | `false` | Enable github-scout during planning (requires gh CLI) |
-| `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLOW_REVIEW_BACKEND`. |
+| `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLUX_REVIEW_BACKEND`. |
 
-Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.flux/config.json` > error.
+Priority: `--review=...` argument > `FLUX_REVIEW_BACKEND` env > `.flux/config.json` > error.
 
 No auto-detect. Run `/flux:setup` (or `fluxctl config set review.backend ...`) to configure.
 
-### memory
-
-Manage persistent learnings in `.flux/memory/`.
-
-```bash
-# Initialize memory directory
-fluxctl memory init [--json]
-
-# Add entries
-fluxctl memory add --type pitfall "Always use fluxctl rp wrappers" [--json]
-fluxctl memory add --type convention "Tests in __tests__ dirs" [--json]
-fluxctl memory add --type decision "SQLite for simplicity" [--json]
-
-# Query
-fluxctl memory list [--json]
-fluxctl memory search "pattern" [--json]
-fluxctl memory read --type pitfalls [--json]
-```
-
-Types: `pitfall`, `convention`, `decision`
+> **Note:** Learnings (pitfalls, conventions, decisions) are stored in the `brain/` vault, not `.flux/`. See `brain/index.md`.
 
 ### prep-chat
 
@@ -579,7 +556,7 @@ npm install -g @openai/codex
 codex auth
 ```
 
-**Model:** Uses GPT 5.2 High by default (no user config needed). Override with `FLOW_CODEX_MODEL` env var.
+**Model:** Uses GPT 5.2 High by default (no user config needed). Override with `FLUX_CODEX_MODEL` env var.
 
 **Commands:**
 
@@ -652,7 +629,7 @@ Completion review receipt:
 
 **Session continuity:** Receipt includes `session_id` (thread_id from codex). Subsequent reviews read the existing receipt and resume the conversation, maintaining full context across fix → re-review cycles.
 
-**Embedding budget (`FLOW_CODEX_EMBED_MAX_BYTES`):** Optional limit on the total bytes of file contents embedded into the review prompt (diff excluded). Default `0` (unlimited). Set to a value like `500000` (500KB) to cap prompt size.
+**Embedding budget (`FLUX_CODEX_EMBED_MAX_BYTES`):** Optional limit on the total bytes of file contents embedded into the review prompt (diff excluded). Default `0` (unlimited). Set to a value like `500000` (500KB) to cap prompt size.
 
 **Sandbox mode (`--sandbox`):** Controls Codex CLI's file system access. Available modes:
 - `read-only` (default on Unix) — Can only read files
@@ -768,11 +745,11 @@ fluxctl state-path [--json]
 
 Output:
 ```json
-{"success": true, "state_dir": "/repo/.git/flow-state", "source": "git-common-dir"}
+{"success": true, "state_dir": "/repo/.git/flux-state", "source": "git-common-dir"}
 ```
 
 Source values:
-- `env` — `FLOW_STATE_DIR` environment variable
+- `env` — `FLUX_STATE_DIR` environment variable
 - `git-common-dir` — `git --git-common-dir` (shared across worktrees)
 - `fallback` — `.flux/state` (non-git or old git)
 
@@ -807,7 +784,7 @@ Options:
 
 What it does:
 1. Scans all task JSON files for runtime fields (`status`, `assignee`, `claimed_at`, etc.)
-2. Writes those fields to the state directory (`.git/flow-state/tasks/`)
+2. Writes those fields to the state directory (`.git/flux-state/tasks/`)
 3. With `--clean`: removes runtime fields from the original JSON files
 
 **When to use:**

@@ -70,7 +70,7 @@ cat .github/workflows/*.yml 2>/dev/null | grep -E "build|deploy" | head -10
 
 # Other CI
 ls -la .gitlab-ci.yml .circleci/config.yml Jenkinsfile azure-pipelines.yml 2>/dev/null
-ls -la vercel.json netlify.toml fly.toml railway.json render.yaml 2>/dev/null
+ls -la vercel.json netlify.toml fly.toml railway.json render.yaml wrangler.toml wrangler.json wrangler.jsonc 2>/dev/null
 ```
 
 ### Output Artifacts

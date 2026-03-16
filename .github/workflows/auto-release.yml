@@ -1,0 +1,122 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  auto-release:
+    # Skip version bump commits and release commits
+    if: >-
+      !contains(github.event.head_commit.message, '[skip ci]') &&
+      !startsWith(github.event.head_commit.message, 'release:') &&
+      !startsWith(github.event.head_commit.message, 'chore: bump version')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Get last release tag
+        id: last_tag
+        run: |
+          TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          if [ -z "$TAG" ]; then
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "No previous release tag found"
+          else
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "Last release: $TAG"
+          fi
+
+      - name: Analyze commits since last release
+        id: analyze
+        run: |
+          TAG="${{ steps.last_tag.outputs.tag }}"
+          if [ -z "$TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${TAG}..HEAD"
+          fi
+
+          COMMITS=$(git log "$RANGE" --pretty=format:"%s" 2>/dev/null || echo "")
+          if [ -z "$COMMITS" ]; then
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Commits since $TAG:"
+          echo "$COMMITS"
+
+          HAS_BREAKING=false
+          HAS_FEAT=false
+          HAS_FIX=false
+
+          while IFS= read -r msg; do
+            if echo "$msg" | grep -qiE '^[a-z]+(\(.+\))?!:' || echo "$msg" | grep -qi 'BREAKING CHANGE'; then
+              HAS_BREAKING=true
+            elif echo "$msg" | grep -qiE '^feat(\(.+\))?:'; then
+              HAS_FEAT=true
+            elif echo "$msg" | grep -qiE '^fix(\(.+\))?:'; then
+              HAS_FIX=true
+            fi
+          done <<< "$COMMITS"
+
+          if $HAS_BREAKING; then
+            echo "bump=major" >> "$GITHUB_OUTPUT"
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
+          elif $HAS_FEAT; then
+            echo "bump=minor" >> "$GITHUB_OUTPUT"
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
+          elif $HAS_FIX; then
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
+            echo "No releasable commits (only docs/chore/ci)"
+          fi
+
+      - name: Compute next version
+        if: steps.analyze.outputs.release_needed == 'true'
+        id: version
+        run: |
+          TAG="${{ steps.last_tag.outputs.tag }}"
+          BUMP="${{ steps.analyze.outputs.bump }}"
+          CURRENT="${TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "$BUMP" in
+            major) NEXT="$((MAJOR + 1)).0.0" ;;
+            minor) NEXT="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Next version: v$NEXT ($BUMP bump)"
+
+      - name: Create tag and GitHub release
+        if: steps.analyze.outputs.release_needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.last_tag.outputs.tag }}"
+
+          # Tag current HEAD on main
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+
+          # Create GitHub release with auto-generated notes
+          gh release create "v${VERSION}" \
+            --target main \
+            --title "v${VERSION}" \
+            --generate-notes \
+            ${TAG:+--notes-start-tag "$TAG"}
+
+          echo "Released v${VERSION}"
+          echo "post-release-bump.yml will auto-bump manifests to next -dev version"

@@ -122,7 +122,7 @@ FRICTION_PATTERNS = [
     (r"how do (other|people|teams)", "search_needed"),
     (r"what's the best (way|practice|approach)", "search_needed"),
     (r"any (alternatives|options) for", "search_needed"),
-    # Memory/Context friction -> supermemory
+    # Memory/Context friction (handled by brain vault)
     (r"I (already|just) told you", "context_forgotten"),
     (r"remember (when|that|earlier)", "context_forgotten"),
     (r"as I (said|mentioned)", "re_explaining"),

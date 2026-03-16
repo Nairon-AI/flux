@@ -58,7 +58,7 @@ Continue regardless.
 
 ## Ralph Mode Rules (always follow)
 
-If `REVIEW_RECEIPT_PATH` is set or `FLOW_RALPH=1`:
+If `REVIEW_RECEIPT_PATH` is set or `FLUX_RALPH=1`:
 - **Must** use `fluxctl done` and verify task status is `done` before committing.
 - **Must** stage with `git add -A` (never list files).
 - **Do NOT** use TodoWrite for tracking.
@@ -185,7 +185,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
