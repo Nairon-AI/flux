@@ -3,849 +3,666 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v1.9.5-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.13.1--dev-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-**Your AI workflow has gaps. Flux finds them.**
+**The missing (self-improving) harness for Claude Code.**<br>
+Build software reliably.
+
+> Recommended orchestrator: [SuperSet](https://superset.sh/) — parallel Claude Code sessions with git worktree isolation.
 
 </div>
-
----
-
-### Platform Compatibility
-
-| Platform | Status | Install |
-|----------|--------|---------|
-| [Claude Code](https://claude.ai/code) | ✅ Recommended | `/plugin add https://github.com/Nairon-AI/flux@latest` |
-| [Factory Droid](https://factory.ai) | ✅ Supported | `droid plugin marketplace add https://github.com/Nairon-AI/flux` |
-| [OpenAI Codex](https://openai.com/index/introducing-codex/) | ✅ Supported | `git clone` + `./scripts/install-codex.sh flux` |
-| [OpenCode](https://github.com/anomalyco/opencode) | `[██████████░] 96%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) |
-
----
 
 ## The Problem
 
 You're using an AI coding agent, but something's off:
 
-- **No structure** → You jump straight into code and watch the agent go off the rails
-- **Context amnesia** → You keep re-explaining the same thing every session
-- **Groundhog Day** → The agent tries the same broken approach 5 times in a row
-- **Tool FOMO** → You discover a tool that would've saved hours... after the fact
-- **Requirements drift** → Scope creeps mid-session and you don't notice until it's too late
-- **Blind acceptance** → You accept suggestions without questioning them (the AI is wrong more than you think)
-- **No observability** → You have no idea how "AI-native" you are compared to others or where your gaps are
+- **No structure** → You said "build me a dashboard" and came back to a mess of half-finished components
+- **Context amnesia** → You've explained the auth flow three times this week. To the same agent.
+- **Groundhog Day** → The agent tried the same broken import path five times in a row and you watched it happen
+- **Tool FOMO** → You found out about Context7 after spending two hours debugging stale docs
+- **Requirements drift** → You asked for a login page and got a full user management system with email verification
+- **Blind acceptance** → You shipped the agent's suggestion without reading it. It's in production now. Good luck.
+- **Security roulette** → Someone found the hardcoded API key the agent left in your config. On GitHub. Publicly.
+- **Echo chamber** → The same model you used to write the code, reviewed its own code, said "looks good", and you believed it (lmao)
+- **Long tasks implode** → 20 minutes into a complex refactor, the agent forgot what it was doing and started over
+- **Flying blind** → You have no idea if you're getting better at this or just getting faster at making mistakes
 
 <p align="center">
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
 </p>
 
-
 These aren't model failures. They're **process failures**.
 
 **This is where Flux comes in.**
 
+- **Repeatable workflows** — enforces structure across sessions so you and the agent never lose track of what's next
+- **Multi-model adversarial reviews** — catches what no single model spots alone
+- **Long tasks without drift** — Flux keeps the agent on rails even when context gets deep
+- **Session analysis** — detect inefficiencies and get recommended optimisations from an engine that learns your patterns
+- **Always up-to-date** — stays current with the latest harness and context engineering best practices so you can stop doom-scrolling
+
+Ship with confidence. Sleep better at night.
+
 ---
 
-## What Flux Does
+## Contents
 
-Flux is the accumulation of our learnings working at enterprise and building startups over the last 12 months, watching the SDLC evolve in real-time.
+- [Install](#install)
+- [Getting Started](#getting-started)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Commands](#commands)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Roadmap](#roadmap)
+- [Community](#community)
 
-The insight: in the age of agentic development, **you still need a framework**—but it's compressed, morphed, and must prepare for increasingly autonomous building. The right human-in-the-loop checkpoints maintain your understanding of the system as it evolves, whether you're building solo or with a team.
+---
 
-**Flux gives you five things:**
+## Install
 
-1. **A deterministic state engine** — `.flux/` tracks the active objective, workflow phase, next action, and scoping artifacts so Flux can realign the agent without drift
-2. **A structured workflow** — Prime once, then Scope -> Build -> Review -> Improve (and Reflect at session end)
-3. **Native repo context mapping** — Flux can generate a built-in codebase map from tracked files for faster repo navigation and fresh-session realignment
-4. **Continuous improvement** — Analyze your sessions, detect optimisations, install them to improve your agent and your Agentic workflow
-5. **Observability** — Tap into your entire worklow to get full visibility into your harness (the tools you're using, the quality of your sessions, and and more)
+| Agent | Status | Install |
+|-------|--------|---------|
+| [Claude Code](https://claude.ai/code) | ✅ First-Class Support | `/plugin add https://github.com/Nairon-AI/flux@latest` |
+| [OpenCode](https://github.com/anomalyco/opencode) | `[█████░░░░░░] ~45%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — core workflow ported, v2.0+ features pending |
 
-### Deterministic State Engine
+**Install** — say this in Claude Code:
+```
+Install the Flux plugin. Here's the README: https://github.com/Nairon-AI/flux
+```
 
-Flux now treats `.flux/` as the canonical workflow memory for the current repository.
+**Upgrade** — type `/flux:upgrade` in Claude Code, then restart with `--resume`. Your project setup is untouched.
 
-- `session-state` tells Flux whether to prime first, start fresh, resume scoping, resume implementation, or route to review
-- `scope-status` shows the active objective, current scoping phase, progress, and next action
-- an active objective pointer keeps feature, bug, and refactor work anchored even across long sessions
-- startup hooks and setup-installed agent instructions tell the agent to realign with Flux state before acting on new work-like requests
+**Uninstall** — say this in Claude Code:
+```
+Uninstall the Flux plugin and clean up. README: https://github.com/Nairon-AI/flux
+```
+
+After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
+
+> **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. No two projects need the same harness — different MCPs, skills, tools, and agentic patterns. Flux starts as a one-size-fits-all setup, then self-improves daily into the best harness for *that specific project*.
+
+<details>
+<summary><strong>Plugin CLI Reference</strong></summary>
+
+Flux uses Claude Code's [plugin system](https://docs.anthropic.com/en/docs/claude-code/plugins). These are the `claude plugin` CLI commands used for install, upgrade, and uninstall. They can be run in a terminal or via Claude Code's bash tool.
+
+#### Install
+1. Add the marketplace and install the plugin:
+   ```bash
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
+   ```
+2. Clear any stale cache and re-clone to ensure the latest version:
+   ```bash
+   rm -rf ~/.claude/plugins/cache/nairon-flux
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   ```
+3. Tell the user to restart their agent/session with `--resume` to load the plugin.
+4. After restart, run `/flux:setup` to scaffold `.flux/` and configure preferences.
+5. If setup installs new MCP servers, tell the user to restart with `--resume` once more.
+6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
+
+#### Upgrade
+Run `/flux:upgrade` inside Claude Code, then restart with `--resume`. Project-local files (`.flux/`, brain vault, CLAUDE.md, MCP servers) are never affected.
+
+#### Uninstall
+1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
+2. Ask the user per-category what to keep vs. remove (MCP servers, skills, desktop apps, CLI tools) — many aren't Flux-specific.
+3. Uninstall the plugin and remove the marketplace:
+   ```bash
+   claude plugin uninstall flux@nairon-flux 2>&1
+   claude plugin marketplace remove nairon-flux 2>&1
+   ```
+4. Remove project artifacts:
+   ```bash
+   rm -rf .flux .mcp.json .claude/skills/
+   ```
+5. Remove the `<!-- BEGIN FLUX -->` ... `<!-- END FLUX -->` section from CLAUDE.md and AGENTS.md.
+6. Optionally remove plugin cache: `rm -rf ~/.claude/plugins/cache/nairon-flux`
+7. Restart Claude Code.
+
+For **OpenCode**, use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port instead.
+</details>
+
+---
+
+## Getting Started
+
+### 1. Setup
+
+`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. Everything is opt-in — you pick what you want.
+
+<details>
+<summary><b>What Flux offers to install</b></summary>
+
+**MCP Servers** — extend what Claude can do:
+
+| MCP | Why |
+|-----|-----|
+| [FFF](https://github.com/dmtrKovalenko/fff.nvim) | 10x faster file search — fuzzy, frecency-aware, git-status-aware (replaces default Glob/find) |
+| [Context7](https://context7.com) | Up-to-date, version-specific library docs — no more hallucinated APIs |
+| [Exa](https://exa.ai) | Fastest AI web search — real-time research without leaving your session |
+| [GitHub](https://github.com/modelcontextprotocol/servers/tree/main/src/github) | PRs, issues, actions in Claude — no context switching to browser |
+| [Firecrawl](https://firecrawl.dev) | Scrape websites and PDFs into clean markdown for agents |
+
+**CLI Tools** — terminal essentials:
+
+| Tool | Why |
+|------|-----|
+| [gh](https://cli.github.com) | GitHub from the terminal — PRs, issues, releases |
+| [jq](https://jqlang.github.io/jq/) | JSON parsing for Flux internals |
+| [fzf](https://github.com/junegunn/fzf) | Fuzzy finder for interactive selection |
+| [Lefthook](https://github.com/evilmartians/lefthook) | Fast git hooks for pre-commit checks |
+| [agent-browser](https://github.com/nichochar/agent-browser) | Headless browser for automated UI QA during epic reviews |
+| [CLI Continues](https://github.com/nichochar/continues) | Session handoff — pick up where you left off across terminals |
+
+**Desktop Apps** (macOS):
+
+| App | Why |
+|-----|-----|
+| [Superset](https://superset.dev) | Parallel Claude sessions with git worktree workspace management |
+| [Raycast](https://raycast.com) | Launcher with AI, snippets, clipboard history |
+| [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
+| [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
+
+
+</details>
+
+### 2. Prime
+
+`/flux:prime` audits your codebase for agent readiness across 8 pillars and 48 criteria. It runs once per repo and Flux detects when it's needed.
+
+### 3. Build
+
+After prime, just tell the agent what you want — *build a feature, fix a bug, refactor something, continue work*. Flux uses repo state plus your message to decide whether to scope, resume, review, or hand off.
+
+> **Why both Claude and Codex?** Flux works best with both a Claude and an OpenAI Codex subscription. During epic reviews, Flux runs adversarial dual-model review — two models with different training data review independently and consensus issues get auto-fixed. You can also bring your own review bot (Greptile, CodeRabbit) for a third perspective. See [Reviews](#reviews--two-tier-architecture) below.
+
+---
 
 ## Architecture
 
-Flux is split into a few clear layers:
+```mermaid
+flowchart TD
+    SessionStart["Session Start<br/>(startup hook)"]
+    Pulse{"recommendation<br/>pulse"}
+    Prime["Prime<br/>(readiness audit)"]
+    Propose["Propose<br/>(stakeholder intake)"]
+    RCA["RCA<br/>(root cause analysis)"]
+    Scope["Scope<br/>(problem definition)"]
+    Work["Work<br/>(task loop)"]
+    ImplReview["Impl Review<br/>(per-task, lightweight)"]
+    EpicReview["Epic Review<br/>(per-epic, thorough)"]
+    Quality["Quality<br/>(tests + desloppify scan)"]
+    Submit["Submit<br/>(push + PR)"]
+    Reflect["Reflect<br/>(capture learnings)"]
+    Meditate["Meditate<br/>(prune + promote)"]
+    Ruminate["Ruminate<br/>(mine past sessions)"]
+    Improve["Improve<br/>(recommendations engine)"]
 
-1. **Deterministic repo state** — `.flux/` stores tracked workflow data like objectives, epics, tasks, specs, memory, and config.
-2. **Runtime coordination state** — shared runtime task state lives outside tracked repo files so multiple worktrees and agents can coordinate safely.
-3. **Workflow control plane** — `fluxctl` is the single write path for workflow mutations, status inspection, validation, and routing.
-4. **Agent interface layer** — slash commands and skills translate natural-language intent into deterministic Flux operations.
-5. **Context acceleration layer** — Flux now includes a built-in `agentmap` implementation that generates YAML repo maps from git-tracked files, including README summaries and top-level definitions.
+    SessionStart --> Pulse
+    Pulse -->|"new tools?<br/>nudge /flux:improve"| Prime
+    Pulse -->|"all clear"| Prime
+    Prime -->|"brain thin +<br/>past sessions exist"| Ruminate
+    Prime -->|"brain ready"| Scope
+    Ruminate -->|"bootstrap brain<br/>from history"| Scope
+    Scope -->|"non-technical user<br/>detected"| Propose
+    Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
+    Scope -->|"bug detected"| RCA
+    RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
+    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| ExecChoice{"Execute how?"}
+
+    ExecChoice -->|"task-by-task<br/>(interactive)"| Work
+    ExecChoice -->|"ralph mode<br/>(autonomous)"| Ralph["Ralph<br/>(autonomous harness)"]
+    Ralph -->|"runs all tasks<br/>+ reviews unattended"| EpicReview
+
+    subgraph task_loop ["Task Loop (per task)"]
+        Work -->|"spawn worker"| ImplReview
+        ImplReview -->|"NEEDS_WORK"| Work
+        ImplReview -->|"SHIP"| FrictionCheck{"friction<br/>detected?"}
+        FrictionCheck -->|"yes + not dismissed"| InlineImprove["Inline Recommend<br/>(install / skip / dismiss)"]
+        InlineImprove --> NextTask["Next Task"]
+        FrictionCheck -->|"no / dismissed"| NextTask
+        NextTask -->|"more tasks"| Work
+    end
+
+    NextTask -->|"all tasks done"| EpicReview
+
+    subgraph review_pipeline ["Epic Review Pipeline"]
+        direction TB
+        SpecCompliance["Spec Compliance"]
+        Adversarial["Adversarial Review<br/>(Anthropic + OpenAI)"]
+        SecurityScan["STRIDE Security Scan"]
+        BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)<br/><i>optional</i>"]
+        BrowserQA["Browser QA"]
+        LearningCapture["Learning Capture"]
+        DesloppifyScan["Desloppify Scan"]
+        FrustrationSignal{"friction<br/>score >= 3?"}
+
+        SpecCompliance --> Adversarial
+        Adversarial --> SecurityScan
+        SecurityScan --> BotSelfHeal
+        SecurityScan -->|"no bot configured"| BrowserQA
+        BotSelfHeal --> BrowserQA
+        BrowserQA --> LearningCapture
+        LearningCapture --> DesloppifyScan
+        DesloppifyScan --> FrustrationSignal
+    end
+
+    EpicReview --> SpecCompliance
+    FrustrationSignal -->|"no"| Quality
+    FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| Quality
+    Quality --> Submit
+    Submit --> Reflect
+    Reflect -->|"20+ pitfall files"| Meditate
+    Reflect -->|"brain healthy"| Done["Done"]
+    Meditate --> Done
+
+    Brain["Brain Vault<br/>(pitfalls, principles,<br/>conventions, decisions)"]
+
+    Brain -.->|"read: principles +<br/>relevant pitfalls"| Scope
+    Brain -.->|"read: re-anchor<br/>per task"| Work
+    LearningCapture -.->|"write: pitfalls<br/>by area"| Brain
+    Reflect -.->|"write: learnings<br/>+ skills"| Brain
+    Ruminate -.->|"write: mined<br/>patterns"| Brain
+    Meditate -.->|"prune/promote"| Brain
+    Pulse -.->|"nudge when<br/>new tools"| Improve
+```
+
+| Phase | What happens | Why it exists |
+|-------|-------------|---------------|
+| **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain health (once/day). | Without this, every session starts from zero — the agent doesn't know what it learned yesterday, what work is in progress, or what the project's conventions are. The hook gives it continuity. |
+| **Prime** | One-time readiness audit: 8 pillars, 48 criteria. | Agents routinely skip foundational setup (testing, CI, linting, security) and jump straight to features. Prime forces a baseline before any real work starts, catching gaps that would otherwise surface as bugs weeks later. |
+| **Ruminate** | *Auto after Prime (conditional):* mines past Claude Code conversations to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
+| **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets. Propose forces clarity and estimates before engineering time is spent. |
+| **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
+| **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. After each task, checks for friction signals (build errors, lint failures, API hallucinations) and offers targeted tool recommendations inline — install, skip, or snooze for 7 days. Snoozed signals automatically resurface to check for new tooling. In Ralph mode, this loop runs autonomously without stopping. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Inline friction detection catches recurring pain points *during* the build, not after — so you can unblock immediately instead of suffering through an entire epic before getting a recommendation. |
+| **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB *optional*, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (multiple models reaching consensus) catches what single-model review misses. BYORB (Greptile, CodeRabbit, etc.) is optional — skipped if no bot is configured. Browser QA catches what code review can't see at all. |
+| **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
+| **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
+| **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
+| **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
+| **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
+| **Gate** | *After staging merge:* verifies staging deployment is live, runs browser QA or manual review against staging URL, then creates promotion PR (staging → production). | Code that passes CI can still break in staging — env variables differ, APIs behave differently, CDN caching causes stale assets. Gate is the checkpoint between "code compiles" and "code actually works in a real environment." Without it, production deploys are a leap of faith. |
+| **Improve** | *Inline:* after each task, friction signals trigger a targeted recommendation (install / skip / snooze). Snoozed signals enter a 7-day cooldown, then resurface: "It's been a week — want to check for new optimizations?" *Epic-level (score >= 3):* recommendations matched to your friction patterns. | When the same friction keeps recurring, the problem isn't the code — it's a missing tool. Inline detection catches it during the build so you can unblock immediately. The 7-day cooldown prevents recommendation fatigue while still giving the ecosystem time to develop new tooling — what had no good fix last week might have one today. |
+
+### What's Automatic vs Manual
+
+| Action | Trigger | Type |
+|--------|---------|------|
+| **Session start hook** | Every session | Automatic — injects brain vault index + workflow state |
+| **Recommendation pulse** | Every session (rate-limited 1x/day) | Automatic — nudges for new tools, brain vault health |
+| **`session-state` routing** | Before any work-like request | Automatic — routes to prime/scope/work/review |
+| **Reflect** | After PR is submitted | Automatic — captures learnings while context is fresh |
+| **Meditate** | After Reflect, if 20+ pitfall files | Automatic — prunes stale, promotes patterns |
+| **Ruminate** | After Prime, if brain thin + past sessions exist | Automatic — bootstraps brain from conversation history |
+| **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
+| **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
+| **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
+| **Scope** (`/flux:scope`) | Start new work | Manual |
+| **Work** (`/flux:work`) | Execute a plan task-by-task | Manual |
+| **Ralph** (`/flux:ralph-init`) | Execute an entire epic autonomously | Manual — offered after scoping |
+| **Upgrade** (`/flux:upgrade`) | Get latest Flux version | Manual |
+| **Gate** (`/flux:gate`) | Validate staging after merge | Manual (or CI auto) |
+
+After upgrading, if your project's setup version is behind the plugin version, Flux will nudge you to re-run `/flux:setup` to pick up new configuration options.
+
+---
+
+## Features
+
+### Deterministic State Engine
+
+`.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `brain/` is the persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
 
 ### Built-in Agentmap
 
-Flux includes a built-in codebase mapping system.
-
-- `fluxctl agentmap --check` reports built-in availability
-- `fluxctl agentmap --write` writes `.flux/context/agentmap.yaml`
-- the map is generated from git-tracked files only
-- README files are included as high-signal project summaries
-- file header comments, shebangs, and top-level definitions are used to improve agent startup context
-
-The map is a navigation aid, not a source of truth. It helps fresh agents understand the repo faster, but it does not replace reading the code.
-
----
-
-## Install Flux
-
-> **⚠️ IMPORTANT:** If your agent uses slash commands, run them in the agent UI, not terminal bash.
-
-### Agent-driven path (recommended)
-
-```
-Help me install Flux in this current agent environment.
-
-First detect whether this session is Claude Code, Factory Droid, Codex, or another Flux-compatible environment.
-Use the correct install path for this platform.
-Handle as much of the install as you can yourself.
-Only stop when I need to run a slash command, approve something, or restart the session.
-
-If Flux is already installed, verify it and continue.
-After install, run /flux:setup if this platform supports it and complete setup.
-
-After setup and any required restart, check whether this repository has been primed yet.
-If not, run /flux:prime automatically before any scoping or implementation work.
-
-Once Flux is ready, I should be able to describe what I want naturally:
-- build a feature
-- fix a bug
-- refactor something
-- continue existing work
-
-Flux should route to the right workflow automatically based on state and intent.
-
-Tell me exactly what you need from me, one step at a time, and do the rest automatically.
-```
-
-Who does what:
-- **You:** only step in when the agent needs a command, confirmation, or restart.
-- **Agent:** chooses the right install path, drives setup, and gets Flux ready to use.
-
-### Manual path (choose your platform)
-
-Use the install path that matches your agent environment:
-
-**Claude Code**
-```
-/plugin add https://github.com/Nairon-AI/flux@latest
-```
-
-**Factory Droid**
-```
-droid plugin marketplace add https://github.com/Nairon-AI/flux
-```
-
-**OpenAI Codex**
-```bash
-git clone https://github.com/Nairon-AI/flux
-cd flux
-./scripts/install-codex.sh flux
-```
-
-**OpenCode**
-- Use the [flux-opencode](https://github.com/Nairon-AI/flux-opencode) port.
-
-Then:
-1. Restart the agent/session if your platform requires it.
-2. Let your agent complete Flux setup where supported.
-
-After setup succeeds, restart once more if your platform loads plugins/prompts at session start.
-After that, your agent should prime the repository automatically if needed, then route based on your intent.
-
-### Upgrade Flux (existing users)
-
-Use either:
-
-```
-/plugin update flux@nairon-flux
-```
-
-or:
-
-```
-/plugin add https://github.com/Nairon-AI/flux@latest
-```
-
-Then restart your agent/session and let the agent finish Flux setup.
-
-## Uninstall Flux (complete removal)
-
-### Agent-driven path (recommended)
-
-```
-Help me completely uninstall Flux from this environment.
-
-First detect which Flux-compatible agent/platform this environment is using.
-Use the correct uninstall path for this platform.
-Handle as much as you can yourself.
-Only stop when I need to run a slash command, confirm removal, or restart the session.
-
-Remove project-local Flux state (.flux) unless I ask to keep it.
-Offer machine-level cleanup separately before removing caches or global Flux data.
-When finished, verify Flux is no longer installed and tell me whether I need to restart anything.
-```
-
-### Manual path
-
-For plugin-based agents, remove the Flux plugin from that agent first, then remove project-local state:
-
-**Claude Code**
-```
-/plugin uninstall flux@nairon-flux
-/plugin marketplace remove nairon-flux
-```
-
-If uninstall says plugin not found:
-
-```
-/plugin uninstall flux
-```
-
-Then run local cleanup:
+Flux generates YAML repo maps from git-tracked files for faster agent navigation.
 
 ```bash
-# Plugin cache and marketplace metadata (Claude example)
-rm -rf ~/.claude/plugins/cache/nairon-flux
-rm -rf ~/.claude/plugins/marketplaces/nairon-flux
-
-# Current project artifacts created by /flux:setup (run from project root)
-rm -rf .flux
-
-# Optional: remove user-level Flux data (all projects)
-rm -rf ~/.flux
+fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 ```
 
-Restart your agent/session if needed and verify Flux is gone.
+### Brain Vault — Single Knowledge Store
 
-### First-Run Setup
+Flux's brain is an Obsidian-compatible vault (`brain/`) that serves as the single knowledge store for the entire system. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
 
-On supported platforms, Flux performs a first-run setup step that scaffolds `.flux/` in your project and configures your preferences.
+- **Scoping** reads brain principles and pitfalls to ground research and plan structure
+- **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
+- **Epic review** writes learnings back to `brain/pitfalls/<area>/` after SHIP, categorized by domain
+- **Meditate** promotes recurring pitfalls into proper principles and prunes one-offs
 
-Your agent should handle this automatically after installation. If the platform requires a restart for new commands/prompts to load, restart once and let the agent continue.
-
-Flux also ships with built-in agentmap support, so there is no separate `agentmap` install step during setup.
-
-`/flux:setup` also offers optional, OS-aware productivity app installs:
-- macOS: Superset, Ghostty, Raycast, Wispr Flow, Granola
-- Linux: Ghostty
-- Windows: Granola
-
-These are optional, but recommended when relevant to your workflow.
-
-### Prime Then Build
-
-Prime is the first workflow step in a repository.
-
-`/flux:prime` audits your codebase for agent readiness, finds inefficiencies, and surfaces what to improve before feature work begins. Flux now tracks whether prime has completed, so the agent can detect this automatically and run it first when needed.
-
-After prime, you should not need to remember workflow commands. Just tell the agent what you want:
-- build a feature
-- fix a bug
-- refactor something
-- continue work
-
-Flux should use repo state plus your message to decide whether to scope, resume implementation, review, or hand work off.
-
-**Core pattern:** Prime first, then let Flux route the workflow based on intent. Use the command table below as a reference, not as the primary way to drive Flux.
-
-### Optimize Your Workflow
-
-Once you've been using Flux for a while, the agent can run improve to analyze your environment + sessions, detect inefficiencies, and recommend concrete workflow upgrades.
-
-It can break down:
-- what you do most frequently,
-- what should become skills,
-- what should become plugins,
-- what should become autonomous agents,
-- what belongs in `CLAUDE.md`.
-
-### When to Use Each Command
-
-| Situation | Command |
-|-----------|---------|
-| Starting a new feature or bug fix | `/flux:scope <description>` |
-| Ready to work on a task | `/flux:work <task-id>` |
-| Finished some code, want a sanity check | `/flux:impl-review` |
-| Finished all tasks in an epic | `/flux:epic-review <epic-id>` |
-| End of session, want to capture learnings | `/flux:reflect` |
-| Codebase feels messy | `/flux:desloppify` |
-| Audit codebase for agent readiness | `/flux:prime` |
-| Want tool recommendations based on your patterns | `/flux:improve` |
-
-### Troubleshooting
-
-> **AI Agents**: If you're Claude Code debugging a Flux installation issue, follow this guide step-by-step. Do not guess — these are the verified fixes.
-
----
-
-#### Problem: "Unknown skill: flux:setup"
-
-**Cause**: The plugin is registered in `installed_plugins.json` but NOT enabled in `settings.json`. This happens when the install flow silently fails to add the `enabledPlugins` entry.
-
-**Fix**:
+```
+brain/
+  principles/    # Engineering principles (curated via meditate)
+  pitfalls/      # Auto-captured from review iterations, organized by area
+    frontend/    #   e.g., missing-error-states.md
+    security/    #   e.g., greptile-auth-gap.md
+    async/       #   e.g., consensus-race-condition.md
+  conventions/   # Project-specific patterns
+  decisions/     # Architectural decisions with rationale
+  plans/         # From scope/plan
+```
 
 ```bash
-# Step 1: Check if flux is enabled
-cat ~/.claude/settings.json | grep -A2 enabledPlugins
-
-# Step 2: If "flux@nairon-flux" is NOT listed, add it manually
-# Open ~/.claude/settings.json and add to "enabledPlugins":
-"flux@nairon-flux": true
-
-# Step 3: Restart Claude Code
+/flux:reflect    # Capture session learnings + extract reusable skills
+/flux:ruminate   # Mine past conversations for missed patterns
+/flux:meditate   # Prune stale notes, promote pitfalls → principles
 ```
 
-If the file is hard to edit, run this (backup first):
-```bash
-# Backup
-cp ~/.claude/settings.json ~/.claude/settings.json.backup
+These are maintenance skills designed to run between epics, not during active development. They audit, prune, and evolve the brain vault when you have breathing room.
 
-# Add flux to enabledPlugins (requires jq)
-jq '.enabledPlugins["flux@nairon-flux"] = true' ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
-```
+### Self-Improving Harness
 
----
+Flux autonomously finds ways to improve itself for every project it's used in. The recommendation engine surfaces tools matched to friction patterns at every natural touchpoint — not just when you ask for it:
 
-#### Problem: Agent tried to run `/plugin add` in bash (or `claude` inside Claude Code)
+| Touchpoint | What fires | How heavy |
+|---|---|---|
+| **Session start** | Recommendation pulse — checks for new tools and brain vault health | ~2s, once/day |
+| **During work** | Qualitative friction analysis — detects frustration topic from developer messages | Zero cost |
+| **After epic review** | Targeted `/flux:improve` suggestion with pre-filled friction context | Zero cost |
+| **After shipping** | `/flux:reflect` suggestion to capture learnings | Zero cost |
+| **Between epics** | Full `/flux:improve` analysis, `/flux:meditate` for brain pruning | Heavyweight |
 
-**Cause**: `/plugin` is a Claude Code slash command, not a shell command. Running `claude ...` inside an active Claude Code session is blocked (nested session).
+The **recommendation pulse** runs as a startup hook every session (rate-limited to once per day). It checks for new recommendations matched to your stack. If anything is actionable, it surfaces a brief nudge — you multi-select to install or dismiss.
 
-**Fix**:
+The **friction signal** fires during epic review using two layers: a quantitative friction score (review iterations, security findings, QA failures, repeated pitfalls) and qualitative analysis that scans developer messages and reviewer feedback to identify *what* you're struggling with. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
 
-1. Run this directly in Claude Code chat input:
-   ```
-   /plugin add https://github.com/Nairon-AI/flux@latest
-   ```
-2. Restart Claude Code fully.
-3. Run `/flux:setup`.
+The result: Flux gets smarter every session — new tools surface proactively, friction domains get diagnosed automatically, and the brain vault stays lean through meditate nudges. You don't have to remember to run maintenance commands.
 
----
+### Desloppify
 
-#### Problem: Commands still not working after enabling
+Systematic code quality improvement powered by [desloppify](https://github.com/peteromallet/desloppify). Combines mechanical detection with LLM-based review. The scoring system resists gaming — you can't suppress warnings, you have to actually fix the code.
 
-**Cause**: Corrupted or stale cache from a previous install attempt.
-
-**Fix**:
+When installed, Flux automatically runs a lightweight desloppify scan after epic review to surface quality regressions introduced during the epic. If the score drops below 85, it suggests a full fix pass.
 
 ```bash
-# Step 1: Clear ALL flux-related caches
-rm -rf ~/.claude/plugins/cache/nairon-flux
-rm -rf ~/.claude/plugins/marketplaces/nairon-flux
-
-# Step 2: Restart Claude Code completely (not just the session)
-
-# Step 3: Reinstall
-/plugin add https://github.com/Nairon-AI/flux@latest
-
-# Step 4: Restart Claude Code again (plugins load at session start)
-
-# Step 5: Run setup
-/flux:setup
+/flux:desloppify scan     # See your score
+/flux:desloppify next     # Get next priority fix
 ```
 
----
+### Reviews — Two-Tier Architecture
 
-#### Problem: Old version / missing new commands
+Flux splits reviews into two tiers so you get fast feedback per-task without slowing down, and thorough verification per-epic before shipping.
 
-**Cause**: Claude Code caches plugins aggressively. Even after updating, you might have an old version.
+**Per-task: Lightweight** (`/flux:impl-review`)
+Single-model pass after each task. Catches obvious bugs, logic errors, and spec drift in seconds. Fast enough to run on every task without breaking flow.
 
-**Fix**:
+**Per-epic: Thorough** (`/flux:epic-review`)
+Full pipeline that runs once when all epic tasks are done:
+
+| Phase | What happens |
+|-------|-------------|
+| Spec compliance | Verify every requirement from the epic spec is implemented |
+| Adversarial review | Two models from different labs (Anthropic + OpenAI) review independently — consensus issues = high confidence |
+| Severity filtering | Only auto-fix issues at/above your configured threshold (critical, major, minor, style) |
+| Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
+| BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
+| Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
+| Learning capture | Extract patterns from review feedback into `brain/pitfalls/` |
+
+> **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
+
+#### Security — Built Into the Review Pipeline
+
+Security scanning is not a separate step you remember to run — it's baked into the epic review pipeline. When your changes touch security-sensitive files (auth, API routes, middleware, secrets, permissions), Flux automatically runs a [STRIDE](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)-based scan adapted from [Factory AI](https://github.com/Factory-AI/factory-plugins). Findings are validated for exploitability (confidence >= 0.8 only), filtered by your severity threshold, and auto-fixed.
+
+You can also run security tools standalone when needed:
 
 ```bash
-# Step 1: Check current cached version
-ls ~/.claude/plugins/cache/nairon-flux/flux/
-
-# Step 2: Clear cache
-rm -rf ~/.claude/plugins/cache/nairon-flux
-
-# Step 3: Restart Claude Code and reinstall
-/plugin add https://github.com/Nairon-AI/flux@latest
-
-# Step 4: Verify new version loaded
-/flux:status
+/flux:threat-model           # Generate STRIDE threat model
+/flux:security-scan PR #123  # Scan PR changes
+/flux:security-review        # Full repository audit
 ```
 
----
+#### BYORB — Bring Your Own Review Bot
 
-#### Problem: Plugin shows in /plugin list but commands don't autocomplete
+Flux integrates with external code review bots that run on your PR. Configure during `/flux:setup`:
 
-**Cause**: Plugin loaded but skills/commands not registered. Usually a restart issue.
+| Bot | How it works |
+|-----|-------------|
+| [Greptile](https://greptile.com) | Attaches a confidence summary to your PR description. Flux polls for it, parses the score and issue list, and auto-fixes issues above your severity threshold. |
+| [CodeRabbit](https://coderabbit.ai) | Posts review comments on your PR. Flux polls for comments (or uses the CLI), parses issues, and auto-fixes above threshold. |
 
-**Fix**:
+Bots catch patterns that LLMs miss — dependency conflicts, project-specific conventions, security rules from your org config. Combined with adversarial model review, you get three independent perspectives on every epic.
+
+#### Browser QA — Scoping Creates the Test Plan
+
+During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Browser QA Checklist** task with testable criteria (URLs, expected elements, user flows). At epic review time, `agent-browser` follows this checklist — no manual test plan needed.
+
+#### Learning Capture — Reviews That Pay for Themselves
+
+Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `brain/pitfalls/`. The worker reads these during re-anchor at the start of every task. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs — the brain gets smarter, not bigger.
+
+**The result:** mistakes caught in review today are avoided in implementation tomorrow. Over time, you get fewer NEEDS_WORK iterations, shorter review cycles, and lower token spend — regardless of which review strategy you use. The learning feedback loop works with single-model, adversarial, or bot-assisted reviews.
 
 ```bash
-# Step 1: Fully quit Claude Code (not just close window)
-# On Mac: Cmd+Q or right-click dock icon → Quit
-
-# Step 2: Reopen Claude Code
-
-# Step 3: Test
-/flux:setup
+/flux:setup   # Configure reviewers, bots, and severity threshold
 ```
 
----
+### Linear Integration
 
-#### Problem: "/plugin add" opens Discover tab instead of installing
-
-**Cause**: On some Claude Code versions, URL installs open Discover. If no marketplace is configured yet, Discover may show "Add a marketplace first." 
-
-**Fix** (most reliable):
-1. Run `/plugin marketplace add https://github.com/Nairon-AI/flux`
-2. Run `/plugin install flux@nairon-flux`
-3. Restart Claude Code
-4. Run `/flux:setup`
-
-Or use the manual install method above (clear cache + reinstall).
-
----
-
-#### Problem: Permission errors or "access denied"
-
-**Cause**: File permission issues in the plugins directory.
-
-**Fix**:
+Connect Flux to [Linear](https://linear.app) during `/flux:setup` — epics auto-create Linear projects, tasks auto-create issues, and status changes (start, done, block) sync in real-time. Your team gets full visibility without leaving Linear.
 
 ```bash
-# Fix permissions
-chmod -R u+rw ~/.claude/plugins/
-
-# Then clear and reinstall
-rm -rf ~/.claude/plugins/cache/nairon-flux
-rm -rf ~/.claude/plugins/marketplaces/nairon-flux
+/flux:setup              # Select "Linear" when prompted for task tracker
+fluxctl config get tracker.provider   # Check current tracker config
 ```
-
----
-
-#### Problem: Commands work but .flux/ directory not created
-
-**Cause**: `/flux:setup` wasn't run, or it failed silently.
-
-**Fix**:
-
-```bash
-# Run setup explicitly
-/flux:setup
-
-# If that fails, create manually and re-run
-mkdir -p .flux
-/flux:setup
-```
-
----
-
-#### Nuclear Option: Complete Reset
-
-If nothing else works:
-
-```bash
-# Step 1: Remove ALL flux data
-rm -rf ~/.claude/plugins/cache/nairon-flux
-rm -rf ~/.claude/plugins/marketplaces/nairon-flux
-
-# Step 2: Remove from installed plugins list
-# Edit ~/.claude/plugins/installed_plugins.json
-# Remove any entries containing "nairon-flux" or "flux"
-
-# Step 3: Remove from enabled plugins
-# Edit ~/.claude/settings.json
-# Remove "flux@nairon-flux" from "enabledPlugins"
-
-# Step 4: Restart Claude Code
-
-# Step 5: Fresh install
-/plugin add https://github.com/Nairon-AI/flux@latest
-
-# Step 6: Restart Claude Code
-
-# Step 7: Verify
-/flux:setup
-```
-
----
-
-#### Still stuck?
-
-1. Run `/flux:help` for command reference
-2. Check `.flux/usage.md` in your project
-3. Join [Discord](https://discord.gg/CEQMd6fmXk) — we respond fast
-4. Open an issue: [GitHub Issues](https://github.com/Nairon-AI/flux/issues)
-
----
-
-#### `/flux:scope` — The Guided Scoping Workflow
-
-This is your starting point. Flux uses the deterministic state engine in `.flux/` to keep the agent aligned while it guides you through:
-
-1. **Start**
-   - classify feature, bug, or refactor
-   - choose shallow vs deep
-   - capture technical level and implementation target
-   - realign with current `.flux/` state if work already exists
-
-2. **Discover / Define**
-   - understand why the work matters
-   - surface blind spots and risks
-   - converge to a defendable problem statement
-
-3. **Develop / Deliver / Handoff**
-   - shape the solution
-   - create epic with sized tasks
-   - route into `/flux:work` or engineer handoff
-   - show scoping progress so you always know where you are
-
-**Modes:**
-```bash
-/flux:scope Add notifications          # Shallow (~10 min) - compressed scoping
-/flux:scope Add notifications --deep   # Deep (~45 min) - full staged workflow
-/flux:scope Add notifications --explore 3  # Generate 3 competing approaches
-```
-
-`--explore` scaffolds multiple approaches in parallel (git worktrees), generates previews, and lets you compare before committing to one.
-
-### Linear Integration (Optional)
-
-Connect Flux to Linear for team workflows. Select a Linear project, scope it with the same Product OS-style shallow or deep flow, and create tasks directly in Linear.
-
-```bash
-/flux:scope --linear              # Browse teams → projects, select one to scope
-/flux:scope LIN-42                # Scope specific Linear issue
-/flux:scope PROJ-123 --deep       # Deep scope with Linear context
-```
-
-**What it does:**
-1. Checks if Linear MCP is available (guides setup if not)
-2. Lists teams → projects (Linear project = Flux epic)
-3. Pulls project description, milestones, existing issues
-4. Runs Product OS-style scoping with Linear context
-5. Creates tasks in Linear with proper dependencies
-6. Stores mapping in `.flux/epics/<id>/linear.json`
-
-**Setup:** Requires [Linear MCP](https://linear.app/docs/mcp).
-
-**Claude Code:**
-- In chat, run `/mcp`
-- Add server URL: `https://mcp.linear.app/mcp`
-- Authenticate in the MCP dialog
-
-If you prefer CLI, run this in an external terminal (not inside an active Claude Code chat session):
-```bash
-claude mcp add --transport http linear-server https://mcp.linear.app/mcp
-```
-
-**Other clients (Cursor, VS Code, Windsurf):**
-```json
-{
-  "mcpServers": {
-    "linear": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
-    }
-  }
-}
-```
-
-Full setup guide: https://linear.app/docs/mcp
-
-<details>
-<summary>Alternative: Skip interview, plan only</summary>
-
-```bash
-# If you already have a clear spec:
-/flux:plan fn-1                          # ~5-15 min
-```
-</details>
-
-### Find Better Tools
-
-```bash
-# Analyze your sessions, get personalized recommendations
-/flux:improve
-
-# Include community discoveries
-/flux:improve --discover
-```
-
-### Clean Up Your Codebase
-
-```bash
-# Scan and systematically fix code quality issues
-/flux:desloppify
-```
-
-Powered by [desloppify](https://github.com/peteromallet/desloppify) — a codebase quality scanner that combines mechanical detection (dead code, duplication, complexity) with LLM-based subjective review (naming, abstractions, architecture).
-
-**Why it's different:** The scoring system is designed to resist gaming. You can't just suppress warnings — the only way to raise the score is to actually make the code better.
-
-| Tier | What It Catches |
-|------|-----------------|
-| T1 | Auto-fixable: unused imports, debug logs |
-| T2 | Quick manual: unused vars, dead exports |
-| T3 | Judgment calls: near-dupes, single-use abstractions |
-| T4 | Major refactors: god components, mixed concerns |
-
-```bash
-/flux:desloppify scan          # See your score
-/flux:desloppify next          # Get next priority fix
-/flux:desloppify status        # Track progress
-```
-
-Target: **95+ strict score** = codebase a senior engineer would respect.
-
-That's it. Prime once, then Scope -> Build -> Review -> Improve. End sessions with Reflect. Keep the codebase clean. Repeat.
-
-### Build Persistent Memory
-
-Flux includes a **brain vault** — persistent memory that makes the agent smarter over time. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing).
-
-```bash
-# After a session — capture what was learned
-/flux:reflect
-
-# Weekly — mine past conversations for patterns you missed
-/flux:ruminate
-
-# Monthly — prune stale notes, extract new principles
-/flux:meditate
-```
-
-**What it does:**
-- Mistakes don't repeat (they're captured via `/flux:reflect`)
-- Codebase gotchas persist across sessions
-- Engineering principles ground decisions (16 battle-tested principles included)
-- Past conversations get mined for patterns you missed
-
-The brain vault lives at `brain/` and is Obsidian-compatible. Session start automatically injects the brain index so the agent knows what knowledge is available.
-
-### Secure by Design
-
-Flux includes **STRIDE-based security analysis** to catch vulnerabilities during scoping and review. Adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins).
-
-```bash
-# Generate threat model for your codebase
-/flux:threat-model
-
-# Scan code changes for vulnerabilities
-/flux:security-scan PR #123
-
-# Full security review with validation
-/flux:security-review --mode full
-```
-
-**What it catches:**
-- SQL injection, XSS, command injection (Tampering)
-- Authentication bypass, session hijacking (Spoofing)
-- IDOR, hardcoded secrets, data leaks (Information Disclosure)
-- Missing auth checks, privilege escalation (Elevation of Privilege)
-- Missing rate limits, resource exhaustion (Denial of Service)
-- Missing audit logs (Repudiation)
-
-Security findings are validated for exploitability with proof-of-concept generation. False positives are filtered automatically.
-
-> **You can stop reading here.** Everything below is optional deep-dives.
-
----
-
-## How `/flux:improve` Works
-
-Flux analyzes your **actual coding sessions** to find friction—then recommends specific tools that would help.
-
-### What It Detects
-
-| Signal | What It Means |
-|--------|---------------|
-| `shallow_prompts` | "Implement this" without context |
-| `blind_acceptance` | Never disagreeing with AI suggestions |
-| `no_docs_lookup` | Relying on outdated training data |
-| `undo_loops` | AI producing slop, needs better planning |
-| `memory_loss` | Context not persisting across sessions |
-
-### What It Recommends
-
-A curated database of **battle-tested solutions** mapped to your specific friction:
-
-| Category | Examples |
-|----------|----------|
-| **MCP Servers** | Context7 (live docs), Nia (repo research), Supermemory (persistence) |
-| **Skills** | Workflow templates, prompt libraries |
-| **CLI Tools** | Lefthook (git hooks), Beads (task tracking) |
-| **Workflows** | Clarify-first, test-driven-prompting |
-
-Browse or contribute: **[flux-recommendations](https://github.com/Nairon-AI/flux-recommendations)**
-
-### Example Output
-
-```
-Friction Patterns Detected:
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  shallow_prompts (8 occurrences)
-     Prompts lack sufficient context for quality responses.
-
-  no_docs_lookup (5 occurrences)
-     Not consulting documentation before implementation.
-
-Recommended Improvements:
-━━━━━━━━━━━━━━━━━━━━━━━━
-
-  1. Context7 MCP Server
-     ├─ Fetches live, version-specific documentation
-     └─ Addresses: no_docs_lookup
-
-  2. prompt-templates skill
-     ├─ Pre-built templates for common tasks
-     └─ Addresses: shallow_prompts
-
-Would you like me to install any of these?
-```
-
-The agent handles installation. You just say "yes."
-
----
-
-## The Vision
-
-### For Individual Engineers
-
-Get better at AI collaboration through data, not vibes.
-
-> "Your sessions are 40% shallower than top performers. They disagree with AI suggestions 3x more often. Here's what to install to close the gap."
-
-### For Teams
-
-- Who's actually leveraging AI effectively
-- Where the team needs skill development
-- Which workflows produce the highest quality output
-- Share your entire setup with new engineers for instant 10x onboarding
-
-### For Engineering Leaders (Coming Soon)
-
-CTO-level observability:
-- Team benchmarks and improvement trends
-- Quality-of-thinking metrics (not just velocity)
-- Recruiting signals: "This candidate demonstrates sophisticated AI collaboration patterns"
 
 ---
 
 ## Commands
 
-| Command | What it does |
-|---------|--------------|
-| `/flux:setup` | Initialize Flux in your project |
-| `/flux:scope <idea>` | **Guided scoping workflow** — staged interview, progress, and handoff (`--deep`, `--explore N`, `--linear`) |
-| `/flux:plan <idea>` | Create tasks only (skip problem space interview) |
-| `/flux:work <task>` | Execute task with context reload |
-| `/flux:sync <epic>` | Sync specs after drift |
-| `/flux:impl-review` | Implementation review |
-| `/flux:epic-review <epic>` | Verify epic completion |
-| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) |
-| `/flux:desloppify` | Systematic code quality improvement (scan → fix loop) |
-| `/flux:improve` | Analyze sessions, recommend tools |
-| `/flux:reflect` | Capture learnings from current session into brain vault |
-| `/flux:ruminate` | Mine past conversations for uncaptured patterns |
-| `/flux:meditate` | Audit and prune brain vault, extract new principles |
-| `/flux:threat-model` | Generate STRIDE-based security threat model |
-| `/flux:security-scan` | Scan code changes for security vulnerabilities |
-| `/flux:security-review` | Comprehensive security review with STRIDE analysis |
-| `/flux:vuln-validate` | Validate findings and generate proof-of-concept |
-| `/flux:score` | Compute AI-native capability score |
-| `/flux:profile` | Export/share SDLC profile |
-| `/flux:contribute` | Report bug and auto-create PR to fix Flux |
+**Core SDLC**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:setup` | Initialize Flux in your project | 1. First time using Flux — scaffolds `.flux/`, configures preferences, installs tools |
+| `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) | 2. After setup — Flux detects unprimed repos and prompts you. Runs once per repo |
+| `/flux:propose` | Stakeholder feature proposal with engineering pushback | 2.5. A non-technical teammate describes a feature — Flux interviews them, pushes back on complexity/cost, documents the proposal, and creates a PR for engineering handoff. Also detected implicitly during `/flux:scope` |
+| `/flux:rca` | Root cause analysis for bugs | 2.5. You paste an error or describe a bug — Flux traces backward to the root cause, verifies with adversarial review, writes the fix with regression test, and embeds learnings. Also detected implicitly during `/flux:scope` |
+| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux interviews you, creates an epic with sized tasks |
+| `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — skip the Double Diamond interview, go straight to task creation |
+| `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
+| `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
+| `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |
+| `/flux:sync <epic>` | Sync specs after drift | Anytime — you realized task 3 invalidated task 5's approach, sync updates downstream specs |
+| `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) | 7. After epic review flags a low score, or manually when you want to improve code quality |
+
+**Security**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:security-scan` | Scan for vulnerabilities | Auto-triggered inside epic review when changed files touch auth/API/secrets/permissions. Also callable standalone on any PR |
+| `/flux:threat-model` | STRIDE-based threat model | Before building security-sensitive features — generates threat model to inform your design |
+| `/flux:security-review` | Full security review | Before shipping to production — comprehensive repo-wide security audit |
+| `/flux:vuln-validate` | Validate findings with PoC | After a scan finds issues — generates proof-of-concept exploits to confirm real vs false positive |
+
+**Maintenance (between epics)**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:reflect` | Capture session learnings to brain vault and extract reusable skills | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
+| `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
+| `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
+| `/flux:improve` | Analyze sessions, recommend tools from the recommendation engine | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
+
+**Utilities**
+
+| Command | What it does | When it happens |
+|---------|-------------|-----------------|
+| `/flux:score` | AI-native capability score | Anytime — benchmark your repo's AI-readiness |
+| `/flux:profile` | Export/share SDLC profile | Anytime — share your Flux setup with teammates or the community |
+| `/flux:contribute` | Report bug and auto-create fix PR | When you find a Flux bug — auto-creates a fix PR on the Flux repo |
 
 Full reference: `docs/commands-reference.md`
 
+### Prerequisites
+
+Python 3.9+, jq, git. Flux checks for these during execution and tells you what's missing.
+
 ---
 
-## Prerequisites
+## Troubleshooting
 
-| Requirement | Install |
-|-------------|---------|
-| Python 3.9+ | `brew install python` / `apt install python3` |
-| jq | `brew install jq` / `apt install jq` |
-| git | Usually pre-installed |
+> **AI Agents**: If you're debugging a Flux installation issue, follow these steps exactly. Do not guess.
 
-Flux checks for these during execution and tells you what's missing.
+<details>
+<summary><strong>"Unknown skill: flux:setup"</strong></summary>
+
+The plugin is registered but not enabled. Add to `~/.claude/settings.json`:
+
+```bash
+jq '.enabledPlugins["flux@nairon-flux"] = true' ~/.claude/settings.json > tmp.json && mv tmp.json ~/.claude/settings.json
+```
+Then restart Claude Code.
+</details>
+
+<details>
+<summary><strong>Agent tried to run /plugin add in bash</strong></summary>
+
+`/plugin` is a Claude Code slash command, not a shell command. Run it directly in the chat input, then restart.
+</details>
+
+<details>
+<summary><strong>Commands still not working after enabling</strong></summary>
+
+Clear cache and reinstall:
+```bash
+rm -rf ~/.claude/plugins/cache/nairon-flux ~/.claude/plugins/marketplaces/nairon-flux
+```
+Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin add https://github.com/Nairon-AI/flux@latest`, restart again.
+</details>
+
+<details>
+<summary><strong>Old version / missing new commands</strong></summary>
+
+```bash
+rm -rf ~/.claude/plugins/cache/nairon-flux
+claude plugin marketplace add https://github.com/Nairon-AI/flux
+```
+Restart Claude Code.
+</details>
+
+<details>
+<summary><strong>Nuclear option: complete reset</strong></summary>
+
+```bash
+rm -rf ~/.claude/plugins/cache/nairon-flux ~/.claude/plugins/marketplaces/nairon-flux
+# Edit ~/.claude/plugins/installed_plugins.json — remove "nairon-flux" entries
+# Edit ~/.claude/settings.json — remove "flux@nairon-flux" from enabledPlugins
+```
+Restart Claude Code, run `/plugin marketplace add https://github.com/Nairon-AI/flux`, then `/plugin add https://github.com/Nairon-AI/flux@latest`, restart, run `/flux:setup`.
+</details>
+
+**Still stuck?** Join [Discord](https://discord.gg/CEQMd6fmXk) or open a [GitHub issue](https://github.com/Nairon-AI/flux/issues).
 
 ---
 
 ## FAQ
 
-**What data does Flux read?**
-- Repo structure (package.json, configs)
-- Installed MCPs from `~/.mcp.json`
-- Optionally: Claude Code session files (with consent)
+<details>
+<summary><strong>Do I have to follow every step Flux suggests?</strong></summary>
 
-**Is any data sent externally?**
-Analysis runs locally. Network only used to fetch recommendations repo.
+No — Flux is a guide, not a gatekeeper. You can skip steps, override suggestions, or exit any flow whenever you want.
 
-**Where do recommendations come from?**
-[Nairon-AI/flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) — 30+ curated tools, community-driven.
+The reason Flux has structured flows is to stop the AI agent from going rogue — without guardrails, agents tend to start building before they understand what they're building, skip testing, or forget context halfway through. Flux prevents that. But **you** are always in control. If a step feels unnecessary for your situation, skip it.
 
-**Can I use Flux with Beads?**
-Not recommended. Both are task tracking systems — Flux uses `.flux/` + `fluxctl`, Beads uses `.beads/` + `bd`. Having both in your AGENTS.md will confuse the agent about which to use. Pick one:
-- **Flux** if you want the full workflow (scope → plan → work → review)
-- **Beads** if you just want lightweight issue tracking
+In practice, most devs use `/flux:scope` for complex or ambiguous features (where the interview catches blind spots), and just talk naturally for everything else ("fix the bug in auth.ts" — Flux routes straight to work, no ceremony).
+</details>
 
-If migrating from Beads: remove the beads section from AGENTS.md and run `/flux:setup`.
+<details>
+<summary><strong>Will Flux slow me down on small tasks?</strong></summary>
+
+No. Flux reads your message and figures out what kind of task it is.
+
+- **Quick fix** ("fix the typo in header.tsx") → goes straight to implementation. No scoping interview, no epic creation — just does the work.
+- **Clear task** ("add a loading spinner to the dashboard") → creates a lightweight plan and starts building.
+- **Ambiguous feature** ("add user notifications") → triggers the scoping flow to make sure you've thought through edge cases before the agent writes code.
+
+The full Product OS scoping flow (the interview, problem statement, task breakdown) only activates when you explicitly run `/flux:scope` or when the request is vague enough that building without clarification would waste time. For day-to-day work, Flux stays out of your way.
+</details>
+
+<details>
+<summary><strong>What data does Flux read and where does it store things?</strong></summary>
+
+Flux reads your **repo structure** (files, directories, dependencies), your **installed MCP servers** (from `.mcp.json`), and optionally your **Claude Code session transcripts** (only when you run `/flux:improve` and give explicit consent).
+
+Everything Flux creates lives in a `.flux/` directory inside your project — task state, brain vault notes, session metadata. It never writes to your home directory or global config. Each project gets its own independent Flux setup, so different repos can have different tools, skills, and configurations without interfering with each other.
+
+The only global change Flux makes is during `/flux:setup` if you choose to install CLI tools (like `jq` or `gh`) — but even that is opt-in and asks you first.
+</details>
+
+<details>
+<summary><strong>Is any data sent externally? Is there telemetry?</strong></summary>
+
+**No telemetry. No usage tracking. No analytics.**
+
+The only network request Flux makes is **checking for plugin updates** — a version check against the GitHub release tag at the end of commands.
+
+That's it. All analysis (session parsing, friction detection, scoring) runs entirely on your machine. Your code never leaves your laptop.
+</details>
+
+<details>
+<summary><strong>Can I use Flux alongside other task tracking tools (Beads, TodoWrite, etc.)?</strong></summary>
+
+Not recommended. Flux uses its own task tracking system (`.flux/` + `fluxctl`) to maintain state across sessions — what's been scoped, what's in progress, what's done. If you also use Beads, TodoWrite, or markdown TODO files, the agent will see two conflicting sources of truth and get confused about what to work on next.
+
+Pick one system and stick with it. If you prefer Beads, use Beads. If you want the full Flux workflow (scoping, brain vault, reviews, recommendations), use Flux. Mixing them creates more problems than it solves.
+</details>
+
+<details>
+<summary><strong>Can Flux run autonomously without me watching?</strong></summary>
+
+Yes — that's what Ralph mode is for. After scoping an epic, Flux offers you two execution modes:
+
+1. **Task-by-task** (`/flux:work`) — you stay in the loop, review each task as it completes, and guide the agent interactively.
+2. **Ralph mode** (`/flux:ralph-init`) — a repo-local autonomous harness that works through every task in the epic unattended. It runs plan review, implementation, code review, and completion review for each task without stopping. You start it from your terminal (`./scripts/ralph/ralph.sh`) and check results in the morning.
+
+Ralph uses multi-model review gates and produces receipts as proof-of-work. It can be paused and resumed at any point.
+</details>
+
+<details>
+<summary><strong>Why does the version on main show "X.Y.Z-dev" instead of matching the latest release?</strong></summary>
+
+By design. When a release is published (e.g., `v2.7.0`), a post-release workflow automatically bumps the version on main to `2.7.1-dev`. This ensures:
+
+1. **Cache prevention** — the `-dev` suffix gives the plugin a distinct semver on main so users installing `@latest` always get the actual release, not a development snapshot.
+2. **Development clarity** — you can immediately tell whether you're looking at released code (`2.7.0`) or in-progress development (`2.7.1-dev`).
+
+The `0.0.1` difference is just a placeholder — the next release will be whatever the conventional commits dictate (patch, minor, or major), not necessarily `2.7.1`.
+</details>
+
+---
+
+## Roadmap
+
+### Next — Relay
+
+A parallel orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
+
+Ralph already handles autonomous *serial* execution (one task at a time, unattended). Relay will coordinate multiple agents working *in parallel* across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR.
+
+### Feature Roadmap
+
+| Command | Enhancement |
+|---------|-------------|
+| `/flux:work` | Git worktree support for parallel development |
+| `/flux:scope` | Meeting transcript ingestion |
 
 ---
 
 ## Philosophy
 
-1. **AI amplifies your skill level, it doesn't replace it.** A mediocre engineer with AI is still mediocre.
-
+1. **AI amplifies your skill level, it doesn't replace it.**
 2. **Disagreement is a feature.** The best AI collaborators push back constantly.
-
 3. **Process beats raw talent.** Structured approach > vibes-based prompting.
-
 4. **What gets measured gets improved.** You can't fix what you can't see.
-
-5. **The agent should do the work.** Analysis, installation—AI handles it. You decide.
-
----
-
-## Feature Roadmap
-
-Upcoming enhancements to core commands:
-
-| Command | Enhancement | Description |
-|---------|-------------|-------------|
-| `/flux:work` | Git worktree support | Isolate task work in separate worktrees for parallel development and clean rollbacks |
-| `/flux:scope` | Transcript ingestion | Ingest meeting transcripts, auto-detect affected issues, ask clarifying questions, update task details |
-
-Want to contribute? Check out the [issues](https://github.com/Nairon-AI/flux/issues) or join the [Discord](https://discord.gg/CEQMd6fmXk).
-
----
-
-## Roadmap: Universe Integration
-
-Flux will sync to [Nairon Universe](https://nairon.ai/universe) — a public portal for AI-native engineers.
-
-**Public Profile (visible to others):**
-| Data | Example |
-|------|---------|
-| Sessions | "350 sessions with Claude Code" |
-| Tokens | "15M tokens used this month" |
-| Tools | MCP servers, skills, CLI tools you use |
-| Activity | Recent projects, contributions |
-
-**Private Dashboard (for you):**
-| Data | What It Shows |
-|------|---------------|
-| AI-Native Score | Your grade across 5 dimensions |
-| Radar Chart | Interview depth, pushback ratio, prompt quality, iteration efficiency |
-| Trends | How you're improving over time |
-
-**Why this matters:** When you follow an engineer on Universe, you can see exactly what tools they use and how they work with AI. No more guessing — just copy what works.
-
-*Status: Coming Q2 2026. Auth will use Universe accounts.*
+5. **The agent should do the work.** Analysis, installation — AI handles it. You decide.
 
 ---
 
@@ -861,7 +678,6 @@ No hype. No AI slop. Just practical discussions on becoming the strongest develo
 
 - `docs/commands-reference.md` — Full command reference
 - `docs/architecture.md` — How Flux works internally
-- `docs/troubleshooting.md` — Common issues and fixes
 
 ---
 
