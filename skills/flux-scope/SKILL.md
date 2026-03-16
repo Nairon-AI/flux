@@ -207,19 +207,33 @@ Does this capture it? What would you change?
 
 # STEP 6.1: ASSUMPTION STRESS TEST (auto-triggers after Step 6)
 
-**Read [stress-test.md](stress-test.md) for full execution details.**
+After the problem statement is confirmed, scan the conversation (Steps 1-6) for these signals:
 
-After the problem statement is confirmed, Flux automatically scans the conversation for assumptions that need stress-testing. This always runs — the only question is whether the lightweight audit or the full dialectic fires.
+**Detection signals** (check conversation for ANY match):
+- **One-way door decisions** — architecture choices, auth strategy, data model, API contracts, technology lock-in, security model
+- **UX assumptions without user research** — "users would prefer...", "most people want...", auth/onboarding chosen without user input, workflow assumptions
+- **Deferred authority** — "my senior said...", "my lead told me...", "we've always done it this way", "the competitor does X"
+- **Competing approaches** — user mentioned alternatives, dismissed an option quickly, or contradicted themselves across steps
 
-**Quick Assumptions Audit** (always, ~2 min): Surface the top 3-4 assumptions from Steps 1-6. Ask the user which they're confident about and which are uncertain.
+**If NO signals detected** — run the Quick Assumptions Audit (inline, ~2 min):
 
-**Full Dialectic** (auto-triggers on detected signals, ~8-12 min): Spawns two opposing subagents that build fully committed cases for each side of a tension, then synthesizes a recommendation that transforms the question. Triggers on:
-- **One-way door decisions** — architecture, auth strategy, data model, API contracts
-- **UX assumptions without user research** — "users would prefer...", auth flow choices, workflow assumptions
-- **Deferred authority** — "my senior said...", "we've always done it this way", "the competitor does X"
-- **Competing approaches** — user mentioned alternatives or dismissed an option too quickly
+```
+Before we move to the solution, here are the key assumptions we're making:
 
-The stress test output (decisions, rationale, reversal signals) feeds directly into the epic spec at Step 7. Assumptions that can't be resolved during scoping are tagged for validation during implementation.
+1. [Assumption from Core Desire]
+2. [Assumption from Reasoning Chain]
+3. [Assumption from User Perspective]
+4. [Technical assumption]
+
+For each: are you confident, or is this worth questioning?
+```
+
+If user confirms all → proceed to Step 7.
+If ANY flagged as uncertain → treat as a detected signal.
+
+**If signals detected** → **Read [stress-test.md](stress-test.md) now** for the full dialectic execution (spawns two opposing subagents, synthesizes recommendation, ~8-12 min). Do NOT read stress-test.md unless signals are detected.
+
+The stress test output (decisions, rationale, reversal signals) feeds into the epic spec at Step 7 under "Stress-Tested Assumptions".
 
 ---
 
