@@ -283,7 +283,7 @@ flowchart TD
 | **Session Start** | Startup hook injects brain vault index + workflow state. Recommendation pulse checks for new tools and brain health (once/day). | Without this, every session starts from zero — the agent doesn't know what it learned yesterday, what work is in progress, or what the project's conventions are. The hook gives it continuity. |
 | **Prime** | One-time readiness audit: 8 pillars, 48 criteria. | Agents routinely skip foundational setup (testing, CI, linting, security) and jump straight to features. Prime forces a baseline before any real work starts, catching gaps that would otherwise surface as bugs weeks later. |
 | **Ruminate** | *Auto after Prime (conditional):* mines past Claude Code conversations to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
-| **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets. Propose forces clarity and estimates before engineering time is spent. |
+| **Propose** | Stakeholder feature proposal: conversational planning with deep codebase investigation, honest time estimates, and engineering pushback — all presented in plain language a non-technical founder can skim. Supports Google Doc import. Updates business context automatically. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets — and "just remove credits" gets treated as a quick fix when it's actually a 2-week overhaul. Propose does a real technical investigation and gives honest estimates, so stakeholders understand the true cost before engineering time is spent. |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, run a viability gate ("should we build this?"), stress-test assumptions, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature — they never say "this doesn't make sense" or "have you talked to users?" Without scoping, they miss edge cases, build the wrong thing, or validate bad ideas. The interview catches blind spots before a single line of code is written. The viability gate is the anti-sycophancy mechanism — it will tell you not to build something if the evidence doesn't support it. |
 | **Stress Test** | *Auto during Scope:* spawns two opposing subagents to argue both sides of detected tensions (architecture choices, UX assumptions, deferred authority). Synthesizes a recommendation that transforms the question — not compromise, reconceptualization. | Developers make one-way door decisions on autopilot — auth strategy, data model, API contracts — based on assumptions they haven't examined. "My senior said X" or "users probably want Y" become load-bearing beliefs that are expensive to reverse. The stress test catches these *before* any code is written, when changing direction costs nothing. Inspired by the [Electric Monks](https://github.com/KyleAMathews/hegelian-dialectic-skill) dialectic pattern. |
@@ -339,13 +339,18 @@ fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 
 Flux's brain is an Obsidian-compatible vault (`brain/`) that serves as the single knowledge store for the entire system. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
 
-- **Scoping** reads brain principles and pitfalls to ground research and plan structure
+- **Scoping** reads brain principles, pitfalls, and business context to ground research and plan structure
+- **Propose** reads business context and glossary, does a real codebase investigation, then writes back new domain terms and area-specific context learned during the session
 - **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
 - **Epic review** writes learnings back to `brain/pitfalls/<area>/` after SHIP, categorized by domain
-- **Meditate** promotes recurring pitfalls into proper principles and prunes one-offs
+- **Meditate** promotes recurring pitfalls into proper principles, prunes one-offs, and audits business context for stale facts
 
 ```
 brain/
+  business/      # Business context (populated during setup, enriched by propose)
+    context.md   #   Product stage, team structure, key context
+    glossary.md  #   Ubiquitous language — domain-specific terms
+    billing.md   #   Area-specific: how billing works, key decisions (auto-created)
   principles/    # Engineering principles (curated via meditate)
   pitfalls/      # Auto-captured from review iterations, organized by area
     frontend/    #   e.g., missing-error-states.md
