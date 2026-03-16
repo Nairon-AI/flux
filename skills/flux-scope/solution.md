@@ -28,6 +28,12 @@ $FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
 - **Blind Spots**: <from Step 4>
 - **Risks**: <from Step 5>
 
+## Stress-Tested Assumptions
+<from Step 6.1 — include decisions, rationale, reversal signals>
+
+### Assumptions Deferred to Implementation
+<assumptions that couldn't be resolved during scoping — validate during these tasks>
+
 ## Scope
 <To be filled after research>
 

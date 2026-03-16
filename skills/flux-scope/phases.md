@@ -15,7 +15,7 @@ The scarce resource has always been clarity — knowing what to build, defining 
 ## Overview
 
 ```
-START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
+START -> DISCOVER -> DEFINE -> STRESS TEST -> DEVELOP -> DELIVER -> HANDOFF
 ```
 
 At all times, Flux should persist:
@@ -81,6 +81,28 @@ Use `fluxctl scope-status` to render a progress card after each major transition
 **Exit Signal**: Can articulate the problem in one sentence and defend it.
 
 **Output**: One clear problem statement.
+
+---
+
+## STRESS TEST (Step 6.1 — auto-triggers after DEFINE)
+
+**Purpose**: Surface and challenge hidden assumptions before committing to a solution. Catches one-way door mistakes, UX assumptions without user validation, and deferred authority ("my senior said...") before any code is written.
+
+**Always runs**: Quick Assumptions Audit (~2 min) — surfaces top assumptions from DEFINE.
+
+**Auto-triggers full dialectic** (~8-12 min) when signals detected:
+- One-way door decisions (architecture, auth, data model, API contracts)
+- UX assumptions made without user research
+- Deferred authority ("my lead said...", "we've always done it this way")
+- Competing approaches dismissed too quickly
+
+**Process**: Spawns two subagents that argue opposing positions with full commitment, then synthesizes a recommendation that transforms the original question. Not compromise — reconceptualization.
+
+**Exit Signal**: User confirms or modifies the recommended approach. Unresolved assumptions are tagged for validation during implementation.
+
+**Output**: Stress-tested decisions with reversal signals and costs, fed into the epic spec.
+
+See [stress-test.md](stress-test.md) for full execution details.
 
 ---
 

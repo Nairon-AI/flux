@@ -193,6 +193,7 @@ flowchart TD
     Propose["Propose<br/>(stakeholder intake)"]
     RCA["RCA<br/>(root cause analysis)"]
     Scope["Scope<br/>(problem definition)"]
+    StressTest{"Stress Test<br/>(assumption dialectic)"}
     Work["Work<br/>(task loop)"]
     ImplReview["Impl Review<br/>(per-task, lightweight)"]
     EpicReview["Epic Review<br/>(per-epic, thorough)"]
@@ -213,7 +214,10 @@ flowchart TD
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"bug detected"| RCA
     RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
-    Scope -->|"creates epic + tasks<br/>+ Browser QA checklist"| ExecChoice{"Execute how?"}
+    Scope -->|"problem defined"| StressTest
+    StressTest -->|"one-way door /<br/>UX assumption /<br/>deferred authority"| StressTestRun["Spawn Opposing<br/>Subagents"]
+    StressTest -->|"no tensions<br/>detected"| ExecChoice
+    StressTestRun -->|"synthesize +<br/>user decides"| ExecChoice{"Execute how?"}
 
     ExecChoice -->|"task-by-task<br/>(interactive)"| Work
     ExecChoice -->|"ralph mode<br/>(autonomous)"| Ralph["Ralph<br/>(autonomous harness)"]
@@ -279,7 +283,8 @@ flowchart TD
 | **Ruminate** | *Auto after Prime (conditional):* mines past Claude Code conversations to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
 | **Propose** | Stakeholder feature proposal: conversational planning with engineering pushback, cost/complexity estimates, documented handoff via PR. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets. Propose forces clarity and estimates before engineering time is spent. |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
-| **Scope** | Double Diamond interview: classify work, surface blind spots, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
+| **Scope** | Double Diamond interview: classify work, surface blind spots, stress-test assumptions, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature. Without scoping, they miss edge cases, build the wrong thing, or over-engineer. The interview catches blind spots before a single line of code is written. |
+| **Stress Test** | *Auto during Scope:* spawns two opposing subagents to argue both sides of detected tensions (architecture choices, UX assumptions, deferred authority). Synthesizes a recommendation that transforms the question — not compromise, reconceptualization. | Developers make one-way door decisions on autopilot — auth strategy, data model, API contracts — based on assumptions they haven't examined. "My senior said X" or "users probably want Y" become load-bearing beliefs that are expensive to reverse. The stress test catches these *before* any code is written, when changing direction costs nothing. Inspired by the [Electric Monks](https://github.com/KyleAMathews/hegelian-dialectic-skill) dialectic pattern. |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. After each task, checks for friction signals (build errors, lint failures, API hallucinations) and offers targeted tool recommendations inline — install, skip, or snooze for 7 days. Snoozed signals automatically resurface to check for new tooling. In Ralph mode, this loop runs autonomously without stopping. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Inline friction detection catches recurring pain points *during* the build, not after — so you can unblock immediately instead of suffering through an entire epic before getting a recommendation. |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB *optional*, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (multiple models reaching consensus) catches what single-model review misses. BYORB (Greptile, CodeRabbit, etc.) is optional — skipped if no bot is configured. Browser QA catches what code review can't see at all. |
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
@@ -300,6 +305,7 @@ flowchart TD
 | **Reflect** | After PR is submitted | Automatic — captures learnings while context is fresh |
 | **Meditate** | After Reflect, if 20+ pitfall files | Automatic — prunes stale, promotes patterns |
 | **Ruminate** | After Prime, if brain thin + past sessions exist | Automatic — bootstraps brain from conversation history |
+| **Stress Test** | During scope, if one-way door / UX assumption / deferred authority detected | Automatic — spawns opposing subagents, synthesizes recommendation |
 | **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
 | **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
 | **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |

@@ -205,6 +205,24 @@ Does this capture it? What would you change?
 
 ---
 
+# STEP 6.1: ASSUMPTION STRESS TEST (auto-triggers after Step 6)
+
+**Read [stress-test.md](stress-test.md) for full execution details.**
+
+After the problem statement is confirmed, Flux automatically scans the conversation for assumptions that need stress-testing. This always runs — the only question is whether the lightweight audit or the full dialectic fires.
+
+**Quick Assumptions Audit** (always, ~2 min): Surface the top 3-4 assumptions from Steps 1-6. Ask the user which they're confident about and which are uncertain.
+
+**Full Dialectic** (auto-triggers on detected signals, ~8-12 min): Spawns two opposing subagents that build fully committed cases for each side of a tension, then synthesizes a recommendation that transforms the question. Triggers on:
+- **One-way door decisions** — architecture, auth strategy, data model, API contracts
+- **UX assumptions without user research** — "users would prefer...", auth flow choices, workflow assumptions
+- **Deferred authority** — "my senior said...", "we've always done it this way", "the competitor does X"
+- **Competing approaches** — user mentioned alternatives or dismissed an option too quickly
+
+The stress test output (decisions, rationale, reversal signals) feeds directly into the epic spec at Step 7. Assumptions that can't be resolved during scoping are tagged for validation during implementation.
+
+---
+
 # EXPLORE MODE (if --explore)
 
 If `--explore` flag is set, diverge on approaches before converging to solution.

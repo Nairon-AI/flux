@@ -62,6 +62,12 @@ Understand how users will experience this.
 - "What would make them NOT use this feature?"
 - "Are there different user segments with different needs?"
 
+### User Research Check (ask when feature involves user-facing decisions)
+If the feature involves UX decisions (auth flow, onboarding, navigation, workflow design, settings, UI layout) and the user hasn't mentioned talking to actual users, ask:
+- "This feature involves [UX decision]. Have you spoken to users about what they'd prefer? If not, that's fine — I'll flag the UX assumptions for validation during implementation."
+
+This is a genuine question, not a gate. The goal is to make UX assumptions explicit rather than invisible. Many features ship without user research — but the assumption should be deliberate.
+
 ---
 
 ## Blind Spots
