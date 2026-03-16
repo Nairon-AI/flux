@@ -64,9 +64,12 @@ Understand how users will experience this.
 
 ### User Research Check (ask when feature involves user-facing decisions)
 If the feature involves UX decisions (auth flow, onboarding, navigation, workflow design, settings, UI layout) and the user hasn't mentioned talking to actual users, ask:
-- "This feature involves [UX decision]. Have you spoken to users about what they'd prefer? If not, that's fine — I'll flag the UX assumptions for validation during implementation."
+- "This feature involves [UX decision]. Have you spoken to users about what they'd prefer, or is this based on what we think they'd want?"
 
-This is a genuine question, not a gate. The goal is to make UX assumptions explicit rather than invisible. Many features ship without user research — but the assumption should be deliberate.
+If the answer is assumption-based, follow up directly:
+- "A lot of UX decisions that feel obvious turn out wrong. For example, developers often assume email/password auth is standard — but most modern users prefer 'Continue with Google' because it's zero-friction. What evidence do you have for your assumption here? If none, I'll flag it as a key risk."
+
+This is a genuine challenge, not a formality. Developers routinely make UX assumptions that feel reasonable but haven't been validated — auth strategy, onboarding flow, navigation structure, default settings. These are often one-way door decisions that are expensive to reverse after launch. The goal is to surface these assumptions *before* any code is written, when changing direction costs nothing.
 
 ---
 

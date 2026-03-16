@@ -187,7 +187,49 @@ Walk through Steps 1-6 using the question tool. Each step has quick-mode and dee
 | 3. User Perspective | WHO | Understand how users will experience this |
 | 4. Blind Spots | GAPS | Surface what might be missing |
 | 5. Risks | DANGER | Identify what could go wrong |
+| 5.5. Viability Gate | SHOULD WE? | Honest assessment — is this worth building? |
 | 6. Problem Statement | CONVERGE | Synthesize into one clear statement |
+
+### Step 5.5: Viability Gate (SHOULD WE BUILD THIS?)
+
+After Steps 1-5, the agent has heard the user's reasoning, user perspective, blind spots, and risks. Before writing a problem statement, **honestly evaluate whether this should be built at all**.
+
+Synthesize everything heard so far and check for these red flags:
+
+| Red Flag | Signal |
+|----------|--------|
+| **No real user need** | User can't articulate who wants this or their current workaround. "It would be cool" is not a need. |
+| **Solution looking for a problem** | The reasoning goes technology → feature, not problem → solution. "We should use X" instead of "users struggle with Y." |
+| **Cost of inaction is zero** | When asked "what happens if we don't build this?" the answer was vague or trivial. |
+| **Simpler alternative exists** | A config change, existing tool, or 10-line fix would solve 80% of the problem. |
+| **Building on unvalidated assumptions** | Core UX or architecture decisions are based on "I think users want..." without any evidence. |
+| **Scope exceeds value** | The estimated effort far exceeds the problem's impact. |
+
+**If 2+ red flags are present**, the agent MUST present an honest assessment:
+
+```
+Before I write the problem statement, I want to be direct:
+
+Based on what you've told me, I have concerns about building this:
+
+- [Red flag 1]: [specific evidence from conversation]
+- [Red flag 2]: [specific evidence from conversation]
+
+My honest recommendation: [one of:]
+  - "This isn't worth building right now. Here's why: [reason]"
+  - "A simpler approach would solve this: [alternative]"
+  - "This is worth building, but not the way we discussed. Here's what I'd change: [reframe]"
+  - "We don't have enough information to build this well. Before writing code, we need: [what to validate]"
+
+You know your context better than I do — if you disagree, tell me why and we'll continue.
+But I'd rather push back now than let you build something that doesn't make sense.
+```
+
+**If 0-1 red flags** → proceed to Step 6 normally.
+
+**This is not a gate that blocks progress.** The user can override it. But the agent must give its honest opinion — not just validate whatever the user wants to hear. The goal is to catch the cases where Claude would normally say "great idea, let me build that" when it should be saying "are you sure?"
+
+---
 
 **Step 6 output** — present synthesis and confirm:
 ```
