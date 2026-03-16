@@ -77,10 +77,7 @@ If user passes `--skip-sessions`, skip the consent question entirely.
 
 ## Recommendations Database
 
-**Free tier**: Bundled with the plugin at `recommendations/` (~16 curated tools).
-**Pro tier**: Extended database from `nairon-ai/flux-recommendations` (50+ tools, requires Flux Pro).
-
-Fallback order: remote Pro repo → cached clone → bundled free set.
+Fetched from: `https://github.com/Nairon-AI/flux-recommendations`
 
 Categories:
 - `mcps/` - Model Context Protocol servers
@@ -110,7 +107,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
+Run: /plugin add https://github.com/Nairon-AI/flux@latest
 Then restart Claude Code for changes to take effect.
 ---
 ```
