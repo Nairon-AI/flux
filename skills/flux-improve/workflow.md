@@ -301,9 +301,6 @@ USING_PRO=false
 PRO_API_RECS=""
 
 if [ "$IS_PRO" = "true" ]; then
-  # Get license key for API auth
-  LICENSE_KEY=$(python3 "${PLUGIN_ROOT}/scripts/flux-license.py" status --format json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key_prefix',''))" 2>/dev/null || echo "")
-
   # Get full key from config for API call
   FULL_KEY=$(python3 -c "
 import json, pathlib
@@ -377,11 +374,15 @@ except: print('[]')
     echo "  Matched $REC_COUNT recommendations for your stack"
     echo ""
   else
-    # API failed or returned no results — fall back to bundled set
+    # API failed, returned no results, or no friction signals to match — fall back to bundled set
     RECS_DIR="$BUNDLED_RECS_DIR"
     USING_PRO=true
     PRO_API_RECS=""
-    echo "Flux Pro active — using bundled recommendations (API unavailable)"
+    if [ "$FRICTION_SIGNALS_JSON" = "[]" ]; then
+      echo "Flux Pro active — no friction signals detected, using bundled recommendations"
+    else
+      echo "Flux Pro active — using bundled recommendations (API unavailable)"
+    fi
     echo ""
   fi
 fi

@@ -51,7 +51,8 @@ def debug_log(msg: str) -> None:
     if os.environ.get("FLUX_LICENSE_DEBUG") != "1" and os.environ.get("FLUX_UNIVERSE_DEBUG") != "1":
         return
     # Redact license keys
-    redacted = re.sub(r"FLUX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}", "FLUX-****-****-****", msg)
+    # Redact any license key patterns (Polar keys are UUIDs or custom format)
+    redacted = re.sub(r"[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}", "****-****-****-****-****", msg, flags=re.IGNORECASE)
     print(f"[flux-license] {redacted}", file=sys.stderr)
 
 
@@ -436,7 +437,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Examples:
-  flux-license.py activate FLUX-XXXX-XXXX-XXXX   # Activate Pro
+  flux-license.py activate <YOUR-LICENSE-KEY>     # Activate Pro
   flux-license.py deactivate                       # Remove license
   flux-license.py status                           # Show status
   flux-license.py check                            # Script check (exit code)
@@ -448,7 +449,7 @@ Get Flux Pro: {CHECKOUT_URL}
     subparsers = parser.add_subparsers(dest="command", help="License commands")
 
     activate_parser = subparsers.add_parser("activate", help="Activate a license key")
-    activate_parser.add_argument("key", help="Flux Pro license key (e.g., FLUX-XXXX-XXXX-XXXX)")
+    activate_parser.add_argument("key", help="Flux Pro license key (from your Polar checkout email)")
 
     subparsers.add_parser("deactivate", help="Remove license key")
 
