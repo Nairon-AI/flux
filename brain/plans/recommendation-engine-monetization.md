@@ -2,7 +2,7 @@
 
 > **Goal**: Turn the Flux recommendation engine into a paid add-on with a data moat, using Polar.sh for billing and license key validation. Free users get friction detection; Pro users get matched recommendations powered by community success data.
 >
-> **Status**: Plan finalized. Not yet implemented — do NOT merge Flux-side changes until Polar + Universe API are ready.
+> **Status**: Phase 1 complete. Phase 2 nearly complete — Polar setup done, Flux client gating done, Universe API deployed + seeded. Remaining: wire Polar webhooks for auto-revoke on churn.
 
 ---
 
@@ -12,7 +12,7 @@
 |----------|----------|
 | Access mechanism | **API-only** — no GitHub repo access benefit. Eliminates clone-and-cancel risk. |
 | Pro pricing | **$10/mo** individual, $96/yr annual (20% discount) |
-| Enterprise | **Deferred** — focus on Pro for solo devs and devs in teams first. Enterprise comes after 100+ Pro users. |
+| Teams | **Coming soon** — observability layer with org-wide dashboards. Focus on Pro for individuals first. |
 | Public recommendations repo | **Already privated** — `Nairon-AI/flux-recommendations` is now private. Free users get a small hardcoded set baked into the plugin. |
 | Free tier recommendations | **Hardcoded in Flux** — top 5-10 universal tools (jq, gh, ripgrep, etc.) shipped with the plugin. No network fetch needed. |
 | Upgrade prompt frequency | 1x per session max. Only when friction is detected. |
@@ -22,7 +22,7 @@
 
 ## Pricing Tiers
 
-| | Free | Pro ($10/mo) | Enterprise (deferred) |
+| | Free | Pro ($10/mo) | Teams (coming soon) |
 |---|---|---|---|
 | **Friction detection** | Inline signals after each task | Inline signals after each task | Org-wide friction heatmap |
 | **Signal cooldown** | 7-day snooze + resurface (no recs) | 7-day snooze + resurface with fresh recs | Auto-surface to team leads |
@@ -359,25 +359,26 @@ New since last check:
 
 ## Polar.sh Setup Steps
 
-### 1. Create Polar account for Nairon-AI
+### 1. Create Polar account for Nairon-AI ✅
 
-Set up at https://polar.sh — connect to Nairon-AI GitHub org.
+Set up at https://polar.sh — connected to Nairon-AI GitHub org.
 
-### 2. Create products
+**Organization ID**: `3a10c412-6423-45ee-97f5-439501dbc2c2`
 
-| Product | Type | Price | Benefits |
-|---------|------|-------|----------|
-| Flux Pro (Monthly) | Subscription | $10/mo | License key |
-| Flux Pro (Annual) | Subscription | $96/yr ($8/mo) | License key |
+### 2. Create products ✅
 
-### 3. Configure license key benefit
+| Product | Type | Price | Product ID |
+|---------|------|-------|------------|
+| Harness Recommendations Engine (Monthly) | Subscription | $10/mo | `f8a4ce6e-9034-4881-8fbe-f45186368864` |
+| Harness Recommendations Engine (Yearly) | Subscription | $96/yr ($8/mo) | `768ef726-83d0-42fc-9dd8-4a2a17490193` |
 
-- Auto-generated on purchase
-- Prefix: `FLUX-`
-- Activations: unlimited (one user, multiple machines)
-- Validation: client-side endpoint (no auth needed)
+### 3. Configure benefits ✅
 
-### 4. Wire Polar into Universe
+- **Flux Pro** (License Keys) — auto-generated on purchase
+- **Harness Recommendations Engine Access** (Feature Flag) — for API gating
+- Webhook configured at `https://universe.nairon.ai/` with all events
+
+### 4. Wire Polar into Universe — PENDING
 
 - Add `app.use(polar)` to `convex.config.ts`
 - Configure webhook endpoint in Convex HTTP router
@@ -386,36 +387,39 @@ Set up at https://polar.sh — connect to Nairon-AI GitHub org.
 
 ---
 
-## Enterprise Observability (Deferred)
+## Teams Plan (Coming Soon)
 
 > **Not implementing now.** Documented here for future reference. Will revisit after 100+ Pro users generate meaningful aggregate data.
 
-Target audience: Engineering managers and CTOs wanting AI effectiveness analytics.
+Target audience: Engineering managers and team leads wanting AI effectiveness analytics.
 
 Features: org-wide friction heatmaps, team-level metrics, tool standardization recommendations, department comparison dashboards, private data silos, SSO integration.
-
-Pricing: per-seat ($25/seat/mo suggested), minimum 10 seats, annual discount.
 
 ---
 
 ## Ship Order
 
-### Phase 1: Free hardcoded set (URGENT — current flow is broken)
-1. Bake a small free recommendations set into the Flux plugin
-2. Update `match-recommendations.py` to use local file instead of fetching from GitHub
-3. This unblocks existing free users immediately
+### Phase 1: Free hardcoded set ✅ COMPLETE
+1. ✅ Baked 20 curated recommendations into the Flux plugin (`recommendations/`)
+2. ✅ Updated `match-recommendations.py` to use three-tier fallback
+3. ✅ Unblocks existing free users immediately
 
-### Phase 2: Pro paywall (revenue unlock)
-1. Set up Polar account + create products (Monthly + Annual)
-2. Wire `@convex-dev/polar` into Universe's `convex.config.ts`
-3. Add Convex tables: `recommendations`, `recommendationFeedback`, `recommendationStats`
-4. Build Universe HTTP endpoints: `/api/recommendations`, `/api/recommendations/feedback`
-5. Migrate recommendation index from private repo into Convex DB
-6. Build matching engine server-side (port from `match-recommendations.py`)
-7. Update `/flux:login` to accept Polar license keys
-8. Add license key validation + caching to Flux client
-9. Gate recommendation matching behind license check
-10. Add upgrade prompt for free users (rate-limited, 1x per session)
+### Phase 2: Pro paywall (revenue unlock) — IN PROGRESS
+1. ✅ Set up Polar account + create products (Monthly + Annual)
+2. ✅ Webhook configured at `https://universe.nairon.ai/`
+3. ✅ License key benefit ("Flux Pro") + feature flag benefit added
+4. ✅ `scripts/flux-license.py` — validate, activate, cache, check (client-side via Polar API)
+5. ✅ Updated `/flux:login` to accept Polar license keys
+6. ✅ License gating in `/flux:improve` workflow (Step 6 rewritten)
+7. ✅ Upgrade prompt for free users (rate-limited, 1x per session, only on friction)
+8. ✅ Inline friction check in task loop differentiates Pro vs Free
+9. ⬜ Wire `@convex-dev/polar` into Universe's `convex.config.ts` (auto-revoke on churn)
+10. ✅ Added Convex tables: `fluxRecommendations`, `fluxRecommendationFeedback`, `fluxRecommendationStats`
+11. ✅ Built Universe HTTP endpoints: `POST /api/recommendations`, `POST /api/recommendations/feedback`
+12. ✅ Seeded 20 recommendations into Convex DB (prod: robust-peccary-479)
+13. ✅ Built matching engine server-side with signal + stack scoring
+14. ✅ Deployed to production + verified API returns `license_required` correctly
+15. ✅ Added Flux Pro pricing section to nairon-website (PR #26 merged)
 
 ### Phase 3: Feedback loop (data moat)
 1. Update Flux to report install/dismiss/snooze actions to Universe API
@@ -428,7 +432,7 @@ Pricing: per-seat ($25/seat/mo suggested), minimum 10 seats, annual discount.
 2. Recommendation history + effectiveness
 3. Stack profile + personalization settings
 
-### Phase 5: Enterprise tier (deferred)
+### Phase 5: Teams tier (coming soon)
 
 ---
 

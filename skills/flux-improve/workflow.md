@@ -363,7 +363,7 @@ except: print('[]')
   fi
 
   # Fetch from Universe API
-  UNIVERSE_API="https://universe.naironai.com"
+  UNIVERSE_API="https://robust-peccary-479.convex.site"
   if [ -n "$FULL_KEY" ]; then
     PRO_API_RECS=$(curl -s --max-time 10 -X POST "${UNIVERSE_API}/api/recommendations" \
       -H "Content-Type: application/json" \
@@ -448,13 +448,34 @@ exit(0 if age > 28800 else 1)
   fi
 
   if [ "$SHOW_UPGRADE" = "yes" ]; then
+    # Count friction signals for personalized message
+    FRICTION_COUNT=0
+    if [ -n "$SESSION_INSIGHTS" ]; then
+      FRICTION_COUNT=$(echo "$SESSION_INSIGHTS" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(len(data.get('friction_signals', {})))
+except: print(0)
+" 2>/dev/null || echo "0")
+    fi
+
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  Flux Pro can recommend tools to fix these frictions —"
-    echo "  matched to your stack, ranked by what works for other devs."
+    if [ "$FRICTION_COUNT" -gt 0 ] 2>/dev/null; then
+      echo "  We detected $FRICTION_COUNT friction signals in your workflow."
+      echo "  Flux Pro has stack-aware recommendations to fix them —"
+      echo "  ranked by what actually works for devs on your stack."
+    else
+      echo "  Flux Pro recommends the right tools for your stack —"
+      echo "  ranked by what actually works for other developers."
+    fi
     echo ""
-    echo "  → Get Flux Pro: https://polar.sh/nairon-ai"
+    echo "  Start your free 1-week trial: $10/mo after."
+    echo ""
+    echo "  → https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D"
+    echo "  → After checkout, check your email for the license key"
     echo "  → Then run: /flux:login to activate"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
