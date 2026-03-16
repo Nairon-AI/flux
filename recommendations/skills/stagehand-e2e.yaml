@@ -1,0 +1,15 @@
+name: stagehand-e2e
+category: skill
+tagline: AI-powered self-healing E2E browser tests
+sdlc_phase: testing
+solves: No E2E test coverage or flaky browser tests
+tags: [testing, e2e, browser, playwright]
+source: manual
+source_url: https://github.com/browserbase/stagehand
+pricing:
+  model: free
+  details: Free and open source
+install:
+  type: skill
+  command: npm install -D @browserbasehq/stagehand
+  verify: Check package.json for stagehand dependency

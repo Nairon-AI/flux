@@ -1,0 +1,15 @@
+name: biome
+category: cli-tool
+tagline: Fast formatter and linter (replaces ESLint + Prettier)
+sdlc_phase: implementation
+solves: No linter or formatter configured
+tags: [lint, format, javascript, typescript]
+source: manual
+source_url: https://biomejs.dev
+pricing:
+  model: free
+  details: Free and open source
+install:
+  type: cli
+  command: npm install -D @biomejs/biome
+  verify: npx biome --version

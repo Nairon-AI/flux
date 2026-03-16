@@ -603,7 +603,7 @@ The only global change Flux makes is during `/flux:setup` if you choose to insta
 **No telemetry. No usage tracking. No analytics.**
 
 The only network requests Flux makes are:
-1. **Fetching the [recommendations repo](https://github.com/Nairon-AI/flux-recommendations)** — a public GitHub repo with tool suggestions, pulled during `/flux:improve`
+1. **License validation** (Pro users only) — a single POST to Polar.sh API to validate your license key, cached for 24 hours
 2. **Checking for plugin updates** — a version check against the GitHub release tag at the end of commands
 
 That's it. All analysis (session parsing, friction detection, scoring) runs entirely on your machine. Your code never leaves your laptop.
@@ -628,6 +628,28 @@ Yes — that's what Ralph mode is for. After scoping an epic, Flux offers you tw
 2. **Ralph mode** (`/flux:ralph-init`) — a repo-local autonomous harness that works through every task in the epic unattended. It runs plan review, implementation, code review, and completion review for each task without stopping. You start it from your terminal (`./scripts/ralph/ralph.sh`) and check results in the morning.
 
 Ralph uses multi-model review gates and produces receipts as proof-of-work. It can be paused and resumed at any point.
+</details>
+
+<details>
+<summary><strong>What is Flux Pro?</strong></summary>
+
+Flux is free and open source. **Flux Pro** ($10/mo) is an optional add-on that unlocks the full recommendation engine:
+
+| | Free | Pro ($10/mo) | Teams (coming soon) |
+|---|---|---|---|
+| **Friction detection** | Inline signals after each task | Same | Org-wide friction heatmap |
+| **Signal cooldown** | 7-day snooze + resurface | Same + fresh recommendations on resurface | Auto-surface to team leads |
+| **Recommendations** | 20 bundled universal tools | 50+ stack-aware, community-ranked, weekly updated | Team-level + standardization |
+| **Flux Score** | Local only | Syncs to Universe profile | Aggregated across org |
+| **Analytics** | — | Personal friction trends | Department dashboards |
+
+**How to get Pro:**
+1. [Start your free 1-week trial](https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D) ($10/mo after)
+2. Check your email for the license key
+3. Run `/flux:login` and paste your license key
+4. Run `/flux:improve` to get your first Pro recommendations
+
+Free users get friction detection (the most valuable part) plus basic recommendations. Pro adds the intelligence layer — recommendations matched to your specific stack, ranked by what actually works for other developers.
 </details>
 
 <details>

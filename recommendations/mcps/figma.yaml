@@ -1,0 +1,15 @@
+name: figma
+category: mcp
+tagline: Design-to-code workflow via Figma
+sdlc_phase: requirements
+solves: No design tool integration for UI specifications
+tags: [design, ui, figma, frontend]
+source: manual
+source_url: https://github.com/nichochar/figma-mcp
+pricing:
+  model: free
+  details: Free MCP server (requires Figma account)
+install:
+  type: mcp
+  command: npx -y @anthropic-ai/create-mcp --name figma --url https://github.com/nichochar/figma-mcp
+  verify: Check ~/.mcp.json or .mcp.json for figma entry

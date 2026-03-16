@@ -217,7 +217,16 @@ For each detected friction signal, check if it's currently in cooldown (dismisse
 2. **Dismissed < 7 days ago** → suppress silently (in cooldown)
 3. **Dismissed >= 7 days ago** → cooldown expired, resurface with a different prompt
 
-**If signal is active (never dismissed):**
+**Check license tier first:**
+
+```bash
+IS_PRO=false
+if python3 "${PLUGIN_ROOT}/scripts/flux-license.py" check 2>/dev/null; then
+  IS_PRO=true
+fi
+```
+
+**If signal is active (never dismissed) — Pro user:**
 
 ```
 Friction detected: {signal_type} ({count}x this session)
@@ -227,6 +236,26 @@ Suggested tool: {recommendation_name} — {one_line_description}
   [s] Skip for now
   [d] Snooze this signal (resurfaces in 7 days)
 ```
+
+**If signal is active (never dismissed) — Free user:**
+
+Show the friction signal but offer upgrade instead of a specific tool recommendation (max 1x per session):
+
+```
+Friction detected: {signal_type} ({count}x this session)
+
+Flux Pro can recommend the right tool for this — matched to your stack,
+ranked by what actually works for other developers.
+
+Start your free 1-week trial ($10/mo after):
+→ https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D
+→ Check your email for the license key, then run /flux:login
+
+  [s] Skip for now
+  [d] Snooze this signal (resurfaces in 7 days)
+```
+
+Only show the upgrade line once per session (check `should_show_upgrade_prompt()`). On subsequent friction signals in the same session, just show the signal without the upgrade prompt.
 
 **If signal cooldown has expired (>= 7 days):**
 
@@ -244,7 +273,7 @@ The tooling ecosystem moves fast — want to check for new recommendations?
   "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
   ```
 
-**Actions for active signals:**
+**Actions for active signals (Pro):**
 
 - `i` → Run the install flow from `/flux:improve` for that specific recommendation
 - `s` → Continue to next step (feel check). Signal may trigger again on future tasks.
@@ -252,6 +281,11 @@ The tooling ecosystem moves fast — want to check for new recommendations?
   ```bash
   "${PLUGIN_ROOT}/scripts/manage-preferences.sh" dismiss-signal "{signal_type}"
   ```
+
+**Actions for active signals (Free):**
+
+- `s` → Continue to next step. Signal may trigger again on future tasks.
+- `d` → Dismiss with 7-day cooldown (same as Pro)
 
 **If no friction signals detected (or all in cooldown):** Continue silently to 3e.
 

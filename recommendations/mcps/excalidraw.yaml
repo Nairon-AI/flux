@@ -1,0 +1,15 @@
+name: excalidraw
+category: mcp
+tagline: Architecture diagrams and visual planning
+sdlc_phase: planning
+solves: No diagramming tool for architecture visualization
+tags: [diagrams, architecture, planning, visual]
+source: manual
+source_url: https://github.com/pekka/excalidraw-mcp
+pricing:
+  model: free
+  details: Free and open source
+install:
+  type: mcp
+  command: npx -y @anthropic-ai/create-mcp --name excalidraw --url https://github.com/pekka/excalidraw-mcp
+  verify: Check ~/.mcp.json or .mcp.json for excalidraw entry

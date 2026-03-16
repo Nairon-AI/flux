@@ -1,0 +1,14 @@
+name: worktree-isolation
+category: workflow-pattern
+tagline: Parallel task isolation with git worktrees
+sdlc_phase: implementation
+solves: Context switching friction when working on multiple features
+tags: [git, worktree, parallel, isolation]
+source: manual
+pricing:
+  model: free
+  details: Built into git
+install:
+  type: pattern
+  command: Use git worktree add for parallel feature branches
+  verify: git worktree list

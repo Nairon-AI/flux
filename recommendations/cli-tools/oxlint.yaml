@@ -1,0 +1,15 @@
+name: oxlint
+category: cli-tool
+tagline: Blazing fast JavaScript/TypeScript linter (50-100x faster than ESLint)
+sdlc_phase: implementation
+solves: No linter configured or slow linting
+tags: [lint, javascript, typescript, fast]
+source: manual
+source_url: https://oxc.rs/docs/guide/usage/linter
+pricing:
+  model: free
+  details: Free and open source
+install:
+  type: cli
+  command: npm install -D oxlint
+  verify: npx oxlint --version

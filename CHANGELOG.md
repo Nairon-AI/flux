@@ -4,6 +4,15 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Flux Pro license management** — `scripts/flux-license.py` for activating, validating, and caching Polar.sh license keys
+- **Pro/Free tier gating** in `/flux:improve` — Pro users get Universe API recommendations, free users get bundled set + upgrade prompt
+- **1-week free trial** — new users can try Pro free for 7 days via Polar checkout
+- **Inline friction check tier awareness** — task loop differentiates Pro vs Free recommendation experience
+- **Upgrade prompt** — rate-limited (1x per session, only on friction detection) prompt with friction count and direct checkout link
+- **Updated `/flux:login`** — now includes optional Flux Pro license activation step
+
 ### Fixed
 
 - Version guard CI now runs on PRs (not just push to main) to catch missing `-dev` suffix before merge
