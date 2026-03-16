@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v2.3.1-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.11.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -288,7 +288,7 @@ flowchart TD
 | **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
 | **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
 | **Gate** | *After staging merge:* verifies staging deployment is live, runs browser QA or manual review against staging URL, then creates promotion PR (staging → production). | Code that passes CI can still break in staging — env variables differ, APIs behave differently, CDN caching causes stale assets. Gate is the checkpoint between "code compiles" and "code actually works in a real environment." Without it, production deploys are a leap of faith. |
-| **Improve** | *Inline:* after each task, friction signals trigger a targeted recommendation (install / skip / snooze). Snoozed signals enter a 7-day cooldown, then resurface: "It's been a week — want to check for new optimizations?" *Epic-level (score >= 3):* fresh-fetches the [recommendations index](https://github.com/Nairon-AI/flux-recommendations) for a full scan. | When the same friction keeps recurring, the problem isn't the code — it's a missing tool. Inline detection catches it during the build so you can unblock immediately. The 7-day cooldown prevents recommendation fatigue while still giving the ecosystem time to develop new tooling — what had no good fix last week might have one today. |
+| **Improve** | *Inline:* after each task, friction signals trigger a targeted recommendation (install / skip / snooze). Snoozed signals enter a 7-day cooldown, then resurface: "It's been a week — want to check for new optimizations?" *Epic-level (score >= 3):* Pro users get live recommendations from the recommendation engine; free users get bundled recommendations. | When the same friction keeps recurring, the problem isn't the code — it's a missing tool. Inline detection catches it during the build so you can unblock immediately. The 7-day cooldown prevents recommendation fatigue while still giving the ecosystem time to develop new tooling — what had no good fix last week might have one today. The full recommendation engine is a [paid add-on](https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D) ($10/mo, 1-week free trial). |
 
 ### What's Automatic vs Manual
 
@@ -358,7 +358,7 @@ These are maintenance skills designed to run between epics, not during active de
 
 ### Self-Improving Harness
 
-Flux autonomously finds ways to improve itself for every project it's used in. The recommendation engine surfaces at every natural touchpoint — not just when you ask for it:
+Flux autonomously finds ways to improve itself for every project it's used in. The recommendation engine that powers the self-improving capabilities is a [paid add-on](https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D) — a curated, continuously updated index of tools matched to friction patterns. Free users get 20 bundled universal recommendations. Pro users ($10/mo, 1-week free trial) unlock the full engine: 50+ stack-aware, community-ranked recommendations, updated weekly. The engine surfaces at every natural touchpoint — not just when you ask for it:
 
 | Touchpoint | What fires | How heavy |
 |---|---|---|
@@ -368,7 +368,7 @@ Flux autonomously finds ways to improve itself for every project it's used in. T
 | **After shipping** | `/flux:reflect` suggestion to capture learnings | Zero cost |
 | **Between epics** | Full `/flux:improve` analysis, `/flux:meditate` for brain pruning | Heavyweight |
 
-The **recommendation pulse** runs as a startup hook every session (rate-limited to once per day). It pulls the latest [flux-recommendations](https://github.com/Nairon-AI/flux-recommendations) repo, checks for new tools that match your stack, and checks if your brain vault needs pruning. If anything is actionable, it surfaces a brief nudge — you multi-select to install or dismiss.
+The **recommendation pulse** runs as a startup hook every session (rate-limited to once per day). For Pro users, it fetches the latest recommendations from the recommendation engine, matched to your stack and ranked by community signal. Free users get recommendations from the bundled set. If anything is actionable, it surfaces a brief nudge — you multi-select to install or dismiss.
 
 The **friction signal** fires during epic review using two layers: a quantitative friction score (review iterations, security findings, QA failures, repeated pitfalls) and qualitative analysis that scans developer messages and reviewer feedback to identify *what* you're struggling with. When the score hits 3+, Flux suggests `/flux:improve` with the friction domain pre-filled (e.g., `--user-context "responsive, CSS, mobile"`) so the recommendation engine skips discovery and goes straight to relevant tools.
 
@@ -489,7 +489,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:reflect` | Capture session learnings to brain vault and extract reusable skills | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
 | `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
 | `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
-| `/flux:improve` | Analyze sessions, recommend tools from the [recommendations engine](https://github.com/Nairon-AI/flux-recommendations) | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
+| `/flux:improve` | Analyze sessions, recommend tools from the recommendation engine ([Pro — paid add-on](https://buy.polar.sh/polar_cl_mvTstXLrEX4XyDe0dzS7WMdpnaSCmxPkIVjq01dbj0D) for full access) | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
 
 **Utilities**
 
