@@ -28,7 +28,7 @@ You're using an AI coding agent, but something's off:
 - **Echo chamber** → The same model you used to write the code, reviewed its own code, said "looks good", and you believed it (lmao)
 - **Long tasks implode** → 20 minutes into a complex refactor, the agent forgot what it was doing and started over
 - **Flying blind** → You have no idea if you're getting better at this or just getting faster at making mistakes
-- **Sycophancy** → You described your idea and Claude said "brilliant approach, let me build that." It never said "this doesn't make sense" or "have you talked to users?" — it just validated you and started coding
+- **Sycophancy** → You described your idea and Claude said "brilliant approach, let me build that." It never said "this doesn't make sense" or "have you talked to users?" — it just validated you and started coding. You shipped it. Stakeholder crashed out. Turns out they never needed it.
 
 <p align="center">
   <img src="https://media1.tenor.com/m/KBShDXgDMsUAAAAC/green-mile-im-tired-boss.gif" alt="I'm tired, boss" width="400">
