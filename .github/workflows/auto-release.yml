@@ -99,24 +99,93 @@ jobs:
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "Next version: v$NEXT ($BUMP bump)"
 
+      - name: Build release summary
+        if: steps.analyze.outputs.release_needed == 'true'
+        id: notes
+        run: |
+          TAG="${{ steps.last_tag.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          if [ -z "$TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${TAG}..HEAD"
+          fi
+
+          # Collect commit messages (skip chore/ci)
+          COMMITS=$(git log "$RANGE" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]" | grep -v "^$" || true)
+
+          # Build "What's New" section from feat/fix commits
+          FEATS=""
+          FIXES=""
+          OTHERS=""
+          while IFS= read -r msg; do
+            [ -z "$msg" ] && continue
+            if echo "$msg" | grep -qiE '^feat(\(.+\))?:'; then
+              CLEAN=$(echo "$msg" | sed 's/^feat\([^)]*\)\?:\s*//')
+              FEATS="${FEATS}\n- ${CLEAN}"
+            elif echo "$msg" | grep -qiE '^fix(\(.+\))?:'; then
+              CLEAN=$(echo "$msg" | sed 's/^fix\([^)]*\)\?:\s*//')
+              FIXES="${FIXES}\n- ${CLEAN}"
+            elif echo "$msg" | grep -qiE '^revert(\(.+\))?:'; then
+              CLEAN=$(echo "$msg" | sed 's/^revert\([^)]*\)\?:\s*//')
+              OTHERS="${OTHERS}\n- ${CLEAN}"
+            fi
+          done <<< "$COMMITS"
+
+          # Build the body
+          BODY="## What's New\n"
+
+          if [ -n "$FEATS" ]; then
+            BODY="${BODY}\n### Features\n${FEATS}\n"
+          fi
+          if [ -n "$FIXES" ]; then
+            BODY="${BODY}\n### Fixes\n${FIXES}\n"
+          fi
+          if [ -n "$OTHERS" ]; then
+            BODY="${BODY}\n### Other Changes\n${OTHERS}\n"
+          fi
+
+          # Add full commit list
+          BODY="${BODY}\n## What's Changed\n"
+          while IFS= read -r msg; do
+            [ -z "$msg" ] && continue
+            BODY="${BODY}\n* ${msg}"
+          done <<< "$COMMITS"
+
+          if [ -n "$TAG" ]; then
+            BODY="${BODY}\n\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${TAG}...v${VERSION}"
+          fi
+
+          # Write to file to avoid escaping issues
+          echo -e "$BODY" > /tmp/release-notes.md
+
+          # Generate a title from the primary feature commit
+          TITLE="v${VERSION}"
+          FIRST_FEAT=$(echo "$COMMITS" | grep -iE '^feat(\(.+\))?:' | head -1 | sed 's/^feat\([^)]*\)\?:\s*//' || true)
+          if [ -n "$FIRST_FEAT" ]; then
+            # Truncate to 60 chars for title
+            SHORT=$(echo "$FIRST_FEAT" | cut -c1-60)
+            TITLE="v${VERSION} — ${SHORT}"
+          fi
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
       - name: Create tag and GitHub release
         if: steps.analyze.outputs.release_needed == 'true'
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          TAG="${{ steps.last_tag.outputs.tag }}"
 
           # Tag current HEAD on main
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
 
-          # Create GitHub release with auto-generated notes
+          # Create GitHub release with structured summary
           gh release create "v${VERSION}" \
             --target main \
-            --title "v${VERSION}" \
-            --generate-notes \
-            ${TAG:+--notes-start-tag "$TAG"}
+            --title "${{ steps.notes.outputs.title }}" \
+            --notes-file /tmp/release-notes.md
 
           echo "Released v${VERSION}"
           echo "post-release-bump.yml will auto-bump manifests to next -dev version"

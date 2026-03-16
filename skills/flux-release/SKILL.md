@@ -79,9 +79,41 @@ git push origin "$BRANCH"
 
 ### Step 5: Create GitHub Release
 
+Build a structured release summary before creating the release. **Do NOT use `--generate-notes`** — write a proper "What's New" section.
+
+1. Get all commits since the last release tag:
 ```bash
-gh release create "v$VERSION" --target "$BRANCH" --title "$TITLE" --generate-notes
+LAST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+git log "$LAST_TAG..HEAD" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]"
 ```
+
+2. Write release notes in this format:
+```markdown
+## What's New
+
+### [Primary feature/change — descriptive heading]
+
+[2-4 sentences explaining what changed, why it matters, and how it works.
+Be specific — name the files, commands, or behaviors that changed.
+This is what users see first. Make it count.]
+
+**Key changes:**
+- [Bullet point for each significant change]
+- [Include concrete details, not vague summaries]
+
+## What's Changed
+* [commit message 1]
+* [commit message 2]
+
+**Full Changelog**: https://github.com/Nairon-AI/flux/compare/$LAST_TAG...v$VERSION
+```
+
+3. Save notes to a temp file and create the release:
+```bash
+gh release create "v$VERSION" --target "$BRANCH" --title "$TITLE" --notes-file /tmp/release-notes.md
+```
+
+**Release title format:** `v$VERSION — [short description of primary change]` (e.g., `v2.14.0 — Anti-Sycophancy & Viability Gate`). If `--title` was provided by the user, use that instead.
 
 ### Step 6: Verify
 
