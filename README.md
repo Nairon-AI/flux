@@ -25,7 +25,7 @@ You're using an AI coding agent, but something's off:
 - **Requirements drift** → You asked for a login page and got a full user management system with email verification
 - **Blind acceptance** → You shipped the agent's suggestion without reading it. It's in production now. Good luck.
 - **Security roulette** → Someone found the hardcoded API key the agent left in your config. On GitHub. Publicly.
-- **Echo chamber** → The agent reviewed its own code, said "looks good", and you believed it
+- **Echo chamber** → The same model you used to write the code, reviewed its own code, said "looks good", and you believed it (lmao)
 - **Long tasks implode** → 20 minutes into a complex refactor, the agent forgot what it was doing and started over
 - **Flying blind** → You have no idea if you're getting better at this or just getting faster at making mistakes
 
