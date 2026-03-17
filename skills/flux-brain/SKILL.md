@@ -17,34 +17,83 @@ The brain is the foundation of the entire workflow — every agent, skill, and s
 
 ## "Remember" Flow
 
-When the user says "remember X", "don't forget X", "keep in mind X", or similar — use `AskUserQuestion` to ask where to store it:
+When the user says "remember X", "don't forget X", "keep in mind X", or similar — first decide whether it belongs in **CLAUDE.md** or the **brain vault**, then ask the user to confirm.
+
+### Step 1: CLAUDE.md vs Brain
+
+Use this heuristic to pre-select the right destination:
+
+| Goes in **CLAUDE.md** | Goes in **brain/** |
+|---|---|
+| Short, actionable rules the agent needs **every session** | Deeper knowledge, context, or rationale |
+| Commands and how to run them ("use `pnpm test`", "run `make build`") | Why a decision was made ("we chose Supabase because...") |
+| Hard constraints ("never import from `legacy/`", "always use TypeScript") | Business context ("Sarah is the PM", "we have 500 users") |
+| Code style rules ("use camelCase for APIs", "4-space indent") | Pitfalls and lessons learned ("migration script doesn't handle NULLs") |
+| Things that affect every task regardless of domain | Things that are relevant only in certain contexts |
+
+**Rule of thumb:** If the agent would need this to avoid a mistake on *any* task in the project, it's CLAUDE.md. If it's context that helps make *better* decisions in specific situations, it's brain.
+
+### Step 2: Ask the user
+
+Use `AskUserQuestion` with the pre-selected option first:
 
 ```json
 {
   "questions": [{
-    "question": "Where should I store this in the brain vault?",
-    "header": "Brain",
+    "question": "Where should I store this?",
+    "header": "Remember",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "CLAUDE.md — agent reads every session",
+        "description": "Short, actionable rules and constraints (e.g., 'always use pnpm', 'never import from legacy/'). The agent sees this at the start of every conversation."
+      },
+      {
+        "label": "Brain vault — deeper context",
+        "description": "Decisions, business context, principles, pitfalls. Read by specific skills when relevant, not loaded every session."
+      }
+    ]
+  }]
+}
+```
+
+### Step 3a: If CLAUDE.md selected
+
+1. Read the current CLAUDE.md
+2. Find the most appropriate section (or create one if needed)
+3. Append the rule as a concise bullet point
+4. If there's a `<!-- BEGIN FLUX -->` section, add it inside that section under the right heading
+
+### Step 3b: If brain vault selected
+
+Ask which category:
+
+```json
+{
+  "questions": [{
+    "question": "Which brain category?",
+    "header": "Category",
     "multiSelect": false,
     "options": [
       {
         "label": "Convention",
-        "description": "Project-specific pattern or rule (e.g., 'always use pnpm', 'API responses use camelCase'). Stored in brain/conventions/"
+        "description": "Project-specific pattern or rule. Stored in brain/conventions/"
       },
       {
         "label": "Decision",
-        "description": "Architectural decision with rationale (e.g., 'we chose Supabase because...'). Stored in brain/decisions/"
+        "description": "Architectural decision with rationale. Stored in brain/decisions/"
       },
       {
         "label": "Principle",
-        "description": "Engineering principle that applies broadly (e.g., 'never mock the database in integration tests'). Stored in brain/principles/"
+        "description": "Engineering principle that applies broadly. Stored in brain/principles/"
       },
       {
         "label": "Business context",
-        "description": "Product, team, or stakeholder context (e.g., 'billing is handled by Stripe', 'Sarah is the PM'). Stored in brain/business/"
+        "description": "Product, team, or stakeholder context. Stored in brain/business/"
       },
       {
         "label": "Pitfall",
-        "description": "Something that went wrong or could go wrong (e.g., 'the migration script doesn't handle NULL dates'). Stored in brain/pitfalls/"
+        "description": "Something that went wrong or could go wrong. Stored in brain/pitfalls/"
       }
     ]
   }]
@@ -57,7 +106,7 @@ Then:
 3. For pitfalls, also ask which area it belongs to (e.g., `brain/pitfalls/frontend/`, `brain/pitfalls/api/`)
 4. Update `brain/index.md` to include a link to the new file
 
-These notes are prunable — `/flux:meditate` will audit them and remove stale ones. So don't hesitate to store things. It's better to remember too much and prune later than to forget.
+Notes are prunable — `/flux:meditate` audits and removes stale ones. Store freely.
 
 ## Before Writing
 
