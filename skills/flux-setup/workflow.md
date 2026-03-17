@@ -1169,8 +1169,13 @@ If no business context exists, ask the user a short set of questions to understa
 4. **Domain language**: "Does your product have domain-specific terms that could be confused with technical terms? For example, 'agent' meaning a real estate agent, or 'partner' meaning a business partner."
    - Freeform input. If yes, ask them to list the key terms and what they mean in their context.
 
-5. **Existing docs**: "Do you have any existing product documents (Google Docs, Notion, PRDs) that describe how the business works? You can paste the contents now and I'll extract the key context."
-   - If they paste content: parse it, extract business structure, glossary terms, and key decisions. Confirm understanding with the user.
+5. **Team directory**: "Who else works on this product? Names and roles help Flux understand call transcripts and proposals later. For example: 'Sarah — CEO, James — product lead, Alex — frontend engineer.'"
+   - Freeform input. If they provide names: create `brain/business/team.md` with a table.
+   - If they say it's just them: note "Solo developer" in team.md.
+   - If they skip: create a skeleton team.md that gets populated during propose sessions.
+
+6. **Existing docs**: "Do you have any existing product documents (Google Docs, Notion, PRDs) that describe how the business works? You can paste the contents now and I'll extract the key context."
+   - If they paste content: parse it, extract business structure, glossary terms, team members, and key decisions. Confirm understanding with the user.
    - If they say no: that's fine, the context will build up organically through `/flux:propose` sessions.
 
 **After collecting answers**, create the business context files:
@@ -1224,12 +1229,39 @@ No domain-specific terms captured yet. This file is automatically enriched durin
 | | | |
 ```
 
+**Write `brain/business/team.md`** (if team members were provided):
+```markdown
+# Team Directory
+
+People who work on this product. Flux uses this to understand names in call transcripts, proposals, and conversations.
+
+| Name | Role | Responsibilities | Notes |
+|------|------|-----------------|-------|
+| [name] | [role] | [what they own] | [e.g., non-technical, part-time, contractor] |
+
+---
+*Updated during /flux:propose sessions when new team members are mentioned.*
+```
+
+If no team members were provided or they said "just me":
+```markdown
+# Team Directory
+
+| Name | Role | Responsibilities | Notes |
+|------|------|-----------------|-------|
+| [user's name if known] | Developer | — | — |
+
+---
+*Updated during /flux:propose sessions when new team members are mentioned.*
+```
+
 **Write `brain/business/index.md`:**
 ```markdown
 # Business Context Index
 
 - [[context]] — Product stage, team structure, and key context
 - [[glossary]] — Domain-specific terminology (ubiquitous language)
+- [[team]] — Team directory (names, roles, responsibilities)
 
 Area-specific files are created automatically as proposals are made:
 - `billing.md`, `auth.md`, `permissions.md`, etc.

@@ -58,10 +58,30 @@ ls brain/business/*.md 2>/dev/null
 If business context exists:
 - Use the product stage to calibrate how hard you push on estimates and user validation
 - Use the glossary to understand domain terms correctly — never misinterpret domain language
+- Use the team directory (`brain/business/team.md`) to understand who's who — so when call transcripts mention names, you know their role
 - Reference area-specific files (e.g., `brain/business/billing.md`) when the proposal touches those areas
 
 If no business context exists:
 - Continue normally — the context will be created as part of this session (see "Update Business Context" below)
+
+### Step 0.25: Business Context Re-check
+
+**If business context exists**, do a quick re-check before diving in. Present what you know and ask if anything has changed:
+
+```
+Quick check before we start — last time, here's what I had on file:
+
+- Product stage: [from context.md]
+- Users: [from context.md]
+- Team: [list names + roles from team.md if it exists]
+
+Has anything changed? New team members, someone left, user growth, funding, anything like that?
+If not, just say "all good" and we'll jump in.
+```
+
+- If they mention changes: update `brain/business/context.md` and/or `brain/business/team.md` immediately
+- If they say "all good": proceed
+- Keep this to **one question** — don't turn it into a second setup interview
 
 ### Step 0.5: Import or Start Fresh
 
@@ -268,8 +288,22 @@ Example `brain/business/billing.md`:
 - "Plan" = subscription tier (free, starter, pro)
 ```
 
+### Team directory updates
+If the stakeholder mentioned any names during the conversation (their own, colleagues, stakeholders, contractors), update `brain/business/team.md`:
+```bash
+cat brain/business/team.md 2>/dev/null
+```
+- If the file exists: add new people to the table, update roles if someone's role changed, mark people as "left" if the stakeholder mentioned someone leaving
+- If the file doesn't exist: create it with everyone mentioned
+
+This is important for future sessions — when call transcripts are imported, Flux needs to know who "Alex" or "Sarah" is without asking.
+
 ### Context updates
-If any high-level business context changed (new product direction, stage change, team change), update `brain/business/context.md`.
+If any high-level business context changed (new product direction, stage change, team change, user growth, funding), update `brain/business/context.md`. Common updates from the re-check (Step 0.25):
+- User count changes (e.g., "we went from 100 to 5,000 users")
+- Stage changes (e.g., "we launched" or "we got funding")
+- Team changes (e.g., "Sarah left" or "we hired a product manager")
+- Business model changes (e.g., "we switched from credits to flat-rate billing")
 
 **Do all updates silently** — the stakeholder doesn't need to see this. It's for Flux's internal use.
 
