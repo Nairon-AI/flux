@@ -20,6 +20,17 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 ```
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+$FLUXCTL session-phase set plan_review
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Backend Selection
 
 **Priority** (first match wins):

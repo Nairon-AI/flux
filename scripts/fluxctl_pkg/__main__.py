@@ -3,6 +3,7 @@ import argparse
 from .utils import (
     EPIC_STATUS, TASK_STATUS, OBJECTIVE_KINDS, SCOPE_MODES,
     TECHNICAL_LEVELS, IMPLEMENTATION_TARGETS, WORKFLOW_STATUSES, PRIME_STATUSES,
+    SESSION_PHASES,
 )
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
 from .config import cmd_config_get, cmd_config_set, cmd_review_backend
@@ -14,7 +15,7 @@ from .epics import (
     cmd_objective_current, cmd_objective_switch, cmd_scope_status, cmd_session_state,
     cmd_artifact_write, cmd_artifact_read, cmd_prime_status, cmd_prime_mark,
     cmd_epic_close, cmd_checkpoint_save, cmd_checkpoint_restore, cmd_checkpoint_delete,
-    cmd_validate,
+    cmd_validate, cmd_session_phase_get, cmd_session_phase_set,
 )
 from .tasks import (
     cmd_task_create, cmd_dep_add, cmd_task_set_deps, cmd_tasks,
@@ -60,6 +61,26 @@ def main() -> None:
     )
     p_session_state.add_argument("--json", action="store_true", help="JSON output")
     p_session_state.set_defaults(func=cmd_session_state)
+
+    # session-phase
+    p_session_phase = subparsers.add_parser(
+        "session-phase", help="Get or set the current session lifecycle phase"
+    )
+    session_phase_sub = p_session_phase.add_subparsers(
+        dest="session_phase_cmd", required=True
+    )
+
+    p_sp_get = session_phase_sub.add_parser("get", help="Get current session phase")
+    p_sp_get.add_argument("--json", action="store_true", help="JSON output")
+    p_sp_get.set_defaults(func=cmd_session_phase_get)
+
+    p_sp_set = session_phase_sub.add_parser("set", help="Set current session phase")
+    p_sp_set.add_argument("phase", choices=SESSION_PHASES, help="Phase to set")
+    p_sp_set.add_argument("--detail", help="Optional detail string")
+    p_sp_set.add_argument("--epic-id", help="Associated epic ID")
+    p_sp_set.add_argument("--task-id", help="Associated task ID")
+    p_sp_set.add_argument("--json", action="store_true", help="JSON output")
+    p_sp_set.set_defaults(func=cmd_session_phase_set)
 
     # prime-status
     p_prime_status = subparsers.add_parser(

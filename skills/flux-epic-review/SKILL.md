@@ -13,6 +13,17 @@ Thorough review at epic completion. Combines adversarial dual-model review (Anth
 **Role**: Epic Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
 
+## Session Phase Tracking
+
+On entry (after FLUXCTL is resolved), set the session phase:
+```bash
+$FLUXCTL session-phase set epic_review
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"

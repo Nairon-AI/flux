@@ -68,6 +68,30 @@ WORKFLOW_STATUSES = [
 ]
 PRIME_STATUSES = ["not_started", "in_progress", "done"]
 
+# Session-level phases — tracks where the user/agent is in the full workflow lifecycle.
+# These cover the entire state machine, not just scoping phases.
+SESSION_PHASES = [
+    "idle",              # No active workflow
+    "prime",             # Running /flux:prime
+    "ruminate",          # Mining past conversations
+    "scope",             # Running /flux:scope (problem space)
+    "stress_test",       # Dialectic subagents running
+    "plan",              # Creating epic + tasks
+    "plan_review",       # Reviewing plan quality
+    "work",              # Task loop — implementing
+    "impl_review",       # Per-task lightweight review
+    "epic_review",       # Per-epic thorough review
+    "quality",           # Tests + lint + desloppify
+    "submit",            # Push + PR
+    "reflect",           # Capturing session learnings
+    "meditate",          # Pruning brain vault
+    "gate",              # Staging validation
+    "propose",           # Stakeholder feature proposal
+    "rca",               # Root cause analysis
+    "improve",           # Workflow optimization
+    "remember",          # Storing knowledge (CLAUDE.md or brain/)
+]
+
 TASK_SPEC_HEADINGS = [
     "## Description",
     "## Acceptance",

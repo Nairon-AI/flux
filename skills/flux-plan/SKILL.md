@@ -20,6 +20,17 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL <command>
 ```
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+$FLUXCTL session-phase set plan
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Pre-check: Local setup version
 
 If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:

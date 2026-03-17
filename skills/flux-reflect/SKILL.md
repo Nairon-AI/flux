@@ -15,6 +15,20 @@ Review the conversation and persist learnings — to `brain/`, as new skills, to
 
 Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto](https://github.com/poteto), with skill extraction adapted from [Claudeception](https://github.com/blader/Claudeception).
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set reflect
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Process
 
 1. **Read `brain/index.md`** to understand what notes already exist

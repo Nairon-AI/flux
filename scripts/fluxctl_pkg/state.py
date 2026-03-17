@@ -436,6 +436,53 @@ def set_prime_state(
     return prime
 
 
+# --- Session Phase ---
+
+
+SESSION_PHASE_FILE = "session_phase.json"
+
+
+def get_session_phase(use_json: bool = True) -> dict:
+    """Get current session phase from state directory."""
+    state_dir = get_state_dir()
+    phase_path = state_dir / SESSION_PHASE_FILE
+    if not phase_path.exists():
+        return {"phase": "idle", "detail": None, "epic_id": None, "task_id": None, "updated_at": None}
+    try:
+        data = json.loads(phase_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {"phase": "idle", "detail": None, "epic_id": None, "task_id": None, "updated_at": None}
+    from .utils import SESSION_PHASES
+    if data.get("phase") not in SESSION_PHASES:
+        data["phase"] = "idle"
+    return data
+
+
+def set_session_phase(
+    phase: str,
+    *,
+    detail: Optional[str] = None,
+    epic_id: Optional[str] = None,
+    task_id: Optional[str] = None,
+    use_json: bool = True,
+) -> dict:
+    """Set current session phase in state directory."""
+    from .utils import SESSION_PHASES
+    if phase not in SESSION_PHASES:
+        error_exit(f"Invalid session phase: {phase}. Valid: {', '.join(SESSION_PHASES)}", use_json=use_json)
+    state_dir = get_state_dir()
+    state_dir.mkdir(parents=True, exist_ok=True)
+    data = {
+        "phase": phase,
+        "detail": detail,
+        "epic_id": epic_id,
+        "task_id": task_id,
+        "updated_at": now_iso(),
+    }
+    atomic_write_json(state_dir / SESSION_PHASE_FILE, data)
+    return data
+
+
 # --- Workflow Progress & Artifacts ---
 
 

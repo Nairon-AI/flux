@@ -31,6 +31,17 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL <command>
 ```
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+$FLUXCTL session-phase set scope
+```
+On completion (handoff done), reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 **Agent Compatibility**: This skill works across Claude Code, OpenCode, and Codex. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
 
 **Question Tool**: Use the appropriate tool for your agent:

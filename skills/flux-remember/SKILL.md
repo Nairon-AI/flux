@@ -27,6 +27,20 @@ Trigger on any of these patterns in user input:
 
 **Do NOT trigger** if the user is asking a question ("do you remember...?", "can you remember...?").
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set remember
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Process
 
 ### Step 1: Extract the thing to remember

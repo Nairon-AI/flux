@@ -44,6 +44,52 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 
 ---
 
+## Runtime Phase Tracking
+
+The state machine is not just documentation — session phase is **persisted at runtime** via `fluxctl session-phase`. Every skill sets its phase on entry and resets to `idle` on completion.
+
+### Commands
+
+```bash
+# Query current phase
+$FLUXCTL session-phase get --json
+# → {"phase": "work", "detail": null, "epic_id": "fn-1-add-auth", "task_id": "fn-1-add-auth.2", "updated_at": "..."}
+
+# Set phase (skills do this automatically)
+$FLUXCTL session-phase set work --epic-id fn-1-add-auth --task-id fn-1-add-auth.2
+$FLUXCTL session-phase set idle
+```
+
+### Storage
+
+Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). The `session-state --json` output includes `session_phase` alongside the coarse routing state.
+
+### Valid Phases
+
+`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `quality`, `submit`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`
+
+### Skill → Phase Mapping
+
+| Skill | Phase set on entry |
+|-------|--------------------|
+| `/flux:prime` | `prime` |
+| `/flux:ruminate` | `ruminate` |
+| `/flux:scope` | `scope` |
+| `/flux:plan` | `plan` |
+| `/flux:plan-review` | `plan_review` |
+| `/flux:work` | `work` |
+| `/flux:impl-review` | `impl_review` |
+| `/flux:epic-review` | `epic_review` |
+| `/flux:reflect` | `reflect` |
+| `/flux:meditate` | `meditate` |
+| `/flux:gate` | `gate` |
+| `/flux:propose` | `propose` |
+| `/flux:rca` | `rca` |
+| `/flux:improve` | `improve` |
+| `/flux:remember` | `remember` |
+
+---
+
 ## Transition Diagram
 
 This mirrors the README mermaid diagram exactly, adding state names for every node.
