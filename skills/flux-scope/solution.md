@@ -4,6 +4,83 @@ Steps 7-12 — research, planning, and task creation after the problem space con
 
 ---
 
+## Step 6.5: Epic Structure Interview
+
+Before creating any epics or tasks, interview the user about how they want to organize the work. Use `AskUserQuestion` for each question.
+
+### Step 6.5.1: Single vs Multiple Epics
+
+Based on the problem space findings, assess whether the work could logically be split into multiple independent epics (e.g., backend API + frontend UI + migration are three separate workstreams).
+
+If the work has clearly separable workstreams, ask:
+
+```json
+{
+  "questions": [{
+    "question": "This work has separable workstreams. Do you want a single epic or multiple epics?",
+    "header": "Epic Split",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "Single epic — keep everything together",
+        "description": "All tasks in one epic. Simpler to track, but larger."
+      },
+      {
+        "label": "Multiple epics — split by workstream",
+        "description": "E.g., 'Backend: [feature]' + 'Frontend: [feature]' + 'Migration: [feature]'. Each can be worked and reviewed independently."
+      }
+    ]
+  }]
+}
+```
+
+If the user chooses **multiple epics**, ask them to confirm the proposed split (list the epics you'd create with rough task counts). Adjust based on their feedback.
+
+If the work is clearly a single epic (small scope, tightly coupled tasks), skip this question.
+
+### Step 6.5.2: Linear Project Selection (if Linear connected)
+
+If Linear MCP is available and connected (checked in Step 0.1), ask which project to add the epic(s) to:
+
+```bash
+# Fetch all projects from the user's Linear teams
+# Call: mcp_linear_list_projects for each team
+```
+
+Use `AskUserQuestion`:
+
+```json
+{
+  "questions": [{
+    "question": "Which Linear project should this epic go into?",
+    "header": "Project",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "[Project Name 1]",
+        "description": "[N] existing issues, [status], [priority]"
+      },
+      {
+        "label": "[Project Name 2]",
+        "description": "[N] existing issues, [status], [priority]"
+      },
+      {
+        "label": "Create a new project",
+        "description": "I'll create a new Linear project for this work"
+      }
+    ]
+  }]
+}
+```
+
+If **"Create a new project"** is selected, the epic title will become the Linear project name.
+
+Store the selection for use in Step 13 (Linear task creation).
+
+If Linear is NOT connected, skip this question — tasks are created locally in `.flux/` only.
+
+---
+
 ## Step 7: Create Epic
 
 Create the epic with the problem statement:
