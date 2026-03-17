@@ -77,6 +77,8 @@ Read [workflow.md](workflow.md) and execute each phase in order.
 5. **Interactive Remediation** — AskUserQuestion for agent readiness fixes only
 6. **Apply Fixes** — Create/modify files based on selections
 7. **Summary** — Show what was changed
+8. **Mark Prime Complete** — So session-state knows priming is done
+9. **Auto-Ruminate** — If brain is thin + past sessions exist, IMMEDIATELY run `/flux:ruminate` as part of prime. This is NOT optional and NOT a separate workflow — it is a required phase of prime that runs automatically when conditions are met. Never suggest running it later.
 
 ## Maturity Levels (Agent Readiness)
 
