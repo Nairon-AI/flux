@@ -1378,10 +1378,10 @@ Available questions (include only if corresponding config is unset):
   "question": "Which model should scout agents use? (Scouts analyze your codebase during /flux:prime)",
   "options": [
     {"label": "claude-haiku-4-5 (Recommended)", "description": "Fast and cost-effective. Works with any Anthropic API access."},
-    {"label": "o4-mini", "description": "Fast OpenAI reasoning model. Requires ChatGPT Pro."},
-    {"label": "gpt-4.1-mini", "description": "Lightweight OpenAI model. Requires ChatGPT Pro."},
-    {"label": "gpt-4.1", "description": "Balanced OpenAI model. Requires ChatGPT Pro."},
-    {"label": "o3", "description": "Most capable OpenAI reasoning model. Requires ChatGPT Pro."}
+    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro."},
+    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "o4-mini", "description": "OpenAI reasoning model. Requires ChatGPT Plus or higher."}
   ],
   "multiSelect": false
 }
@@ -1472,10 +1472,10 @@ Save to config:
   "header": "Adversarial Reviewer 2 (OpenAI)",
   "question": "Pick the second reviewer model from a different lab. Cross-lab consensus eliminates single-model blind spots.",
   "options": [
-    {"label": "o3", "description": "Most capable OpenAI reasoning model. Requires ChatGPT Pro."},
-    {"label": "gpt-4.1", "description": "Balanced OpenAI model. Requires ChatGPT Pro."},
-    {"label": "o4-mini", "description": "Fast OpenAI reasoning model. Requires ChatGPT Pro."},
-    {"label": "gpt-4.1-mini", "description": "Lightweight OpenAI model. Requires ChatGPT Pro."}
+    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex-spark", "description": "Fastest OpenAI model. Requires ChatGPT Pro."},
+    {"label": "o4-mini", "description": "Reasoning model. Requires ChatGPT Plus or higher."}
   ],
   "multiSelect": false
 }
@@ -1575,10 +1575,10 @@ Only process answers for questions that were asked (config values that were unse
 
 **Scout Model** (if question was asked):
 - If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
+- If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
+- If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
+- If "gpt-5.4": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.4" --json`
 - If "o4-mini": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "o4-mini" --json`
-- If "gpt-4.1-mini": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-4.1-mini" --json`
-- If "gpt-4.1": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-4.1" --json`
-- If "o3": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "o3" --json`
 
 **Task Tracker** (if question was asked):
 - If "Linear":
@@ -1900,7 +1900,7 @@ Configuration (use fluxctl config set to change):
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
 - GitHub scout: <enabled|disabled>
-- Scout model: <claude-haiku-4-5|o4-mini|gpt-4.1|o3>
+- Scout model: <claude-haiku-4-5|gpt-5.3-codex-spark>
 - Review backend: <codex|rp|none>
 - Adversarial reviewer 1: <model> (Anthropic)
 - Adversarial reviewer 2: <model> (OpenAI)
