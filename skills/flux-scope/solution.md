@@ -256,33 +256,89 @@ Epic dependencies set:
 | **M** | 3-5 | 3-5 | Target size |
 | **L** | 5+ | 5+ | Split into M tasks |
 
-Create tasks under the epic:
+### Dependency Ordering
+
+**Tasks MUST be created in dependency order.** The first task created has no deps. Subsequent tasks reference earlier tasks by ID. This is critical — `fluxctl ready` uses this graph to determine which tasks can run next (only tasks whose deps are all `done`).
+
+Think about it like a build system:
+1. What can be built with zero dependencies? (foundation tasks — schema, config, types)
+2. What depends on #1? (implementation tasks that use the foundation)
+3. What depends on #2? (integration, wiring, API endpoints)
+4. What depends on everything? (tests, QA, docs — always last)
+
+Tasks at the same dependency level CAN run in parallel. Call this out explicitly in the completion summary (e.g., "Tasks 3/4/5 can run in parallel after task 2").
 
 ```bash
-# Create tasks with dependencies
-$FLUXCTL task create --epic <epic-id> --title "<Task title>" --json
-$FLUXCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1> --json
+# Create tasks in dependency order — first task has no deps
+$FLUXCTL task create --epic <epic-id> --title "<Foundation task>" --json
+# → returns fn-1-slug.1
 
-# Set task specs
+$FLUXCTL task create --epic <epic-id> --title "<Task that needs foundation>" --deps fn-1-slug.1 --json
+# → returns fn-1-slug.2
+
+# Multiple deps for tasks that need several predecessors
+$FLUXCTL task create --epic <epic-id> --title "<Integration task>" --deps fn-1-slug.2,fn-1-slug.3 --json
+```
+
+### Task Spec Content
+
+Each task spec must contain **everything an agent needs to implement it without asking questions**. The agent implementing this task will NOT have access to the scoping conversation — only the task spec and the epic spec. Write accordingly.
+
+```bash
 $FLUXCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
 ```
 
-**Task spec content** (NO implementation code):
+**Task spec template** (NO implementation code, but comprehensive context):
 ```markdown
 ## Description
-[What to build, not how]
+[What to build — specific enough that an agent can start immediately]
 
 **Size:** S/M
-**Files:** expected files
+**Estimated files:** [list the files that will be created or modified]
+
+## Context
+[Why this task exists. What problem it solves. How it fits into the epic.
+Reference the epic problem statement if needed. An agent reading this
+should understand the motivation, not just the mechanics.]
+
+## Current State
+[What exists today that this task builds on or changes.
+Include specific file paths, function names, line numbers from research.
+E.g., "Authentication currently uses `src/auth/session.ts` with cookie-based
+sessions. This task adds OAuth2 support alongside the existing flow."]
 
 ## Approach
-- Follow pattern at `src/example.ts:42`
+[Concrete guidance — not pseudocode, but clear direction:]
+- Follow the pattern at `src/example.ts:42-65`
 - Reuse `helper()` from `lib/utils.ts`
+- The new endpoint should follow the same middleware chain as `src/routes/api/users.ts`
+- Use the existing `DatabaseClient` from `src/db/client.ts` — do NOT create a new connection
+
+## Constraints
+[Hard rules the agent must follow:]
+- Do NOT modify `src/legacy/auth.ts` — it's deprecated but still used by mobile clients
+- All new API endpoints must use the `withAuth` middleware
+- Database migrations must be backwards-compatible (no column drops)
+
+## Dependencies
+[What must be done before this task, and what this task produces for later tasks:]
+- **Depends on:** fn-1-slug.1 (schema must exist before this task can create queries)
+- **Produces:** the `UserService` class that fn-1-slug.3 will import
 
 ## Acceptance
-- [ ] Criterion 1
-- [ ] Criterion 2
+- [ ] [Specific, testable criterion — not vague]
+- [ ] [Include the expected behavior, not just "it works"]
+- [ ] [E.g., "POST /api/auth/google returns 200 with { token, user } on valid OAuth code"]
+- [ ] [E.g., "Invalid OAuth code returns 401 with { error: 'invalid_grant' }"]
+- [ ] [E.g., "Existing cookie-based auth still works (regression test)"]
 ```
+
+**Rules for writing task specs:**
+1. **Self-contained** — the agent should never need to read the scoping conversation
+2. **File paths are mandatory** — every task must reference concrete files from the research phase
+3. **Constraints prevent regressions** — explicitly state what NOT to touch
+4. **Acceptance criteria are testable** — "it works" is not a criterion. Specify inputs, outputs, and edge cases
+5. **Dependencies are explicit** — state what this task consumes and produces
 
 ## Step 10.5: Browser QA Checklist (if frontend/web)
 
@@ -332,34 +388,58 @@ $FLUXCTL task set-spec <qa-task-id> --description /tmp/qa-desc.md --acceptance /
 
 ## Step 11: Update Epic Spec
 
-Update epic with full scope and acceptance:
+Update the epic spec with the full picture. The epic spec is the **high-level business context** — why this work exists, who it impacts, and what success looks like. Individual task specs handle the technical details. An agent reading the epic should understand the *motivation and impact*, not the implementation.
 
 ```bash
 $FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
 # <Epic Title>
 
 ## Problem Statement
-<problem statement>
+<Final problem statement from Step 6 — one clear sentence>
+
+## Why This Matters
+<Business impact in plain language. Who is affected and how.
+E.g., "Users are abandoning onboarding at the OAuth step because we only
+support email/password. Adding Google OAuth removes the highest-friction
+step in signup — our analytics show 40% drop-off at registration.">
 
 ## Context
-<from Problem Space>
+- **Core Desire**: <from Step 1 — what the user/stakeholder actually wants>
+- **Key Assumptions**: <from Step 2 — what we're betting on being true>
+- **User Impact**: <from Step 3 — who this affects and how>
+- **Risks**: <from Step 5 — what could go wrong>
+- **Decision Authority**: <who approved this, who to escalate to>
+
+## Stress-Tested Assumptions
+<from Step 6.1 — include decisions made, rationale, and reversal signals>
+
+### Assumptions Deferred to Implementation
+<assumptions that couldn't be resolved during scoping — validate during these tasks>
 
 ## Scope
-- Task 1: <description>
-- Task 2: <description>
-...
+<List all tasks with their dependencies and sizes. This is the execution plan.>
+
+| # | Task | Size | Depends On | Parallel? |
+|---|------|------|------------|-----------|
+| 1 | <task title> | M | — | — |
+| 2 | <task title> | M | 1 | — |
+| 3 | <task title> | S | 1 | Yes (with 2) |
+| 4 | <task title> | M | 2, 3 | — |
 
 ## Out of Scope
-<explicit exclusions>
+<Explicit exclusions — things the agent should NOT build even if they seem related>
 
 ## Quick Commands
 ```bash
-# Smoke test command(s)
+# Smoke test command(s) to verify the epic works end-to-end
 ```
 
-## Acceptance
-- [ ] Overall criterion 1
-- [ ] Overall criterion 2
+## Acceptance (Epic-Level)
+<High-level acceptance — what does "done" look like for the whole epic?>
+- [ ] <User-visible outcome, not implementation detail>
+- [ ] <E.g., "Users can sign in with Google OAuth on web and mobile">
+- [ ] <E.g., "Existing email/password auth still works (regression)">
+- [ ] <E.g., "Auth tokens are validated server-side with <provider>">
 EOF
 ```
 
