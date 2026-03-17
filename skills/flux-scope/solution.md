@@ -129,21 +129,30 @@ Create the epic with the problem statement:
 $FLUXCTL epic create --title "<Short title from problem statement>" --json
 ```
 
-Write the problem space findings to the epic spec:
+Write the problem space findings to the epic spec. **The epic spec is the high-level business context** — an agent or human reading this should understand *why* this work exists, *who* it impacts, and *what success looks like*. Implementation details belong in task specs, not here.
 
 ```bash
 $FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
 # <Epic Title>
 
 ## Problem Statement
-<Final problem statement from Step 6>
+<Final problem statement from Step 6 — one clear sentence>
+
+## Why This Matters
+<Business impact in plain language. Who is affected and how.
+Explain the reasoning from first principles — not just "the user asked for it"
+but why it matters for the product, users, or business.
+E.g., "Users are abandoning onboarding at the OAuth step because we only
+support email/password. Adding Google OAuth removes the highest-friction
+step in signup — our analytics show 40% drop-off at registration.">
 
 ## Context
-- **Core Desire**: <from Step 1>
-- **Key Assumptions**: <from Step 2>
-- **User Impact**: <from Step 3>
-- **Blind Spots**: <from Step 4>
-- **Risks**: <from Step 5>
+- **Core Desire**: <from Step 1 — what the user/stakeholder actually wants>
+- **Key Assumptions**: <from Step 2 — what we're betting on being true>
+- **User Impact**: <from Step 3 — who this affects and how>
+- **Blind Spots**: <from Step 4 — what we identified as potentially missing>
+- **Risks**: <from Step 5 — what could go wrong and mitigation strategies>
+- **Decision Authority**: <who approved this, who to escalate to if scope changes>
 
 ## Stress-Tested Assumptions
 <from Step 6.1 — include decisions, rationale, reversal signals>

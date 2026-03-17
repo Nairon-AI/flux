@@ -1,5 +1,7 @@
 # Flow Prime Workflow
 
+**State Machine**: See [docs/state-machine.md](../../docs/state-machine.md) for the formal workflow state diagram. This skill handles the `needs_prime` state and transitions to `fresh_session_no_objective` (optionally via `needs_ruminate`).
+
 Execute these phases in order. Reference [pillars.md](pillars.md) for scoring criteria and [remediation.md](remediation.md) for fix templates.
 
 **Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts use the model configured during `/flux:setup`.

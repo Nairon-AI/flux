@@ -4,6 +4,8 @@ Complete reference for all available `/flux:*` commands.
 
 Flux is designed to route from intent. In normal use, you should be able to tell the agent what you want to build, fix, refactor, or continue, and let Flux choose the right command. Treat this page as a reference, not the primary way to drive the workflow.
 
+For the formal workflow state machine (all states, transitions, and routing rules), see [state-machine.md](state-machine.md).
+
 ---
 
 ## Installation
@@ -132,6 +134,27 @@ Executes a task with automatic context reload and drift checks.
 
 ---
 
+## Knowledge & Memory
+
+| Command | Usage | Purpose |
+|---------|-------|---------|
+| `/flux:reflect` | `/flux:reflect` | Capture learnings from the current session into brain vault |
+| `/flux:ruminate` | `/flux:ruminate` | Mine past conversations for uncaptured patterns |
+| `/flux:meditate` | `/flux:meditate` | Audit brain vault — prune stale content, promote patterns |
+| "remember X" | `remember always use pnpm` | Smart routing — stores in CLAUDE.md (actionable rules) or brain/ (deeper context) |
+
+### Natural Language Memory
+
+You don't need a slash command. Just say:
+- **"remember always use pnpm"** → adds to CLAUDE.md (short rule, every session)
+- **"remember Sarah is the PM"** → adds to brain/business/ (team context)
+- **"don't forget the API rate limit is 100/min"** → adds to brain/codebase/ (technical context)
+- **"from now on, run tests before committing"** → adds to CLAUDE.md (constraint)
+
+Flux classifies the content and asks you to confirm the destination before writing.
+
+---
+
 ## Improve and Discovery
 
 <!-- TODO: Add video showing /flux:improve full flow -->
@@ -237,6 +260,23 @@ Executes a task with automatic context reload and drift checks.
 | `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
 | `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
 | `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |
+
+---
+
+## Workflow State Machine
+
+At any point, you can check where you are in the Flux workflow:
+
+```bash
+# Check current state
+fluxctl session-state --json
+
+# See active epics and tasks
+fluxctl epics --json
+fluxctl tasks --epic fn-1 --json
+```
+
+For the full state diagram, transitions, and routing rules, see [state-machine.md](state-machine.md).
 
 ---
 

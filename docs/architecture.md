@@ -2,6 +2,8 @@
 
 How Flux executes commands and turns workflow friction into actionable improvements.
 
+For the formal workflow state machine (all states, transitions, routing rules, and guards), see [state-machine.md](state-machine.md).
+
 ## High-Level Flow
 
 1. User runs `/flux:*` command.

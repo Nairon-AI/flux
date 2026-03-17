@@ -4,6 +4,21 @@ Follow these steps in order.
 
 ## Step 1: Parse Options
 
+### Natural Language Detection
+
+If `$ARGUMENTS` contains no `--` flags and is not empty, treat it as a natural language topic:
+
+1. Extract the topic from the input (e.g., "improve my CSS workflow" → `USER_CONTEXT="CSS workflow"`)
+2. Set `SKIP_PAIN_POINT_QUESTION=true` (the user already told you their pain point)
+3. If the topic maps to a category, auto-set `FILTER_CATEGORY`:
+   - CSS/styling/UI/design → `mcp` or `skill`
+   - testing/tests → `cli` or `skill`
+   - linting/formatting → `cli`
+   - build/CI/pipeline → `cli`
+   - tools/workflow → no filter (show all)
+
+### Flag Parsing
+
 Check `$ARGUMENTS` for:
 - `--skip-sessions` → set `SKIP_SESSIONS=true`
 - `--category=<cat>` → set `FILTER_CATEGORY=<cat>`
@@ -109,6 +124,8 @@ mcp_question({
 **Important**: Session analysis is opt-in. Never read session files without explicit consent.
 
 ## Step 2b: Optional User Context
+
+**Skip this step if `SKIP_PAIN_POINT_QUESTION=true`** (user already provided context via natural language input).
 
 **After consent, ask for optional context to improve recommendations:**
 

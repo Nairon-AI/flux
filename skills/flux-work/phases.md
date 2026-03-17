@@ -1,5 +1,7 @@
 # Flow Work Phases
 
+**State Machine**: See [docs/state-machine.md](../../docs/state-machine.md) for the formal workflow state diagram. This skill handles the `ready_for_work` → `in_progress` → `needs_completion_review` → `done` transitions.
+
 (Branch question already asked in SKILL.md before reading this file)
 
 **CRITICAL**: If you are about to create:
