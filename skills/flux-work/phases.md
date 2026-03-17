@@ -58,16 +58,56 @@ Detect input type in this order (first match wins):
 3. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <idea>" --json`
 4. Continue with epic-id
 
-### Linear Epic Status Sync
+### Linear Status Sync
 
-When starting work on an epic, sync the epic's Linear project status to "started" if it exists:
+Flux syncs task status to Linear using the team's **actual workflow states** — not hardcoded values. Each Linear team has custom states (e.g., "Backlog", "Ready for Dev", "In Progress", "In Review", "QA", "Done").
+
+**On first Linear sync for this epic**, fetch and cache the team's workflow states:
 
 ```bash
 LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
 if [ -f "$LINEAR_MAP" ]; then
+  # Check if we already cached workflow states
+  STATES_CACHED=$(jq -r '.workflow_states // empty' "$LINEAR_MAP")
+  if [ -z "$STATES_CACHED" ]; then
+    # Fetch workflow states for this team
+    # Call: mcp_linear_list_workflow_states(team: LINEAR_TEAM_ID)
+    # This returns states like: Backlog, Todo, In Progress, In Review, Done, Cancelled
+    # Cache them in linear.json for future use
+  fi
+fi
+```
+
+**State mapping** — Flux maps its lifecycle events to the closest matching team state:
+
+| Flux event | Match strategy |
+|---|---|
+| Task started | Find state containing "progress" or "in progress" (case-insensitive). Fallback: "started", "active" |
+| Task done | Find state containing "done" or "complete" (case-insensitive). Fallback: "closed" |
+| Task blocked | Find state containing "block" (case-insensitive). Fallback: skip sync |
+
+**If no match is found** for a status, skip the sync silently — don't guess. The user can configure explicit mappings in `.flux/config.json`:
+
+```json
+{
+  "linear": {
+    "statusMap": {
+      "in_progress": "In Development",
+      "done": "Ready for QA",
+      "blocked": "Blocked"
+    }
+  }
+}
+```
+
+If `linear.statusMap` exists in config, use those exact state names instead of auto-matching.
+
+**Epic project status** — sync the Linear project to "started" when work begins:
+
+```bash
+if [ -f "$LINEAR_MAP" ]; then
   LINEAR_PROJECT_ID=$(jq -r '.linear_project_id' "$LINEAR_MAP")
   if [ -n "$LINEAR_PROJECT_ID" ] && [ "$LINEAR_PROJECT_ID" != "null" ]; then
-    # Update Linear project status to "started"
     # Call: mcp_linear_update_project(id: LINEAR_PROJECT_ID, state: "started")
     echo "Linear project → Started"
   fi
@@ -107,20 +147,19 @@ $FLUXCTL start <task-id> --json
 **Sync to Linear** (if Linear integration is configured for this epic):
 
 ```bash
-# Check if this epic has a Linear mapping
 LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
 if [ -f "$LINEAR_MAP" ]; then
   LINEAR_ISSUE_ID=$(jq -r ".task_mapping[\"${TASK_ID}\"]" "$LINEAR_MAP")
   if [ -n "$LINEAR_ISSUE_ID" ] && [ "$LINEAR_ISSUE_ID" != "null" ]; then
-    # Update Linear issue status to "In Progress"
-    # Use mcp_linear_save_issue to update the state
-    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: "In Progress")
-    echo "Linear: ${LINEAR_ISSUE_ID} → In Progress"
+    # Get the team's "in progress" state name (from config override or auto-match)
+    IN_PROGRESS_STATE=$($FLUXCTL config get linear.statusMap.in_progress --json 2>/dev/null | jq -r '.value // empty')
+    # If no config override, use the cached workflow states from linear.json
+    # Auto-match: find state name containing "progress" (case-insensitive)
+    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: IN_PROGRESS_STATE)
+    echo "Linear: ${LINEAR_ISSUE_ID} → ${IN_PROGRESS_STATE}"
   fi
 fi
 ```
-
-This ensures the Linear board reflects what's actually being worked on.
 
 ### 3c. Spawn Worker
 
@@ -166,9 +205,11 @@ LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
 if [ -f "$LINEAR_MAP" ]; then
   LINEAR_ISSUE_ID=$(jq -r ".task_mapping[\"${TASK_ID}\"]" "$LINEAR_MAP")
   if [ -n "$LINEAR_ISSUE_ID" ] && [ "$LINEAR_ISSUE_ID" != "null" ]; then
-    # Update Linear issue status to "Done"
-    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: "Done")
-    echo "Linear: ${LINEAR_ISSUE_ID} → Done"
+    # Get the team's "done" state name (from config override or auto-match)
+    DONE_STATE=$($FLUXCTL config get linear.statusMap.done --json 2>/dev/null | jq -r '.value // empty')
+    # If no config override, auto-match: find state name containing "done" or "complete"
+    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: DONE_STATE)
+    echo "Linear: ${LINEAR_ISSUE_ID} → ${DONE_STATE}"
   fi
 fi
 ```
