@@ -112,49 +112,79 @@ jobs:
             RANGE="${TAG}..HEAD"
           fi
 
-          # Collect commit messages (skip chore/ci)
-          COMMITS=$(git log "$RANGE" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]" | grep -v "^$" || true)
+          # Collect commit subjects and bodies (skip chore/ci)
+          SUBJECTS=$(git log "$RANGE" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]" | grep -v "^$" || true)
 
-          # Build "What's New" section from feat/fix commits
+          # Get the full commit body for the primary feature (used for description)
+          PRIMARY_HASH=$(git log "$RANGE" --pretty=format:"%H %s" | grep -iE '^[a-f0-9]+ feat(\(.+\))?:' | head -1 | cut -d' ' -f1 || true)
+          PRIMARY_BODY=""
+          if [ -n "$PRIMARY_HASH" ]; then
+            PRIMARY_BODY=$(git log -1 "$PRIMARY_HASH" --pretty=format:"%b" | head -20)
+          fi
+
+          # Get changed files for context
+          FILES_CHANGED=$(git diff --name-only "$TAG..HEAD" 2>/dev/null | grep -v "^\.github" | head -15 || true)
+          FILE_COUNT=$(git diff --stat "$TAG..HEAD" 2>/dev/null | tail -1 || true)
+
+          # Build "What's New" with proper structure
+          BODY="## What's New\n\n"
+
+          # Group commits by type
           FEATS=""
           FIXES=""
           OTHERS=""
           while IFS= read -r msg; do
             [ -z "$msg" ] && continue
             if echo "$msg" | grep -qiE '^feat(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^feat\([^)]*\)\?:\s*//')
-              FEATS="${FEATS}\n- ${CLEAN}"
+              CLEAN=$(echo "$msg" | sed 's/^feat([^)]*)?: //' | sed 's/^feat: //')
+              FEATS="${FEATS}- **${CLEAN}**\n"
             elif echo "$msg" | grep -qiE '^fix(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^fix\([^)]*\)\?:\s*//')
-              FIXES="${FIXES}\n- ${CLEAN}"
+              CLEAN=$(echo "$msg" | sed 's/^fix([^)]*)?: //' | sed 's/^fix: //')
+              FIXES="${FIXES}- ${CLEAN}\n"
             elif echo "$msg" | grep -qiE '^revert(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^revert\([^)]*\)\?:\s*//')
-              OTHERS="${OTHERS}\n- ${CLEAN}"
+              CLEAN=$(echo "$msg" | sed 's/^revert([^)]*)?: //' | sed 's/^revert: //')
+              OTHERS="${OTHERS}- ${CLEAN}\n"
             fi
-          done <<< "$COMMITS"
-
-          # Build the body
-          BODY="## What's New\n"
+          done <<< "$SUBJECTS"
 
           if [ -n "$FEATS" ]; then
-            BODY="${BODY}\n### Features\n${FEATS}\n"
+            BODY="${BODY}### Features\n\n${FEATS}\n"
           fi
+
+          # Add commit body as description if available
+          if [ -n "$PRIMARY_BODY" ]; then
+            BODY="${BODY}${PRIMARY_BODY}\n\n"
+          fi
+
           if [ -n "$FIXES" ]; then
-            BODY="${BODY}\n### Fixes\n${FIXES}\n"
+            BODY="${BODY}### Fixes\n\n${FIXES}\n"
           fi
           if [ -n "$OTHERS" ]; then
-            BODY="${BODY}\n### Other Changes\n${OTHERS}\n"
+            BODY="${BODY}### Other Changes\n\n${OTHERS}\n"
+          fi
+
+          # Add files changed summary
+          if [ -n "$FILES_CHANGED" ]; then
+            BODY="${BODY}### Files Changed\n\n"
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              BODY="${BODY}- \`${f}\`\n"
+            done <<< "$FILES_CHANGED"
+            if [ -n "$FILE_COUNT" ]; then
+              BODY="${BODY}\n${FILE_COUNT}\n"
+            fi
+            BODY="${BODY}\n"
           fi
 
           # Add full commit list
-          BODY="${BODY}\n## What's Changed\n"
+          BODY="${BODY}## What's Changed\n\n"
           while IFS= read -r msg; do
             [ -z "$msg" ] && continue
-            BODY="${BODY}\n* ${msg}"
-          done <<< "$COMMITS"
+            BODY="${BODY}* ${msg}\n"
+          done <<< "$SUBJECTS"
 
           if [ -n "$TAG" ]; then
-            BODY="${BODY}\n\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${TAG}...v${VERSION}"
+            BODY="${BODY}\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${TAG}...v${VERSION}"
           fi
 
           # Write to file to avoid escaping issues
@@ -162,10 +192,10 @@ jobs:
 
           # Generate a title from the primary feature commit
           TITLE="v${VERSION}"
-          FIRST_FEAT=$(echo "$COMMITS" | grep -iE '^feat(\(.+\))?:' | head -1 | sed 's/^feat\([^)]*\)\?:\s*//' || true)
+          FIRST_FEAT=$(echo "$SUBJECTS" | grep -iE '^feat(\(.+\))?:' | head -1 | sed 's/^feat([^)]*)?: //' | sed 's/^feat: //' || true)
           if [ -n "$FIRST_FEAT" ]; then
-            # Truncate to 60 chars for title
-            SHORT=$(echo "$FIRST_FEAT" | cut -c1-60)
+            # Capitalize first letter and truncate to 60 chars
+            SHORT=$(echo "$FIRST_FEAT" | sed 's/^./\U&/' | cut -c1-60)
             TITLE="v${VERSION} — ${SHORT}"
           fi
           echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
