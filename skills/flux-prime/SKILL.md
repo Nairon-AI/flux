@@ -30,6 +30,21 @@ Agents waste cycles when:
 
 These are **environment problems**, not agent problems. Prime helps fix them.
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set prime
+```
+
+On completion, reset to idle:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Input
 
 Full request: $ARGUMENTS

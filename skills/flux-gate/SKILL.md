@@ -8,6 +8,20 @@ user-invocable: true
 
 Validates that a staging deployment is healthy after a PR merge, then creates a promotion PR to production. This is the bridge between "code is merged to staging" and "code ships to production."
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set gate
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Prerequisites
 
 - `environments.staging` must be configured in `.flux/config.json` (set up via `/flux:setup`)

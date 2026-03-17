@@ -28,6 +28,20 @@ Behavioral breakdown includes:
 - What should become agents (autonomous subagents)
 - What belongs in `CLAUDE.md` (project-level instructions)
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set improve
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## User Context (Optional but Powerful)
 
 After consent, ask users to describe frustrations in a few words. Even brief context like "fighting CSS" or "keeps forgetting things" **dramatically improves** recommendation accuracy.

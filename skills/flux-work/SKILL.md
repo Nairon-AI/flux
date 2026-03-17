@@ -28,6 +28,17 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL <command>
 ```
 
+## Session Phase Tracking
+
+On entry, set the session phase (include task ID when available):
+```bash
+$FLUXCTL session-phase set work --task-id "$TASK_ID" --epic-id "$EPIC_ID"
+```
+On completion (all tasks done), reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 **Hard requirements (non-negotiable):**
 - You MUST run `fluxctl done` for each completed task and verify the task status is `done`.
 - You MUST stage with `git add -A` (never list files). This ensures `.flux/` and `scripts/ralph/` (if present) are included.

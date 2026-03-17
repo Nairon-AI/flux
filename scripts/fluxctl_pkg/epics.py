@@ -53,6 +53,7 @@ from .state import (
     delete_task_runtime,
     get_active_objective,
     get_prime_state,
+    get_session_phase,
     get_state_store,
     load_meta,
     load_task_with_state,
@@ -60,6 +61,7 @@ from .state import (
     save_meta,
     set_active_objective,
     set_prime_state,
+    set_session_phase,
 )
 
 
@@ -1676,6 +1678,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     if not ensure_flux_exists():
         result = {
             "state": "fresh_session_no_objective",
+            "session_phase": {"phase": "idle", "detail": None, "epic_id": None, "task_id": None, "updated_at": None},
             "flux_exists": False,
             "objective": None,
             "task": None,
@@ -1695,6 +1698,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         epic_data = choose_current_objective(current_actor, use_json=args.json)
         result = {
             "state": "needs_prime",
+            "session_phase": get_session_phase(use_json=args.json),
             "flux_exists": True,
             "objective": None
             if not epic_data
@@ -1723,6 +1727,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     if not epic_data:
         result = {
             "state": "fresh_session_no_objective",
+            "session_phase": get_session_phase(use_json=args.json),
             "flux_exists": True,
             "objective": None,
             "task": None,
@@ -1770,8 +1775,10 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         message = f"{epic_data['title']} is open but waiting for the next decision."
         next_action = epic_data.get("next_action") or f"/flux:scope {epic_data['title']}"
 
+    session_phase = get_session_phase(use_json=args.json)
     result = {
         "state": state,
+        "session_phase": session_phase,
         "flux_exists": True,
         "prime": prime_state,
         "objective": {
@@ -1790,7 +1797,46 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     if args.json:
         json_output(result)
     else:
-        print(message)
+        phase_str = session_phase["phase"]
+        detail = session_phase.get("detail")
+        if detail:
+            phase_str = f"{phase_str} ({detail})"
+        print(f"[{phase_str}] {message}")
+
+
+def cmd_session_phase_get(args: argparse.Namespace) -> None:
+    """Get the current session phase."""
+    phase_data = get_session_phase(use_json=args.json)
+    if args.json:
+        json_output(phase_data)
+    else:
+        phase = phase_data["phase"]
+        detail = phase_data.get("detail") or ""
+        epic_id = phase_data.get("epic_id") or ""
+        task_id = phase_data.get("task_id") or ""
+        parts = [f"Phase: {phase}"]
+        if detail:
+            parts.append(f"Detail: {detail}")
+        if epic_id:
+            parts.append(f"Epic: {epic_id}")
+        if task_id:
+            parts.append(f"Task: {task_id}")
+        print(" | ".join(parts))
+
+
+def cmd_session_phase_set(args: argparse.Namespace) -> None:
+    """Set the current session phase."""
+    result = set_session_phase(
+        args.phase,
+        detail=args.detail,
+        epic_id=args.epic_id,
+        task_id=args.task_id,
+        use_json=args.json,
+    )
+    if args.json:
+        json_output(result)
+    else:
+        print(f"Session phase → {result['phase']}" + (f" ({result['detail']})" if result.get("detail") else ""))
 
 
 def cmd_artifact_write(args: argparse.Namespace) -> None:

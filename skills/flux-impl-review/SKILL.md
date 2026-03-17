@@ -13,6 +13,17 @@ Lightweight per-task review using a single model. Catches obvious bugs and issue
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
 
+## Session Phase Tracking
+
+On entry (after FLUXCTL is resolved), set the session phase:
+```bash
+$FLUXCTL session-phase set impl_review
+```
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
