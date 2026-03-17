@@ -19,6 +19,12 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - "refactor", "clean up", "rewrite"
   - "continue", "resume", "pick this up"
   - "hand this off", "what next", "where are we"
+- Treat these as **tool/recommendation requests** — route directly to `/flux:improve` with the topic as `--user-context`:
+  - "find me tools for...", "what can help with...", "any recommendations for..."
+  - "help me with growth", "improve my testing", "optimize deployment"
+  - "is there a tool for...", "what MCP should I use for..."
+  - Any request asking about optimizations, tools, or recommendations for a specific area
+  - Example: "find me tools for growth engineering" → `/flux:improve --user-context "growth engineering"`
 - Before scoping or coding, reconcile the user's message with Flux state.
 - Do not silently ignore active Flux state just because the user phrased the request casually.
 

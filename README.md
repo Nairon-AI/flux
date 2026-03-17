@@ -502,7 +502,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:reflect` | Capture session learnings to brain vault and extract reusable skills | 8. After shipping an epic — Flux suggests this so you capture learnings while context is fresh |
 | `/flux:ruminate` | Mine past conversations for missed patterns | Between epics — when you have breathing room, mine old sessions for patterns you missed in the moment |
 | `/flux:meditate` | Prune brain vault, promote pitfalls to principles | Auto-nudged at session start when 5+ new pitfalls accumulate or 30+ days since last meditation. Also run manually between epics |
-| `/flux:improve` | Analyze sessions, recommend tools from the recommendation engine | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3) |
+| `/flux:improve` | Analyze sessions, recommend tools from the recommendation engine | Auto-nudged at session start when new tools available. Auto-suggested with pre-filled context when epic review detects friction (score >= 3). Also triggered naturally — just say "find me tools for growth engineering" or "what can help with testing" and Flux routes to improve automatically |
 
 **Utilities**
 
