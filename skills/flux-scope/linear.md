@@ -202,8 +202,8 @@ For each task created in `.flux/`, create a corresponding Linear issue:
 ```
 For each task in $FLUXCTL tasks --epic <epic-id> --json:
   Call: mcp_linear_save_issue(
-    title: task.title,
-    description: task.description + "\n\n---\nFlux Task: " + task.id,
+    title: task.title,   # CLEAN title only — NO Flux task ID prefix like [fn-1-xxx.1]
+    description: task.description + "\n\n---\n<!-- flux:task-id=" + task.id + " -->",
     team: LINEAR_TEAM_ID (from Step 0.6),
     project: LINEAR_PROJECT_ID (from Step 0.6),
     priority: map_priority(task.priority),  # 0=None, 1=Urgent, 2=High, 3=Normal, 4=Low
@@ -212,6 +212,8 @@ For each task in $FLUXCTL tasks --epic <epic-id> --json:
   )
 
   Store mapping: task.id → linear_issue_id
+
+**IMPORTANT**: The Linear issue title must be the CLEAN task title only (e.g., "Engineering spec: schema, logging service, instrumentation plan"). Never prefix it with Flux task IDs like `[fn-1-activity-partner-detail-logs.1]`. The Flux task ID is stored as an HTML comment in the description for sync purposes — it should never be visible to users reading Linear.
 ```
 
 **Priority mapping:**
