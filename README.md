@@ -8,7 +8,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
 **The missing (self-improving) harness for Claude Code.**<br>
-Build software reliably.
+Build Software deterministically without outsourcing your thinking.
 
 > Recommended orchestrator: [SuperSet](https://superset.sh/) — parallel Claude Code sessions with git worktree isolation.
 
