@@ -38,8 +38,8 @@ These aren't model failures. They're **process failures**.
 
 **This is where Flux comes in.**
 
+- **Repeatable workflows** — Enforces an Agent-first SDLC state machine during a session, so you and the agent never lose track of what's next while building (You can never build something before planning, skip code review, and so on)
 - **Anti-sycophancy built in** — Flux will tell you "this isn't worth building" or "you're making assumptions you haven't validated." During scoping, it runs a viability gate and stress-tests one-way door decisions, UX assumptions, and deferred authority ("my senior said...") *before* any code is written
-- **Repeatable workflows** — enforces structure across sessions so you and the agent never lose track of what's next
 - **Multi-model adversarial reviews** — catches what no single model spots alone
 - **Long tasks without drift** — Flux keeps the agent on rails even when context gets deep
 - **Session analysis** — detect inefficiencies and get recommended optimisations from an engine that learns your patterns
