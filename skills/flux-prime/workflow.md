@@ -211,6 +211,38 @@ Calculate:
 
 **Overall Score** = average of all 8 pillar scores
 
+### Infrastructure Provider Detection
+
+Scan the codebase to identify cloud providers and services. This feeds the "Infrastructure MCPs & CLIs" question in Phase 5.
+
+```bash
+# 1. Config files — existence implies usage
+for f in vercel.json railway.json railway.toml netlify.toml fly.toml render.yaml wrangler.toml wrangler.jsonc amplify.yml firebase.json .firebaserc supabase/.temp/project-ref doppler.yaml; do
+  [ -f "$f" ] && echo "CONFIG: $f"
+done
+
+# 2. Dependencies — scan manifests
+for manifest in package.json apps/*/package.json packages/*/package.json requirements*.txt Pipfile pyproject.toml Cargo.toml go.mod; do
+  [ -f "$manifest" ] && grep -oE '@vercel/|@neondatabase/|@supabase/|@planetscale/|@cloudflare/workers|@aws-sdk/|@google-cloud/|firebase-admin|stripe|resend|@upstash/|@libsql/|@prisma/' "$manifest" 2>/dev/null | sort -u | sed "s/^/DEP ($manifest): /"
+done
+
+# 3. Environment variable prefixes — scan .env examples
+for envfile in .env.example .env.local.example .env.template; do
+  [ -f "$envfile" ] && grep -oE '^(VERCEL|RAILWAY|NEON|SUPABASE|PLANETSCALE|CLOUDFLARE|AWS|GOOGLE_CLOUD|FIREBASE|FLY|RENDER|NETLIFY|STRIPE|RESEND|UPSTASH|TURSO|DOPPLER)_' "$envfile" 2>/dev/null | sort -u | sed "s/^/ENV ($envfile): /"
+done
+```
+
+Build a list of detected providers. For each, check if the corresponding MCP or CLI is already installed:
+
+```bash
+# Check existing tooling (skip recommendations for already-installed tools)
+which vercel netlify railway flyctl render wrangler firebase pscale turso doppler stripe 2>/dev/null
+# Check MCP configs
+cat ~/.claude/settings.json 2>/dev/null | grep -o '"[^"]*mcp[^"]*"' | head -20
+```
+
+Only recommend MCPs/CLIs for providers that are detected AND whose tooling is NOT already installed.
+
 ### Prioritize Recommendations
 
 Generate prioritized recommendations from **Pillars 1-5 only**:
@@ -281,6 +313,14 @@ Informational only. No fixes offered — address independently if desired.
 ## Production Readiness Notes
 
 [Key observations from Pillars 6-8 that the team should be aware of]
+
+## Infrastructure Providers Detected
+
+| Provider | Signal | Agent Tooling | Status |
+|----------|--------|---------------|--------|
+| [Provider] | [config file / dep / env var] | [MCP/CLI name] | ✅ Installed / ❌ Not installed |
+
+[If no providers detected, omit this section entirely]
 ```
 
 **If `--report-only`**: Show report, then skip to Phase 8 (mark prime complete) and exit.
@@ -433,6 +473,49 @@ which agent-browser >/dev/null 2>&1 && echo "agent-browser installed successfull
 }
 ```
 
+**Question 6: Infrastructure MCPs & CLIs (if providers detected)**
+
+Scan the codebase for infrastructure providers and recommend MCPs or CLIs that let agents interact with them directly — without the user needing to context-switch to dashboards.
+
+**Detection**: Search for provider signals across the codebase:
+
+```bash
+# Config files
+ls vercel.json railway.json railway.toml netlify.toml fly.toml render.yaml supabase/.temp/project-ref wrangler.toml wrangler.jsonc amplify.yml firebase.json .firebaserc 2>/dev/null
+
+# Package dependencies (check package.json, requirements.txt, Cargo.toml, go.mod)
+# Look for: @vercel/*, @neondatabase/*, @supabase/*, @prisma/*, @planetscale/*, @cloudflare/workers-*, @aws-sdk/*, @google-cloud/*, firebase-admin, stripe, resend, @upstash/*
+
+# Environment variables
+grep -rh 'VERCEL\|RAILWAY\|NEON_\|SUPABASE\|DATABASE_URL.*neon\|DATABASE_URL.*supabase\|PLANETSCALE\|CLOUDFLARE\|AWS_\|GOOGLE_CLOUD\|FIREBASE\|FLY_\|RENDER_\|NETLIFY\|STRIPE_\|RESEND_\|UPSTASH_\|TURSO_\|DOPPLER_' .env.example .env.local.example *.env 2>/dev/null | head -20
+```
+
+**Provider → MCP/CLI catalog** (see [remediation.md](remediation.md#infrastructure-mcps--clis) for full catalog):
+
+Only include providers actually detected in the codebase. Build the options list dynamically from matches. Prioritize MCPs (richer agent integration) over bare CLIs.
+
+```json
+{
+  "questions": [{
+    "question": "I detected these infrastructure providers in your codebase. Installing their MCPs/CLIs lets agents manage deployments, query databases, and check logs without you switching to dashboards.",
+    "header": "Infra",
+    "multiSelect": true,
+    "options": [
+      {
+        "label": "Install [Provider] MCP (Recommended)",
+        "description": "[What it enables for agents]. Install: [command]"
+      },
+      {
+        "label": "Skip infrastructure tooling",
+        "description": "Set up provider CLIs/MCPs later"
+      }
+    ]
+  }]
+}
+```
+
+If items selected, install in Phase 6 using the commands from the catalog. Verify each install succeeds before moving to the next.
+
 ### Rules for Questions
 
 1. **MUST use AskUserQuestion tool** — Never just print questions
@@ -440,7 +523,7 @@ which agent-browser >/dev/null 2>&1 && echo "agent-browser installed successfull
 3. **Mark bonus items** — Add "(Bonus)" to nice-to-have options
 4. **Explain agent benefit** — Each description should say WHY it helps agents
 5. **Skip empty categories** — Don't ask if no recommendations
-6. **Max 4 options per question** — Tool limit, prioritize if more
+6. **Max 4 options per question** — Tool limit, prioritize if more. For infra, group by category (hosting, database, services) if >4 detected
 7. **Never offer Pillar 6-8 items** — Production readiness is informational only
 
 ---

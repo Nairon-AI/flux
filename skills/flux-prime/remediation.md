@@ -312,6 +312,53 @@ jobs:
 
 ---
 
+## Infrastructure MCPs & CLIs
+
+When the prime assessment detects infrastructure providers in the codebase, recommend the corresponding MCPs or CLIs. These let agents deploy, query databases, check logs, and manage infrastructure directly — without the user switching to provider dashboards.
+
+**Only recommend tools for providers actually detected in the codebase.** Never suggest tools for providers the project doesn't use.
+
+### Hosting & Deployment
+
+| Provider | Detection Signals | MCP/CLI | Install | What Agents Can Do |
+|----------|-------------------|---------|---------|-------------------|
+| **Vercel** | `vercel.json`, `@vercel/*` deps, `VERCEL_*` env | Vercel MCP | `npx @vercel/mcp@latest` (follow setup) | Manage deployments, check build logs, manage env vars, query analytics |
+| **Netlify** | `netlify.toml`, `NETLIFY_*` env | Netlify CLI | `npm i -g netlify-cli && netlify login` | Deploy, check build status, manage sites, view function logs |
+| **Railway** | `railway.json`, `railway.toml`, `RAILWAY_*` env | Railway CLI | `npm i -g @railway/cli && railway login` | Deploy, view logs, manage services, check deployments |
+| **Fly.io** | `fly.toml`, `FLY_*` env | Fly CLI | `brew install flyctl && fly auth login` | Deploy, scale, view logs, manage secrets |
+| **Render** | `render.yaml`, `RENDER_*` env | Render CLI | `brew install render` | Deploy, manage services, view logs |
+| **Cloudflare Workers** | `wrangler.toml`, `wrangler.jsonc`, `@cloudflare/workers-*` deps | Cloudflare MCP | `npx @anthropic-ai/mcp@latest cloudflare` (follow setup) | Deploy workers, manage KV/D1/R2, check analytics |
+| **AWS** | `@aws-sdk/*` deps, `AWS_*` env, `amplify.yml` | AWS MCP | `npx @anthropic-ai/mcp@latest aws` (follow setup) | Manage S3, Lambda, CloudFormation, view CloudWatch logs |
+
+### Databases
+
+| Provider | Detection Signals | MCP/CLI | Install | What Agents Can Do |
+|----------|-------------------|---------|---------|-------------------|
+| **Neon** | `@neondatabase/*` deps, `NEON_*` env, `DATABASE_URL.*neon` | Neon MCP | `npx @anthropic-ai/mcp@latest neon` (follow setup) | Create/manage databases, run SQL, manage branches |
+| **Supabase** | `supabase/` dir, `@supabase/*` deps, `SUPABASE_*` env | Supabase MCP | `npx @anthropic-ai/mcp@latest supabase` (follow setup) | Manage tables, run SQL, manage auth, check edge functions |
+| **PlanetScale** | `@planetscale/*` deps, `PLANETSCALE_*` env | PlanetScale CLI | `brew install planetscale/tap/pscale && pscale auth login` | Create branches, run schema changes, query databases |
+| **Turso** | `@libsql/*` deps, `TURSO_*` env | Turso CLI | `brew install tursodatabase/tap/turso && turso auth login` | Manage databases, create replicas, run SQL |
+| **Upstash** | `@upstash/*` deps, `UPSTASH_*` env | Upstash MCP | `npx @anthropic-ai/mcp@latest upstash` (follow setup) | Manage Redis/Kafka instances, check metrics |
+
+### Services & APIs
+
+| Provider | Detection Signals | MCP/CLI | Install | What Agents Can Do |
+|----------|-------------------|---------|---------|-------------------|
+| **Stripe** | `stripe` dep, `STRIPE_*` env | Stripe MCP | `npx @anthropic-ai/mcp@latest stripe` (follow setup) | Test webhooks, manage products, check payments, view logs |
+| **Resend** | `resend` dep, `RESEND_*` env | Resend MCP | Configure in Claude MCP settings | Send test emails, manage domains, check delivery status |
+| **Firebase** | `firebase.json`, `.firebaserc`, `firebase-admin` dep | Firebase CLI | `npm i -g firebase-tools && firebase login` | Deploy functions, manage Firestore, check hosting |
+| **Doppler** | `doppler.yaml`, `DOPPLER_*` env | Doppler CLI | `brew install dopplerhq/cli/doppler && doppler login` | Manage secrets across environments, sync env vars |
+
+### Installation Rules
+
+1. **MCP over CLI** — If both exist, prefer the MCP (richer integration with agents)
+2. **Auth required** — Most tools need authentication. Tell the user which ones need `login` after install
+3. **Verify install** — After each install, verify with `which <tool>` or the tool's `--version` flag
+4. **Don't auto-configure MCP settings** — MCPs that need Claude Desktop/Code config should tell the user what to add, not modify config files directly
+5. **Group if many** — If >4 providers detected, group into "Hosting", "Database", "Services" questions
+
+---
+
 ## Application Rules
 
 1. **Detect before creating** - Check if file exists first
