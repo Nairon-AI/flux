@@ -205,7 +205,8 @@ For each task in $FLUXCTL tasks --epic <epic-id> --json:
     title: task.title,   # CLEAN title only — NO Flux task ID prefix like [fn-1-xxx.1]
     description: task.description + "\n\n---\n<!-- flux:task-id=" + task.id + " -->",
     team: LINEAR_TEAM_ID (from Step 0.6),
-    project: LINEAR_PROJECT_ID (from Step 0.6),
+    project: LINEAR_PROJECT_ID (from Step 6.5.2),
+    assignee: SELECTED_USER_ID (from Step 6.5.3, omit if "Unassigned"),
     priority: map_priority(task.priority),  # 0=None, 1=Urgent, 2=High, 3=Normal, 4=Low
     labels: ["flux-managed"],
     state: "backlog"

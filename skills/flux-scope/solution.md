@@ -79,6 +79,46 @@ Store the selection for use in Step 13 (Linear task creation).
 
 If Linear is NOT connected, skip this question — tasks are created locally in `.flux/` only.
 
+### Step 6.5.3: Assignee Selection (if Linear connected)
+
+If Linear is connected, fetch the team members and ask who to assign the work to:
+
+```bash
+# Fetch team members
+# Call: mcp_linear_list_teams(limit: 50) — use the selected team from Step 6.5.2
+# Team members are included in the team response
+```
+
+Use `AskUserQuestion`:
+
+```json
+{
+  "questions": [{
+    "question": "Who should be assigned to this work?",
+    "header": "Assignee",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "[Member Name 1]",
+        "description": "[role/title if available]"
+      },
+      {
+        "label": "[Member Name 2]",
+        "description": "[role/title if available]"
+      },
+      {
+        "label": "Unassigned",
+        "description": "Don't assign to anyone yet — assign later in Linear"
+      }
+    ]
+  }]
+}
+```
+
+Store the selected assignee ID. When creating Linear issues in Step 13, pass `assignee: SELECTED_USER_ID` for both the epic and all sub-tasks.
+
+If the user selects **"Unassigned"**, omit the assignee field when creating issues.
+
 ---
 
 ## Step 7: Create Epic
