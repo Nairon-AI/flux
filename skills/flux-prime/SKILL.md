@@ -27,8 +27,13 @@ Agents waste cycles when:
 - Undocumented env vars → guesses, fails, guesses again
 - No CLAUDE.md → doesn't know project conventions
 - Missing test commands → can't verify changes work
+- No provider CLIs/MCPs → user has to context-switch to Vercel/Railway/Neon dashboards for every deploy or DB query
 
 These are **environment problems**, not agent problems. Prime helps fix them.
+
+## Infrastructure Provider Detection
+
+Prime scans the codebase for cloud providers (Vercel, Railway, Neon, Supabase, Cloudflare, AWS, Stripe, etc.) and recommends MCPs or CLIs that give agents direct access. This means agents can deploy, query databases, check logs, and manage secrets without the user needing to open provider dashboards.
 
 ## Session Phase Tracking
 
