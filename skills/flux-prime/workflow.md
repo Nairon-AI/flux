@@ -508,11 +508,9 @@ Without this step, `session-state` will always report `needs_prime` and block th
 
 ---
 
-## Phase 9: Auto-Ruminate (MANDATORY when conditions met)
+## Phase 9: Ruminate Offer (conditional)
 
-**THIS IS NOT OPTIONAL. THIS IS NOT A SUGGESTION. THIS IS A REQUIRED PHASE OF PRIME.**
-
-After marking prime complete, check if the brain vault is thin and past conversations exist. If conditions are met, you MUST immediately invoke `/flux:ruminate` — not suggest it, not mention it as a future step, not say "that's a separate workflow." Run it NOW as part of this prime execution.
+After marking prime complete, check if the brain vault is thin and past conversations exist. If so, **ask the user** if they want to populate the brain from their past sessions.
 
 **Trigger conditions** (ALL must be true):
 1. Brain vault has fewer than 5 files across `brain/pitfalls/` and `brain/principles/`
@@ -539,18 +537,30 @@ if [ -d "$PROJECT_DIR" ]; then
 fi
 ```
 
-If `BRAIN_FILES < 5` and `PAST_SESSIONS > 0`:
+If `BRAIN_FILES < 5` and `PAST_SESSIONS > 0`, use `AskUserQuestion` to ask:
 
-1. Tell the user: `Brain vault is thin — mining past conversations to bootstrap knowledge...`
-2. **Immediately invoke the Skill tool with skill: "flux:ruminate"** — do NOT suggest it, do NOT say "you could run this later", do NOT say "that's a separate workflow." Just invoke it.
-3. Wait for ruminate to complete before presenting the "What to do next" summary.
+```json
+{
+  "questions": [{
+    "question": "Your brain vault is thin but you have past Claude Code sessions in this project. Want to mine them for patterns and learnings? This will populate the brain vault so Flux doesn't start from zero.",
+    "header": "Ruminate",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "Yes — populate brain from past sessions",
+        "description": "Runs /flux:ruminate now to extract pitfalls, patterns, and corrections from your conversation history. Takes a few minutes."
+      },
+      {
+        "label": "Skip for now",
+        "description": "Start with an empty brain. It'll fill up naturally as you scope, build, and reflect."
+      }
+    ]
+  }]
+}
+```
 
-**NEVER say any of the following:**
-- "that's a separate workflow"
-- "would extend this session significantly"
-- "you can run /flux:ruminate later"
-- "Normally I'd auto-run..."
+If the user selects **"Yes"**: immediately invoke the Skill tool with `skill: "flux:ruminate"`. Do NOT say "you can run this later" or "that's a separate workflow" — just run it as part of prime.
 
-If the conditions are met, ruminate is part of prime. Period.
+If the user selects **"Skip"**: continue silently to the "What to do next" summary.
 
-If the trigger conditions are not met, skip silently and continue.
+If the trigger conditions are not met (brain is already populated, or no past sessions), skip this phase silently.

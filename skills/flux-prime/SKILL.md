@@ -78,7 +78,7 @@ Read [workflow.md](workflow.md) and execute each phase in order.
 6. **Apply Fixes** — Create/modify files based on selections
 7. **Summary** — Show what was changed
 8. **Mark Prime Complete** — So session-state knows priming is done
-9. **Auto-Ruminate** — If brain is thin + past sessions exist, IMMEDIATELY run `/flux:ruminate` as part of prime. This is NOT optional and NOT a separate workflow — it is a required phase of prime that runs automatically when conditions are met. Never suggest running it later.
+9. **Ruminate Offer** — If brain is thin + past sessions exist, ask the user if they want to populate the brain from past conversations. If they say yes, run `/flux:ruminate` immediately as part of prime — not as a separate workflow suggestion.
 
 ## Maturity Levels (Agent Readiness)
 
