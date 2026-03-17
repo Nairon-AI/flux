@@ -45,13 +45,56 @@ $FLUXCTL <command>
 
 Full request: $ARGUMENTS
 
+### Step 0: Load Business Context
+
+Before starting the conversation, silently read business context if it exists:
+
+```bash
+cat brain/business/context.md 2>/dev/null
+cat brain/business/glossary.md 2>/dev/null
+ls brain/business/*.md 2>/dev/null
+```
+
+If business context exists:
+- Use the product stage to calibrate how hard you push on estimates and user validation
+- Use the glossary to understand domain terms correctly — never misinterpret domain language
+- Use the team directory (`brain/business/team.md`) to understand who's who — so when call transcripts mention names, you know their role
+- Reference area-specific files (e.g., `brain/business/billing.md`) when the proposal touches those areas
+
+If no business context exists:
+- Continue normally — the context will be created as part of this session (see "Update Business Context" below)
+
+### Step 0.25: Business Context Re-check
+
+**If business context exists**, do a quick re-check before diving in. Present what you know and ask if anything has changed:
+
+```
+Quick check before we start — last time, here's what I had on file:
+
+- Product stage: [from context.md]
+- Users: [from context.md]
+- Team: [list names + roles from team.md if it exists]
+
+Has anything changed? New team members, someone left, user growth, funding, anything like that?
+If not, just say "all good" and we'll jump in.
+```
+
+- If they mention changes: update `brain/business/context.md` and/or `brain/business/team.md` immediately
+- If they say "all good": proceed
+- Keep this to **one question** — don't turn it into a second setup interview
+
+### Step 0.5: Import or Start Fresh
+
 If empty or entered via implicit detection from `/flux:scope`:
 - Greet them and explain that this is a feature proposal session
 - Ask: "Before we dive in, what's your name and role? This helps the engineering team know who proposed this feature."
-- Then ask: "What feature or improvement would you like to propose?"
+- Then ask: **"Do you have an existing document (Google Doc, Notion page, PRD) describing what you want? You can paste the full contents here and I'll work from that. Or we can start fresh and I'll interview you."**
+  - If they paste a document: parse it thoroughly. Extract the core ask, any requirements, terminology, context. Then confirm your understanding: "Here's what I'm taking from your document: [summary]. Is that right? Anything I'm missing or got wrong?" Then proceed to Phase 1 with this context pre-loaded — skip questions that are already answered by the doc.
+  - If they want to start fresh: ask "What feature or improvement would you like to propose?"
 
 If arguments provided:
 - Still ask for their name and role first
+- Still offer the document import option
 - Then proceed with the provided description
 
 ## Implicit Detection (from /flux:scope)
@@ -107,46 +150,64 @@ Wait for confirmation before proceeding.
 
 This is where value is created. Read the codebase to give grounded pushback, not generic concerns.
 
-### Step 5: Codebase Reality Check
+### Step 5: Technical Deep Dive (silent — results presented in plain language)
 
-Before pushing back, understand the current state:
+Before pushing back, do a **thorough codebase investigation**. This runs silently — the stakeholder doesn't see the technical details, only the plain-language summary.
+
 ```bash
 $FLUXCTL session-state --json
 ```
 
-Explore the codebase to understand:
-- What exists today that's related to this feature
-- What systems/services would need to change
-- What dependencies are involved
-- Whether similar functionality already exists (partially or fully)
+**Investigate thoroughly** (use Glob, Grep, Read tools):
+- Search for files, modules, and services related to the proposed change
+- Count how many files would need to change
+- Identify which systems are interconnected (e.g., if they say "remove credits" → find every file that references credits, billing, usage tracking)
+- Check for database models, API routes, frontend components, tests, and config that would be affected
+- Look at `package.json` / dependency files for related packages and third-party services
+- Check `brain/business/` for area-specific context (e.g., `brain/business/billing.md` if the change touches billing)
 
-### Step 6: Honest Assessment
+**Also check for existing business context files** related to this area:
+```bash
+ls brain/business/*.md 2>/dev/null
+```
+If a relevant area file exists (e.g., `billing.md`), read it to understand prior decisions and how things are currently connected.
 
-Push back on each of these dimensions. Be specific — reference actual code, services, and dependencies.
+### Step 6: Honest Assessment (in plain language)
 
-**Architecture impact**: "This would touch [X, Y, Z systems]. Here's what that means..."
+Present findings in language a non-technical stakeholder can skim and understand. **No code, no file paths, no technical jargon.** Think: "what would I tell the CEO in 30 seconds?"
 
-**Third-party dependencies**: Research whether the feature requires external services.
-- Use Exa MCP (if available) to look up relevant libraries, APIs, and their pricing
-- Check existing `package.json` / dependency files for related packages
-- Surface any API costs, rate limits, or vendor lock-in concerns
-- Example: "This would require a geolocation API. Services like Google Maps Platform charge ~$5 per 1,000 requests after the free tier. At your expected volume, that's roughly $X/month."
+**How big is this change?**
+- "This is a small, isolated change — it only affects [one area]. Should be straightforward."
+- OR: "This touches a lot of moving parts — [billing, user accounts, the dashboard, and email notifications] are all connected to this. Changing one affects all of them."
+- OR: "This is deeply integrated across the entire system. I found [N] areas that reference this. It's like pulling a thread — everything connected to it needs to be updated and tested."
 
-**Complexity estimate**: Rate the feature honestly:
-- **Low** (1-2 days): Isolated change, clear path, no new dependencies
-- **Medium** (3-5 days): Touches multiple systems, some unknowns
-- **High** (1-2 weeks): New architecture, third-party integrations, significant testing
-- **Very High** (2-4 weeks): Cross-cutting concern, new infrastructure, security implications
+**What's the honest time estimate?**
 
-**Time estimate**: Be conservative. Include research, implementation, testing, code review, and iteration.
+Estimate how a skilled engineer would spend time **properly** implementing this — including edge cases, testing, and review. Be specific, not generic:
 
-> **Important grounding statement** — deliver this naturally when sharing estimates:
+- **Quick fix** (< 1 day): "This is genuinely simple. A developer could do this in a few hours."
+- **Small feature** (1-2 days): "Straightforward but needs proper testing. A solid day or two of focused work."
+- **Medium feature** (3-5 days): "Multiple parts of the system need to change. Needs careful testing to make sure nothing breaks."
+- **Large change** (1-2 weeks): "This is a significant engineering effort. New architecture, thorough testing, code review from the team."
+- **Major overhaul** (2-4 weeks): "This is a big project. It affects core systems and needs to be done very carefully to avoid breaking things for existing users."
+
+> **Important grounding statement** — deliver this naturally:
 >
-> "I want to set realistic expectations on timeline. Even with AI-assisted development, building production-quality software takes time. AI tools help engineers move faster, but the hard parts — understanding edge cases, writing thorough tests, handling security correctly, and making good architectural decisions — still require careful engineering. Features that seem simple on the surface often have hidden complexity. I'd rather give you a conservative estimate now than an optimistic one that creates pressure later."
+> "I want to set realistic expectations. Even with AI-assisted development, building production-quality software takes time. Features that seem simple on the surface often have hidden complexity underneath. I'd rather give you a conservative estimate now than an optimistic one that creates pressure later."
 
-**Existing alternatives**: "Before building this from scratch, have you considered [existing feature / simpler approach / off-the-shelf solution]?"
+**Is this a one-way door or a two-way door?**
+- **Two-way door**: "If this doesn't work out, we can easily reverse it. Low risk."
+- **One-way door**: "Once we do this, it's very hard to undo. [Reason — e.g., 'users will have already migrated to the new system' or 'we'd lose the data']. Worth being extra careful."
 
-**Risks**: What could go wrong? Data migration? Breaking changes? Security considerations?
+**Could something simpler work?**
+- Always probe: "Before we build the full version — would [simpler alternative] solve the core problem? Sometimes we can get 80% of the value with 20% of the effort."
+
+**Third-party costs** (if applicable):
+- Use Exa MCP (if available) to look up relevant services and their pricing
+- Present in plain terms: "This would need [service name]. It's free up to [limit], then roughly $X/month at your expected usage."
+
+**What could go wrong?**
+- Data migration risks, breaking changes for existing users, security considerations — all in plain language
 
 ### Step 7: Simplification Probe
 
@@ -187,6 +248,64 @@ If the stakeholder tries to dive into technical implementation details (specific
 Only engage on technical specifics if they **really insist** — and if so, preface with:
 
 > "Happy to go deeper, but note that these are preliminary thoughts. The engineering team may choose a different approach during scoping based on factors we can't fully evaluate in this session."
+
+---
+
+# UPDATE BUSINESS CONTEXT
+
+After Phase 3, silently update `brain/business/` with anything learned during this session:
+
+### Glossary updates
+If the stakeholder used domain-specific terms during the conversation, add them to `brain/business/glossary.md`:
+```bash
+cat brain/business/glossary.md 2>/dev/null
+```
+- If the file exists: append any new terms to the table (don't duplicate existing ones)
+- If the file doesn't exist: create it with the terms learned
+
+### Area-specific context
+If the proposal touches a specific business area (billing, auth, permissions, onboarding, etc.), create or update an area file:
+```bash
+cat brain/business/[area].md 2>/dev/null
+```
+- If the file exists: update it with new decisions, constraints, or context from this session
+- If not: create `brain/business/[area].md` with a summary of how that area currently works (based on the codebase investigation from Step 5) and what decisions were made in this proposal
+
+Example `brain/business/billing.md`:
+```markdown
+# Billing
+
+## How it works today
+- Subscriptions managed via [provider]
+- Credits system tied to [usage tracking, invoices, dashboard]
+- [N] files reference billing logic
+
+## Key decisions
+- [Date]: [Stakeholder] proposed removing credits. Estimated 1-2 weeks due to deep integration. Decision: [accepted/deferred/simplified to X].
+
+## Terminology
+- "Credits" = usage-based allocation on top of subscription
+- "Plan" = subscription tier (free, starter, pro)
+```
+
+### Team directory updates
+If the stakeholder mentioned any names during the conversation (their own, colleagues, stakeholders, contractors), update `brain/business/team.md`:
+```bash
+cat brain/business/team.md 2>/dev/null
+```
+- If the file exists: add new people to the table, update roles if someone's role changed, mark people as "left" if the stakeholder mentioned someone leaving
+- If the file doesn't exist: create it with everyone mentioned
+
+This is important for future sessions — when call transcripts are imported, Flux needs to know who "Alex" or "Sarah" is without asking.
+
+### Context updates
+If any high-level business context changed (new product direction, stage change, team change, user growth, funding), update `brain/business/context.md`. Common updates from the re-check (Step 0.25):
+- User count changes (e.g., "we went from 100 to 5,000 users")
+- Stage changes (e.g., "we launched" or "we got funding")
+- Team changes (e.g., "Sarah left" or "we hired a product manager")
+- Business model changes (e.g., "we switched from credits to flat-rate billing")
+
+**Do all updates silently** — the stakeholder doesn't need to see this. It's for Flux's internal use.
 
 ---
 

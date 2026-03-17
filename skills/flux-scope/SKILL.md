@@ -85,6 +85,23 @@ Examples:
 
 If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentences."
 
+## Load Business Context
+
+Before starting any detection or interview, silently load business context if it exists:
+
+```bash
+cat brain/business/context.md 2>/dev/null
+cat brain/business/glossary.md 2>/dev/null
+```
+
+If business context exists:
+- **Product stage** informs how hard the viability gate pushes on user validation (pre-launch = push harder on "who would use this?"; established product = ask for data/metrics)
+- **Glossary** ensures domain terms are interpreted correctly throughout the interview — never misinterpret domain-specific language
+- **Team structure** determines whether to watch for deferred authority signals ("my co-founder said...") and whether to route to propose
+- **Area-specific files** (`brain/business/billing.md`, etc.) provide context when the scope touches those areas — read them when relevant
+
+If no business context exists: continue normally.
+
 ## Detect Stakeholder vs Engineer
 
 Before detecting mode, check if the user is a non-technical stakeholder rather than an engineer.

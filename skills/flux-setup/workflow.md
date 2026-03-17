@@ -1149,6 +1149,124 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
 
 Only include items that were **installed by this setup session** (not items that were "already installed"). This manifest is used by the uninstall flow to know what Flux added.
 
+## Step 5b: Business Context (first-time only)
+
+**Skip this step entirely if `brain/business/context.md` already exists** — the business context has already been captured.
+
+If no business context exists, ask the user a short set of questions to understand the product they're building. This context is used by `/flux:scope` and `/flux:propose` to calibrate estimates, push back on assumptions, and understand domain language.
+
+**Ask these questions conversationally** (use the question tool):
+
+1. **Product stage**: "What stage is your product at?"
+   - Options: "Pre-launch (no users yet)", "Early users (< 100)", "Growing (100-10k users)", "Established (10k+ users)"
+
+2. **Product type**: "What kind of product are you building?"
+   - Freeform input. Examples: SaaS, marketplace, mobile app, internal tool, API/platform, e-commerce, etc.
+
+3. **Team structure**: "Do you have non-technical stakeholders or co-founders who will be proposing features?"
+   - Options: "Yes — they'll use Flux to create proposals", "No — it's just engineers", "Not sure yet"
+
+4. **Domain language**: "Does your product have domain-specific terms that could be confused with technical terms? For example, 'agent' meaning a real estate agent, or 'partner' meaning a business partner."
+   - Freeform input. If yes, ask them to list the key terms and what they mean in their context.
+
+5. **Team directory**: "Who else works on this product? Names and roles help Flux understand call transcripts and proposals later. For example: 'Sarah — CEO, James — product lead, Alex — frontend engineer.'"
+   - Freeform input. If they provide names: create `brain/business/team.md` with a table.
+   - If they say it's just them: note "Solo developer" in team.md.
+   - If they skip: create a skeleton team.md that gets populated during propose sessions.
+
+6. **Existing docs**: "Do you have any existing product documents (Google Docs, Notion, PRDs) that describe how the business works? You can paste the contents now and I'll extract the key context."
+   - If they paste content: parse it, extract business structure, glossary terms, team members, and key decisions. Confirm understanding with the user.
+   - If they say no: that's fine, the context will build up organically through `/flux:propose` sessions.
+
+**After collecting answers**, create the business context files:
+
+```bash
+mkdir -p brain/business
+```
+
+**Write `brain/business/context.md`:**
+```markdown
+# Business Context
+
+## Product
+- **Type**: [their answer]
+- **Stage**: [their answer]
+- **Users**: [stage-appropriate description]
+
+## Team
+- **Non-technical stakeholders**: [yes/no + details]
+- **Who proposes features**: [engineers only / stakeholders + engineers]
+
+## Key Context
+[Any additional context from their answers or pasted documents]
+
+---
+*Last updated: [ISO date]. Updated automatically during /flux:propose sessions.*
+```
+
+**Write `brain/business/glossary.md`** (if domain terms were provided):
+```markdown
+# Domain Glossary — Ubiquitous Language
+
+Terms specific to this product. All Flux skills read this to avoid misinterpreting domain language.
+
+| Term | Means | Does NOT mean |
+|------|-------|---------------|
+| [term] | [domain meaning] | [common technical meaning to avoid] |
+
+---
+*Updated during /flux:propose and /flux:scope sessions when new domain terms are encountered.*
+```
+
+If no domain terms were provided, create a skeleton with a note:
+```markdown
+# Domain Glossary — Ubiquitous Language
+
+No domain-specific terms captured yet. This file is automatically enriched during `/flux:propose` sessions when new terminology is encountered.
+
+| Term | Means | Does NOT mean |
+|------|-------|---------------|
+| | | |
+```
+
+**Write `brain/business/team.md`** (if team members were provided):
+```markdown
+# Team Directory
+
+People who work on this product. Flux uses this to understand names in call transcripts, proposals, and conversations.
+
+| Name | Role | Responsibilities | Notes |
+|------|------|-----------------|-------|
+| [name] | [role] | [what they own] | [e.g., non-technical, part-time, contractor] |
+
+---
+*Updated during /flux:propose sessions when new team members are mentioned.*
+```
+
+If no team members were provided or they said "just me":
+```markdown
+# Team Directory
+
+| Name | Role | Responsibilities | Notes |
+|------|------|-----------------|-------|
+| [user's name if known] | Developer | — | — |
+
+---
+*Updated during /flux:propose sessions when new team members are mentioned.*
+```
+
+**Write `brain/business/index.md`:**
+```markdown
+# Business Context Index
+
+- [[context]] — Product stage, team structure, and key context
+- [[glossary]] — Domain-specific terminology (ubiquitous language)
+- [[team]] — Team directory (names, roles, responsibilities)
+
+Area-specific files are created automatically as proposals are made:
+- `billing.md`, `auth.md`, `permissions.md`, etc.
+```
+
 ## Step 6: Configuration Questions
 
 ### 6a: Detect current config and tools

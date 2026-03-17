@@ -65,9 +65,25 @@ Apply all changes directly. The user reviews the diff.
 - **CLAUDE.md issues**: Rewrite or delete
 - **Stale memories**: Delete or rewrite
 
+### 6b. Business context audit
+
+If `brain/business/` exists, audit it alongside the brain vault:
+
+```bash
+ls brain/business/*.md 2>/dev/null
+```
+
+If business context files exist:
+- **Stale facts**: Check if any business context describes things that no longer exist in the codebase (e.g., "credits system" after credits were removed). Verify by searching the codebase for key terms. Delete or update stale entries.
+- **Glossary drift**: Check if any glossary terms are no longer used in the codebase. Remove obsolete terms.
+- **Area files**: Check if area-specific files (e.g., `billing.md`) reference systems or decisions that are outdated. Update or prune.
+- **Context.md**: Check if product stage or team structure has changed based on recent proposals or brain notes.
+
+Present business context findings alongside the brain audit report. Apply changes with user approval.
+
 ### 7. Housekeep
 
-Update `brain/index.md` for any files added or removed.
+Update `brain/index.md` for any files added or removed. Also update `brain/business/index.md` if business context files were added, removed, or renamed.
 
 Update meditate timestamp so the session health check knows when this last ran:
 ```bash
