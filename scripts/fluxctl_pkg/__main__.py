@@ -257,7 +257,7 @@ def main() -> None:
     )
     p_epic_set_backend.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_backend.add_argument(
-        "--impl", help="Default impl backend spec (e.g., 'codex:gpt-5.2-high')"
+        "--impl", help="Default impl backend spec (e.g., 'codex:o4-mini')"
     )
     p_epic_set_backend.add_argument(
         "--review", help="Default review backend spec (e.g., 'claude:opus')"
@@ -326,7 +326,7 @@ def main() -> None:
     )
     p_task_set_backend.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_set_backend.add_argument(
-        "--impl", help="Impl backend spec (e.g., 'codex:gpt-5.2-high')"
+        "--impl", help="Impl backend spec (e.g., 'codex:o4-mini')"
     )
     p_task_set_backend.add_argument(
         "--review", help="Review backend spec (e.g., 'claude:opus')"

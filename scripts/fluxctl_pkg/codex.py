@@ -89,7 +89,7 @@ def run_codex_exec(
     """Run codex exec and return (stdout, thread_id, exit_code, stderr).
 
     If session_id provided, tries to resume. Falls back to new session if resume fails.
-    Model: FLUX_CODEX_MODEL env > parameter > default (gpt-5.2 + high reasoning).
+    Model: FLUX_CODEX_MODEL env > parameter > default (o4-mini).
 
     Note: Prompt is passed via stdin (using '-') to avoid Windows command-line
     length limits (~8191 chars) and special character escaping issues. (GH-35)
@@ -100,8 +100,8 @@ def run_codex_exec(
         - stderr contains error output from the process
     """
     codex = require_codex()
-    # Model priority: env > parameter > default (gpt-5.2 + high reasoning = GPT 5.2 High)
-    effective_model = os.environ.get("FLUX_CODEX_MODEL") or model or "gpt-5.2"
+    # Model priority: env > parameter > default
+    effective_model = os.environ.get("FLUX_CODEX_MODEL") or model or "o4-mini"
 
     if session_id:
         # Try resume first - use stdin for prompt (model already set in original session)

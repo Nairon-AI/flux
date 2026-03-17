@@ -104,7 +104,7 @@ Run all 9 in parallel using background Bash commands:
 # Read each scout's prompt from agents/*.md (strip the YAML frontmatter)
 # Launch all 9 concurrently, each writing to a temp output file
 
-SCOUT_MODEL="<configured model>"  # e.g. gpt-5.3-codex-spark
+SCOUT_MODEL="<configured model>"  # e.g. o4-mini
 
 for scout in tooling-scout claude-md-scout env-scout testing-scout build-scout docs-gap-scout observability-scout security-scout workflow-scout; do
   PROMPT=$(sed '1,/^---$/{ /^---$/!d; /^---$/d; }' "agents/${scout}.md" | sed '/^---$/d')
