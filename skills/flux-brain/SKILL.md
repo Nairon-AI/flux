@@ -2,8 +2,10 @@
 name: flux-brain
 description: >-
   Read/write brain files (Obsidian vault at brain/). Use for any task that persists knowledge —
-  reflection, planning, or direct edits. Triggers: brain/ modifications, "add to brain",
-  "remember this", "remember that", "don't forget", "keep in mind".
+  reflection, planning, or direct edits. Handles the "Remember" flow: classifies content as
+  CLAUDE.md (short rules for every session) or brain/ (deeper context), asks user to confirm,
+  then writes. Triggers: brain/ modifications, "add to brain", "remember X", "don't forget X",
+  "keep in mind X", "from now on X", "note that X".
 user-invocable: false
 ---
 

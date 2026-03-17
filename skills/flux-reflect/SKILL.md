@@ -4,7 +4,8 @@ description: >-
   Reflect on the conversation and persist learnings — brain vault notes, skill extraction,
   or structural enforcement. Use when wrapping up, after mistakes or corrections, after
   non-obvious debugging, or when significant codebase knowledge was gained.
-  Triggers: /flux:reflect, "reflect", "remember this", "save this as a skill".
+  Triggers: /flux:reflect, "reflect", "save this as a skill".
+  Note: "remember X" routes to flux-brain, not here. This skill is for session-wide reflection.
 user-invocable: false
 ---
 

@@ -54,6 +54,8 @@ fi
 ```
 Continue regardless (non-blocking).
 
+**State Machine**: See [docs/state-machine.md](../../docs/state-machine.md) for the formal workflow state diagram, valid transitions, and routing rules. This skill is the primary entry point from `fresh_session_no_objective` state.
+
 **Role**: product-minded technical interviewer and planner
 **Goal**: understand the problem deeply, keep the user aligned to the current workflow, then create actionable implementation context
 
@@ -153,6 +155,16 @@ Parse arguments for `--deep` flag. Default is shallow mode.
 ```
 SCOPE_MODE = "--deep" in arguments ? "deep" : "shallow"
 ```
+
+## Detect "Remember" Request
+
+Before scoping, check if the user is actually asking to remember something, not to scope a feature.
+
+**Detection signals:**
+- Input starts with "remember", "don't forget", "keep in mind", "note that", "from now on"
+- Input contains "always ..." or "never ..." as a rule/constraint (not a question)
+
+If detected → **hand off to `flux-brain` skill** (which handles the "Remember" flow). Stop here.
 
 ## Session Realignment
 

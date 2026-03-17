@@ -45,7 +45,24 @@ This is optional - automated session analysis works alone, but user context make
 
 Full request: $ARGUMENTS
 
-Options:
+### Natural Language Routing
+
+Users don't need to remember flags. These natural language inputs route to `/flux:improve` automatically:
+
+| User says | Maps to |
+|-----------|---------|
+| "improve my CSS workflow" | `--category=mcp` + `USER_CONTEXT="CSS workflow"` |
+| "find tools for testing" | `USER_CONTEXT="testing"` |
+| "help me with slow builds" | `USER_CONTEXT="slow builds"` |
+| "optimize my workflow" | Default analysis |
+| "what tools should I install" | Default analysis |
+| "find a better linter" | `--category=cli` + `USER_CONTEXT="linter"` |
+| "improve X" (any topic) | `USER_CONTEXT="X"` — skips Step 2b pain point question |
+
+When natural language is detected (no `--` flags and input contains a topic), extract the topic as `USER_CONTEXT` and skip the Step 2b pain point question — the user already told you what they care about.
+
+### Flags
+
 - `--skip-sessions` - Skip session history analysis
 - `--category=<cat>` - Filter to specific category (mcp, cli, plugin, skill, vscode, pattern)
 - `--list` - Just list all available recommendations without analysis

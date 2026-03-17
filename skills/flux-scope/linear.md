@@ -197,13 +197,45 @@ If `LINEAR_MODE` is true, create tasks in Linear after local epic/tasks are crea
 
 ## Step 13: Create Linear Issues
 
-For each task created in `.flux/`, create a corresponding Linear issue:
+For each task created in `.flux/`, create a corresponding Linear issue.
+
+### Title Rules (CRITICAL)
+
+The Linear issue title MUST be a **clean, human-readable title only**. Specifically:
+
+- **YES**: `"Set up OAuth2 provider config"`, `"Implement Google OAuth flow"`, `"Add auth token refresh logic"`
+- **NO**: `"[fn-1-add-oauth.1] Set up OAuth2 provider config"` — NEVER prefix with Flux task IDs
+- **NO**: `"fn-1.1: Set up OAuth2 provider config"` — NEVER prefix with Flux IDs in any format
+
+The Flux task ID is stored as an invisible HTML comment in the description. It must never appear in the title.
+
+### Description Rules
+
+The Linear issue description MUST contain enough context for someone to understand the task **without reading other issues**. Copy the full task spec from `.flux/`:
 
 ```
 For each task in $FLUXCTL tasks --epic <epic-id> --json:
+
+  # Get the full task spec
+  TASK_SPEC=$($FLUXCTL cat <task-id>)
+
+  # Build the Linear description:
+  # 1. Full task spec (description, context, approach, constraints, acceptance criteria)
+  # 2. Dependencies listed as Linear issue links (not Flux IDs)
+  # 3. Invisible Flux sync marker
+
+  DESCRIPTION = TASK_SPEC + "\n\n---\n"
+  # Add dependency links if task has deps
+  if task.depends_on:
+    DESCRIPTION += "**Blocked by:**\n"
+    for dep in task.depends_on:
+      DESCRIPTION += "- " + linear_issue_map[dep] + "\n"  # e.g., "- ENG-150"
+    DESCRIPTION += "\n"
+  DESCRIPTION += "<!-- flux:task-id=" + task.id + " -->"
+
   Call: mcp_linear_save_issue(
-    title: task.title,   # CLEAN title only — NO Flux task ID prefix like [fn-1-xxx.1]
-    description: task.description + "\n\n---\n<!-- flux:task-id=" + task.id + " -->",
+    title: task.title,   # CLEAN title only — NO Flux task ID prefix
+    description: DESCRIPTION,
     team: LINEAR_TEAM_ID (from Step 0.6),
     project: LINEAR_PROJECT_ID (from Step 6.5.2),
     assignee: SELECTED_USER_ID (from Step 6.5.3, omit if "Unassigned"),
@@ -213,8 +245,6 @@ For each task in $FLUXCTL tasks --epic <epic-id> --json:
   )
 
   Store mapping: task.id → linear_issue_id
-
-**IMPORTANT**: The Linear issue title must be the CLEAN task title only (e.g., "Engineering spec: schema, logging service, instrumentation plan"). Never prefix it with Flux task IDs like `[fn-1-activity-partner-detail-logs.1]`. The Flux task ID is stored as an HTML comment in the description for sync purposes — it should never be visible to users reading Linear.
 ```
 
 **Priority mapping:**

@@ -3,7 +3,7 @@
 # Flux
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v2.13.1--dev-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.23.1--dev-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
@@ -327,6 +327,8 @@ After upgrading, if your project's setup version is behind the plugin version, F
 
 `.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `brain/` is the persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
 
+The full state machine is formally defined in [`docs/state-machine.md`](docs/state-machine.md) — every state, valid transition, routing rule, and guard is documented. Users and agents can query `fluxctl session-state --json` at any point to see exactly where they are in the workflow.
+
 ### Built-in Agentmap
 
 Flux generates YAML repo maps from git-tracked files for faster agent navigation.
@@ -360,6 +362,8 @@ brain/
   decisions/     # Architectural decisions with rationale
   plans/         # From scope/plan
 ```
+
+**Natural language memory**: Just say "remember X" and Flux routes it to the right place — CLAUDE.md for short rules the agent needs every session, or brain/ for deeper context and decisions.
 
 ```bash
 /flux:reflect    # Capture session learnings + extract reusable skills
