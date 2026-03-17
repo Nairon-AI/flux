@@ -2,7 +2,8 @@
 name: flux-brain
 description: >-
   Read/write brain files (Obsidian vault at brain/). Use for any task that persists knowledge —
-  reflection, planning, or direct edits. Triggers: brain/ modifications, "add to brain".
+  reflection, planning, or direct edits. Triggers: brain/ modifications, "add to brain",
+  "remember this", "remember that", "don't forget", "keep in mind".
 user-invocable: false
 ---
 
@@ -13,6 +14,50 @@ Persistent memory across sessions. Obsidian vault at `brain/`.
 Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto](https://github.com/poteto).
 
 The brain is the foundation of the entire workflow — every agent, skill, and session reads it. Low-quality or speculative content degrades everything downstream. Before adding anything, ask: "Does this genuinely improve how the system operates?" If the answer isn't a clear yes, don't write it.
+
+## "Remember" Flow
+
+When the user says "remember X", "don't forget X", "keep in mind X", or similar — use `AskUserQuestion` to ask where to store it:
+
+```json
+{
+  "questions": [{
+    "question": "Where should I store this in the brain vault?",
+    "header": "Brain",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "Convention",
+        "description": "Project-specific pattern or rule (e.g., 'always use pnpm', 'API responses use camelCase'). Stored in brain/conventions/"
+      },
+      {
+        "label": "Decision",
+        "description": "Architectural decision with rationale (e.g., 'we chose Supabase because...'). Stored in brain/decisions/"
+      },
+      {
+        "label": "Principle",
+        "description": "Engineering principle that applies broadly (e.g., 'never mock the database in integration tests'). Stored in brain/principles/"
+      },
+      {
+        "label": "Business context",
+        "description": "Product, team, or stakeholder context (e.g., 'billing is handled by Stripe', 'Sarah is the PM'). Stored in brain/business/"
+      },
+      {
+        "label": "Pitfall",
+        "description": "Something that went wrong or could go wrong (e.g., 'the migration script doesn't handle NULL dates'). Stored in brain/pitfalls/"
+      }
+    ]
+  }]
+}
+```
+
+Then:
+1. Create the file in the selected directory with a descriptive slug (e.g., `brain/conventions/always-use-pnpm.md`)
+2. Write a concise note — bullets over prose, one topic per file, under ~50 lines
+3. For pitfalls, also ask which area it belongs to (e.g., `brain/pitfalls/frontend/`, `brain/pitfalls/api/`)
+4. Update `brain/index.md` to include a link to the new file
+
+These notes are prunable — `/flux:meditate` will audit them and remove stale ones. So don't hesitate to store things. It's better to remember too much and prune later than to forget.
 
 ## Before Writing
 
@@ -29,6 +74,16 @@ brain/
 ├── index.md              <- root entry point, links to everything
 ├── principles.md         <- index for principles/
 ├── principles/           <- engineering and design principles
+├── pitfalls/             <- auto-captured from review iterations, organized by area
+│   ├── frontend/         <-   e.g., missing-error-states.md
+│   ├── security/         <-   e.g., greptile-auth-gap.md
+│   └── async/            <-   e.g., consensus-race-condition.md
+├── conventions/          <- project-specific patterns and rules
+├── decisions/            <- architectural decisions with rationale
+├── business/             <- product stage, team, stakeholders, glossary
+│   ├── context.md        <-   product stage, team structure, key context
+│   ├── glossary.md       <-   ubiquitous language — domain-specific terms
+│   └── team.md           <-   names, roles, responsibilities
 ├── codebase/             <- project-specific knowledge and gotchas
 └── plans/                <- feature plans (linked from .flux/ epics)
 ```
