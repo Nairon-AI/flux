@@ -224,19 +224,60 @@ For each task in $FLUXCTL tasks --epic <epic-id> --json:
 - Flux P3 → Linear 4 (Low)
 - Flux P4 → Linear 4 (Low)
 
-## Step 14: Create Linear Dependencies
+## Step 14: Create Linear Dependencies (Blocking Relations)
 
-After all issues are created, set up blocking relationships:
+After ALL issues are created, set up blocking relationships so Linear shows the dependency graph. The Linear MCP does NOT support relations via `save_issue` — you must use `mcp_linear_create_issue_relation`.
+
+**If `mcp_linear_create_issue_relation` is available:**
 
 ```
-For each dependency in $FLUXCTL deps --epic <epic-id> --json:
-  blocked_issue = linear_issue_map[dependency.blocked_by]
-  blocking_issue = linear_issue_map[dependency.task_id]
+For each task that has depends_on in its Flux spec:
+  For each dependency_task_id in task.depends_on:
+    blocker_linear_id = linear_issue_map[dependency_task_id]  # the issue that must finish first
+    blocked_linear_id = linear_issue_map[task.id]             # the issue that's waiting
 
-  Call: mcp_linear_save_issue(
-    id: blocking_issue,
-    blockedBy: [blocked_issue]
-  )
+    Call: mcp_linear_create_issue_relation(
+      issueId: blocked_linear_id,
+      relatedIssueId: blocker_linear_id,
+      type: "blocks"    # blocker_linear_id blocks blocked_linear_id
+    )
+```
+
+**If `mcp_linear_create_issue_relation` is NOT available**, use the Linear GraphQL API directly:
+
+```bash
+# For each dependency pair, create an "isBlockedBy" relation
+# blocker_uuid = the UUID of the issue that must finish first
+# blocked_uuid = the UUID of the issue that's waiting
+
+curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -d '{
+    "query": "mutation { issueRelationCreate(input: { issueId: \"'$blocked_uuid'\", relatedIssueId: \"'$blocker_uuid'\", type: blocks }) { success issueRelation { id } } }"
+  }'
+```
+
+**To get issue UUIDs** (Linear MCP returns them, but if you only have issue keys like ENG-511):
+
+```bash
+# Get the internal UUID for an issue by its identifier
+curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -d '{"query": "{ issueSearch(filter: { number: { eq: 511 }, team: { key: { eq: \"ENG\" } } }) { nodes { id identifier } } }"}'
+```
+
+**IMPORTANT**: Always create ALL issues first (Step 13), THEN set up ALL relations (Step 14). Relations require both issues to exist.
+
+**Verify relations were created** by checking one issue:
+
+```bash
+# Verify an issue shows its blockers
+curl -s -X POST https://api.linear.app/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -d '{"query": "{ issue(id: \"'$blocked_uuid'\") { identifier relations { nodes { type relatedIssue { identifier } } } } }"}'
 ```
 
 ## Step 15: Update Linear Mapping
@@ -266,12 +307,21 @@ EOF
 Linear sync complete:
 
 Project: User Authentication
-Created issues:
-  - ENG-150: Set up OAuth2 provider config (blocked by: none)
-  - ENG-151: Implement Google OAuth flow (blocked by: ENG-150)
-  - ENG-152: Implement GitHub OAuth flow (blocked by: ENG-150)
-  - ENG-153: Add auth token refresh logic (blocked by: ENG-151, ENG-152)
-  - ENG-154: Write integration tests (blocked by: ENG-153)
+Assignee: @john
+
+Issues created with dependencies:
+  1. ENG-150: Set up OAuth2 provider config
+  2. ENG-151: Implement Google OAuth flow          ← blocked by ENG-150
+  3. ENG-152: Implement GitHub OAuth flow           ← blocked by ENG-150
+  4. ENG-153: Add auth token refresh logic          ← blocked by ENG-151, ENG-152
+  5. ENG-154: Write integration tests               ← blocked by ENG-153
+
+Dependency graph:
+  ENG-150 → ENG-151 ─┐
+                      ├→ ENG-153 → ENG-154
+  ENG-150 → ENG-152 ─┘
+
+Parallel: ENG-151 and ENG-152 can run in parallel after ENG-150.
 
 View in Linear: https://linear.app/team/ENG/project/user-authentication
 ```
