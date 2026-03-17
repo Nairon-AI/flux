@@ -58,6 +58,22 @@ Detect input type in this order (first match wins):
 3. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <idea>" --json`
 4. Continue with epic-id
 
+### Linear Epic Status Sync
+
+When starting work on an epic, sync the epic's Linear project status to "started" if it exists:
+
+```bash
+LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
+if [ -f "$LINEAR_MAP" ]; then
+  LINEAR_PROJECT_ID=$(jq -r '.linear_project_id' "$LINEAR_MAP")
+  if [ -n "$LINEAR_PROJECT_ID" ] && [ "$LINEAR_PROJECT_ID" != "null" ]; then
+    # Update Linear project status to "started"
+    # Call: mcp_linear_update_project(id: LINEAR_PROJECT_ID, state: "started")
+    echo "Linear project → Started"
+  fi
+fi
+```
+
 ## Phase 2: Apply Branch Choice
 
 Based on user's answer from setup questions:
@@ -87,6 +103,24 @@ If no ready tasks, check for completion review gate (see 3g below).
 ```bash
 $FLUXCTL start <task-id> --json
 ```
+
+**Sync to Linear** (if Linear integration is configured for this epic):
+
+```bash
+# Check if this epic has a Linear mapping
+LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
+if [ -f "$LINEAR_MAP" ]; then
+  LINEAR_ISSUE_ID=$(jq -r ".task_mapping[\"${TASK_ID}\"]" "$LINEAR_MAP")
+  if [ -n "$LINEAR_ISSUE_ID" ] && [ "$LINEAR_ISSUE_ID" != "null" ]; then
+    # Update Linear issue status to "In Progress"
+    # Use mcp_linear_save_issue to update the state
+    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: "In Progress")
+    echo "Linear: ${LINEAR_ISSUE_ID} → In Progress"
+  fi
+fi
+```
+
+This ensures the Linear board reflects what's actually being worked on.
 
 ### 3c. Spawn Worker
 
@@ -124,6 +158,20 @@ $FLUXCTL show <task-id> --json
 ```
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
+
+**Sync to Linear** (if task is done and Linear mapping exists):
+
+```bash
+LINEAR_MAP=".flux/epics/${EPIC_ID}/linear.json"
+if [ -f "$LINEAR_MAP" ]; then
+  LINEAR_ISSUE_ID=$(jq -r ".task_mapping[\"${TASK_ID}\"]" "$LINEAR_MAP")
+  if [ -n "$LINEAR_ISSUE_ID" ] && [ "$LINEAR_ISSUE_ID" != "null" ]; then
+    # Update Linear issue status to "Done"
+    # Call: mcp_linear_save_issue(id: LINEAR_ISSUE_ID, state: "Done")
+    echo "Linear: ${LINEAR_ISSUE_ID} → Done"
+  fi
+fi
+```
 
 ### 3e. Feel Check (human-in-the-loop)
 
