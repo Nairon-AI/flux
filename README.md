@@ -1,6 +1,6 @@
 <div align="center">
 
-# Flux
+<img src="flux-logo.png" alt="Flux" width="300">
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
 [![Version](https://img.shields.io/badge/version-v2.23.1--dev-green)](https://github.com/Nairon-AI/flux/releases)
