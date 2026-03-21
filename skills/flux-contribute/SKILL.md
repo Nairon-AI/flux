@@ -1,6 +1,6 @@
 ---
 name: flux-contribute
-description: Analyze Flux issues, attempt to solve them first, and only create PRs for genuine bugs after verification.
+description: Use when contributing fixes to Flux itself or deciding whether a reported Flux issue actually needs a PR. Reproduce first, exhaust setup/workaround causes, and only create a PR for verified product bugs.
 user-invocable: false
 ---
 
@@ -213,6 +213,12 @@ Show:
 - Minimal, focused changes
 - Passing tests
 - Verification steps included
+
+## Gotchas
+
+- A user problem is not automatically a Flux bug. Misuse, missing setup, or known limitations should stop the flow before PR creation.
+- Never open a speculative PR just to "see if it helps". Reproduction and verification are mandatory.
+- Keep the fix minimal. If you need a redesign, file or scope follow-up work instead of smuggling it into a bugfix PR.
 
 
 ---

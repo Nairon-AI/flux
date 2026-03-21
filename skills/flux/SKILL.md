@@ -160,6 +160,12 @@ Legacy formats `fn-N` and `fn-N-xxx` (random 3-char suffix) are still supported.
 - `--json` flag gives machine-readable output
 - For complex planning/execution, use `/flux:plan` and `/flux:work`
 
+## Gotchas
+
+- This skill is for quick task and epic operations only. Do not route planning or implementation here when `/flux:plan` or `/flux:work` is the real intent.
+- `fluxctl` is bundled inside the plugin cache, not on the global `PATH`. Recompute `PLUGIN_ROOT` first instead of assuming `which fluxctl` works.
+- Never edit `.flux/` task JSON or markdown files by hand. Use `fluxctl` so runtime state stays consistent.
+
 
 ---
 

@@ -6,8 +6,8 @@ All agents are spawned as `subagent_type: "general-purpose"`. All agents are **r
 
 Every agent prompt should include:
 - Brain snapshot path: `/tmp/brain-snapshot.md` — Read this one file for all brain content
-- Brain vault path: `brain/`
-- Use Glob/Grep only for **codebase verification**, not for reading brain/skill files
+- Brain vault path: `.flux/brain/`
+- Use Glob/Grep only for **codebase verification**, not for reading brain-vault or skill files
 - Return a structured markdown report
 
 ## Auditor
@@ -33,7 +33,7 @@ Prompt spec:
 
 ## Reviewer
 
-**Inputs:** brain snapshot, skills snapshot (`/tmp/skills-snapshot.md`), auditor report, `brain/principles.md`.
+**Inputs:** brain snapshot, skills snapshot (`/tmp/skills-snapshot.md`), auditor report, `.flux/brain/principles.md`.
 
 Single agent that combines synthesis, distillation, and skill review in one pass. Produces three report sections.
 
@@ -52,7 +52,7 @@ Prompt spec:
 - Look for recurring patterns that reveal unstated engineering principles
 - A valid new principle must be: (1) genuinely independent — not derivable from existing principles, (2) evidenced by 2+ separate notes, (3) actionable — changes how you'd approach future work
 - Do NOT propose restatements of existing principles applied to a new domain
-- Each proposed principle: insight, evidence (which notes), why independent, suggested path under `brain/principles/`
+- Each proposed principle: insight, evidence (which notes), why independent, suggested path under `.flux/brain/principles/`
 
 **Section 3 — Skill review:**
 - For each skill, check against brain principles:
@@ -61,6 +61,11 @@ Prompt spec:
   - Does it duplicate instructions that a mechanism already handles?
   - Is it missing a principle that would improve reliability?
 - Audit each skill's `description` frontmatter for context bloat — cut what Claude can infer. Keep only distinctive triggers and core purpose.
+- Treat the description as trigger metadata for the model, not a human summary. Prefer explicit `Use when...`, `Triggers: ...`, or symptom-oriented phrasing.
+- Flag skills that restate obvious coding hygiene instead of repo-specific constraints or non-obvious guidance.
+- Check whether repeated failure modes are captured in a `Gotchas` section or equivalent.
+- Check whether long `SKILL.md` files are using progressive disclosure well: workflow in `SKILL.md`, detail in linked `references/`, `scripts/`, `assets/`, or sibling markdown files.
+- Flag deterministic repeated logic that should move into scripts instead of prose.
 - Prioritize structural enforcement over textual instructions
 
 ## Report Template

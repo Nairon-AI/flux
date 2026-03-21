@@ -195,15 +195,15 @@ $FLUXCTL epic set-branch <epic-id> --branch "<epic-id>" --json
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Read engineering principles to ground scoping decisions
-if [ -f "$REPO_ROOT/brain/principles.md" ]; then
-  cat "$REPO_ROOT/brain/principles.md"
+if [ -f "$REPO_ROOT/.flux/brain/principles.md" ]; then
+  cat "$REPO_ROOT/.flux/brain/principles.md"
 fi
 
-# Read known pitfalls — organized by area (brain/pitfalls/<area>/<pattern>.md)
-if [ -d "$REPO_ROOT/brain/pitfalls" ]; then
-  ls "$REPO_ROOT/brain/pitfalls"
+# Read known pitfalls — organized by area (.flux/brain/pitfalls/<area>/<pattern>.md)
+if [ -d "$REPO_ROOT/.flux/brain/pitfalls" ]; then
+  ls "$REPO_ROOT/.flux/brain/pitfalls"
   # Read pitfalls from areas relevant to the problem domain
-  for f in "$REPO_ROOT/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do
+  for f in "$REPO_ROOT/.flux/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do
     cat "$f"
   done
 fi

@@ -252,6 +252,20 @@ describe('Flux Scripts', () => {
       expect(result).toContain('All profile-manager tests passed')
     }, SCRIPT_TIMEOUT * 4)
   })
+
+  describe('validate_skills.py', () => {
+
+    test('reports zero hard errors for built-in skills', async () => {
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'validate_skills.py')
+      const result = await $`python3 ${scriptPath}`.env({
+        ...process.env,
+        CLAUDE_PLUGIN_ROOT: FLUX_ROOT,
+      }).text()
+
+      expect(result).toContain('Validated')
+      expect(result).toContain('0 error(s)')
+    }, SCRIPT_TIMEOUT)
+  })
 })
 
 describe('Fluxctl CLI', () => {
@@ -267,6 +281,33 @@ describe('Fluxctl CLI', () => {
     expect(result).toBeTruthy()
   }, SCRIPT_TIMEOUT)
 
+  test('init creates project-local brain scaffold inside .flux', async () => {
+    const tmpRoot = `/tmp/flux-init-brain-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'index.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'business', 'index.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'pitfalls', 'index.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'principles'))).toBe(true)
+    expect(existsSync(join(tmpRoot, 'brain'))).toBe(false)
+  }, SCRIPT_TIMEOUT)
+
+  test('init migrates legacy brain directory into .flux', async () => {
+    const tmpRoot = `/tmp/flux-init-legacy-brain-${Date.now()}`
+    const legacyBrain = join(tmpRoot, 'brain')
+    await $`mkdir -p ${legacyBrain}/pitfalls`.quiet()
+    writeFileSync(join(legacyBrain, 'index.md'), '# Brain Index\n')
+    writeFileSync(join(legacyBrain, 'pitfalls', 'legacy-note.md'), '# Legacy note\n')
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'index.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'pitfalls', 'legacy-note.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, 'brain'))).toBe(false)
+  }, SCRIPT_TIMEOUT)
+
   test('session-state reports fresh session when .flux is missing', async () => {
     const tmpRoot = `/tmp/flux-session-state-${Date.now()}`
     await $`mkdir -p ${tmpRoot}`.quiet()
@@ -274,7 +315,7 @@ describe('Fluxctl CLI', () => {
     const parsed = JSON.parse(output)
 
     expect(parsed.state).toBe('fresh_session_no_objective')
-    expect(parsed.flow_exists).toBe(false)
+    expect(parsed.flux_exists).toBe(false)
   }, SCRIPT_TIMEOUT)
 
   test('session-state requires prime before any scoped workflow', async () => {
@@ -614,15 +655,12 @@ describe('analyze-sessions.sh (Session Parser)', () => {
 
   test('Python parser filters to current project by default', async () => {
     const scriptPath = join(FLUX_ROOT, 'scripts', 'parse-sessions.py')
-    // Run from flux directory - should only show flux sessions
     const result = await $`python3 ${scriptPath} --cwd ${FLUX_ROOT} --max-sessions 10`.text()
     const parsed = JSON.parse(result)
     
     if (parsed.enabled && parsed.projects_analyzed) {
-      // All projects should be the flux project
-      for (const project of parsed.projects_analyzed) {
-        expect(project.toLowerCase()).toContain('flux')
-      }
+      const expectedProject = FLUX_ROOT.replace(/\//g, '-')
+      expect(parsed.projects_analyzed).toContain(expectedProject)
     }
   }, SCRIPT_TIMEOUT)
 

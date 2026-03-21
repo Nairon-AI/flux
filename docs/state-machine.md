@@ -261,18 +261,18 @@ RECOMMENDATION PULSE (recommendation_pulse)
 
 ## Brain Vault Interactions
 
-The brain vault (`brain/`) is read and written by multiple phases. This maps every interaction:
+The brain vault is stored in `.flux/brain/`. This maps every interaction:
 
 | Phase | Direction | What |
 |-------|-----------|------|
-| **Scope** | READ | `brain/principles.md` + relevant principle files, `brain/pitfalls/<relevant-area>/`, `brain/business/context.md`, `brain/business/glossary.md` |
-| **Work** (per task) | READ | Re-anchor: `brain/pitfalls/<relevant-area>/`, `brain/principles.md` |
-| **Learning Capture** (during epic review) | WRITE | `brain/pitfalls/<area>/<new-pitfall>.md` |
-| **Reflect** | WRITE | `brain/` (learnings), `.claude/skills/` (extracted skills) |
-| **Ruminate** | WRITE | `brain/` (mined patterns from past conversations) |
+| **Scope** | READ | `.flux/brain/principles.md` + relevant principle files, `.flux/brain/pitfalls/<relevant-area>/`, `.flux/brain/business/context.md`, `.flux/brain/business/glossary.md` |
+| **Work** (per task) | READ | Re-anchor: `.flux/brain/pitfalls/<relevant-area>/`, `.flux/brain/principles.md` |
+| **Learning Capture** (during epic review) | WRITE | `.flux/brain/pitfalls/<area>/<new-pitfall>.md` |
+| **Reflect** | WRITE | `.flux/brain/` (learnings), `.claude/skills/` (extracted skills) |
+| **Ruminate** | WRITE | `.flux/brain/` (mined patterns from past conversations) |
 | **Meditate** | READ+WRITE | Prune stale notes, promote recurring pitfalls to principles |
-| **Remember** (flux-brain) | WRITE | `brain/<category>/` or `CLAUDE.md` based on content analysis |
-| **Propose** | READ+WRITE | Read `brain/business/`, write back new glossary terms and area context |
+| **Remember** (flux-brain) | WRITE | `.flux/brain/<category>/` or `CLAUDE.md` based on content analysis |
+| **Propose** | READ+WRITE | Read `.flux/brain/business/`, write back new glossary terms and area context |
 
 ---
 
@@ -390,7 +390,7 @@ When `epic_review` is active, the review pipeline executes these steps in order:
 | 3 | STRIDE Security Scan | Threat model analysis of changes |
 | 4 | BYORB Self-Heal | External bot review (Greptile/CodeRabbit) — **optional**, skipped if no bot configured |
 | 5 | Browser QA | Visual verification of UI changes — skipped if pure backend |
-| 6 | Learning Capture | Write pitfalls to `brain/pitfalls/<area>/` |
+| 6 | Learning Capture | Write pitfalls to `.flux/brain/pitfalls/<area>/` |
 | 7 | Desloppify Scan | Dead code, duplication, complexity check |
 | 8 | Frustration Signal | If friction score >= 3, auto-fetch and offer tool recommendations |
 

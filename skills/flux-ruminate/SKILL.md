@@ -34,7 +34,7 @@ Build a brain snapshot:
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
 [ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
-sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" brain/ /tmp/brain-snapshot-ruminate.md
+sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" .flux/brain/ /tmp/brain-snapshot-ruminate.md
 ```
 
 Pass the snapshot path to each analysis agent. This avoids loading the full brain into the ruminate orchestrator's context.
@@ -98,7 +98,7 @@ Apply only the changes the user approves. Follow brain writing conventions:
 
 - One topic per file, organized in directories
 - Use `[[wikilinks]]` to connect related notes
-- Update `brain/index.md` after all changes
+- Update `.flux/brain/index.md` after all changes
 - Default to updating existing notes over creating new ones
 
 ### 7. Clean up

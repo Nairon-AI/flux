@@ -334,10 +334,10 @@ Write a brain vault pitfall note capturing the root cause:
 
 ```bash
 # Check existing pitfalls to avoid duplicates
-cat brain/index.md 2>/dev/null
+cat .flux/brain/index.md 2>/dev/null
 ```
 
-Write to `brain/pitfalls/[descriptive-slug].md`:
+Write to `.flux/brain/pitfalls/[descriptive-slug].md`:
 ```markdown
 # [Descriptive title]
 
@@ -391,7 +391,7 @@ If systemic, flag it:
 **Fix**: [what was changed and where]
 **Investigation**: [Flux RCA / RepoPrompt Investigate]
 **Regression test**: [added / manual checklist (no test infra)]
-**Pitfall written**: [brain/pitfalls/slug.md]
+**Pitfall written**: [.flux/brain/pitfalls/slug.md]
 **Prevention**: [lint rule / type constraint / CI check / none needed]
 **Similar patterns found**: [N other locations flagged / none]
 
@@ -431,3 +431,9 @@ Then restart Claude Code for changes to take effect.
 ```
 
 **If no update**: Show nothing (silent).
+
+## Gotchas
+
+- Do not stop at the first plausible culprit. RCA is about proving the root cause chain, not writing a convincing story around a symptom.
+- A bugfix is incomplete without regression coverage or an explicit reason why that class of regression cannot recur.
+- If the lesson belongs in a lint rule, type constraint, or pitfall note, encode it structurally instead of leaving it as verbal hindsight.

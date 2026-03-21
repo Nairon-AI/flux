@@ -441,6 +441,12 @@ osascript -e 'tell application "Google Chrome for Testing" to activate'
 
 **Ref lifecycle**: Refs (`@e1`, `@e2`) are invalidated when the page changes. Always re-snapshot after clicks that navigate, form submissions, or dynamic content loading.
 
+## Gotchas
+
+- Element refs are disposable. Any navigation, major DOM update, or modal transition can invalidate them, so re-snapshot before acting on stale refs.
+- Prefer direct browser commands over oversized injected scripts when possible. Large `javascript` blocks are harder to debug and more brittle across pages.
+- Session state can hide auth or cache problems. Be explicit when you need a clean browser session versus a reused one.
+
 ## References
 
 | Topic | File |

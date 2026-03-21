@@ -198,6 +198,12 @@ All plans go into `.flux/`:
 - No code changes
 - No plan files outside `.flux/`
 
+## Gotchas
+
+- Planning is not implementation. Do not write code, create TODO files, or drift into execution while the user asked for a plan.
+- All task and epic state must go through `fluxctl`. Hand-editing `.flux/` files creates state drift that breaks downstream flows.
+- Keep plans proportional to uncertainty. Over-specifying trivial work wastes context; under-specifying risky work guarantees churn later.
+
 ---
 
 ## Update Check (End of Command)

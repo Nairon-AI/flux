@@ -1,6 +1,6 @@
 ---
 name: flux-release
-description: Release a new version of Flux. Bumps version in all manifest files, commits, creates GitHub release. Prevents the stale-version bug where plugin.json is out of sync with the release tag.
+description: Use when cutting a new Flux release. Bump all manifest versions in sync, tag the release, create GitHub release notes, and prevent stale plugin metadata from drifting from the published tag. Triggers on /flux:release.
 user-invocable: true
 ---
 
@@ -137,3 +137,9 @@ fi
 
 echo "Released v$VERSION — all manifest files in sync."
 ```
+
+## Gotchas
+
+- Flux release integrity depends on all manifest files matching the tag. A single stale file recreates the exact upgrade bug this skill exists to prevent.
+- Do not release from an unverified or dirty branch. Version bumps, notes, and tags should reflect the code that is actually shipping.
+- Generated release notes still need sanity checking; vague or misleading notes make upgrades harder to trust.

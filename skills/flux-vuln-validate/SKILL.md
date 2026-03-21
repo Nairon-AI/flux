@@ -174,6 +174,12 @@ Create `.flux/security/validated-findings.json`:
 - [ ] False positives have clear reasoning
 - [ ] CVSS scores calculated for confirmed findings
 
+## Gotchas
+
+- Validation is about exploitability, not rhetoric. A scary finding without reachability or a credible attack path should not be marked confirmed.
+- Proof-of-concept work must stay safe and non-destructive. Demonstrate impact without creating new risk for the repo or environment.
+- False-positive reasoning needs evidence, not vibes. Cite the validation layer, framework protection, or unreachable path that neutralizes the finding.
+
 ## References
 
 - [CVSS 3.1 Calculator](https://www.first.org/cvss/calculator/3.1)

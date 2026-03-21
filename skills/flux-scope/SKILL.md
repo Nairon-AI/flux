@@ -1,6 +1,6 @@
 ---
 name: flux-scope
-description: Full Product OS-style scoping workflow for features, bugs, and refactors. Guides through Start, Discover, Define, Develop, Deliver, and Handoff. Default is shallow mode (~10 min). Use --deep for the full staged flow (~45 min).
+description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow.
 user-invocable: false
 ---
 
@@ -103,15 +103,15 @@ If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentence
 Before starting any detection or interview, silently load business context if it exists:
 
 ```bash
-cat brain/business/context.md 2>/dev/null
-cat brain/business/glossary.md 2>/dev/null
+cat .flux/brain/business/context.md 2>/dev/null
+cat .flux/brain/business/glossary.md 2>/dev/null
 ```
 
 If business context exists:
 - **Product stage** informs how hard the viability gate pushes on user validation (pre-launch = push harder on "who would use this?"; established product = ask for data/metrics)
 - **Glossary** ensures domain terms are interpreted correctly throughout the interview — never misinterpret domain-specific language
 - **Team structure** determines whether to watch for deferred authority signals ("my co-founder said...") and whether to route to propose
-- **Area-specific files** (`brain/business/billing.md`, etc.) provide context when the scope touches those areas — read them when relevant
+- **Area-specific files** (`.flux/brain/business/billing.md`, etc.) provide context when the scope touches those areas — read them when relevant
 
 If no business context exists: continue normally.
 
@@ -364,3 +364,9 @@ If `LINEAR_MODE` is true, sync tasks back to Linear after local epic/tasks are c
 After showing the completion summary:
 1. **Ralph mode offer** — always offer to run the epic autonomously overnight
 2. **Update check** — check for Flux plugin updates (silent if none)
+
+## Gotchas
+
+- Scope must stay aligned with `.flux/` state. Do not silently start a fresh objective if active scoped work already exists.
+- Route correctly before continuing: stakeholder asks go to `flux-propose`, bug investigations go to `flux-rca`, and memory requests go to `flux-brain`.
+- Scoping is not implementation. Do not leak into code changes, todo files, or side-task execution while defining the objective.

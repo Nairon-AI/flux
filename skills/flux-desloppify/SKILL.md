@@ -1,6 +1,6 @@
 ---
 name: flux-desloppify
-description: Systematic codebase quality improvement. Scans for dead code, duplication, complexity, naming issues, and architectural problems. Scoring resists gaming - only real improvements raise the score.
+description: Use when improving codebase quality systematically across dead code, duplication, complexity, naming, and architecture issues. Runs the desloppify scoring flow and favors real maintainability gains over cosmetic score-chasing.
 user-invocable: false
 ---
 

@@ -33,7 +33,7 @@ $FLUXCTL session-phase set idle
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
 [ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
-sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" brain/ /tmp/brain-snapshot.md
+sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" .flux/brain/ /tmp/brain-snapshot.md
 sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" skills/ /tmp/skills-snapshot.md
 ```
 
@@ -49,7 +49,7 @@ Audits brain notes, CLAUDE.md, and auto-memory for staleness, redundancy, low-va
 
 ### 3. Reviewer (after auditor completes)
 
-Spawn one `general` subagent. See `references/agents.md` for the full prompt spec. Inputs: brain snapshot, skills snapshot, auditor report, `brain/principles.md`.
+Spawn one `general` subagent. See `references/agents.md` for the full prompt spec. Inputs: brain snapshot, skills snapshot, auditor report, `.flux/brain/principles.md`.
 
 Combines three concerns in a single pass:
 - **Synthesis**: Proposes missing wikilinks, flags principle tensions, suggests clarifications.
@@ -62,7 +62,7 @@ Present the user with a consolidated summary. See `references/agents.md` for the
 
 ### 5. Route skill-specific learnings
 
-Check all reports for findings that belong in skill files, not `brain/`. Update the skill's SKILL.md or references/ directly. Read the skill first to avoid duplication.
+Check all reports for findings that belong in skill files, not `.flux/brain/`. Update the skill's SKILL.md or references/ directly. Read the skill first to avoid duplication.
 
 ### 6. Apply changes
 
@@ -74,17 +74,17 @@ Apply all changes directly. The user reviews the diff.
 - **Verbose notes**: Condense in place
 - **New connections**: Add `[[wikilinks]]`
 - **Tensions**: Reword to clarify boundaries
-- **New principles**: Only from the distillation section, only if genuinely independent. Write brain files and update `brain/principles.md`
+- **New principles**: Only from the distillation section, only if genuinely independent. Write brain files and update `.flux/brain/principles.md`
 - **Merge principles**: Look for principles that are subsets or specific applications of each other — merge the narrower into the broader
 - **CLAUDE.md issues**: Rewrite or delete
 - **Stale memories**: Delete or rewrite
 
 ### 6b. Business context audit
 
-If `brain/business/` exists, audit it alongside the brain vault:
+If `.flux/brain/business/` exists, audit it alongside the brain vault:
 
 ```bash
-ls brain/business/*.md 2>/dev/null
+ls .flux/brain/business/*.md 2>/dev/null
 ```
 
 If business context files exist:
@@ -97,7 +97,7 @@ Present business context findings alongside the brain audit report. Apply change
 
 ### 7. Housekeep
 
-Update `brain/index.md` for any files added or removed. Also update `brain/business/index.md` if business context files were added, removed, or renamed.
+Update `.flux/brain/index.md` for any files added or removed. Also update `.flux/brain/business/index.md` if business context files were added, removed, or renamed.
 
 Update meditate timestamp so the session health check knows when this last ran:
 ```bash
@@ -114,3 +114,9 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HOME/.flux/last_meditate"
 - Skill review: [N findings, M applied]
 - Housekeep: [state files cleaned]
 ```
+
+## Gotchas
+
+- Meditate is a reduction pass, not a brainstorming session. Prefer deleting, merging, or tightening existing content before adding anything new.
+- Structural fixes beat prose. If a repeated issue can become a script, lint rule, or guardrail, route it there instead of bloating the brain.
+- Do not preserve low-signal notes just because they are technically accurate. Signal density matters more than completeness.

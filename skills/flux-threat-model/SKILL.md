@@ -240,6 +240,12 @@ When called during `/flux:scope`, this skill:
 3. Adds security requirements to the epic's acceptance criteria
 4. Flags any HIGH/CRITICAL threats that need mitigation in the plan
 
+## Gotchas
+
+- A useful threat model must stay specific to the repo and architecture. Generic STRIDE filler is worse than no model because downstream skills trust it.
+- When architecture changes, refresh the affected sections instead of assuming an old threat model is still authoritative.
+- Write for downstream agents as well as humans: concrete components, trust boundaries, and realistic attack paths beat abstract security slogans.
+
 ## References
 
 - [STRIDE Threat Modeling](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)

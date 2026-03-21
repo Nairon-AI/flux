@@ -1,6 +1,6 @@
 ---
 name: flux-profile
-description: Export, publish, view, import, and tombstone Flux SDLC profiles. Use for shareable immutable setup links and team setup replication.
+description: Use when exporting, publishing, importing, or tombstoning Flux SDLC profiles for reusable setup links, team replication, or immutable environment snapshots. Triggers on /flux:profile.
 user-invocable: false
 ---
 
@@ -66,6 +66,12 @@ When cloud component launches, `/flux:profile` will gain a `sync` mode:
 - Improvement trends
 
 Auth will use Universe accounts. ETA: Q2 2026.
+
+## Gotchas
+
+- Public profile links are meant to be shareable and durable. Verify what becomes public before publishing.
+- Importing a profile should replicate setup, not blindly override a repo's local context or preferences without user intent.
+- Treat tombstoning as permanent public removal, not a reversible hide toggle.
 
 
 ---

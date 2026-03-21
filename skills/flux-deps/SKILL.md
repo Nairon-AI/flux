@@ -168,6 +168,12 @@ $FLUXCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \
 - "Why is Ralph working on X?"
 - "What should I work on next?"
 
+## Gotchas
+
+- The graph only reflects dependencies persisted in `.flux/`. If someone changed work informally without recording deps, the graph will be incomplete.
+- Use `fluxctl` output as the source of truth. Do not infer dependency edges from titles, branch names, or conversation context.
+- Closed work can hide the current bottleneck. Favor non-done epics when explaining what is blocking forward progress.
+
 
 ---
 
