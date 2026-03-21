@@ -84,7 +84,7 @@ Uninstall the Flux plugin and clean up. README: https://github.com/Nairon-AI/flu
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. You and the agent always know what's next.
 
-> **Everything is project-local.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, config in `.flux/`. Nothing touches your global `~/.claude/settings.json`. No two projects need the same harness — different MCPs, skills, tools, and agentic patterns. Flux starts as a one-size-fits-all setup, then self-improves daily into the best harness for *that specific project*.
+> **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, skills in `.claude/skills/`, workflow state in `.flux/`, and the brain vault in `.flux/brain/`. Flux does not use your global `~/.claude/settings.json` for normal project-local setup. No two projects need the same harness — different MCPs, skills, tools, and agentic patterns. Flux starts as a one-size-fits-all setup, then self-improves daily into the best harness for *that specific project*.
 
 <details>
 <summary><strong>Plugin CLI Reference</strong></summary>
@@ -108,7 +108,7 @@ Flux uses Claude Code's [plugin system](https://docs.anthropic.com/en/docs/claud
 6. After restart, run `/flux:prime` if the repo hasn't been primed yet.
 
 #### Upgrade
-Run `/flux:upgrade` inside Claude Code, then restart with `--resume`. Project-local files (`.flux/`, brain vault, CLAUDE.md, MCP servers) are never affected.
+Run `/flux:upgrade` inside Claude Code, then restart with `--resume`. Project-local files (`.flux/`, `.flux/brain/`, CLAUDE.md, MCP servers) are never affected.
 
 #### Uninstall
 1. Read `.flux/meta.json` for the `installed_by_flux` manifest to see what Flux added.
@@ -325,7 +325,7 @@ After upgrading, if your project's setup version is behind the plugin version, F
 
 ### Deterministic State Engine
 
-`.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `brain/` is the persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
+`.flux/` is the canonical workflow state. `session-state` tells Flux whether to prime, start fresh, resume scoping, resume implementation, or route to review. `.flux/brain/` is the canonical persistent knowledge store — principles, pitfalls, conventions, and decisions. Startup hooks realign the agent with Flux state before acting on new requests.
 
 The full state machine is formally defined in [`docs/state-machine.md`](docs/state-machine.md) — every state, valid transition, routing rule, and guard is documented. Users and agents can query `fluxctl session-state --json` at any point to see exactly where they are in the workflow.
 
@@ -339,16 +339,16 @@ fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 
 ### Brain Vault — Single Knowledge Store
 
-Flux's brain is an Obsidian-compatible vault (`brain/`) that serves as the single knowledge store for the entire system. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
+Flux's brain is an Obsidian-compatible vault stored in `.flux/brain/`. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
 
 - **Scoping** reads brain principles, pitfalls, and business context to ground research and plan structure
 - **Propose** reads business context and glossary, does a real codebase investigation, then writes back new domain terms and area-specific context learned during the session
 - **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
-- **Epic review** writes learnings back to `brain/pitfalls/<area>/` after SHIP, categorized by domain
+- **Epic review** writes learnings back to `.flux/brain/pitfalls/<area>/` after SHIP, categorized by domain
 - **Meditate** promotes recurring pitfalls into proper principles, prunes one-offs, and audits business context for stale facts
 
 ```
-brain/
+.flux/brain/
   business/      # Business context (populated during setup, enriched by propose)
     context.md   #   Product stage, team structure, key context
     glossary.md  #   Ubiquitous language — domain-specific terms
@@ -363,7 +363,7 @@ brain/
   plans/         # From scope/plan
 ```
 
-**Natural language memory**: Just say "remember X" and Flux routes it to the right place — CLAUDE.md for short rules the agent needs every session, or brain/ for deeper context and decisions.
+**Natural language memory**: Just say "remember X" and Flux routes it to the right place — CLAUDE.md for short rules the agent needs every session, or `.flux/brain/` for deeper context and decisions.
 
 ```bash
 /flux:reflect    # Capture session learnings + extract reusable skills
@@ -420,7 +420,7 @@ Full pipeline that runs once when all epic tasks are done:
 | Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
 | BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
 | Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
-| Learning capture | Extract patterns from review feedback into `brain/pitfalls/` |
+| Learning capture | Extract patterns from review feedback into `.flux/brain/pitfalls/` |
 
 > **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
 
@@ -453,7 +453,7 @@ During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Brows
 
 #### Learning Capture — Reviews That Pay for Themselves
 
-Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `brain/pitfalls/`. The worker reads these during re-anchor at the start of every task. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs — the brain gets smarter, not bigger.
+Every NEEDS_WORK iteration teaches Flux something. After reaching SHIP, Flux extracts generalizable patterns and writes them to `.flux/brain/pitfalls/`. The worker reads these during re-anchor at the start of every task. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs — the brain gets smarter, not bigger.
 
 **The result:** mistakes caught in review today are avoided in implementation tomorrow. Over time, you get fewer NEEDS_WORK iterations, shorter review cycles, and lower token spend — regardless of which review strategy you use. The learning feedback loop works with single-model, adversarial, or bot-assisted reviews.
 
@@ -609,7 +609,7 @@ The full Product OS scoping flow (the interview, problem statement, task breakdo
 
 Flux reads your **repo structure** (files, directories, dependencies), your **installed MCP servers** (from `.mcp.json`), and optionally your **Claude Code session transcripts** (only when you run `/flux:improve` and give explicit consent).
 
-Everything Flux creates lives in a `.flux/` directory inside your project — task state, brain vault notes, session metadata. It never writes to your home directory or global config. Each project gets its own independent Flux setup, so different repos can have different tools, skills, and configurations without interfering with each other.
+For project-local setup, Flux creates its core repo state inside `.flux/` — including the brain vault at `.flux/brain/`. Optional ecosystem features still use some user-global state (for example cached recommendations under `~/.flux/` and Claude plugin/session data under `~/.claude/`), but the main workflow state is project-local.
 
 The only global change Flux makes is during `/flux:setup` if you choose to install CLI tools (like `jq` or `gh`) — but even that is opt-in and asks you first.
 </details>

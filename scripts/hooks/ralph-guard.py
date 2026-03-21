@@ -105,7 +105,7 @@ def get_repo_root() -> Path:
 
 def has_brain_vault() -> bool:
     """Check if brain vault exists in repo."""
-    brain_dir = get_repo_root() / "brain"
+    brain_dir = get_repo_root() / ".flux" / "brain"
     return brain_dir.is_dir()
 
 
@@ -478,7 +478,7 @@ def handle_post_tool_use(data: dict) -> None:
                             "hookEventName": "PostToolUse",
                             "additionalContext": (
                                 "BRAIN: Review returned NEEDS_WORK. After fixing, if any lessons are "
-                                "GENERALIZABLE (apply beyond this task), capture as a pitfall in brain/pitfalls/<area>/<slug>.md.\n"
+                                "GENERALIZABLE (apply beyond this task), capture as a pitfall in .flux/brain/pitfalls/<area>/<slug>.md.\n"
                                 "Areas: frontend, backend, security, async, api, database, testing, infra (or create new).\n"
                                 "Skip: task-specific fixes, typos, style issues, or 'fine as-is' explanations."
                             ),

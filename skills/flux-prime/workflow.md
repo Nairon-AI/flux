@@ -598,7 +598,7 @@ Without this step, `session-state` will always report `needs_prime` and block th
 After marking prime complete, check if the brain vault is thin and past conversations exist. If so, **ask the user** if they want to populate the brain from their past sessions.
 
 **Trigger conditions** (ALL must be true):
-1. Brain vault has fewer than 5 files across `brain/pitfalls/` and `brain/principles/`
+1. Brain vault has fewer than 5 files across `.flux/brain/pitfalls/` and `.flux/brain/principles/`
 2. Past Claude Code conversations exist (`~/.claude/projects/` has session data for this project)
 
 ```bash

@@ -118,6 +118,12 @@ Categories:
 - `vscode-extensions/` - VS Code extensions
 - `workflow-patterns/` - Best practices (not tools)
 
+## Gotchas
+
+- Session analysis is opt-in unless the user already enabled persistent consent. Do not silently mine history when consent is required.
+- Recommendations are optional improvements, not mandatory setup. Never auto-install tools just because they match a friction signal.
+- Match friction before suggesting tools. A shiny recommendation with no evidenced pain point is noise.
+
 ---
 
 ## Update Check (End of Command)

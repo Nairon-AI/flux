@@ -106,7 +106,7 @@ The epic review is a multi-phase pipeline:
 5. **Security Scan** — STRIDE-based vulnerability scan on changed files (auto-triggered for security-sensitive changes)
 6. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
 7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
-8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `brain/pitfalls/`
+8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `.flux/brain/pitfalls/`
 9. **Desloppify Scan** — lightweight quality scan on changed files (if desloppify installed)
 10. **Frustration Signal** — auto-trigger recommendation search if friction score >= 3
 
@@ -277,11 +277,11 @@ See [workflow.md](workflow.md) "Browser QA Phase" for full details. Summary:
 
 After the full review pipeline reaches SHIP, extract learnings from any NEEDS_WORK iterations and persist them to the brain vault.
 
-Pitfalls are organized by area of concern under `brain/pitfalls/<area>/`. The agent decides the area intelligently based on the pitfall's domain.
+Pitfalls are organized by area of concern under `.flux/brain/pitfalls/<area>/`. The agent decides the area intelligently based on the pitfall's domain.
 
 ```bash
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-PITFALLS_DIR="$REPO_ROOT/brain/pitfalls"
+PITFALLS_DIR="$REPO_ROOT/.flux/brain/pitfalls"
 
 # Determine area from the pitfall's domain
 # Common areas: frontend, backend, security, async, api, database, testing, infra
@@ -301,14 +301,14 @@ EOF
 ```
 
 **Area selection rules:**
-1. Check existing area directories in `brain/pitfalls/` — use one if it fits
+1. Check existing area directories in `.flux/brain/pitfalls/` — use one if it fits
 2. If no existing area matches, create a new directory with a short, descriptive slug
 3. Keep areas broad enough to group related pitfalls (e.g., `frontend` not `react-forms`)
-4. When in doubt, check what's already there: `ls brain/pitfalls/`
+4. When in doubt, check what's already there: `ls .flux/brain/pitfalls/`
 
-Update `brain/index.md` to include new pitfall area entries.
+Update `.flux/brain/index.md` to include new pitfall area entries.
 
-Format: one file per pattern, organized by area (e.g., `brain/pitfalls/frontend/missing-error-states.md`).
+Format: one file per pattern, organized by area (e.g., `.flux/brain/pitfalls/frontend/missing-error-states.md`).
 
 **What to capture:**
 - Spec compliance gaps — requirements that drifted from spec
@@ -317,7 +317,7 @@ Format: one file per pattern, organized by area (e.g., `brain/pitfalls/frontend/
 - External bot patterns — recurring issues caught by Greptile/CodeRabbit
 - Browser QA failures — UI/UX issues missed during implementation
 
-Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `brain/pitfalls/` which is read during re-anchor — but only the relevant area subdirectories are loaded, keeping context lean. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs.
+Only capture generalizable patterns, not one-off fixes. These feed back into the worker via `.flux/brain/pitfalls/` which is read during re-anchor — but only the relevant area subdirectories are loaded, keeping context lean. Over time, `/flux:meditate` promotes recurring pitfalls into proper principles and prunes one-offs.
 
 ### Step 10: Desloppify Scan (optional)
 
@@ -355,7 +355,7 @@ FRICTION_SCORE = NEEDS_WORK_COUNT + SECURITY_FINDINGS + BROWSER_QA_FAILURES + (S
 **Part 2 — Qualitative friction analysis** from three sources:
 1. **Developer messages** during fix loops — scan for frustration language and extract the *topic* (e.g., "wtf is this UI? Still not responsive" → `responsive, css_issues, ui_issues`)
 2. **Review issue categories** — classify reviewer feedback into domains (CSS/auth/testing/etc.)
-3. **Pitfall areas** from learning capture — `brain/pitfalls/frontend/` → `frontend, ui_issues`
+3. **Pitfall areas** from learning capture — `.flux/brain/pitfalls/frontend/` → `frontend, ui_issues`
 
 Combined into `FRICTION_DOMAINS` (what's broken) and `FRICTION_SIGNALS` (what `/flux:improve` should search for).
 

@@ -6,10 +6,11 @@
   "private": true,
   "scripts": {
     "test": "bun test tests/scripts.test.ts",
+    "test:skills": "python3 scripts/validate_skills.py",
     "test:scripts": "bun test tests/scripts.test.ts --timeout 30000",
     "test:claude": "bun test tests/claude-commands.test.ts --timeout 180000",
     "test:all": "bun test --timeout 180000",
-    "test:ci": "bun test tests/scripts.test.ts --timeout 30000"
+    "test:ci": "python3 scripts/validate_skills.py && bun test tests/scripts.test.ts --timeout 30000"
   },
   "devDependencies": {
     "@types/bun": "latest",

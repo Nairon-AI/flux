@@ -110,7 +110,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/` directory structure, configures preferences, and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
+Initializes Flux in your project. Creates `.flux/` and the canonical brain vault at `.flux/brain/`, configures preferences, and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
 
 ### /flux:plan
 
@@ -141,14 +141,14 @@ Executes a task with automatic context reload and drift checks.
 | `/flux:reflect` | `/flux:reflect` | Capture learnings from the current session into brain vault |
 | `/flux:ruminate` | `/flux:ruminate` | Mine past conversations for uncaptured patterns |
 | `/flux:meditate` | `/flux:meditate` | Audit brain vault — prune stale content, promote patterns |
-| "remember X" | `remember always use pnpm` | Smart routing — stores in CLAUDE.md (actionable rules) or brain/ (deeper context) |
+| "remember X" | `remember always use pnpm` | Smart routing — stores in CLAUDE.md (actionable rules) or `.flux/brain/` (deeper context) |
 
 ### Natural Language Memory
 
 You don't need a slash command. Just say:
 - **"remember always use pnpm"** → adds to CLAUDE.md (short rule, every session)
-- **"remember Sarah is the PM"** → adds to brain/business/ (team context)
-- **"don't forget the API rate limit is 100/min"** → adds to brain/codebase/ (technical context)
+- **"remember Sarah is the PM"** → adds to `.flux/brain/business/` (team context)
+- **"don't forget the API rate limit is 100/min"** → adds to `.flux/brain/codebase/` (technical context)
 - **"from now on, run tests before committing"** → adds to CLAUDE.md (constraint)
 
 Flux classifies the content and asks you to confirm the destination before writing.

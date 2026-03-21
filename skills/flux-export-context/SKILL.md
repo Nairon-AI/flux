@@ -120,6 +120,12 @@ After receiving feedback, return here to implement fixes.
 
 This skill is for **manual** external review only. It does not work with Ralph autonomous mode (no receipts, no status updates).
 
+## Gotchas
+
+- Export is intentionally manual. Do not pretend it updates Flux task or review state after an external LLM responds.
+- Be selective about what gets exported. External review packs can include sensitive implementation details and should match the actual review question.
+- This is a review handoff tool, not a substitute for running Flux review skills when receipts or workflow state matter.
+
 
 ---
 

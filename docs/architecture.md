@@ -28,7 +28,9 @@ Example:
 
 - Location: `skills/`
 - Purpose: deterministic workflow instructions and UX behavior.
-- Each skill defines steps, prompts, and command/script execution strategy.
+- A skill is a folder, not just a markdown file: `SKILL.md` plus optional `references/`, `scripts/`, `assets/`, and sibling workflow docs.
+- Keep `SKILL.md` focused on routing, workflow, and gotchas; push detailed references and deterministic logic into supporting files.
+- See [skills-best-practices.md](skills-best-practices.md) for the authoring rules used in this repo.
 
 ### Script Layer
 
@@ -55,6 +57,7 @@ Important scripts:
 
 - `.flux/preferences.json` - dismissed recommendations, alternatives, consent preference
 - `.flux/` task graph/specs for plan/work workflows
+- `.flux/brain/` - canonical brain vault for principles, pitfalls, business context, and decisions
 
 ### User-Global State
 

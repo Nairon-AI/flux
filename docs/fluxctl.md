@@ -473,7 +473,7 @@ Priority: `--review=...` argument > `FLUX_REVIEW_BACKEND` env > `.flux/config.js
 
 No auto-detect. Run `/flux:setup` (or `fluxctl config set review.backend ...`) to configure.
 
-> **Note:** Learnings (pitfalls, conventions, decisions) are stored in the `brain/` vault, not `.flux/`. See `brain/index.md`.
+> **Note:** Learnings (pitfalls, conventions, decisions) are stored in `.flux/brain/`. See `.flux/brain/index.md`.
 
 ### prep-chat
 

@@ -1,6 +1,6 @@
 ---
 name: flux-upgrade
-description: Upgrade Flux to the latest version. Refreshes marketplace metadata, clears plugin cache, and updates the install record. Triggers on /flux:upgrade.
+description: Use when upgrading Flux itself after a new release or when plugin metadata/cache drift leaves Claude on an older version. Refresh marketplace metadata, clear plugin cache, update the install record, and route `/flux:upgrade`.
 user-invocable: true
 ---
 
@@ -118,3 +118,9 @@ If setup version is stale, add:
 ⚠️ Your project setup (v{SETUP_VER}) is behind the plugin (v{NEW_VERSION}).
 New configuration options may be available. Run /flux:setup after restart to update.
 ```
+
+## Gotchas
+
+- Upgrade is not complete until Claude restarts and reloads the plugin. Clearing cache without restart still leaves the running session on the old code.
+- `setup_version` drift matters. The plugin can be upgraded successfully while the repo-local setup remains stale and misses new options.
+- This skill is for Flux/plugin upgrades, not for upgrading arbitrary project dependencies.

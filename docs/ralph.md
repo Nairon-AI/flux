@@ -419,9 +419,9 @@ Fix → re-review → fix → re-review... until the reviewer approves.
 
 NEEDS_WORK reviews auto-capture learnings to the brain vault:
 
-Builds `brain/pitfalls/` — things reviewers catch that models miss. Over time, `/flux:meditate` promotes recurring pitfalls into principles and prunes one-offs.
+Builds `.flux/brain/pitfalls/` — things reviewers catch that models miss. Over time, `/flux:meditate` promotes recurring pitfalls into principles and prunes one-offs.
 
-> **Note:** Learnings are stored in `brain/pitfalls/` (one file per pattern, organized by area).
+> **Note:** Learnings are stored in `.flux/brain/pitfalls/` (one file per pattern, organized by area).
 
 ---
 

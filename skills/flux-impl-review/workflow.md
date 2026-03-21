@@ -205,16 +205,16 @@ Before reviewing, load project-specific rules from the brain vault. These are ha
 
 ```bash
 # Load principles (non-negotiable project rules)
-cat brain/principles/*.md 2>/dev/null
+cat .flux/brain/principles/*.md 2>/dev/null
 
 # Load pitfalls relevant to changed file domains
 # Match pitfall subdirectories to changed file paths (frontend/, backend/, api/, etc.)
 for area in $(git diff --name-only ${BASE_COMMIT:-main}..HEAD | sed 's|/.*||' | sort -u); do
-  cat brain/pitfalls/${area}/*.md 2>/dev/null
+  cat .flux/brain/pitfalls/${area}/*.md 2>/dev/null
 done
 
 # Fallback: load all pitfalls if no area match
-ls brain/pitfalls/*/*.md >/dev/null 2>&1 || cat brain/pitfalls/*.md 2>/dev/null
+ls .flux/brain/pitfalls/*/*.md >/dev/null 2>&1 || cat .flux/brain/pitfalls/*.md 2>/dev/null
 ```
 
 If principles or pitfalls were loaded, add them to the review context:

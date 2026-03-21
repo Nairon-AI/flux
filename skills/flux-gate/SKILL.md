@@ -211,6 +211,12 @@ Promotion PR created: {PR_URL}
 Merge when ready to deploy to production. Flux will not auto-merge to production.
 ```
 
+## Gotchas
+
+- Never treat staging as implicitly approved. Promotion requires an explicit green validation result against the actual staging URL.
+- Do not guess environment mapping, base branches, or deploy URLs. If they are unclear, confirm them before creating the production promotion PR.
+- This skill prepares the promotion, but it does not self-authorize production rollout. Human merge intent is part of the guardrail.
+
 ## Update Check (End of Command)
 
 **ALWAYS run at the very end of command execution:**

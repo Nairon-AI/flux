@@ -66,6 +66,12 @@ rp-cli -w W -e 'builder "find auth" && select add extra.ts && context'
 
 RepoPrompt v1.5.62+ with rp-cli installed.
 
+## Gotchas
+
+- This skill is for exploration and context shaping, not direct code mutation. Use it to understand or package context, then switch tools when it is time to edit.
+- Token efficiency is the point. Dumping the whole repo into RepoPrompt defeats the workflow and usually makes the result worse.
+- Builder tabs are isolated contexts. Reuse the right tab deliberately instead of assuming previous selection state still applies.
+
 
 ---
 

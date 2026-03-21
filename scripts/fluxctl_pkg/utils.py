@@ -89,7 +89,7 @@ SESSION_PHASES = [
     "propose",           # Stakeholder feature proposal
     "rca",               # Root cause analysis
     "improve",           # Workflow optimization
-    "remember",          # Storing knowledge (CLAUDE.md or brain/)
+    "remember",          # Storing knowledge (CLAUDE.md or .flux/brain/)
 ]
 
 TASK_SPEC_HEADINGS = [

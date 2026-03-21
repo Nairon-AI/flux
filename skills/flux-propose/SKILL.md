@@ -61,16 +61,16 @@ Full request: $ARGUMENTS
 Before starting the conversation, silently read business context if it exists:
 
 ```bash
-cat brain/business/context.md 2>/dev/null
-cat brain/business/glossary.md 2>/dev/null
-ls brain/business/*.md 2>/dev/null
+cat .flux/brain/business/context.md 2>/dev/null
+cat .flux/brain/business/glossary.md 2>/dev/null
+ls .flux/brain/business/*.md 2>/dev/null
 ```
 
 If business context exists:
 - Use the product stage to calibrate how hard you push on estimates and user validation
 - Use the glossary to understand domain terms correctly — never misinterpret domain language
-- Use the team directory (`brain/business/team.md`) to understand who's who — so when call transcripts mention names, you know their role
-- Reference area-specific files (e.g., `brain/business/billing.md`) when the proposal touches those areas
+- Use the team directory (`.flux/brain/business/team.md`) to understand who's who — so when call transcripts mention names, you know their role
+- Reference area-specific files (e.g., `.flux/brain/business/billing.md`) when the proposal touches those areas
 
 If no business context exists:
 - Continue normally — the context will be created as part of this session (see "Update Business Context" below)
@@ -90,7 +90,7 @@ Has anything changed? New team members, someone left, user growth, funding, anyt
 If not, just say "all good" and we'll jump in.
 ```
 
-- If they mention changes: update `brain/business/context.md` and/or `brain/business/team.md` immediately
+- If they mention changes: update `.flux/brain/business/context.md` and/or `.flux/brain/business/team.md` immediately
 - If they say "all good": proceed
 - Keep this to **one question** — don't turn it into a second setup interview
 
@@ -175,11 +175,11 @@ $FLUXCTL session-state --json
 - Identify which systems are interconnected (e.g., if they say "remove credits" → find every file that references credits, billing, usage tracking)
 - Check for database models, API routes, frontend components, tests, and config that would be affected
 - Look at `package.json` / dependency files for related packages and third-party services
-- Check `brain/business/` for area-specific context (e.g., `brain/business/billing.md` if the change touches billing)
+- Check `.flux/brain/business/` for area-specific context (e.g., `.flux/brain/business/billing.md` if the change touches billing)
 
 **Also check for existing business context files** related to this area:
 ```bash
-ls brain/business/*.md 2>/dev/null
+ls .flux/brain/business/*.md 2>/dev/null
 ```
 If a relevant area file exists (e.g., `billing.md`), read it to understand prior decisions and how things are currently connected.
 
@@ -264,12 +264,12 @@ Only engage on technical specifics if they **really insist** — and if so, pref
 
 # UPDATE BUSINESS CONTEXT
 
-After Phase 3, silently update `brain/business/` with anything learned during this session:
+After Phase 3, silently update `.flux/brain/business/` with anything learned during this session:
 
 ### Glossary updates
-If the stakeholder used domain-specific terms during the conversation, add them to `brain/business/glossary.md`:
+If the stakeholder used domain-specific terms during the conversation, add them to `.flux/brain/business/glossary.md`:
 ```bash
-cat brain/business/glossary.md 2>/dev/null
+cat .flux/brain/business/glossary.md 2>/dev/null
 ```
 - If the file exists: append any new terms to the table (don't duplicate existing ones)
 - If the file doesn't exist: create it with the terms learned
@@ -277,12 +277,12 @@ cat brain/business/glossary.md 2>/dev/null
 ### Area-specific context
 If the proposal touches a specific business area (billing, auth, permissions, onboarding, etc.), create or update an area file:
 ```bash
-cat brain/business/[area].md 2>/dev/null
+cat .flux/brain/business/[area].md 2>/dev/null
 ```
 - If the file exists: update it with new decisions, constraints, or context from this session
-- If not: create `brain/business/[area].md` with a summary of how that area currently works (based on the codebase investigation from Step 5) and what decisions were made in this proposal
+- If not: create `.flux/brain/business/[area].md` with a summary of how that area currently works (based on the codebase investigation from Step 5) and what decisions were made in this proposal
 
-Example `brain/business/billing.md`:
+Example `.flux/brain/business/billing.md`:
 ```markdown
 # Billing
 
@@ -300,9 +300,9 @@ Example `brain/business/billing.md`:
 ```
 
 ### Team directory updates
-If the stakeholder mentioned any names during the conversation (their own, colleagues, stakeholders, contractors), update `brain/business/team.md`:
+If the stakeholder mentioned any names during the conversation (their own, colleagues, stakeholders, contractors), update `.flux/brain/business/team.md`:
 ```bash
-cat brain/business/team.md 2>/dev/null
+cat .flux/brain/business/team.md 2>/dev/null
 ```
 - If the file exists: add new people to the table, update roles if someone's role changed, mark people as "left" if the stakeholder mentioned someone leaving
 - If the file doesn't exist: create it with everyone mentioned
@@ -310,7 +310,7 @@ cat brain/business/team.md 2>/dev/null
 This is important for future sessions — when call transcripts are imported, Flux needs to know who "Alex" or "Sarah" is without asking.
 
 ### Context updates
-If any high-level business context changed (new product direction, stage change, team change, user growth, funding), update `brain/business/context.md`. Common updates from the re-check (Step 0.25):
+If any high-level business context changed (new product direction, stage change, team change, user growth, funding), update `.flux/brain/business/context.md`. Common updates from the re-check (Step 0.25):
 - User count changes (e.g., "we went from 100 to 5,000 users")
 - Stage changes (e.g., "we launched" or "we got funding")
 - Team changes (e.g., "Sarah left" or "we hired a product manager")
@@ -474,3 +474,9 @@ Then restart Claude Code for changes to take effect.
 ```
 
 **If no update**: Show nothing (silent).
+
+## Gotchas
+
+- This skill is for stakeholder intent capture, not implementation planning. Engineers who already know the technical shape should route to `/flux:scope`.
+- Push back on fuzzy business asks instead of laundering them into a polished spec. Vagueness hidden in a PR becomes engineering thrash later.
+- Do not promise delivery or endorse the idea by default. The point is to surface tradeoffs, complexity, and open questions before engineering commits.

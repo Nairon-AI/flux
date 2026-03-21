@@ -378,15 +378,15 @@ Load project-specific rules that both reviewers must evaluate against:
 
 ```bash
 # Load principles (non-negotiable project rules)
-PRINCIPLES=$(cat brain/principles/*.md 2>/dev/null)
+PRINCIPLES=$(cat .flux/brain/principles/*.md 2>/dev/null)
 
 # Load pitfalls relevant to changed file domains
 PITFALLS=""
 for area in $(git diff ${DIFF_BASE}..HEAD --name-only | sed 's|/.*||' | sort -u); do
-  PITFALLS="${PITFALLS}$(cat brain/pitfalls/${area}/*.md 2>/dev/null)"
+  PITFALLS="${PITFALLS}$(cat .flux/brain/pitfalls/${area}/*.md 2>/dev/null)"
 done
 # Fallback: load all pitfalls if no area match
-[ -z "$PITFALLS" ] && PITFALLS=$(cat brain/pitfalls/*.md 2>/dev/null)
+[ -z "$PITFALLS" ] && PITFALLS=$(cat .flux/brain/pitfalls/*.md 2>/dev/null)
 ```
 
 ### Step 2: Build Adversarial Review Prompt
@@ -812,11 +812,11 @@ Review all NEEDS_WORK iterations across the pipeline and extract generalizable p
 
 ### How to Capture
 
-Write each learning to a separate file in `brain/pitfalls/<area>/`, organized by area of concern:
+Write each learning to a separate file in `.flux/brain/pitfalls/<area>/`, organized by area of concern:
 
 ```bash
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-PITFALLS_DIR="$REPO_ROOT/brain/pitfalls"
+PITFALLS_DIR="$REPO_ROOT/.flux/brain/pitfalls"
 
 # 1. Determine the area from the pitfall's domain
 #    Check existing areas first: ls "$PITFALLS_DIR"
@@ -837,23 +837,23 @@ EOF
 ```
 
 **Area selection rules:**
-1. Check existing area directories in `brain/pitfalls/` — use one if it fits
+1. Check existing area directories in `.flux/brain/pitfalls/` — use one if it fits
 2. If no existing area matches, create a new directory with a short, descriptive slug
 3. Keep areas broad enough to group related pitfalls (e.g., `frontend` not `react-forms`)
-4. When in doubt, check what's already there: `ls brain/pitfalls/`
+4. When in doubt, check what's already there: `ls .flux/brain/pitfalls/`
 
-After writing pitfall files, update `brain/index.md` to include new entries under the `## Pitfalls` section.
+After writing pitfall files, update `.flux/brain/index.md` to include new entries under the `## Pitfalls` section.
 
 Examples:
-- `brain/pitfalls/frontend/missing-error-states.md` — UI components lacked error/empty states
-- `brain/pitfalls/async/consensus-race-condition.md` — Both models flagged unsynchronized state updates
-- `brain/pitfalls/security/greptile-auth-gap.md` — Greptile caught missing auth check on new endpoint
+- `.flux/brain/pitfalls/frontend/missing-error-states.md` — UI components lacked error/empty states
+- `.flux/brain/pitfalls/async/consensus-race-condition.md` — Both models flagged unsynchronized state updates
+- `.flux/brain/pitfalls/security/greptile-auth-gap.md` — Greptile caught missing auth check on new endpoint
 
 ### Feedback Loop
 
 These pitfalls feed back into the worker automatically:
-- Worker reads only the relevant `brain/pitfalls/<area>/` subdirectories during re-anchor (matched to the current task's domain)
-- Worker reads `brain/principles/` for engineering principles that guide implementation
+- Worker reads only the relevant `.flux/brain/pitfalls/<area>/` subdirectories during re-anchor (matched to the current task's domain)
+- Worker reads `.flux/brain/principles/` for engineering principles that guide implementation
 - Future tasks benefit from patterns learned in past epic reviews — without loading irrelevant pitfalls
 - Over time, fewer NEEDS_WORK iterations as the worker learns common mistakes
 - `/flux:meditate` periodically promotes recurring pitfalls into proper principles and prunes one-offs
@@ -940,11 +940,11 @@ Classify the actual issues from reviewer feedback into domains:
 
 The areas where pitfalls were written directly map to friction domains:
 
-- `brain/pitfalls/frontend/` → `frontend`, `css_issues`, `ui_issues`
-- `brain/pitfalls/security/` → `security`, `auth_issues`
-- `brain/pitfalls/api/` → `api`, `api_hallucination`
-- `brain/pitfalls/async/` → `async`, `edge_case_misses`
-- `brain/pitfalls/testing/` → `testing`, `regressions`
+- `.flux/brain/pitfalls/frontend/` → `frontend`, `css_issues`, `ui_issues`
+- `.flux/brain/pitfalls/security/` → `security`, `auth_issues`
+- `.flux/brain/pitfalls/api/` → `api`, `api_hallucination`
+- `.flux/brain/pitfalls/async/` → `async`, `edge_case_misses`
+- `.flux/brain/pitfalls/testing/` → `testing`, `regressions`
 
 #### Build Friction Context
 
@@ -963,7 +963,7 @@ FRICTION_SIGNALS: ["css_issues", "ui_issues"]
 FRICTION_EVIDENCE:
   - Developer: "wtf is this UI? It's still not fully mobile responsive"
   - Reviewer: "Missing viewport meta tag and responsive breakpoints"
-  - Pitfall: brain/pitfalls/frontend/missing-responsive-design.md
+  - Pitfall: .flux/brain/pitfalls/frontend/missing-responsive-design.md
 ```
 
 ### Part 3: Trigger and Output

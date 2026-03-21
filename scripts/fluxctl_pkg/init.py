@@ -54,11 +54,99 @@ from .ralph import find_active_runs
 
 
 # ---------------------------------------------------------------------------
+# Brain scaffold helpers
+# ---------------------------------------------------------------------------
+
+_BRAIN_DIRS = [
+    Path("brain"),
+    Path("brain/business"),
+    Path("brain/codebase"),
+    Path("brain/conventions"),
+    Path("brain/decisions"),
+    Path("brain/pitfalls"),
+    Path("brain/plans"),
+    Path("brain/principles"),
+]
+
+_BRAIN_FILES: dict[Path, str] = {
+    Path("brain/index.md"): """# Brain Index
+
+- [[principles]] — Engineering principles
+- [[business/index]] — Product, team, and domain context
+- [[conventions/index]] — Project-specific conventions
+- [[decisions/index]] — Architectural decisions
+- [[pitfalls/index]] — Generalizable failure patterns
+- [[codebase/index]] — Repo-specific knowledge and gotchas
+- [[plans/index]] — Durable plan references
+""",
+    Path("brain/principles.md"): """# Principles Index
+
+Engineering principles promoted from repeated learnings live in `principles/`.
+Add links here as the vault evolves.
+""",
+    Path("brain/business/index.md"): """# Business Context Index
+
+- [[context]] — Product stage, team structure, and key context
+- [[glossary]] — Domain-specific terminology
+- [[team]] — Team directory
+""",
+    Path("brain/conventions/index.md"): """# Conventions Index
+
+Project-specific implementation patterns and default choices.
+""",
+    Path("brain/decisions/index.md"): """# Decisions Index
+
+Architectural and product decisions with rationale.
+""",
+    Path("brain/pitfalls/index.md"): """# Pitfalls Index
+
+Generalizable failure patterns captured from reviews and root-cause analysis.
+""",
+    Path("brain/codebase/index.md"): """# Codebase Knowledge Index
+
+Repo-specific knowledge, sharp edges, and operational gotchas.
+""",
+    Path("brain/plans/index.md"): """# Plans Index
+
+Durable plan references that are useful beyond a single task loop.
+""",
+}
+
+
+def ensure_brain_layout(repo_root: Path, flux_dir: Path, actions: list[str]) -> None:
+    """Create canonical .flux/brain scaffold."""
+    flux_brain = flux_dir / "brain"
+    legacy_brain = repo_root / "brain"
+
+    if legacy_brain.is_symlink():
+        legacy_brain.unlink()
+        actions.append("removed legacy brain/ symlink")
+
+    if legacy_brain.exists() and not legacy_brain.is_symlink() and not flux_brain.exists():
+        flux_brain.parent.mkdir(parents=True, exist_ok=True)
+        legacy_brain.rename(flux_brain)
+        actions.append("migrated brain/ to .flux/brain/")
+
+    for rel_dir in _BRAIN_DIRS:
+        dir_path = flux_dir / rel_dir
+        if not dir_path.exists():
+            dir_path.mkdir(parents=True)
+            actions.append(f"created .flux/{rel_dir}/")
+
+    for rel_file, content in _BRAIN_FILES.items():
+        file_path = flux_dir / rel_file
+        if not file_path.exists():
+            atomic_write(file_path, content)
+            actions.append(f"created .flux/{rel_file}")
+
+
+# ---------------------------------------------------------------------------
 # cmd_init
 # ---------------------------------------------------------------------------
 
 def cmd_init(args: argparse.Namespace) -> None:
     """Initialize or upgrade .flux/ directory structure (idempotent)."""
+    repo_root = get_repo_root()
     flux_dir = get_flux_dir()
     actions = []
 
@@ -114,6 +202,8 @@ def cmd_init(args: argparse.Namespace) -> None:
         if merged != raw:
             atomic_write_json(config_path, merged)
             actions.append("upgraded config.json (added missing keys)")
+
+    ensure_brain_layout(repo_root, flux_dir, actions)
 
     # Output
     if actions:

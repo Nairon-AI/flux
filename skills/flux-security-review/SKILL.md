@@ -195,6 +195,12 @@ Present findings with:
 - [ ] `validated-findings.json` generated
 - [ ] Results presented with actionable fixes
 
+## Gotchas
+
+- Threat model coverage is part of the review, not an optional extra. If the model is missing or stale, generate or refresh it before trusting the findings.
+- Do not report speculative vulnerabilities as if they are confirmed. Validate exploitability and call out confidence honestly.
+- Security review should stay scoped to the actual diff or audit target. Unbounded fishing trips dilute the output and bury real issues.
+
 ## References
 
 - [STRIDE Threat Modeling](https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)

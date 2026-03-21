@@ -159,6 +159,12 @@ Common CWE mappings for findings:
 | Sensitive Data Exposure  | CWE-200 |
 | Mass Assignment          | CWE-915 |
 
+## Gotchas
+
+- This scan produces candidate findings, not final verdicts. Confirm data flow, framework protections, and existing mitigations before escalating severity.
+- Avoid pattern matching in isolation. A scary sink without reachable untrusted input is usually noise.
+- Keep the output actionable. Too many low-confidence findings train people to ignore the scan entirely.
+
 ## References
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)

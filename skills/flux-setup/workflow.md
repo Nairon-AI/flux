@@ -20,6 +20,7 @@ Use fluxctl init (idempotent - safe to re-run, handles upgrades):
 
 This creates/upgrades:
 - `.flux/` directory structure (epics/, specs/, tasks/)
+- canonical brain vault at `.flux/brain/`
 - `meta.json` with schema version
 - `config.json` with defaults (merges new keys on upgrade)
 
@@ -1151,7 +1152,7 @@ Only include items that were **installed by this setup session** (not items that
 
 ## Step 5b: Business Context (first-time only)
 
-**Skip this step entirely if `brain/business/context.md` already exists** — the business context has already been captured.
+**Skip this step entirely if `.flux/brain/business/context.md` already exists** — the business context has already been captured.
 
 If no business context exists, ask the user a short set of questions to understand the product they're building. This context is used by `/flux:scope` and `/flux:propose` to calibrate estimates, push back on assumptions, and understand domain language.
 
@@ -1170,7 +1171,7 @@ If no business context exists, ask the user a short set of questions to understa
    - Freeform input. If yes, ask them to list the key terms and what they mean in their context.
 
 5. **Team directory**: "Who else works on this product? Names and roles help Flux understand call transcripts and proposals later. For example: 'Sarah — CEO, James — product lead, Alex — frontend engineer.'"
-   - Freeform input. If they provide names: create `brain/business/team.md` with a table.
+   - Freeform input. If they provide names: create `.flux/brain/business/team.md` with a table.
    - If they say it's just them: note "Solo developer" in team.md.
    - If they skip: create a skeleton team.md that gets populated during propose sessions.
 
@@ -1181,10 +1182,10 @@ If no business context exists, ask the user a short set of questions to understa
 **After collecting answers**, create the business context files:
 
 ```bash
-mkdir -p brain/business
+mkdir -p .flux/brain/business
 ```
 
-**Write `brain/business/context.md`:**
+**Write `.flux/brain/business/context.md`:**
 ```markdown
 # Business Context
 
@@ -1204,7 +1205,7 @@ mkdir -p brain/business
 *Last updated: [ISO date]. Updated automatically during /flux:propose sessions.*
 ```
 
-**Write `brain/business/glossary.md`** (if domain terms were provided):
+**Write `.flux/brain/business/glossary.md`** (if domain terms were provided):
 ```markdown
 # Domain Glossary — Ubiquitous Language
 
@@ -1229,7 +1230,7 @@ No domain-specific terms captured yet. This file is automatically enriched durin
 | | | |
 ```
 
-**Write `brain/business/team.md`** (if team members were provided):
+**Write `.flux/brain/business/team.md`** (if team members were provided):
 ```markdown
 # Team Directory
 
@@ -1255,7 +1256,7 @@ If no team members were provided or they said "just me":
 *Updated during /flux:propose sessions when new team members are mentioned.*
 ```
 
-**Write `brain/business/index.md`:**
+**Write `.flux/brain/business/index.md`:**
 ```markdown
 # Business Context Index
 

@@ -11,7 +11,7 @@ user-invocable: false
 
 # Reflect
 
-Review the conversation and persist learnings — to `brain/`, as new skills, to existing skill files, or as structural enforcement.
+Review the conversation and persist learnings — to `.flux/brain/`, as new skills, to existing skill files, or as structural enforcement.
 
 Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto](https://github.com/poteto), with skill extraction adapted from [Claudeception](https://github.com/blader/Claudeception).
 
@@ -31,7 +31,7 @@ $FLUXCTL session-phase set idle
 
 ## Process
 
-1. **Read `brain/index.md`** to understand what notes already exist
+1. **Read `.flux/brain/index.md`** to understand what notes already exist
 2. **Scan the conversation** for:
    - Mistakes made and corrections received
    - User preferences and workflow patterns
@@ -45,7 +45,7 @@ $FLUXCTL session-phase set idle
    - Workarounds discovered through trial-and-error
 3. **Skip** anything trivial or already captured in existing brain files or skills
 4. **Route each learning** to the right destination (see Routing below)
-5. **Update `brain/index.md`** if any brain files were added or removed
+5. **Update `.flux/brain/index.md`** if any brain files were added or removed
 
 ## Routing
 
@@ -55,13 +55,13 @@ Not everything belongs in the brain. Route each learning to where it will have t
 
 For each learning, ask in order:
 
-1. **Can this be a lint rule, script, metadata flag, or runtime check?** → Encode it structurally. See `brain/principles/encode-lessons-in-structure.md`.
+1. **Can this be a lint rule, script, metadata flag, or runtime check?** → Encode it structurally. See `.flux/brain/principles/encode-lessons-in-structure.md`.
 2. **Is this a reusable, non-obvious solution with clear trigger conditions?** → Extract as a new skill (see Skill Extraction below).
 3. **Is this about how an existing skill works?** → Update that skill directly.
-4. **Is this codebase knowledge, a principle, or a gotcha?** → Write to `brain/`.
+4. **Is this codebase knowledge, a principle, or a gotcha?** → Write to `.flux/brain/`.
 5. **Is this follow-up work?** → File as a backlog item via `fluxctl`.
 
-### Brain files (`brain/`)
+### Brain files (`.flux/brain/`)
 
 Codebase knowledge, principles, gotchas — anything that informs future sessions. This is the default destination. Use the `flux-brain` skill for writing conventions.
 
@@ -89,44 +89,51 @@ When a learning meets ALL of these criteria, extract it as a standalone skill:
 
 1. **Check for existing skills** — search `.claude/skills/` and `~/.claude/skills/` for related skills before creating a new one. Update existing skills if the trigger overlaps.
 
-2. **Create the skill file** at `.claude/skills/[skill-name]/SKILL.md`:
+2. **Read [docs/skills-best-practices.md](../../docs/skills-best-practices.md)** before writing or revising a skill. Follow it when deciding what belongs in `SKILL.md` versus supporting files.
+
+3. **Create the skill folder** at `.claude/skills/[skill-name]/`. Start with `SKILL.md`, then add `references/`, `scripts/`, or `assets/` only when they reduce repetition or keep the main file lean.
+
+4. **Create the skill file** at `.claude/skills/[skill-name]/SKILL.md` with this minimum structure:
 
 ```markdown
 ---
 name: [descriptive-kebab-case-name]
-description: |
-  [Precise description including: (1) exact use cases, (2) trigger conditions
-  like specific error messages or symptoms, (3) what problem this solves.
-  Be specific enough that semantic matching surfaces this skill when relevant.]
-version: 1.0.0
-date: [YYYY-MM-DD]
+description: Use when [specific trigger, symptom, command, or scenario]. Handles [distinctive problem].
 ---
 
 # [Skill Name]
 
-## Problem
-[What this skill addresses]
+## When To Use
+[Exact symptoms, errors, or requests that should trigger this skill]
 
-## Trigger Conditions
-[When to use — exact error messages, symptoms, scenarios]
+## Workflow
+[Only the non-obvious steps, decision rules, and repo-specific constraints]
 
-## Solution
-[Step-by-step solution]
+## Gotchas
+[Repeated failure modes, misleading errors, ordering constraints, footguns]
 
 ## Verification
 [How to confirm it worked]
-
-## Notes
-[Caveats, edge cases, related considerations]
 ```
 
-3. **Description quality matters** — the description field drives Claude's semantic matching. Include specific error messages, framework names, and action phrases ("Use when...", "Fixes...").
+5. **Keep `SKILL.md` lean** — do not inline long API docs, giant example sets, or boilerplate the model can infer. Move them to sibling files and link them directly from `SKILL.md`.
+
+6. **Prefer scripts for deterministic work** — if the skill keeps rebuilding the same shell, JSON shaping, or parsing logic, store that under `scripts/` instead of describing it repeatedly in prose.
+
+7. **Description quality matters** — the description field drives skill matching. Include the trigger, not a human-oriented summary. Specific error messages, commands, and scenario phrases are high-signal.
 
 **Don't extract when:**
 - The solution is a standard documentation lookup
 - It's project-specific knowledge (use brain vault instead)
 - It duplicates existing documentation
 - The solution hasn't been verified
+
+## Gotchas
+
+- Do not create a new skill when updating an existing one would cover the same trigger.
+- Do not dump project-specific knowledge into a reusable skill. Route that to `.flux/brain/`.
+- Do not restate generic engineering advice the model already knows. Capture non-obvious triggers, constraints, and failure modes.
+- If the lesson can become a script, lint rule, config flag, or runtime guard, prefer that over more prose.
 
 ### Skill improvements (`skills/<skill>/`)
 

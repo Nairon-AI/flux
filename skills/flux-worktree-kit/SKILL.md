@@ -29,6 +29,12 @@ Safety notes:
 - fetch from `origin` only when base looks like a branch
 - Worktrees live under `.worktrees/`
 
+## Gotchas
+
+- `cleanup` is intentionally conservative, but it still removes the worktree directory when safe. Treat ignored files inside the worktree as disposable unless they are committed or copied elsewhere.
+- `copy-env` is convenience, not secret management. It refuses unsafe paths and non-registered worktrees on purpose.
+- Do not bypass the manager script with ad hoc `git worktree` commands if Flux expects the registry and layout under `.worktrees/` to stay consistent.
+
 
 ---
 

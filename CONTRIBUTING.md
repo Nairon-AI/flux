@@ -92,3 +92,13 @@ If these requirements feel too high, this project isn't for you. If you genuinel
 ## Questions?
 
 Join our [Discord](https://discord.gg/CEQMd6fmXk) and ask in the #contributors channel.
+
+## Skill Changes
+
+If your PR adds or materially rewrites files under `skills/`, run:
+
+```bash
+python3 scripts/validate_skills.py
+```
+
+Authoring rules live in [docs/skills-best-practices.md](docs/skills-best-practices.md).
