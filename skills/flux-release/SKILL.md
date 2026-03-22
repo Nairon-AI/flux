@@ -79,36 +79,53 @@ git push origin "$BRANCH"
 
 ### Step 5: Create GitHub Release
 
-Build a structured release summary before creating the release. **Do NOT use `--generate-notes`** — write a proper "What's New" section.
+Build release notes that explain **why** each change matters, not just what files changed. **Do NOT use `--generate-notes`**.
 
-1. Get all commits since the last release tag:
+1. Get merged PRs since last release:
 ```bash
 LAST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-git log "$LAST_TAG..HEAD" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]"
+TAG_DATE=$(git log -1 --format=%aI "$LAST_TAG")
+gh pr list --state merged --base main --search "merged:>=${TAG_DATE}" --limit 50 --json number,title,body
 ```
 
-2. Write release notes in this format:
+2. For each PR, extract the "What this PR does" section from its body. Use that as the description — it already explains the change in the author's own words.
+
+3. Write release notes in this format:
 ```markdown
 ## What's New
 
-### [Primary feature/change — descriptive heading]
+### [Descriptive heading that explains the value, not the implementation] (#PR)
 
-[2-4 sentences explaining what changed, why it matters, and how it works.
-Be specific — name the files, commands, or behaviors that changed.
-This is what users see first. Make it count.]
+[2-4 sentences explaining what changed and WHY it matters to users.
+Lead with the problem being solved, then explain how this release addresses it.
+Be specific — name the skills, commands, or behaviors that changed.
+This is what users read first. Make it worth reading.]
 
-**Key changes:**
-- [Bullet point for each significant change]
-- [Include concrete details, not vague summaries]
+### [Second feature heading] (#PR)
 
-## What's Changed
-* [commit message 1]
-* [commit message 2]
+[Same structure — problem, solution, impact.]
 
-**Full Changelog**: https://github.com/Nairon-AI/flux/compare/$LAST_TAG...v$VERSION
+---
+
+## PRs
+
+- #N — PR title
+- #N — PR title
+
+## Full Changelog
+
+https://github.com/Nairon-AI/flux/compare/$LAST_TAG...v$VERSION
 ```
 
-3. Save notes to a temp file and create the release:
+**Writing guidelines:**
+- Lead each section with the **problem** ("Claude ignores testing instructions"), then the **solution** ("Conditional blocks give Claude a clearer signal")
+- Never list "Files Changed" — users don't care which `.md` files were edited
+- Never dump raw commit messages as descriptions — rewrite them as user-facing prose
+- Group by PRs, not by commit type — each PR gets its own heading with a narrative
+- Skip chore/CI/version-bump PRs entirely
+- Use `---` between major sections for visual separation
+
+4. Save notes and create the release:
 ```bash
 gh release create "v$VERSION" --target "$BRANCH" --title "$TITLE" --notes-file /tmp/release-notes.md
 ```
