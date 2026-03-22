@@ -65,6 +65,10 @@ Use `AskUserQuestion` with the pre-selected option first:
 2. Find the most appropriate section (or create one if needed)
 3. Append the rule as a concise bullet point
 4. If there's a `<!-- BEGIN FLUX -->` section, add it inside that section under the right heading
+5. **Conditional block check**: If the rule is task-specific (only applies when testing, deploying, writing APIs, etc.), check if an appropriate `<important if="...">` block already exists. If so, add the rule inside it. If the CLAUDE.md is long (>50 lines) and no matching block exists, create one. Examples:
+   - "always use `createTestApp()` helper" → add inside `<important if="you are writing or modifying tests">`
+   - "API routes must validate auth" → add inside `<important if="you are writing API routes or server actions">`
+   - "use pnpm, not npm" → add as a regular bullet (applies to every task, don't wrap)
 
 ### Step 3b: If brain vault selected
 

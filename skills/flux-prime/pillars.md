@@ -84,11 +84,14 @@ Clear docs that tell agents how the project works.
 | DC4 | Build commands documented | How to build/run in README or CLAUDE.md |
 | DC5 | Test commands documented | How to run tests documented |
 | DC6 | Architecture documented | ARCHITECTURE.md, ADRs, or docs/ with structure |
+| DC7 | Conditional blocks | Task-specific CLAUDE.md sections use `<important if>` tags (only scored if CLAUDE.md >50 lines) |
 
 ### Scoring
 - ✅ 80%+: Agents can self-serve
 - ⚠️ 40-79%: Basic docs present
 - ❌ <40%: Agents must guess
+
+**Note on DC7**: Only score this criterion if CLAUDE.md exists AND is longer than ~50 lines. Short files don't need conditional blocks. If CLAUDE.md is short, auto-pass DC7.
 
 ---
 

@@ -302,6 +302,8 @@ Informational only. No fixes offered — address independently if desired.
 | SV2: Formatter | ✅/❌ | [details] |
 | ... | ... | ... |
 
+Note: For Pillar 4 (Documentation), include DC7 (Conditional blocks) — auto-pass if CLAUDE.md is short (<50 lines) or doesn't exist yet.
+
 [Repeat for each pillar]
 
 ## Top Recommendations (Agent Readiness)
@@ -361,11 +363,17 @@ Ask ONE question per category that has recommendations. Skip categories with no 
       {
         "label": "Create .env.example",
         "description": "Template with [N] detected env vars. Prevents agents from guessing required configuration."
+      },
+      {
+        "label": "Add conditional blocks to CLAUDE.md",
+        "description": "Wrap task-specific sections in <important if> tags so Claude applies instructions more reliably. Only offered if CLAUDE.md >50 lines."
       }
     ]
   }]
 }
 ```
+
+If "Add conditional blocks" is selected, in Phase 6 run `/flux:improve-claude-md` to restructure the file.
 
 **Question 2: Tooling (if gaps exist)**
 

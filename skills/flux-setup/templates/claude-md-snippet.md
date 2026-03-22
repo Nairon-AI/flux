@@ -28,6 +28,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - Before scoping or coding, reconcile the user's message with Flux state.
 - Do not silently ignore active Flux state just because the user phrased the request casually.
 
+<important if="you are routing a request using Flux session state">
 **Routing rules:**
 - If `session-state` says `needs_prime`: run `/flux:prime` first. Do not start scope or implementation before prime completes.
 - If `session-state` says `resume_scope`: continue the current scoped objective unless the user clearly wants a new one.
@@ -35,7 +36,9 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If `session-state` says `needs_completion_review`: route to review before claiming the work is fully done.
 - If `session-state` says `fresh_session_no_objective`: start `/flux:scope`.
 - If the user clearly starts a new objective while another is active, ask whether to switch objectives, then use `.flux/bin/fluxctl objective switch <epic-id>` when needed.
+</important>
 
+<important if="you are starting a new scope or scoping a feature, bug, or refactor">
 **Scoping rules:**
 - `/flux:scope` is the full scoping workflow: Start -> Discover -> Define -> Develop -> Deliver -> Handoff.
 - Prime is the first workflow step in a repository. If the repo is not primed yet, do that automatically before starting scope.
@@ -46,6 +49,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - are they implementing it with AI or handing it to an engineer?
 - During scoping, show progress with `.flux/bin/fluxctl scope-status`.
 - Persist phase changes and artifacts through `fluxctl` instead of relying on chat memory alone.
+</important>
 
 **Quick commands:**
 ```bash
@@ -66,17 +70,16 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - Use `.flux/bin/fluxctl` for ALL task tracking
 - Do NOT create markdown TODOs or use TodoWrite
 - Re-anchor (re-read spec + status) before every task
-- Treat `/flux:scope` as the full scoping workflow: Start -> Discover -> Define -> Develop -> Deliver -> Handoff
-- Ask the user how deep to go (`shallow` vs `deep`) and how technical they are when starting a new scope
-- If the user asks "where are we?" or seems unsure what comes next, run `.flux/bin/fluxctl scope-status`
 - If `.flux/context/agentmap.yaml` exists, use it as a fast structural overview of the repo before broad file exploration
 - Treat the agentmap as navigation aid only. Still read the actual files before making changes
 - If the `fff` MCP is available, prefer its tools for file search operations instead of default Glob/find — it's faster, supports fuzzy matching, and ranks by access frecency
 
+<important if="you are troubleshooting Flux commands or encountering errors">
 **Troubleshooting:**
 - If Flux commands fail or return "Unknown skill", consult the official README: https://github.com/Nairon-AI/flux#troubleshooting
 - Follow the troubleshooting steps exactly — do not guess or improvise fixes
 - If the documented fixes don't work, the user should create a GitHub issue: https://github.com/Nairon-AI/flux/issues
+</important>
 
 **More info:** `.flux/bin/fluxctl --help` or read `.flux/usage.md`
 <!-- END FLUX -->

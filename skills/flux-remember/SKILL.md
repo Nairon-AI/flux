@@ -90,6 +90,7 @@ The flux-brain skill handles:
 - Not every "remember" belongs in `CLAUDE.md`. Short every-task rules go there; contextual or explanatory knowledge belongs in `.flux/brain/`.
 - The user's phrasing is a clue, not the final storage schema. Classify first, then delegate to `flux-brain` for the actual durable write.
 - Avoid storing one-off session state as memory. If it will not matter in future sessions, do not persist it.
+- When writing to CLAUDE.md, task-specific rules should go inside existing `<important if>` conditional blocks when a matching one exists. See flux-brain Step 3a for details.
 
 ## Examples
 
