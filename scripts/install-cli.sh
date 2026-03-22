@@ -81,7 +81,7 @@ echo "$ $INSTALL_CMD"
 echo ""
 
 # Run the command
-if eval "$INSTALL_CMD"; then
+if bash -c "$INSTALL_CMD"; then
     echo ""
     echo "✓ Installation completed"
     

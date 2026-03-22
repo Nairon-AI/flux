@@ -971,5 +971,4 @@ fluxctl show fn-1.1 --json | jq '.evidence.commits'
 
 - [fluxctl CLI](fluxctl.md)
 - [Flux README](../README.md)
-- [flux-tui](../../../flux-tui/README.md)
 - Test scripts: `plugins/flux/scripts/ralph_e2e_*.sh`

@@ -4,6 +4,12 @@
 
 set -e
 
+# Check if jq is available
+if ! command -v jq &> /dev/null; then
+    echo '{"error": "jq is required but not installed. Install with: brew install jq"}'
+    exit 1
+fi
+
 # Output JSON
 output_json() {
     echo "$1"

@@ -320,7 +320,8 @@ if [[ "${RP_PREFLIGHT:-0}" == "1" ]]; then
   cat > "$preflight_msg" <<'EOF'
 Smoke preflight: confirm chat pipeline.
 EOF
-  eval "$(retry_cmd "rp setup-review" 180 2 "$FLUXCTL" rp setup-review --repo-root "$REPO_ROOT" --summary "Smoke preflight")"
+  _setup_out="$(retry_cmd "rp setup-review" 180 2 "$FLUXCTL" rp setup-review --repo-root "$REPO_ROOT" --summary "Smoke preflight")"
+  source <(printf '%s\n' "$_setup_out")
   [[ -n "$W" && -n "$T" ]] || fail "setup-review failed: W=$W T=$T"
   retry_cmd "rp chat-send" 180 2 "$FLUXCTL" rp chat-send --window "$W" --tab "$T" --message-file "$preflight_msg" --new-chat --chat-name "Smoke Preflight" >/dev/null
 fi
