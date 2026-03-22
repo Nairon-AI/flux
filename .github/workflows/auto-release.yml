@@ -116,10 +116,15 @@ jobs:
           fi
 
           # ── 1. Get merged PRs since last release (the source of truth) ──
-          # Extract PR numbers from commit messages in the range.
-          # This avoids GitHub search indexing delay — the PR that just
-          # merged and triggered this workflow may not be in the search
-          # index yet, but its commit message (with #NNN) is in git.
+          # Collect the exact commit SHAs in the range so we can verify
+          # each PR's merge commit is actually in this release, not an
+          # older reference like "follow up to #50".
+          RANGE_SHAS=$(git log "$RANGE" --pretty=format:"%H" 2>/dev/null || echo "")
+
+          # Extract candidate PR numbers from commit subject lines.
+          # Uses REST API (gh pr view) instead of search API to avoid
+          # GitHub's search indexing delay — the just-merged PR may not
+          # be indexed yet.
           PR_NUMS=$(git log "$RANGE" --pretty=format:"%s" \
             | grep -oE '#[0-9]+' | tr -d '#' | sort -un || echo "")
 
@@ -129,14 +134,23 @@ jobs:
             FIRST=true
             for NUM in $PR_NUMS; do
               ITEM=$(gh pr view "$NUM" --repo "$REPO" \
-                --json number,title,body,labels,state 2>/dev/null || echo "")
+                --json number,title,body,labels,state,mergeCommit 2>/dev/null || echo "")
               [ -z "$ITEM" ] && continue
-              # Only include merged PRs targeting main
+
+              # Must be a merged PR
               STATE=$(echo "$ITEM" | jq -r '.state // ""' 2>/dev/null)
-              if [ "$STATE" = "MERGED" ] || [ -z "$STATE" ]; then
-                $FIRST && FIRST=false || ITEMS="${ITEMS},"
-                ITEMS="${ITEMS}${ITEM}"
+              [ "$STATE" != "MERGED" ] && continue
+
+              # Verify the PR's merge commit is actually in this range.
+              # This filters out stale references to older PRs (e.g.,
+              # "follow up to #50" where #50 was released long ago).
+              MERGE_SHA=$(echo "$ITEM" | jq -r '.mergeCommit.oid // ""' 2>/dev/null)
+              if [ -n "$MERGE_SHA" ] && [ -n "$RANGE_SHAS" ]; then
+                echo "$RANGE_SHAS" | grep -q "$MERGE_SHA" || continue
               fi
+
+              $FIRST && FIRST=false || ITEMS="${ITEMS},"
+              ITEMS="${ITEMS}${ITEM}"
             done
             ITEMS="${ITEMS}]"
             PR_JSON="$ITEMS"
