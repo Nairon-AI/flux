@@ -97,20 +97,20 @@ Choose structure based on complexity:
 
 **Simple skill** (< 200 lines of instruction):
 ```
-skills/<name>/
+.claude/skills/<name>/
 └── SKILL.md
 ```
 
 **Medium skill** (200-400 lines of instruction):
 ```
-skills/<name>/
+.claude/skills/<name>/
 ├── SKILL.md          (overview, workflow outline, gotchas)
 └── workflow.md       (detailed step-by-step)
 ```
 
 **Complex skill** (400+ lines of instruction):
 ```
-skills/<name>/
+.claude/skills/<name>/
 ├── SKILL.md          (overview, routing, gotchas)
 ├── workflow.md       (main execution steps)
 ├── examples.md       (concrete input/output examples)
@@ -205,7 +205,7 @@ Scripts go in `scripts/` and must be executable and tested.
 ### Step 3.1: Run the Validator
 
 ```bash
-python3 "$PLUGIN_ROOT/scripts/validate_skills.py" skills/<name>/
+python3 "$PLUGIN_ROOT/scripts/validate_skills.py" .claude/skills/<name>/
 ```
 
 **If errors**: Fix them automatically. Common fixes:

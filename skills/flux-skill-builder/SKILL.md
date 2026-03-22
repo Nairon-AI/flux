@@ -17,16 +17,17 @@ Autonomously create production-grade Claude Code skills from a short description
 
 ## Session Phase Tracking
 
-On entry:
+On entry, save the current phase and set the new one:
 ```bash
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
 [ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+PREV_PHASE=$($FLUXCTL session-phase get 2>/dev/null || echo "idle")
 $FLUXCTL session-phase set skill_build
 ```
-On completion:
+On completion, restore the previous phase (not blindly reset to idle — this skill may be invoked from reflect or improve):
 ```bash
-$FLUXCTL session-phase set idle
+$FLUXCTL session-phase set "$PREV_PHASE"
 ```
 
 ## Input
@@ -71,6 +72,8 @@ Read [pipeline.md](pipeline.md) for the detailed autonomous execution pipeline.
 - **Do not over-railroad.** Only use rigid step sequences when deviating genuinely breaks things. For judgment-heavy tasks, give principles and examples, not exact scripts.
 - **Validate before delivering.** Always run `python3 scripts/validate_skills.py skills/<name>/` before presenting the skill. Fix errors automatically. Present warnings to the user.
 - **Check for existing skills first.** Before creating a new skill, scan `~/.claude/skills/` and the repo's `.claude/skills/` for overlap. Extend rather than duplicate.
+- **Validate the install path, not the repo path.** Run `validate_skills.py` against `.claude/skills/<name>/` (where the skill is installed), not `skills/<name>/` (which is the Flux plugin's own skills directory).
+- **Restore session phase on completion.** This skill may be invoked from reflect or improve. Save the previous phase on entry and restore it on exit — do not blindly reset to `idle`.
 
 ---
 
