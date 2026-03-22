@@ -87,40 +87,9 @@ When a learning meets ALL of these criteria, extract it as a standalone skill:
 
 **Process:**
 
-1. **Check for existing skills** — search `.claude/skills/` and `~/.claude/skills/` for related skills before creating a new one. Update existing skills if the trigger overlaps.
+Invoke the `flux-skill-builder` skill autonomously. Pass it the learning context — what was discovered, why it's reusable, and the verified solution from this session. The skill builder handles research, drafting, validation (`validate_skills.py`), and installation to `.claude/skills/<name>/`.
 
-2. **Read [docs/skills-best-practices.md](../../docs/skills-best-practices.md)** before writing or revising a skill. Follow it when deciding what belongs in `SKILL.md` versus supporting files.
-
-3. **Create the skill folder** at `.claude/skills/[skill-name]/`. Start with `SKILL.md`, then add `references/`, `scripts/`, or `assets/` only when they reduce repetition or keep the main file lean.
-
-4. **Create the skill file** at `.claude/skills/[skill-name]/SKILL.md` with this minimum structure:
-
-```markdown
----
-name: [descriptive-kebab-case-name]
-description: Use when [specific trigger, symptom, command, or scenario]. Handles [distinctive problem].
----
-
-# [Skill Name]
-
-## When To Use
-[Exact symptoms, errors, or requests that should trigger this skill]
-
-## Workflow
-[Only the non-obvious steps, decision rules, and repo-specific constraints]
-
-## Gotchas
-[Repeated failure modes, misleading errors, ordering constraints, footguns]
-
-## Verification
-[How to confirm it worked]
-```
-
-5. **Keep `SKILL.md` lean** — do not inline long API docs, giant example sets, or boilerplate the model can infer. Move them to sibling files and link them directly from `SKILL.md`.
-
-6. **Prefer scripts for deterministic work** — if the skill keeps rebuilding the same shell, JSON shaping, or parsing logic, store that under `scripts/` instead of describing it repeatedly in prose.
-
-7. **Description quality matters** — the description field drives skill matching. Include the trigger, not a human-oriented summary. Specific error messages, commands, and scenario phrases are high-signal.
+Do NOT manually create skill files. The skill builder encodes all best practices from `docs/skills-best-practices.md` and produces validated, trigger-optimized skills with proper progressive disclosure.
 
 **Don't extract when:**
 - The solution is a standard documentation lookup
