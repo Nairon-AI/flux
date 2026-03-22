@@ -99,12 +99,15 @@ jobs:
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
           echo "Next version: v$NEXT ($BUMP bump)"
 
-      - name: Build release summary
+      - name: Build release notes
         if: steps.analyze.outputs.release_needed == 'true'
         id: notes
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           TAG="${{ steps.last_tag.outputs.tag }}"
           VERSION="${{ steps.version.outputs.version }}"
+          REPO="${{ github.repository }}"
 
           if [ -z "$TAG" ]; then
             RANGE="HEAD"
@@ -112,90 +115,123 @@ jobs:
             RANGE="${TAG}..HEAD"
           fi
 
-          # Collect commit subjects and bodies (skip chore/ci)
-          SUBJECTS=$(git log "$RANGE" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]" | grep -v "^$" || true)
-
-          # Get the full commit body for the primary feature (used for description)
-          PRIMARY_HASH=$(git log "$RANGE" --pretty=format:"%H %s" | grep -iE '^[a-f0-9]+ feat(\(.+\))?:' | head -1 | cut -d' ' -f1 || true)
-          PRIMARY_BODY=""
-          if [ -n "$PRIMARY_HASH" ]; then
-            PRIMARY_BODY=$(git log -1 "$PRIMARY_HASH" --pretty=format:"%b" | head -20)
+          # ── 1. Get merged PRs since last release (the source of truth) ──
+          TAG_DATE=""
+          if [ -n "$TAG" ]; then
+            TAG_DATE=$(git log -1 --format=%aI "$TAG" 2>/dev/null || echo "")
           fi
 
-          # Get changed files for context
-          FILES_CHANGED=$(git diff --name-only "$TAG..HEAD" 2>/dev/null | grep -v "^\.github" | head -15 || true)
-          FILE_COUNT=$(git diff --stat "$TAG..HEAD" 2>/dev/null | tail -1 || true)
+          PR_JSON="[]"
+          if [ -n "$TAG_DATE" ]; then
+            PR_JSON=$(gh pr list --repo "$REPO" --state merged --base main \
+              --search "merged:>=${TAG_DATE}" --limit 50 \
+              --json number,title,body,labels \
+              2>/dev/null || echo "[]")
+          fi
 
-          # Build "What's New" with proper structure
+          PR_COUNT=$(echo "$PR_JSON" | jq 'length')
+
+          # ── 2. Classify PRs ──
+          FEAT_PRS=""
+          FIX_PRS=""
+          DOC_PRS=""
+          OTHER_PRS=""
+
+          for i in $(seq 0 $((PR_COUNT - 1))); do
+            PR_TITLE=$(echo "$PR_JSON" | jq -r ".[$i].title")
+            PR_NUM=$(echo "$PR_JSON" | jq -r ".[$i].number")
+            PR_BODY=$(echo "$PR_JSON" | jq -r ".[$i].body // \"\"")
+
+            # Skip version bumps and CI noise
+            echo "$PR_TITLE" | grep -qiE 'bump version|skip ci|^release:' && continue
+
+            # Extract the "What this PR does" section from PR body as the description
+            PR_DESC=""
+            if [ -n "$PR_BODY" ]; then
+              PR_DESC=$(echo "$PR_BODY" | sed -n '/## What this PR does/,/^## /{/^## What this PR does/d;/^## /d;p;}' | sed '/^$/d' | sed 's/<!-- .* -->//' | sed '/^$/d' | head -5)
+            fi
+
+            # Clean title — strip conventional commit prefix for display
+            CLEAN_TITLE=$(echo "$PR_TITLE" | sed -E 's/^(feat|fix|docs|refactor|chore|ci|test|perf|style|build)(\([^)]*\))?[!]?:\s*//')
+
+            # Build entry: title + description
+            ENTRY="### ${CLEAN_TITLE} (#${PR_NUM})\n\n"
+            if [ -n "$PR_DESC" ]; then
+              ENTRY="${ENTRY}${PR_DESC}\n\n"
+            fi
+
+            # Classify by conventional commit prefix in PR title
+            if echo "$PR_TITLE" | grep -qiE '^feat(\(.+\))?[!]?:'; then
+              FEAT_PRS="${FEAT_PRS}${ENTRY}"
+            elif echo "$PR_TITLE" | grep -qiE '^fix(\(.+\))?[!]?:'; then
+              FIX_PRS="${FIX_PRS}${ENTRY}"
+            elif echo "$PR_TITLE" | grep -qiE '^docs(\(.+\))?:'; then
+              DOC_PRS="${DOC_PRS}${ENTRY}"
+            else
+              OTHER_PRS="${OTHER_PRS}${ENTRY}"
+            fi
+          done
+
+          # ── 3. Fallback: if no PRs found, use commits ──
+          if [ "$PR_COUNT" -eq 0 ] || [ -z "${FEAT_PRS}${FIX_PRS}${DOC_PRS}${OTHER_PRS}" ]; then
+            SUBJECTS=$(git log "$RANGE" --pretty=format:"%s" | grep -v "chore: bump version" | grep -v "\[skip ci\]" | grep -v "^$" || true)
+
+            while IFS= read -r msg; do
+              [ -z "$msg" ] && continue
+              CLEAN=$(echo "$msg" | sed -E 's/^(feat|fix|docs|refactor|chore|ci|test|perf|style|build)(\([^)]*\))?[!]?:\s*//')
+              if echo "$msg" | grep -qiE '^feat(\(.+\))?:'; then
+                FEAT_PRS="${FEAT_PRS}### ${CLEAN}\n\n"
+              elif echo "$msg" | grep -qiE '^fix(\(.+\))?:'; then
+                FIX_PRS="${FIX_PRS}### ${CLEAN}\n\n"
+              elif echo "$msg" | grep -qiE '^docs(\(.+\))?:'; then
+                DOC_PRS="${DOC_PRS}### ${CLEAN}\n\n"
+              else
+                OTHER_PRS="${OTHER_PRS}### ${CLEAN}\n\n"
+              fi
+            done <<< "$SUBJECTS"
+          fi
+
+          # ── 4. Assemble release notes ──
           BODY="## What's New\n\n"
 
-          # Group commits by type
-          FEATS=""
-          FIXES=""
-          OTHERS=""
-          while IFS= read -r msg; do
-            [ -z "$msg" ] && continue
-            if echo "$msg" | grep -qiE '^feat(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^feat([^)]*)?: //' | sed 's/^feat: //')
-              FEATS="${FEATS}- **${CLEAN}**\n"
-            elif echo "$msg" | grep -qiE '^fix(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^fix([^)]*)?: //' | sed 's/^fix: //')
-              FIXES="${FIXES}- ${CLEAN}\n"
-            elif echo "$msg" | grep -qiE '^revert(\(.+\))?:'; then
-              CLEAN=$(echo "$msg" | sed 's/^revert([^)]*)?: //' | sed 's/^revert: //')
-              OTHERS="${OTHERS}- ${CLEAN}\n"
-            fi
-          done <<< "$SUBJECTS"
-
-          if [ -n "$FEATS" ]; then
-            BODY="${BODY}### Features\n\n${FEATS}\n"
+          if [ -n "$FEAT_PRS" ]; then
+            BODY="${BODY}${FEAT_PRS}"
           fi
 
-          # Add commit body as description if available
-          if [ -n "$PRIMARY_BODY" ]; then
-            BODY="${BODY}${PRIMARY_BODY}\n\n"
+          if [ -n "$FIX_PRS" ]; then
+            BODY="${BODY}---\n\n## Bug Fixes\n\n${FIX_PRS}"
           fi
 
-          if [ -n "$FIXES" ]; then
-            BODY="${BODY}### Fixes\n\n${FIXES}\n"
-          fi
-          if [ -n "$OTHERS" ]; then
-            BODY="${BODY}### Other Changes\n\n${OTHERS}\n"
+          if [ -n "$DOC_PRS" ]; then
+            BODY="${BODY}---\n\n## Documentation\n\n${DOC_PRS}"
           fi
 
-          # Add files changed summary
-          if [ -n "$FILES_CHANGED" ]; then
-            BODY="${BODY}### Files Changed\n\n"
-            while IFS= read -r f; do
-              [ -z "$f" ] && continue
-              BODY="${BODY}- \`${f}\`\n"
-            done <<< "$FILES_CHANGED"
-            if [ -n "$FILE_COUNT" ]; then
-              BODY="${BODY}\n${FILE_COUNT}\n"
-            fi
-            BODY="${BODY}\n"
+          if [ -n "$OTHER_PRS" ]; then
+            BODY="${BODY}---\n\n## Other\n\n${OTHER_PRS}"
           fi
 
-          # Add full commit list
-          BODY="${BODY}## What's Changed\n\n"
-          while IFS= read -r msg; do
-            [ -z "$msg" ] && continue
-            BODY="${BODY}* ${msg}\n"
-          done <<< "$SUBJECTS"
+          # ── 5. PR list ──
+          BODY="${BODY}---\n\n## PRs\n\n"
+          for i in $(seq 0 $((PR_COUNT - 1))); do
+            PR_TITLE=$(echo "$PR_JSON" | jq -r ".[$i].title")
+            PR_NUM=$(echo "$PR_JSON" | jq -r ".[$i].number")
+            echo "$PR_TITLE" | grep -qiE 'bump version|skip ci|^release:' && continue
+            BODY="${BODY}- #${PR_NUM} — ${PR_TITLE}\n"
+          done
 
           if [ -n "$TAG" ]; then
-            BODY="${BODY}\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${TAG}...v${VERSION}"
+            BODY="${BODY}\n## Full Changelog\n\nhttps://github.com/${REPO}/compare/${TAG}...v${VERSION}\n"
           fi
 
-          # Write to file to avoid escaping issues
+          # Write notes
           echo -e "$BODY" > /tmp/release-notes.md
 
-          # Generate a title from the primary feature commit
+          # ── 6. Generate title from primary feature PR ──
           TITLE="v${VERSION}"
-          FIRST_FEAT=$(echo "$SUBJECTS" | grep -iE '^feat(\(.+\))?:' | head -1 | sed 's/^feat([^)]*)?: //' | sed 's/^feat: //' || true)
-          if [ -n "$FIRST_FEAT" ]; then
-            # Capitalize first letter and truncate to 60 chars
-            SHORT=$(echo "$FIRST_FEAT" | sed 's/^./\U&/' | cut -c1-60)
+          FIRST_FEAT_TITLE=$(echo "$PR_JSON" | jq -r '[.[] | select(.title | test("^feat"; "i"))][0].title // ""')
+          if [ -n "$FIRST_FEAT_TITLE" ] && [ "$FIRST_FEAT_TITLE" != "" ]; then
+            SHORT=$(echo "$FIRST_FEAT_TITLE" | sed -E 's/^feat(\([^)]*\))?[!]?:\s*//' | cut -c1-60)
+            SHORT=$(echo "$SHORT" | sed 's/^./\U&/')
             TITLE="v${VERSION} — ${SHORT}"
           fi
           echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
