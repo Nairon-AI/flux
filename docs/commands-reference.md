@@ -245,6 +245,17 @@ Flux classifies the content and asks you to confirm the destination before writi
 
 ---
 
+## Security
+
+| Command | Usage | Purpose |
+|---------|-------|---------|
+| `/flux:security-scan` | `/flux:security-scan [PR #N \| commit X..Y \| staged \| last N]` | Scan code changes for security vulnerabilities using STRIDE threat modeling |
+| `/flux:security-review` | `/flux:security-review [--mode pr\|full\|staged] [--severity high]` | Comprehensive security review with STRIDE analysis and vulnerability validation |
+| `/flux:threat-model` | `/flux:threat-model [--compliance SOC2,GDPR] [--update]` | Generate a STRIDE-based security threat model for the repository |
+| `/flux:vuln-validate` | `/flux:vuln-validate [finding IDs] [--severity high]` | Validate security findings for exploitability and generate proof-of-concept |
+
+---
+
 ## Utilities
 
 <!-- TODO: Add video showing prime, sync, ralph -->
@@ -258,6 +269,9 @@ Flux classifies the content and asks you to confirm the destination before writi
 | `/flux:prime` | `/flux:prime [--report-only\|--fix-all\|path]` | Run readiness audit and optional fixes |
 | `/flux:desloppify` | `/flux:desloppify [scan\|status\|next\|plan]` | Systematic codebase quality improvement |
 | `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
+| `/flux:contribute` | `/flux:contribute <issue description>` | Report a Flux bug and create a PR to fix it |
+| `/flux:skill-builder` | `/flux:skill-builder <what the skill should do>` | Autonomously create production-grade Claude Code skills from a brief description |
+| `/flux:upgrade` | `/flux:upgrade` | Upgrade Flux plugin and optionally update project setup |
 | `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
 | `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |
 

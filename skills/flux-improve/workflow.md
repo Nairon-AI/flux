@@ -440,6 +440,21 @@ Guidance:
 - If session analysis is disabled or sparse, say so explicitly and still provide best-effort suggestions from environment context.
 - If data is too limited, print: `Not enough signal yet - run /flux:reflect at end of sessions, then rerun /flux:improve.`
 
+### Auto-Build Skills from Behavioral Breakdown
+
+After generating the "What should become skills" list, **autonomously build each identified skill** by invoking the `flux-skill-builder` skill for each entry. Do not just suggest — create.
+
+**Guards:**
+- **Sparse data**: If the behavioral breakdown produced "Not enough signal yet" or has zero concrete skill candidates, skip auto-build entirely. Do not fabricate skills from insufficient data.
+- **Cap**: Build at most **3 skills** per improve session. If more candidates exist, build the top 3 by impact and list the rest as suggestions for a future `/flux:improve` run.
+
+For each candidate (up to 3):
+1. Check `.claude/skills/` for existing overlap. If a skill already covers the workflow, skip it.
+2. Invoke `flux-skill-builder` with the identified workflow as input. The builder handles research, drafting, validation, and installation to `.claude/skills/<name>/`.
+3. Report what was created in the summary.
+
+This replaces the previous behavior of listing suggestions. Improve now **acts** on skill opportunities instead of deferring them.
+
 **Group recommendations by WHY they're recommended:**
 
 ### Session-Driven Recommendations (if any)
