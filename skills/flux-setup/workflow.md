@@ -1455,32 +1455,67 @@ Save to config:
 **Adversarial Reviewer 1 question** (include if review backend is NOT "None"):
 ```json
 {
-  "header": "Adversarial Reviewer 1 (Anthropic)",
-  "question": "Pick the first reviewer model. Flux uses two models from different labs to reach consensus — issues both agree on get fixed automatically.",
+  "header": "Adversarial Reviewer 1",
+  "question": "Pick the first reviewer model. Flux uses two models to reach consensus — issues both agree on get fixed automatically.\n\n💡 Cross-lab reviews (Anthropic + OpenAI) are strongest — different training eliminates shared blind spots. But same-provider pairs work too if you don't have a Codex subscription.",
   "options": [
-    {"label": "claude-opus-4-6", "description": "Most capable. Best for complex architecture reviews."},
-    {"label": "claude-sonnet-4-6", "description": "Fast and capable. Good balance of speed and depth."},
-    {"label": "claude-haiku-4-5", "description": "Fastest. Good for quick reviews on smaller changes."},
-    {"label": "claude-sonnet-4-5", "description": "Previous generation Sonnet. Solid reviewer."}
+    {"label": "claude-opus-4-6", "description": "Anthropic. Most capable. Best for complex architecture reviews."},
+    {"label": "claude-sonnet-4-6", "description": "Anthropic. Fast and capable. Good balance of speed and depth."},
+    {"label": "claude-haiku-4-5", "description": "Anthropic. Fastest. Good for quick reviews on smaller changes."},
+    {"label": "claude-sonnet-4-5", "description": "Anthropic. Previous generation Sonnet. Solid reviewer."},
+    {"label": "gpt-5.4", "description": "OpenAI. Most capable OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex", "description": "OpenAI. Balanced model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex-spark", "description": "OpenAI. Fastest model. Requires ChatGPT Pro."},
+    {"label": "o4-mini", "description": "OpenAI. Reasoning model. Requires ChatGPT Plus or higher."}
   ],
   "multiSelect": false
 }
 ```
 
 **Adversarial Reviewer 2 question** (include if review backend is NOT "None"):
+
+First, determine what provider the user picked for Reviewer 1:
+- Anthropic models: `claude-opus-4-6`, `claude-sonnet-4-6`, `claude-haiku-4-5`, `claude-sonnet-4-5`
+- OpenAI models: `gpt-5.4`, `gpt-5.3-codex`, `gpt-5.3-codex-spark`, `o4-mini`
+
+If Reviewer 1 is an Anthropic model, show the recommendation nudge for cross-lab (OpenAI) but still offer all models:
 ```json
 {
-  "header": "Adversarial Reviewer 2 (OpenAI)",
-  "question": "Pick the second reviewer model from a different lab. Cross-lab consensus eliminates single-model blind spots.",
+  "header": "Adversarial Reviewer 2",
+  "question": "Pick the second reviewer model.\n\n⭐ Recommended: Pick an OpenAI model for cross-lab consensus — the $20/mo ChatGPT Plus plan unlocks gpt-5.4 and o4-mini via Codex, and the reviews will be far superior to same-provider pairs.\n\nBut if you don't have or want a Codex subscription, picking a different Anthropic model still works.",
   "options": [
-    {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
-    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
-    {"label": "gpt-5.3-codex-spark", "description": "Fastest OpenAI model. Requires ChatGPT Pro."},
-    {"label": "o4-mini", "description": "Reasoning model. Requires ChatGPT Plus or higher."}
+    {"label": "gpt-5.4", "description": "⭐ OpenAI. Most capable. Best cross-lab pairing. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex", "description": "⭐ OpenAI. Balanced model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex-spark", "description": "⭐ OpenAI. Fastest model. Requires ChatGPT Pro."},
+    {"label": "o4-mini", "description": "⭐ OpenAI. Reasoning model. Requires ChatGPT Plus or higher."},
+    {"label": "claude-opus-4-6", "description": "Anthropic. Most capable. Same-provider pair — still useful."},
+    {"label": "claude-sonnet-4-6", "description": "Anthropic. Fast and capable. Same-provider pair."},
+    {"label": "claude-haiku-4-5", "description": "Anthropic. Fastest. Same-provider pair."},
+    {"label": "claude-sonnet-4-5", "description": "Anthropic. Previous generation. Same-provider pair."}
   ],
   "multiSelect": false
 }
 ```
+
+If Reviewer 1 is an OpenAI model, show the recommendation nudge for cross-lab (Anthropic) but still offer all models:
+```json
+{
+  "header": "Adversarial Reviewer 2",
+  "question": "Pick the second reviewer model.\n\n⭐ Recommended: Pick an Anthropic model for cross-lab consensus — different training data eliminates shared blind spots.\n\nBut if you prefer, picking a different OpenAI model still works.",
+  "options": [
+    {"label": "claude-opus-4-6", "description": "⭐ Anthropic. Most capable. Best cross-lab pairing."},
+    {"label": "claude-sonnet-4-6", "description": "⭐ Anthropic. Fast and capable. Good cross-lab pairing."},
+    {"label": "claude-haiku-4-5", "description": "⭐ Anthropic. Fastest. Good cross-lab pairing."},
+    {"label": "claude-sonnet-4-5", "description": "⭐ Anthropic. Previous generation. Solid cross-lab pairing."},
+    {"label": "gpt-5.4", "description": "OpenAI. Most capable. Same-provider pair — still useful."},
+    {"label": "gpt-5.3-codex", "description": "OpenAI. Balanced model. Same-provider pair."},
+    {"label": "gpt-5.3-codex-spark", "description": "OpenAI. Fastest model. Same-provider pair."},
+    {"label": "o4-mini", "description": "OpenAI. Reasoning model. Same-provider pair."}
+  ],
+  "multiSelect": false
+}
+```
+
+**Important**: The user MUST pick a different model for Reviewer 2 than Reviewer 1. If they pick the same model, show a warning: "Both reviewers are the same model — adversarial review needs two different models to produce meaningful consensus. Please pick a different model." and re-ask the Reviewer 2 question.
 
 **Code Review Bot question** (include if review backend is NOT "None"):
 ```json
@@ -1636,8 +1671,8 @@ esac
 
 **Adversarial Reviewers** (if questions were asked):
 ```bash
-"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer1 "<chosen_anthropic_model>" --json
-"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer2 "<chosen_openai_model>" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer1 "<chosen_model_1>" --json
+"${PLUGIN_ROOT}/scripts/fluxctl" config set review.reviewer2 "<chosen_model_2>" --json
 ```
 
 **Code Review Bot** (if question was asked):
@@ -1734,7 +1769,7 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 
 ## Step 7b: Codex Verification (conditional)
 
-**Only run this step if the user chose a Codex/OpenAI model for either scouts or reviews** (i.e. scout model starts with `gpt-`/`o1`/`o3`/`o4`, or review backend is `codex`).
+**Only run this step if the user chose a Codex/OpenAI model for scouts, reviews, or adversarial reviewers** (i.e. scout model starts with `gpt-`/`o1`/`o3`/`o4`, review backend is `codex`, or either reviewer1/reviewer2 starts with `gpt-`/`o1`/`o3`/`o4`).
 
 ### 1. Check Codex CLI is installed
 
@@ -1903,8 +1938,8 @@ Configuration (use fluxctl config set to change):
 - GitHub scout: <enabled|disabled>
 - Scout model: <claude-haiku-4-5|gpt-5.3-codex-spark>
 - Review backend: <codex|rp|none>
-- Adversarial reviewer 1: <model> (Anthropic)
-- Adversarial reviewer 2: <model> (OpenAI)
+- Adversarial reviewer 1: <model>
+- Adversarial reviewer 2: <model>
 - Code review bot: <greptile|coderabbit|none>
 - Review severities: <critical,major,minor,style>
 - PR template: <created|skipped|already exists>

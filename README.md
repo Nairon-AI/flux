@@ -240,7 +240,7 @@ flowchart TD
     subgraph review_pipeline ["Epic Review Pipeline"]
         direction TB
         SpecCompliance["Spec Compliance"]
-        Adversarial["Adversarial Review<br/>(Anthropic + OpenAI)"]
+        Adversarial["Adversarial Review<br/>(Dual-Model Consensus)"]
         SecurityScan["STRIDE Security Scan"]
         BotSelfHeal["BYORB Self-Heal<br/>(Greptile / CodeRabbit)<br/><i>optional</i>"]
         BrowserQA["Browser QA"]
@@ -415,14 +415,14 @@ Full pipeline that runs once when all epic tasks are done:
 | Phase | What happens |
 |-------|-------------|
 | Spec compliance | Verify every requirement from the epic spec is implemented |
-| Adversarial review | Two models from different labs (Anthropic + OpenAI) review independently — consensus issues = high confidence |
+| Adversarial review | Two different models review independently — cross-lab pairs (Anthropic + OpenAI) are strongest but same-provider pairs work too. Consensus issues = high confidence |
 | Severity filtering | Only auto-fix issues at/above your configured threshold (critical, major, minor, style) |
 | Security scan | STRIDE-based vulnerability scan — auto-triggered when changes touch auth, API, secrets, or permissions |
 | BYORB self-heal | Bring Your Own Review Bot — Greptile or CodeRabbit catch what models miss |
 | Browser QA | Test acceptance criteria from scoping checklist via [agent-browser](https://github.com/AgnBc/agent-browser) |
 | Learning capture | Extract patterns from review feedback into `.flux/brain/pitfalls/` |
 
-> **Why adversarial?** A single model has blind spots. Two models from different labs (e.g., Claude + GPT) with different training data and biases catch issues that neither finds alone. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
+> **Why adversarial?** A single model has blind spots. Two different models (e.g., Claude + GPT, or Opus + Sonnet) catch issues that neither finds alone. Cross-lab pairs are strongest since different training data eliminates shared biases, but same-provider pairs still add value. When both models flag the same issue, it's almost certainly real. When only one does, Flux uses your severity threshold to decide whether to fix or log.
 
 #### Security — Built Into the Review Pipeline
 

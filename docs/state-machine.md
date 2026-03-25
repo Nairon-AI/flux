@@ -386,7 +386,7 @@ When `epic_review` is active, the review pipeline executes these steps in order:
 | Step | Name | Purpose |
 |------|------|---------|
 | 1 | Spec Compliance | Verify implementation matches epic spec |
-| 2 | Adversarial Review | Dual-model review (Anthropic + OpenAI) |
+| 2 | Adversarial Review | Dual-model review (cross-lab or same-provider) |
 | 3 | STRIDE Security Scan | Threat model analysis of changes |
 | 4 | BYORB Self-Heal | External bot review (Greptile/CodeRabbit) — **optional**, skipped if no bot configured |
 | 5 | Browser QA | Visual verification of UI changes — skipped if pure backend |
