@@ -89,7 +89,8 @@ Ask the user how they want to validate staging:
 Staging is live. How do you want to validate?
 
 1. Agent Browser — automated browser QA against {STAGING_URL}
-2. Manual review — I'll show you what to check, you test and report back
+2. Expect — AI-generated test plan from git diff, runs in real browser
+3. Manual review — I'll show you what to check, you test and report back
 ```
 
 Use `AskUserQuestion` for this.
@@ -101,7 +102,7 @@ Check if agent-browser is available:
 command -v agent-browser >/dev/null 2>&1 && echo "available" || echo "not found"
 ```
 
-If not available, tell the user and fall back to manual review (Step 4b).
+If not available, tell the user and fall back to expect-cli (Step 4c) or manual review (Step 4b).
 
 If available, look for the Browser QA checklist from the most recently completed epic:
 ```bash
@@ -145,6 +146,29 @@ Report back with what you found — "all good" or describe any issues.
 ```
 
 Wait for the user's response. If issues reported, same options as 4a failures.
+
+### Step 4c: Expect CLI (if chosen)
+
+expect-cli (https://www.expect.dev) analyzes git changes, AI-generates a test strategy, and runs it in a real browser.
+
+```bash
+# Run expect-cli — it auto-detects changes and generates browser tests
+npx expect-cli
+```
+
+expect-cli will:
+1. Analyze the git diff (commits merged to staging vs production)
+2. AI-generate a test strategy with verification steps
+3. Present the plan for interactive review
+4. Execute tests in a real browser
+5. Report pass/fail with recordings
+
+After testing, report results:
+- **All pass**: Continue to Step 5
+- **Failures found**: List what failed, ask user if they want to:
+  1. Create fix tasks and address issues (new PR to staging)
+  2. Proceed anyway (user accepts the issues)
+  3. Abort promotion
 
 ### Step 5: Run e2e tests against staging (if available)
 

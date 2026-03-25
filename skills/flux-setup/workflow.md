@@ -653,7 +653,8 @@ Flux recommends CLI tools that complement the AI development workflow.
 | `jq` | jq | **JSON plumbing for agent scripts** — parse API/config output quickly | Yes | `brew install jq` | `sudo apt install jq` | `winget install --id jqlang.jq` |
 | `fzf` | fzf | **Fuzzy finder for shell + git navigation** — faster local workflows | Yes | `brew install fzf` | `sudo apt install fzf` | `winget install --id junegunn.fzf` |
 | `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` | `npm i -g lefthook` |
-| `agent-browser` | Agent Browser | **Browser automation for coding agents** — UI QA and reproducible evidence | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
+| `agent-browser` | Agent Browser | **Checklist-driven browser QA** — step-by-step UI automation with snapshots and screenshots | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
+| `expect-cli` | Expect | **Diff-driven browser QA** — AI generates test plans from git changes and runs them in a real browser | Yes | `npm i -g expect-cli` | `npm i -g expect-cli` | `npm i -g expect-cli` |
 | `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
 ### Detect existing tools
 
@@ -664,6 +665,7 @@ HAVE_JQ_CLI=$(which jq >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_FZF_CLI=$(which fzf >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_EXPECT_CLI=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_WINGET=$(which winget >/dev/null 2>&1 && echo 1 || echo 0)
@@ -701,6 +703,7 @@ INSTALL_JQ=0
 INSTALL_FZF=0
 INSTALL_LEFTHOOK=0
 INSTALL_AGENT_BROWSER=0
+INSTALL_EXPECT_CLI=0
 INSTALL_CONTINUES=0
 
 # Set each to 1 if selected by user
@@ -712,7 +715,8 @@ INSTALL_CONTINUES=0
 {"label": "jq", "description": "JSON parsing for scripts and API output (free)"}
 {"label": "fzf", "description": "Fuzzy finder for terminal, history, and git navigation (free)"}
 {"label": "Lefthook", "description": "Fast pre-commit hooks to catch issues before CI (free)"}
-{"label": "Agent Browser", "description": "Headless browser automation CLI for agent-driven QA (free)"}
+{"label": "Agent Browser", "description": "Checklist-driven browser QA — step-by-step automation with snapshots and screenshots (free)"}
+{"label": "Expect", "description": "Diff-driven browser QA — AI generates test plans from git changes, runs in real browser (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
 ```
 
@@ -821,16 +825,64 @@ if [ "$INSTALL_FZF" = "1" ]; then
 fi
 ```
 
-**Lefthook / Agent Browser / CLI Continues (Node-based):**
+**Lefthook / Agent Browser / Expect / CLI Continues (Node-based):**
 ```bash
 if which npm >/dev/null 2>&1; then
   [ "$INSTALL_LEFTHOOK" = "1" ] && npm i -g lefthook 2>/dev/null || true
   [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
+  [ "$INSTALL_EXPECT_CLI" = "1" ] && npm i -g expect-cli 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
 ```
+
+### Browser QA preference
+
+If the user installed **both** Agent Browser and Expect, or if both were already installed, ask which to use as the **primary** browser QA tool. This preference is used by `/flux:epic-review` and `/flux:gate` to select the default strategy.
+
+```bash
+# Check what's available after installation
+HAS_AB=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
+HAS_EX=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
+
+if [ "$HAS_AB" = "1" ] && [ "$HAS_EX" = "1" ]; then
+  # Both available — ask preference
+  # Present as AskUserQuestion:
+fi
+```
+
+**Question (only if both are available):**
+```
+You have two browser QA tools installed. Which should Flux use by default?
+
+1. **Agent Browser** — Checklist-driven. Follows structured acceptance criteria step-by-step
+   with snapshots and screenshots. Best when you have a Browser QA Checklist from /flux:scope.
+   Gives you fine-grained control over each verification step.
+
+2. **Expect** — Diff-driven. AI analyzes your git changes and auto-generates a test plan,
+   then runs it in a real browser. Best when you don't have a checklist or want zero-config
+   browser QA. Shows pass/fail with recordings.
+
+(The other tool is still available as a fallback)
+```
+
+**Store preference:**
+```bash
+# $QA_TOOL_PREF is "agent-browser" or "expect"
+$FLUXCTL config set browserQa.tool "$QA_TOOL_PREF"
+```
+
+**If only one is installed**, set it automatically without asking:
+```bash
+if [ "$HAS_AB" = "1" ] && [ "$HAS_EX" = "0" ]; then
+  $FLUXCTL config set browserQa.tool "agent-browser"
+elif [ "$HAS_AB" = "0" ] && [ "$HAS_EX" = "1" ]; then
+  $FLUXCTL config set browserQa.tool "expect"
+fi
+```
+
+**If neither is installed**, skip — expect-cli is always available via `npx expect-cli` as a zero-install fallback.
 
 ### Track installation results
 
@@ -1207,7 +1259,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, wispr-flow, granola>"],
-    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, cli-continues>"],
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
 }
@@ -2001,7 +2053,9 @@ CLI tools:
 - fzf: <installed | already installed | skipped>
 - Lefthook: <installed | already installed | skipped>
 - Agent Browser: <installed | already installed | skipped>
+- Expect: <installed | already installed | skipped>
 - CLI Continues: <installed | already installed | skipped>
+- Browser QA preference: <agent-browser | expect | not set>
 ```
 
 Use tracking variables from Step 4d. If gh was already installed before setup, show "already installed".
