@@ -42,7 +42,9 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
 
 ## Workflow
 
-Read [workflow.md](workflow.md) and follow each step in order.
+**CRITICAL: Read the ENTIRE [workflow.md](workflow.md) before starting execution.** The workflow is ~2000 lines across 10+ steps. The most common failure is reading the first few steps, starting execution, and never reaching the configuration questions (Step 6), business context (Step 5b), or docs block update.
+
+A step completion checklist and verification gate at the end of workflow.md will catch skipped steps — but prevention is better than detection. Read it all first.
 
 ## Notes
 

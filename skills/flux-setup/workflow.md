@@ -2,6 +2,71 @@
 
 Follow these steps in order. This workflow is **idempotent** - safe to re-run.
 
+---
+
+## CRITICAL: Read ALL steps before executing
+
+**This workflow has 10+ steps across ~2000 lines. You MUST read the entire workflow before starting execution.** The most common failure mode is reading the first few steps, starting execution, and never reaching the later steps (configuration questions, environment detection, business context, docs block).
+
+### Step Completion Checklist
+
+Track completion of every step. At the end (Step 8), verify ALL steps were executed.
+
+| Step | Name | Required | Status |
+|------|------|----------|--------|
+| 0 | Resolve plugin path | Yes | |
+| 1 | Initialize .flux/ | Yes | |
+| 2 | Check existing setup | Yes | |
+| 3 | Installation scope | Yes | |
+| 4 | Copy fluxctl + usage docs | Yes | |
+| 4b | MCP servers | Optional | |
+| 4c | Desktop applications | Optional | |
+| 4d | CLI tools | Optional | |
+| 4e | Agent skills | Optional | |
+| 4f | Infrastructure & environment detection | Optional | |
+| 5 | Update meta.json | Yes | |
+| 5b | Business context | First-time only | |
+| 6 | Configuration questions (review, scouts, tracker, docs) | **Yes — most commonly skipped** | |
+| 7 | Process answers | Yes | |
+| 7b | Codex verification | Conditional | |
+| 8 | Print summary + verify checklist | Yes | |
+
+**Step 6 is the most commonly skipped step.** It contains:
+- Plan-Sync configuration
+- Scout model selection
+- Task tracker integration (Linear)
+- Review backend + adversarial reviewer model selection
+- Code review bot selection
+- Severity threshold
+- Human review toggle
+- Docs block (CLAUDE.md/AGENTS.md `<!-- BEGIN FLUX -->` section)
+- Star question
+
+If you reach Step 8 without having asked the configuration questions from Step 6, **STOP and go back to Step 6.**
+
+### Verification Gate (Step 8)
+
+Before printing the summary, verify these config keys are set:
+
+```bash
+REQUIRED_KEYS="review.backend review.reviewer1 review.reviewer2 review.bot review.humanReview review.severityThreshold scouts.model scouts.github tracker.provider planSync.crossEpic"
+MISSING=""
+for key in $REQUIRED_KEYS; do
+  val=$("$PLUGIN_ROOT/scripts/fluxctl" config get "$key" --json 2>/dev/null | jq -r '.value // empty')
+  [ -z "$val" ] && MISSING="$MISSING $key"
+done
+if [ -n "$MISSING" ]; then
+  echo "ERROR: Setup incomplete. Missing config:$MISSING"
+  echo "Go back to Step 6 and ask the configuration questions."
+fi
+```
+
+Also verify:
+- `<!-- BEGIN FLUX -->` exists in CLAUDE.md or AGENTS.md (Step 6 docs question)
+- `.flux/brain/business/context.md` exists (Step 5b)
+
+---
+
 ## Step 0: Resolve plugin path
 
 The plugin root is the parent of this skill's directory. From this SKILL.md location, go up to find `scripts/` and `.claude-plugin/`.
@@ -1827,7 +1892,45 @@ Based on the checks above, include one of these lines in the Step 8 summary unde
 
 **Do NOT run `codex exec` to verify model access during setup.** It's slow and can timeout. Model access is verified naturally when the user first runs `/flux:prime` — if the model fails there, prime will report the error clearly.
 
-## Step 8: Print Summary
+## Step 8: Verify Completeness + Print Summary
+
+**Before printing the summary, run the verification gate.** This catches steps that were accidentally skipped.
+
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FC="$PLUGIN_ROOT/scripts/fluxctl"
+
+# Check required config keys
+REQUIRED_KEYS="review.backend review.reviewer1 review.reviewer2 review.bot review.humanReview review.severityThreshold scouts.model scouts.github tracker.provider planSync.crossEpic"
+MISSING=""
+for key in $REQUIRED_KEYS; do
+  val=$("$FC" config get "$key" --json 2>/dev/null | jq -r '.value // empty')
+  [ -z "$val" ] && MISSING="$MISSING $key"
+done
+
+# Check docs block
+DOCS_OK=0
+grep -q "BEGIN FLUX" CLAUDE.md 2>/dev/null && DOCS_OK=1
+grep -q "BEGIN FLUX" AGENTS.md 2>/dev/null && DOCS_OK=1
+
+# Check business context
+BIZ_OK=0
+[ -f ".flux/brain/business/context.md" ] && BIZ_OK=1
+```
+
+**If ANY checks fail:**
+```
+⚠️  Setup verification found gaps:
+```
+- If `MISSING` is not empty: `Missing config: <list>. Running Step 6 configuration questions now.`
+  → Go back and execute Step 6 for the missing keys only.
+- If `DOCS_OK=0`: `CLAUDE.md/AGENTS.md missing Flux section. Running docs update now.`
+  → Execute the docs portion of Step 6.
+- If `BIZ_OK=0`: `Business context not captured. Running Step 5b now.`
+  → Execute Step 5b.
+
+**Only proceed to the summary after all checks pass.**
 
 ```
 Flux setup complete!
