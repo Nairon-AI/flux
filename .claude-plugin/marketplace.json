@@ -10,7 +10,7 @@
     {
       "name": "flux",
       "description": "Structure your AI coding sessions. Plan first, work second. Zero external dependencies.",
-      "version": "2.30.2-dev",
+      "version": "2.31.1-dev",
       "author": {
         "name": "NaironAI",
         "url": "https://nairon.ai"
