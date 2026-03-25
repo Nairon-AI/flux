@@ -653,30 +653,56 @@ If CodeRabbit flagged issues:
 
 ## Browser QA Phase
 
-**Only runs if ALL of these are true:**
-1. `agent-browser` is available: `command -v agent-browser >/dev/null 2>&1`
-2. A "Browser QA Checklist" task exists for this epic (created during `/flux:scope`)
+**Two strategies available — agent-browser (checklist-driven) or expect-cli (diff-driven):**
 
-During scoping, Flux auto-creates a Browser QA Checklist task for epics involving frontend/web changes. This task contains structured, testable criteria that this phase follows — no guesswork needed.
+| Strategy | Requires | Best for |
+|---|---|---|
+| **agent-browser** | `agent-browser` CLI + Browser QA Checklist task | Structured acceptance criteria from `/flux:scope` |
+| **expect-cli** | `npx expect-cli` (zero install) | Auto-generated test plans from git diff — works without a checklist |
 
-### Step 1: Check Prerequisites
+During scoping, Flux auto-creates a Browser QA Checklist task for epics involving frontend/web changes. When that checklist exists and agent-browser is available, use agent-browser. Otherwise, fall back to expect-cli.
+
+### Step 1: Select Strategy
 
 ```bash
-if ! command -v agent-browser >/dev/null 2>&1; then
-  echo "agent-browser not found. Skipping browser QA."
-  # Skip to Learning Capture
+HAS_AGENT_BROWSER=false
+HAS_EXPECT=true  # always available via npx expect-cli
+QA_TASK=""
+
+if command -v agent-browser >/dev/null 2>&1; then
+  HAS_AGENT_BROWSER=true
 fi
+
+# Read user preference from config (set during /flux:setup)
+QA_PREF=$($FLUXCTL config get browserQa.tool --json 2>/dev/null | jq -r '.value // empty')
 
 # Look for Browser QA Checklist task in this epic
 QA_TASK=$($FLUXCTL tasks --epic "$EPIC_ID" --json | jq -r '.[] | select(.title | test("Browser QA|browser.qa"; "i")) | .id' | head -1)
 
-if [[ -z "$QA_TASK" ]]; then
-  echo "No Browser QA Checklist task found for $EPIC_ID. Skipping browser QA."
-  # Skip to Learning Capture
+# Strategy selection:
+# 1. If user explicitly configured "expect" → use expect
+# 2. If user configured "agent-browser" AND it's installed AND checklist exists → use agent-browser
+# 3. If agent-browser is available AND checklist exists (no config) → use agent-browser
+# 4. Fallback → expect-cli (always available via npx)
+if [[ "$QA_PREF" == "expect" ]]; then
+  QA_STRATEGY="expect"
+  echo "Browser QA: expect-cli (configured preference)"
+elif [[ "$HAS_AGENT_BROWSER" == "true" && -n "$QA_TASK" ]]; then
+  QA_STRATEGY="agent-browser"
+  echo "Browser QA: agent-browser with checklist ($QA_TASK)"
+else
+  QA_STRATEGY="expect"
+  echo "Browser QA: expect-cli (diff-driven fallback)"
 fi
 ```
 
-### Step 2: Read QA Checklist
+---
+
+### Strategy A: agent-browser (checklist-driven)
+
+**Used when:** `QA_STRATEGY="agent-browser"`
+
+#### A1: Read QA Checklist
 
 ```bash
 # Get the QA task spec with acceptance criteria
@@ -693,7 +719,7 @@ The checklist task contains structured acceptance criteria like:
 
 Each criterion specifies: URL/action, expected result, and what to verify.
 
-### Step 3: Execute Browser Tests
+#### A2: Execute Browser Tests
 
 For each criterion in the checklist:
 
@@ -716,7 +742,7 @@ agent-browser snapshot -i  # Re-snapshot after action
 agent-browser screenshot "/tmp/qa-${EPIC_ID}-${n}.png"
 ```
 
-### Step 4: Handle Failures
+#### A3: Handle Failures
 
 If any criterion fails:
 
@@ -727,13 +753,54 @@ If any criterion fails:
 5. Re-test the failing criterion
 6. Max 2 fix iterations per criterion
 
-### Step 5: Mark QA Task Complete
+#### A4: Mark QA Task Complete
 
 After all criteria pass:
 
 ```bash
 $FLUXCTL done "$QA_TASK"
 agent-browser close
+```
+
+---
+
+### Strategy B: expect-cli (diff-driven)
+
+**Used when:** `QA_STRATEGY="expect"` — no checklist or agent-browser needed.
+
+expect-cli (https://www.expect.dev) analyzes uncommitted git changes, AI-generates a test strategy, and runs it in a real browser with pass/fail results and recordings.
+
+#### B1: Run expect-cli
+
+```bash
+# expect-cli analyzes the git diff and generates + executes browser tests
+npx expect-cli
+```
+
+expect-cli will:
+1. Analyze uncommitted git changes (or branch diff)
+2. AI-generate a test strategy with specific verification steps
+3. Present the test plan in an interactive terminal for review
+4. Execute the test plan against a live browser
+5. Report pass/fail results with recordings
+
+#### B2: Handle Failures
+
+If any test fails:
+
+1. Review the failure output and recording from expect-cli
+2. Fix the code to address the issue
+3. Run tests/lints
+4. Commit: `git commit -m "fix: address expect-cli browser QA failure - <summary>"`
+5. Re-run: `npx expect-cli`
+6. Max 2 fix iterations
+
+#### B3: Mark QA Task (if exists)
+
+```bash
+if [[ -n "$QA_TASK" ]]; then
+  $FLUXCTL done "$QA_TASK"
+fi
 ```
 
 ---

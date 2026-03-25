@@ -23,7 +23,8 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **jq** — JSON parsing for scripts and API output
   - **fzf** — fuzzy finder for terminal workflows
   - **Lefthook** — fast pre-commit hooks
-  - **Agent Browser** — browser automation CLI for agent-driven UI QA
+  - **Agent Browser** — checklist-driven browser QA with snapshots and screenshots
+  - **Expect** — diff-driven browser QA, AI generates test plans from git changes
   - **CLI Continues** — resume/switch session context across agent CLIs
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Claude Code sessions using git worktrees

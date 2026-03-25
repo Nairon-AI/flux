@@ -378,6 +378,7 @@ After all tasks complete (or periodically for large epics):
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues
+- **Browser verification (web-facing changes):** If the epic touches frontend/UI code, run `npx expect-cli` to auto-generate and execute browser tests from the git diff. This catches visual regressions and interaction bugs that unit tests miss. expect-cli requires no setup — it analyzes uncommitted changes and runs an AI-generated test plan in a real browser.
 
 ## Phase 5: Ship
 
