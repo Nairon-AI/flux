@@ -8,7 +8,7 @@ user-invocable: false
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Thorough review at epic completion. Combines adversarial dual-model review (Anthropic + OpenAI consensus), external bot self-heal (Greptile/CodeRabbit), browser QA, and learning capture. Per-task lightweight reviews happen via `/flux:impl-review` — this is the heavy-weight pass.
+Thorough review at epic completion. Combines adversarial dual-model review (two different models reach consensus), external bot self-heal (Greptile/CodeRabbit), browser QA, and learning capture. Cross-lab pairs (Anthropic + OpenAI) are strongest, but same-provider pairs work too. Per-task lightweight reviews happen via `/flux:impl-review` — this is the heavy-weight pass.
 
 **Role**: Epic Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
@@ -134,8 +134,8 @@ REVIEW_BOT=$($FLUXCTL config get review.bot 2>/dev/null || echo "")
 SEVERITIES=$($FLUXCTL config get review.severities 2>/dev/null || echo "critical,major")
 ```
 
-- `REVIEWER1`: Anthropic model (e.g., `claude-sonnet-4-5-20250514`)
-- `REVIEWER2`: OpenAI model (e.g., `o3`)
+- `REVIEWER1`: First review model (e.g., `claude-sonnet-4-6`, `gpt-5.4`)
+- `REVIEWER2`: Second review model — must be different from REVIEWER1 (e.g., `gpt-5.3-codex`, `claude-opus-4-6`)
 - `REVIEW_BOT`: `greptile`, `coderabbit`, or empty
 - `SEVERITIES`: comma-separated list of severity levels to auto-fix (e.g., `critical,major`)
 
@@ -170,8 +170,8 @@ If only one reviewer or neither is configured, skip to Step 4.
 
 See [workflow.md](workflow.md) "Adversarial Review Phase" for full details. Summary:
 
-1. **Reviewer 1** (Anthropic) reviews the diff independently via Codex/RP
-2. **Reviewer 2** (OpenAI) reviews the same diff independently via Codex
+1. **Reviewer 1** reviews the diff independently via Codex/RP
+2. **Reviewer 2** reviews the same diff independently via Codex/RP
 3. **Consensus merge**: Issues flagged by BOTH reviewers = high-confidence (auto-fix). Issues flagged by only one = log-only (unless at/above severity threshold).
 
 The adversarial approach catches more issues than a single model while reducing false positives through consensus.

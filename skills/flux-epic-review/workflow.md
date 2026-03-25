@@ -4,7 +4,7 @@
 
 Epic completion review is the thorough review gate. It combines:
 - **Spec compliance** — verify all requirements are implemented (single-model, same as before)
-- **Adversarial review** — dual-model consensus (Anthropic + OpenAI) for high-confidence issue detection
+- **Adversarial review** — dual-model consensus (two different models) for high-confidence issue detection
 - **Severity filtering** — only auto-fix issues at/above configured threshold
 - **External bot self-heal** — Greptile/CodeRabbit catch what models miss
 - **Browser QA** — verify acceptance criteria in actual browser
@@ -356,7 +356,7 @@ If only one or neither is set, skip directly to External Bot Self-Heal Phase.
 
 ### Purpose
 
-Two models from different labs (Anthropic + OpenAI) review the same diff independently. Issues flagged by both = high-confidence consensus issues that almost certainly need fixing. Issues from only one model = lower confidence, filtered by severity threshold.
+Two different models review the same diff independently. Cross-lab pairs (Anthropic + OpenAI) are strongest since different training data eliminates shared blind spots, but same-provider pairs (e.g., two Claude models) also work well. Issues flagged by both = high-confidence consensus issues that almost certainly need fixing. Issues from only one model = lower confidence, filtered by severity threshold.
 
 ### Step 1: Prepare Adversarial Diff
 
@@ -444,7 +444,7 @@ ADVEOF
 
 **CRITICAL: Independent context.** Each reviewer must form its verdict independently. Do NOT share Reviewer 1's output with Reviewer 2 or vice versa. The consensus merge in Step 4 is where findings are compared — not before. Sharing outputs before independent review creates echo-chamber sycophancy where the second model defers to the first.
 
-**Reviewer 1** (Anthropic model via Codex or RP — uses same backend as spec review):
+**Reviewer 1** (via Codex or RP — uses same backend as spec review):
 ```bash
 # If using codex backend:
 $FLUXCTL codex adversarial-review "$EPIC_ID" --model "$REVIEWER1" --prompt-file /tmp/adversarial-prompt.md > /tmp/review1-response.txt
@@ -453,9 +453,13 @@ $FLUXCTL codex adversarial-review "$EPIC_ID" --model "$REVIEWER1" --prompt-file 
 $FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/adversarial-prompt.md --new-chat --chat-name "Adversarial R1: $EPIC_ID"
 ```
 
-**Reviewer 2** (OpenAI model via Codex):
+**Reviewer 2** (via Codex or RP):
 ```bash
+# If using codex backend:
 $FLUXCTL codex adversarial-review "$EPIC_ID" --model "$REVIEWER2" --prompt-file /tmp/adversarial-prompt.md > /tmp/review2-response.txt
+
+# If using rp backend, send via RP chat (new chat for adversarial):
+$FLUXCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/adversarial-prompt.md --new-chat --chat-name "Adversarial R2: $EPIC_ID"
 ```
 
 ### Step 4: Consensus Merge
@@ -1106,7 +1110,7 @@ By combining signals, the friction score distinguishes between "complex epic tha
 - **Direct codex calls** - Must use `fluxctl codex` wrappers
 
 **Adversarial review:**
-- **Using same lab for both models** - Must be different labs (Anthropic + OpenAI)
+- **Using the exact same model for both reviewers** - Must be two different models (cross-lab is best, but same-provider with different models works too)
 - **Skipping consensus merge** - Both responses must be parsed and merged
 - **Auto-fixing single-model minor issues** - Only consensus or above-threshold
 
