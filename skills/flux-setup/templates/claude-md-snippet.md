@@ -1,6 +1,35 @@
 <!-- BEGIN FLUX -->
 ## Flux
 
+<important if="session start — run this check before anything else">
+**Flux install check (every session):**
+Run `claude plugin list 2>&1 | grep -qi flux` at the start of every session.
+If Flux is **not installed**, use `mcp__conductor__AskUserQuestion` (or the equivalent interactive prompt tool available in your environment) to ask:
+
+> **This project uses Flux — a self-improving harness for Claude Code. It's not installed on your machine yet. Would you like to set it up?**
+
+Options:
+1. **"Yes, install Flux"** — Run these commands, then tell the user to restart with `--resume` and run `/flux:setup`:
+   ```bash
+   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
+   claude plugin install flux@nairon-flux 2>&1
+   ```
+2. **"No, skip for now"** — Respect the choice. Do not ask again in the same session.
+3. **"What does Flux do?"** — Explain these benefits, then re-ask:
+   - **Structured workflows** — Routes intent to the right workflow (scope, work, review, reflect) instead of freeform prompting
+   - **Persistent memory** — Brain vault (`.flux/brain/`) remembers codebase context, conventions, decisions, and pitfalls across sessions
+   - **Self-improvement** — Learns from every session and gets better at working with this specific project over time
+   - **Automated multi-model code review** — Not just the same model reviewing its own code
+   - **Security scanning** — Catches hardcoded secrets, SQL injection, XSS before they ship
+   - **Tool discovery** — Recommends and installs MCP servers matched to your stack
+   - **Epic planning** — Breaks large tasks into scoped epics with dependency tracking
+   - **Codebase readiness audits** — 8-pillar, 48-criteria audit before you start building features
+   - **Linear integration** — Epics sync to Linear projects, tasks sync to issues automatically
+   - **Sycophancy guard** — Challenges bad ideas instead of blindly validating them
+
+If Flux IS installed, skip this check and proceed normally.
+</important>
+
 This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` instead of markdown TODOs or TodoWrite.
 
 **Mental model:**
