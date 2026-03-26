@@ -5,6 +5,8 @@ description: Upgrade Flux plugin and optionally update project setup
 
 # Flux Upgrade
 
+Upgrades the Flux plugin, shows the user what changed since their version, and tells them exactly what to do next.
+
 ## Step 1: Check current versions
 
 Run the version check to see where things stand:
@@ -13,46 +15,125 @@ Run the version check to see where things stand:
 bash "${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT:-$(dirname "$(dirname "$(dirname "$0")")")}}/scripts/version-check.sh"
 ```
 
-Parse the JSON output. Report to the user:
-- Local version: `local_version`
-- Remote version: `remote_version`
-- Update available: `update_available`
+Parse the JSON output. Save `local_version` as `OLD_VERSION` — you'll need it later.
 
-If no update is available, tell the user they're on the latest version.
+Report to the user:
+- Current version: `local_version`
+- Latest version: `remote_version`
 
-## Step 2: Ask scope
+If no update is available, tell the user they're on the latest version and stop.
 
-Use `AskUserQuestion`:
+## Step 2: Upgrade the plugin
 
-**"How do you want to upgrade?"**
-- "This project only" → upgrade plugin + re-run setup on current project
-- "All Flux projects on this machine" → upgrade plugin + scan and update all projects
-- "Plugin only (no project changes)" → just update the plugin, skip setup
+Follow the SKILL.md workflow Steps 2-5 to refresh marketplace metadata, clear plugin cache, and update the install record. This is the mechanical upgrade.
 
-## Step 3: Upgrade the plugin
+If any step fails, report the specific error and stop. Do not continue with a partial upgrade.
+
+## Step 3: Fetch what changed
+
+This step is what makes the upgrade informative. Get release notes for every version between `OLD_VERSION` and the new version.
+
+**Primary source — GitHub releases:**
 
 ```bash
-/plugin add https://github.com/Nairon-AI/flux@latest
+gh release list --repo Nairon-AI/flux --limit 30 --json tagName,name,body,publishedAt 2>/dev/null
 ```
 
-Tell the user:
-> Plugin upgraded. You'll need to restart with `--resume` for the new plugin to take effect.
-> After restarting, run `/flux:setup` to update this project's local files.
+Filter to releases where the tag version is greater than `OLD_VERSION` and less than or equal to the new version.
 
-If the user chose **"Plugin only"**, stop here.
-
-## Step 4: Re-run project setup
-
-If the user chose **"This project only"**:
-- Run `/flux:setup` which handles the upgrade path via `setup_version` comparison in `.flux/meta.json`
-- This is idempotent — it merges new config keys, copies updated skills, and refreshes CLAUDE.md markers
-
-If the user chose **"All Flux projects on this machine"**:
-
-### Step 4a: Scan for Flux projects
+**Fallback — CHANGELOG.md from marketplace dir:**
 
 ```bash
-# Find all directories with .flux/ on the machine
+MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/nairon-flux"
+cat "$MARKETPLACE_DIR/CHANGELOG.md"
+```
+
+Parse entries between the old and new version headers.
+
+## Step 4: Build the "What's New" summary
+
+From the release notes, produce a concise, non-technical summary. The user wants to know **why this upgrade was worth it**, not what files changed.
+
+**Rules:**
+- Group into 2-4 themes max (e.g., "Better planning", "New security tools")
+- Each theme: 1-2 sentences on the benefit
+- Skip version bumps, CI fixes, internal refactors
+- If a new skill/command was added, name it and say what it does in one line
+- If something was fixed, say what was broken and that it works now
+
+**Format:**
+
+```
+## What's new since v{OLD_VERSION}
+
+**[Theme]** — [1-2 sentence benefit]
+
+**[Theme]** — [1-2 sentence benefit]
+```
+
+If changes are minor (one patch version), a single short paragraph is fine.
+
+## Step 5: Determine if `/flux:setup` needs re-running
+
+Scan the release notes/changelog for setup-relevant changes. This is NOT a blind version comparison — it's a content-based decision.
+
+**Re-run IS needed when the changelog mentions:**
+- New MCP servers, CLI tools, desktop apps, or skills added to the setup menu
+- CLAUDE.md markers or instruction format changes
+- fluxctl new subcommands requiring PATH setup
+- `.flux/` directory structure changes
+
+**Re-run is NOT needed when** (most upgrades):
+- Only plugin-level skills/commands changed
+- Bug fixes, docs changes, CI improvements
+- New plugin-only features (e.g., `/flux:score`)
+
+## Step 6: Report to the user
+
+Present a clean upgrade report:
+
+```
+Flux upgraded: v{OLD_VERSION} → v{NEW_VERSION}
+```
+
+Then the "What's New" summary from Step 4.
+
+Then next steps — adapt based on Step 5:
+
+**If setup re-run IS needed:**
+
+```
+## What to do now
+
+1. Restart Claude Code to load the new version
+   (use --resume to keep your current context)
+
+2. After restart, run /flux:setup to pick up new options:
+   [1-line explanation of what's new in setup]
+
+Your existing project files were not modified.
+Setup will only offer new options — nothing you've configured will change.
+```
+
+**If setup re-run is NOT needed:**
+
+```
+## What to do now
+
+Restart Claude Code to load the new version.
+(Use --resume to keep your current context.)
+
+That's it — no need to re-run /flux:setup.
+All changes in this upgrade are plugin-level and activate after restart.
+```
+
+## Step 7 (optional): Batch project upgrade
+
+If the user asks to upgrade multiple projects, or if you detect this is relevant:
+
+### Scan for Flux projects
+
+```bash
 find ~/Developer ~/Projects ~/Code ~/repos ~/src ~/work ~/Desktop ~ -maxdepth 4 -name ".flux" -type d 2>/dev/null | while read flux_dir; do
   project_dir="$(dirname "$flux_dir")"
   version="unknown"
@@ -63,61 +144,6 @@ find ~/Developer ~/Projects ~/Code ~/repos ~/src ~/work ~/Desktop ~ -maxdepth 4 
 done | sort -u | head -30
 ```
 
-Present the list:
+Present the list and ask which to upgrade. For each selected project, update `.flux/bin/` scripts and CLAUDE.md markers only. **Never touch** `.flux/tasks/`, `.flux/epics/`, `.flux/preferences.json`, `.mcp.json`, or user data.
 
-```
-Found Flux in these projects:
-
-  Project                          Setup Version
-  /Users/you/project-a             v2.9.0
-  /Users/you/project-b             v2.10.1
-  /Users/you/test-repo             v2.10.1-dev
-
-Select which to upgrade, or "all".
-```
-
-Use `AskUserQuestion`:
-- "Upgrade all of them"
-- "Let me pick" → show list, let user select
-- "Cancel — just this project"
-
-### Step 4b: Batch upgrade
-
-For each selected project, report what will happen:
-
-```
-Upgrading /Users/you/project-a (v2.9.0 → v2.11.0)...
-  - Updating .flux/bin/ scripts
-  - Merging new config keys into .flux/config.json
-  - Refreshing CLAUDE.md flux markers
-  ✓ Done
-
-Upgrading /Users/you/project-b (v2.10.1 → v2.11.0)...
-  - Updating .flux/bin/ scripts
-  - Merging new config keys into .flux/config.json
-  - No CLAUDE.md changes needed
-  ✓ Done
-```
-
-For each project, run the equivalent of `fluxctl init --json` in that directory, then copy updated bin scripts and refresh the CLAUDE.md markers. Do NOT touch `.flux/tasks/`, `.flux/epics/`, `.flux/preferences.json`, or any user data.
-
-**Important:** The batch upgrade only updates Flux infrastructure files. It never modifies:
-- `.flux/tasks/` or `.flux/epics/` (user work)
-- `.flux/preferences.json` (user preferences)
-- `.mcp.json` (project-specific MCP config — may differ per project)
-- `.claude/skills/` installed from other sources
-
-## Step 5: Report
-
-```
-Flux upgrade complete.
-
-Plugin: v2.10.1 → v2.11.0
-Projects updated: 3/3
-
-Next steps:
-- Restart Claude Code with --resume to load the new plugin
-- Skills and config are already updated in each project
-```
-
-If any project failed, list it with the error so the user can fix manually.
+Report per-project results and flag any failures for manual follow-up.

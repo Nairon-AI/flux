@@ -6,7 +6,7 @@ user-invocable: true
 
 # Upgrade Flux
 
-Upgrades the Flux plugin to the latest version from GitHub. Handles all three layers of the plugin cache that Claude Code maintains.
+Upgrades the Flux plugin to the latest version from GitHub. Handles all three layers of the plugin cache, shows the user what changed, and tells them exactly what to do next.
 
 ## What This Does
 
@@ -29,6 +29,8 @@ INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
 OLD_VERSION=$(jq -r '.plugins["flux@nairon-flux"][0].version // "unknown"' "$INSTALLED_JSON" 2>/dev/null || echo "unknown")
 echo "Current version: $OLD_VERSION"
 ```
+
+Save `OLD_VERSION` — you'll need it for the changelog summary later.
 
 ### Step 2: Refresh marketplace metadata
 
@@ -89,7 +91,63 @@ jq --arg v "$NEW_VERSION" \
 echo "Install record updated to $NEW_VERSION"
 ```
 
-### Step 6: Check if setup needs re-run
+### Step 6: Fetch what changed (release notes)
+
+This is the key step that makes the upgrade feel useful. Fetch GitHub release notes for every version between `OLD_VERSION` and `NEW_VERSION`:
+
+```bash
+# Get all releases between old and new version
+gh release list --repo Nairon-AI/flux --limit 30 --json tagName,name,body,publishedAt 2>/dev/null
+```
+
+From the JSON output, filter to only releases where the tag (stripped of `v` prefix) is:
+- Greater than `OLD_VERSION`
+- Less than or equal to `NEW_VERSION`
+
+Use semver comparison (`sort -V`) to determine which releases fall in range.
+
+If `gh` is not available or the API call fails, fall back to reading `CHANGELOG.md` from the marketplace dir:
+
+```bash
+MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/nairon-flux"
+cat "$MARKETPLACE_DIR/CHANGELOG.md"
+```
+
+Parse the changelog to extract entries between the old and new version headers.
+
+### Step 7: Build the "What's New" summary
+
+From the release notes or changelog entries gathered in Step 6, produce a **concise, non-technical summary** of what improved. This is what the user actually cares about.
+
+**Rules for the summary:**
+- Lead with benefits, not implementation details
+- Group changes into 2-4 themes max (e.g., "Better planning", "New security scanning", "Faster setup")
+- Each theme gets 1-2 sentences explaining the value
+- Skip version bump PRs, CI fixes, and internal refactors — they don't matter to the user
+- Skip individual file changes — the user doesn't care which `.md` was edited
+- If a new skill/command was added, name it and say what it does in one line
+- If something was fixed, say what was broken and that it's now fixed
+
+**Output format:**
+
+```
+## What's new since v{OLD_VERSION}
+
+**[Theme 1 — e.g., "Smarter scoping"]**
+[1-2 sentences on the benefit. Example: "The /flux:scope command now tracks your progress
+through each phase, so you can pick up where you left off after a restart."]
+
+**[Theme 2 — e.g., "Built-in code maps"]**
+[1-2 sentences. Example: "Flux now generates project structure maps natively — no need to
+install the separate agentmap CLI anymore."]
+
+**[Theme 3 — e.g., "Bug fixes"]**  *(only if meaningful fixes)*
+[Brief description of what was broken and that it works now.]
+```
+
+If only one version was skipped and changes are minor, a single paragraph is fine — no need for themes.
+
+### Step 8: Check if setup needs re-run
 
 Compare the new plugin version to `setup_version` in `.flux/meta.json`:
 
@@ -99,28 +157,76 @@ echo "Setup version: $SETUP_VER"
 echo "Plugin version: $NEW_VERSION"
 ```
 
-If `SETUP_VER` != `NEW_VERSION` (or is "none"), the upgrade may include new setup options.
+Determine whether `/flux:setup` needs to be re-run. This depends on **what changed**, not just version drift:
 
-### Step 7: Report result
+**Setup re-run IS needed when** (check changelog/release notes for these):
+- New MCP servers were added to the setup menu
+- New CLI tools or desktop apps were added to the setup menu
+- New skills became installable through setup
+- CLAUDE.md markers or instructions format changed
+- fluxctl got new subcommands that need PATH setup
+- The `.flux/` directory structure changed (new directories, renamed files)
 
-Tell the user to restart Claude Code to load the new version:
+**Setup re-run is NOT needed when** (most upgrades):
+- Only skills/commands within the plugin changed (these load from the plugin, not `.flux/`)
+- Bug fixes to existing behavior
+- Release process or CI improvements
+- Documentation-only changes
+- New plugin-only features (like `/flux:score`, `/flux:security-scan`)
+
+**How to determine this**: Scan the release notes/changelog entries from Step 6. Look for mentions of `/flux:setup`, `CLAUDE.md`, `fluxctl`, `.flux/bin`, `meta.json`, MCP, CLI tool, desktop app, or skill install changes. If none are found, setup re-run is NOT needed.
+
+### Step 9: Report result
+
+Present the full upgrade report to the user. The format adapts based on what happened:
+
+**Always show:**
 
 ```
-✅ Flux upgraded: v{OLD_VERSION} → v{NEW_VERSION}
-
-Restart Claude Code now to load the new version (use --resume to keep context).
-Your project setup (.flux/, brain vault, CLAUDE.md) was not modified.
+Flux upgraded: v{OLD_VERSION} → v{NEW_VERSION}
 ```
 
-If setup version is stale, add:
+**Then show the "What's New" summary from Step 7.**
 
+**Then show next steps:**
+
+If setup re-run IS needed:
 ```
-⚠️ Your project setup (v{SETUP_VER}) is behind the plugin (v{NEW_VERSION}).
-New configuration options may be available. Run /flux:setup after restart to update.
+## What to do now
+
+1. Restart Claude Code to load the new version
+   (use `--resume` to keep your current context)
+
+2. After restart, run `/flux:setup` to pick up new options:
+   [1-line explanation of what's new in setup, e.g., "New Expect browser QA tool
+   and X Research skill are now available in the setup menu."]
+
+Your existing project files (.flux/, brain vault, CLAUDE.md) were not modified.
+Setup will only add new options — it won't change anything you've already configured.
+```
+
+If setup re-run is NOT needed:
+```
+## What to do now
+
+Restart Claude Code to load the new version.
+(Use `--resume` to keep your current context.)
+
+That's it — no need to re-run `/flux:setup`. All changes in this
+upgrade are plugin-level and will be active after restart.
+Your project files (.flux/, brain vault, CLAUDE.md) were not modified.
+```
+
+If already on latest (from Step 3):
+```
+You're already on the latest version (v{OLD_VERSION}).
+No upgrade needed.
 ```
 
 ## Gotchas
 
 - Upgrade is not complete until Claude restarts and reloads the plugin. Clearing cache without restart still leaves the running session on the old code.
-- `setup_version` drift matters. The plugin can be upgraded successfully while the repo-local setup remains stale and misses new options.
+- `setup_version` drift does NOT always mean re-run is needed. Only recommend re-running setup when the changelog shows setup-relevant changes. False "re-run setup" warnings erode trust.
+- The `gh` CLI is the preferred source for release notes (richer content). Fall back to CHANGELOG.md only when `gh` is unavailable or fails.
 - This skill is for Flux/plugin upgrades, not for upgrading arbitrary project dependencies.
+- If `OLD_VERSION` is "unknown" (first-time or corrupted state), skip the changelog diff and just show the latest release notes as the summary.
