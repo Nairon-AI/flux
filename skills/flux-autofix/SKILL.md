@@ -53,18 +53,11 @@ Accepts:
 
 ## Workflow
 
-### Step 0: Check if enabled
+### Step 0: Check if enabled (manual invocation only)
 
-When invoked automatically (from `/flux:work` Phase 5), check the config:
+When invoked automatically from `/flux:work` Phase 5, the config is already checked before invoking this skill — skip this step.
 
-```bash
-AUTOFIX_ENABLED=$($FLUXCTL config get autofix.enabled --json 2>/dev/null | jq -r '.value // empty')
-```
-
-- If `true` → continue
-- If `false` or empty → skip silently (return without output)
-
-When invoked manually (`/flux:autofix`), always continue regardless of config.
+When invoked manually (`/flux:autofix`), always continue regardless of config — the user explicitly wants auto-fix on this PR.
 
 ### Step 1: Resolve the PR
 
@@ -83,28 +76,9 @@ No PR found on the current branch. Either:
 ```
 Stop here.
 
-### Step 2: Verify Claude GitHub App
+### Step 2: Start cloud auto-fix session
 
-Check if the Claude GitHub App is installed:
-```bash
-REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null)
-# Check for the claude app installation
-gh api "repos/${REPO}/installation" 2>/dev/null && echo "installed" || echo "not found"
-```
-
-If not installed, tell the user:
-```
-The Claude GitHub App needs to be installed on this repository for auto-fix to work.
-
-Install it here: https://github.com/apps/claude
-
-After installing, re-run /flux:autofix
-```
-Stop here.
-
-### Step 3: Start cloud auto-fix session
-
-Auto-fix works by spawning an independent cloud session via `claude --remote`. This creates a new Claude Code session on Anthropic's infrastructure that clones the repo, subscribes to GitHub events on the PR, and runs autonomously. The local session continues to Reflect — both run in parallel.
+Auto-fix works by spawning an independent cloud session via `claude --remote`. If `--remote` fails (Claude GitHub App not installed, auth issue, etc.), `claude` will return an error — the skill logs it and continues to Reflect without blocking. This creates a new Claude Code session on Anthropic's infrastructure that clones the repo, subscribes to GitHub events on the PR, and runs autonomously. The local session continues to Reflect — both run in parallel.
 
 ```bash
 # Verify claude CLI supports --remote
@@ -156,7 +130,7 @@ Proceeding to Reflect — auto-fix is not running for this PR.
 
 In this case, skip auto-fix and continue to Reflect. Do NOT block the workflow.
 
-### Step 4: Continue to Reflect
+### Step 3: Continue to Reflect
 
 Auto-fix is non-blocking. Whether it started successfully or not, the local session continues:
 
@@ -249,6 +223,7 @@ reflect → done                           reflect → done
 - If you're already in a Claude Code web session that created the PR, just click "Auto-fix" in the CI status bar instead
 - Auto-fix does NOT replace epic review or adversarial review — those catch code quality issues before submit. Auto-fix handles the post-submit lifecycle (CI, human reviews, bot comments).
 - Auto-fix and BYORB self-heal are **mutually exclusive**. When auto-fix is enabled, BYORB is skipped entirely — auto-fix handles bot comments post-submit. When auto-fix is disabled, BYORB runs locally after submit as a fallback (max 2 iterations, bot comments only).
+- **Ralph mode**: auto-fix still fires automatically after PR submit when `autofix.enabled: true`. Two autonomous processes run in parallel — Ralph locally, auto-fix in the cloud. This is fine; they don't interfere.
 
 ## Update Check (End of Command)
 

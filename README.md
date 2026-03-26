@@ -276,7 +276,9 @@ flowchart TD
     Quality --> Submit
     Submit -->|"autofix.enabled"| Autofix
     Autofix -->|"non-blocking<br/>remote session"| Reflect
-    Submit -->|"skip"| Reflect
+    Submit -->|"!autofix +<br/>review.bot set"| BYORB_Post["BYORB<br/>(local bot self-heal)"]
+    BYORB_Post --> Reflect
+    Submit -->|"neither"| Reflect
     Reflect -->|"20+ pitfall files"| Meditate
     Reflect -->|"brain healthy"| Done["Done"]
     Meditate --> Done
@@ -312,7 +314,7 @@ flowchart TD
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
 | **Autofix** | *Automatic after Submit (config-driven):* activates Claude Code's cloud auto-fix on the PR. Claude watches remotely for CI failures and review comments, pushes fixes automatically. Non-blocking — Reflect runs independently. Enabled via `/flux:setup`. | CI failures and review comments are the #1 reason PRs sit idle. Auto-fix handles the mechanical back-and-forth (fixing lint errors, updating test assertions, addressing clear review feedback) so you can walk away. Claude asks before acting on anything ambiguous or architectural. Requires the [Claude GitHub App](https://github.com/apps/claude). |
-| **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
+| **Reflect** | *Auto after Submit/Autofix:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
 | **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
 | **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
 | **Gate** | *After staging merge:* verifies staging deployment is live, runs browser QA or manual review against staging URL, then creates promotion PR (staging → production). | Code that passes CI can still break in staging — env variables differ, APIs behave differently, CDN caching causes stale assets. Gate is the checkpoint between "code compiles" and "code actually works in a real environment." Without it, production deploys are a leap of faith. |

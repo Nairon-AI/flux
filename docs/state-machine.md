@@ -260,7 +260,7 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │    │ autofix.enabled        │ !autofix +            │ neither
   │    │                        │ review.bot set        │
   │    ▼                        ▼                       │
-  │  AUTOFIX (autofix)     BYORB (local fallback)      │
+  │  AUTOFIX (autofix)     BYORB (within submit)        │
   │  → cloud, handles all  → bot comments only         │
   │  → non-blocking        → max 2 iterations          │
   │    │                        │                       │
