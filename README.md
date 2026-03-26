@@ -199,6 +199,7 @@ flowchart TD
     Work["Work<br/>(task loop)"]
     ImplReview["Impl Review<br/>(per-task, lightweight)"]
     EpicReview["Epic Review<br/>(per-epic, thorough)"]
+    Grill["Grill<br/>(behavioral stress test)"]
     Quality["Quality<br/>(tests + desloppify scan)"]
     Submit["Submit<br/>(push + PR)"]
     Reflect["Reflect<br/>(capture learnings)"]
@@ -216,16 +217,22 @@ flowchart TD
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"bug detected"| RCA
     RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
+    Scope -->|"ambiguous domain<br/>terms detected"| UbiqLang["Ubiquitous Language<br/>(glossary extraction)"]
+    UbiqLang -->|"glossary written<br/>to brain vault"| StressTest
     Scope -->|"problem defined"| StressTest
     StressTest -->|"one-way door /<br/>UX assumption /<br/>deferred authority"| StressTestRun["Spawn Opposing<br/>Subagents"]
     StressTest -->|"no tensions<br/>detected"| ExecChoice
     StressTestRun -->|"synthesize +<br/>user decides"| ExecChoice{"Execute how?"}
+    StressTest -->|"complex module<br/>boundary"| DesignInterface["Design Interface<br/>(parallel sub-agents)"]
+    DesignInterface -->|"interface chosen"| ExecChoice
 
     ExecChoice -->|"task-by-task<br/>(interactive)"| Work
     ExecChoice -->|"ralph mode<br/>(autonomous)"| Ralph["Ralph<br/>(autonomous harness)"]
     Ralph -->|"runs all tasks<br/>+ reviews unattended"| EpicReview
 
     subgraph task_loop ["Task Loop (per task)"]
+        Work -->|"--tdd flag or<br/>spec requests TDD"| TDD["TDD Mode<br/>(red-green-refactor)"]
+        TDD -->|"all cycles done"| ImplReview
         Work -->|"spawn worker"| ImplReview
         ImplReview -->|"NEEDS_WORK"| Work
         ImplReview -->|"SHIP"| FrictionCheck{"friction<br/>detected?"}
@@ -259,8 +266,12 @@ flowchart TD
     end
 
     EpicReview --> SpecCompliance
-    FrustrationSignal -->|"no"| Quality
-    FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| Quality
+    FrustrationSignal -->|"no"| GrillOffer{"offer grill?<br/>(5+ tasks)"}
+    GrillOffer -->|"user accepts"| Grill
+    GrillOffer -->|"skip"| Quality
+    Grill -->|"gaps found → new tasks"| Work
+    Grill -->|"all verified"| Quality
+    FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| GrillOffer
     Quality --> Submit
     Submit --> Reflect
     Reflect -->|"20+ pitfall files"| Meditate
@@ -275,6 +286,8 @@ flowchart TD
     Reflect -.->|"write: learnings<br/>+ skills"| Brain
     Ruminate -.->|"write: mined<br/>patterns"| Brain
     Meditate -.->|"prune/promote"| Brain
+    UbiqLang -.->|"write: glossary"| Brain
+    Grill -.->|"write: decisions<br/>+ new tasks"| Brain
     Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
 
@@ -286,9 +299,13 @@ flowchart TD
 | **Propose** | Stakeholder feature proposal: conversational planning with deep codebase investigation, honest time estimates, and engineering pushback — all presented in plain language a non-technical founder can skim. Supports Google Doc import. Updates business context automatically. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets — and "just remove credits" gets treated as a quick fix when it's actually a 2-week overhaul. Propose does a real technical investigation and gives honest estimates, so stakeholders understand the true cost before engineering time is spent. |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
 | **Scope** | Double Diamond interview: classify work, surface blind spots, run a viability gate ("should we build this?"), stress-test assumptions, create epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature — they never say "this doesn't make sense" or "have you talked to users?" Without scoping, they miss edge cases, build the wrong thing, or validate bad ideas. The interview catches blind spots before a single line of code is written. The viability gate is the anti-sycophancy mechanism — it will tell you not to build something if the evidence doesn't support it. |
+| **Ubiquitous Language** | *Auto during Scope (conditional):* When ambiguous domain terms are detected during scoping, extracts a DDD-style glossary — picks canonical terms, flags ambiguities, lists aliases to avoid. Writes to `.flux/brain/business/glossary.md`. | Developers and domain experts use different words for the same concept. "Account" means one thing to support and another to engineering. Without a shared glossary, bugs hide in the translation. This catches terminological drift before it becomes architectural drift. |
+| **Design Interface** | *Auto during Scope (conditional):* When scoping identifies a complex module boundary or multiple viable interface approaches, spawns 3+ parallel sub-agents with different design constraints (minimize methods, maximize flexibility, optimize common case). Compares and recommends. | Your first interface idea is rarely the best. "Design It Twice" (from *A Philosophy of Software Design*) ensures you see radically different approaches before committing to one. The parallel sub-agents prevent anchoring bias — each starts fresh with a different constraint. |
 | **Stress Test** | *Auto during Scope:* spawns two opposing subagents to argue both sides of detected tensions (architecture choices, UX assumptions, deferred authority). Synthesizes a recommendation that transforms the question — not compromise, reconceptualization. | Developers make one-way door decisions on autopilot — auth strategy, data model, API contracts — based on assumptions they haven't examined. "My senior said X" or "users probably want Y" become load-bearing beliefs that are expensive to reverse. The stress test catches these *before* any code is written, when changing direction costs nothing. Inspired by the [Electric Monks](https://github.com/KyleAMathews/hegelian-dialectic-skill) dialectic pattern. |
+| **TDD** | *During Work (optional):* Red-green-refactor vertical slices. Write ONE test (RED), write minimal code to pass (GREEN), repeat. Refactor only after all tests pass. Activated by `--tdd` flag, task spec mentioning TDD, or user request. | Agents write tests in bulk then implement in bulk — "horizontal slicing." This produces tests that verify imagined behavior, not actual behavior. Vertical slicing forces each test to respond to what was learned from the previous cycle, producing tests that actually catch regressions. |
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. After each task, checks for friction signals (build errors, lint failures, API hallucinations) and offers targeted tool recommendations inline — install, skip, or snooze for 7 days. Snoozed signals automatically resurface to check for new tooling. In Ralph mode, this loop runs autonomously without stopping. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Inline friction detection catches recurring pain points *during* the build, not after — so you can unblock immediately instead of suffering through an entire epic before getting a recommendation. |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB *optional*, browser QA, learning capture). | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (multiple models reaching consensus) catches what single-model review misses. BYORB (Greptile, CodeRabbit, etc.) is optional — skipped if no bot is configured. Browser QA catches what code review can't see at all. |
+| **Grill** | *After Epic Review (offered for 5+ task epics):* Relentless behavioral stress test — walks every branch of the decision tree, verifying implemented behavior matches intent. Finds gaps the spec didn't mention but users will encounter. Can create new tasks if gaps are found. | Epic review checks code quality — but code can be perfect and still do the wrong thing. Grill checks *behavioral correctness*: does the implementation match what was intended? It's the difference between "the code compiles" and "the feature works." Especially valuable for large epics where requirements can drift across many tasks. |
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
 | **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
@@ -308,6 +325,10 @@ flowchart TD
 | **Meditate** | After Reflect, if 20+ pitfall files | Automatic — prunes stale, promotes patterns |
 | **Ruminate** | After Prime, if brain thin + past sessions exist | Automatic — bootstraps brain from conversation history |
 | **Stress Test** | During scope, if one-way door / UX assumption / deferred authority detected | Automatic — spawns opposing subagents, synthesizes recommendation |
+| **Ubiquitous Language** | During scope, if ambiguous domain terms detected | Automatic — extracts glossary to brain vault |
+| **Design Interface** | During scope, if complex module boundary detected | Automatic — spawns parallel sub-agents with different design constraints |
+| **TDD** | During work, if `--tdd` flag or task spec requests it | Automatic — switches worker to red-green-refactor vertical slices |
+| **Grill** | After epic review, for epics with 5+ tasks | Semi-automatic — offered to user, strongly recommended for large epics |
 | **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
 | **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
 | **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
@@ -487,6 +508,10 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
 | `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
 | `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |
+| `/flux:grill` | Behavioral stress test — walk every decision branch, verify behavior matches intent | 6.5. Offered after epic review for epics with 5+ tasks. Also callable standalone ("grill me") to stress-test any implemented feature |
+| `/flux:tdd` | Test-driven development with red-green-refactor vertical slices | During `/flux:work` — activated by `--tdd` flag, task spec, or user request. Also callable standalone for any feature or bugfix |
+| `/flux:design-interface` | Generate 3+ radically different interface designs via parallel sub-agents, compare, and recommend | During `/flux:scope` — auto-triggered when complex module boundaries are detected. Also callable standalone when designing any module API |
+| `/flux:ubiquitous-language` | Extract DDD glossary from conversation + codebase, write to brain vault | During `/flux:scope` — auto-triggered when ambiguous domain terms are detected. Also callable standalone to formalize domain terminology |
 | `/flux:sync <epic>` | Sync specs after drift | Anytime — you realized task 3 invalidated task 5's approach, sync updates downstream specs |
 | `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) | 7. After epic review flags a low score, or manually when you want to improve code quality |
 
