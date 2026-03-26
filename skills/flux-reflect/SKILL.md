@@ -29,6 +29,43 @@ On completion, reset:
 $FLUXCTL session-phase set idle
 ```
 
+## External Memory Awareness
+
+Before processing learnings, check if an external memory provider is configured:
+
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+EXTERNAL_MEMORY_PROVIDER=$($FLUXCTL config get externalMemory.provider --json 2>/dev/null | jq -r '.value // empty')
+EXTERNAL_MEMORY_TOOL=$($FLUXCTL config get externalMemory.tool --json 2>/dev/null | jq -r '.value // empty')
+```
+
+If `EXTERNAL_MEMORY_PROVIDER` is set, two additional behaviors activate:
+
+1. **Dedup on write** — before writing a learning to `.flux/brain/`, query the external memory MCP to check if it already exists externally. If a close match is found, skip the brain write and log: "Already in {provider} — skipping brain write for: {topic}". This prevents the same insight living in both places.
+
+2. **Personal-scope routing** — when a learning is personal/cross-project (not repo-specific), offer to store it in the external provider instead of brain. Use `AskUserQuestion`:
+
+```json
+{
+  "questions": [{
+    "question": "This learning seems personal/cross-project. Store in {EXTERNAL_MEMORY_PROVIDER} instead of brain vault?",
+    "header": "Learning: {one-line summary}",
+    "multiSelect": false,
+    "options": [
+      {"label": "Yes — store in {EXTERNAL_MEMORY_PROVIDER}", "description": "Cross-project, personal, not git-tracked"},
+      {"label": "No — store in brain vault", "description": "Repo-specific, git-tracked, shared with team"},
+      {"label": "Skip", "description": "Don't store this learning anywhere"}
+    ]
+  }]
+}
+```
+
+**Heuristic for personal vs repo-scoped:** A learning is personal if it's about the user's preferences, workflow habits, tool choices, or general engineering patterns that aren't specific to this codebase. A learning is repo-scoped if it references specific files, APIs, architecture, team members, or project decisions.
+
+If `EXTERNAL_MEMORY_PROVIDER` is NOT set, skip both behaviors — reflect works exactly as before.
+
 ## Process
 
 1. **Read `.flux/brain/index.md`** to understand what notes already exist
@@ -117,6 +154,8 @@ Follow-up work that can't be done during reflection — bugs, non-trivial rewrit
 ```
 ## Reflect Summary
 - Brain: [files created/updated, one-line each]
+- External memory: [learnings routed to {provider}, one-line each] (only if external memory is configured)
+- Dedup skipped: [learnings already in {provider}, one-line each] (only if any were deduped)
 - Skills extracted: [new skill files created, one-line each]
 - Skills updated: [existing skill files modified, one-line each]
 - Structural: [rules/scripts/checks added]

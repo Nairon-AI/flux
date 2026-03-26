@@ -142,6 +142,21 @@ detect_linux_apps() {
     printf '%s\n' "${apps[@]}" | sort -u | jq -R . | jq -s .
 }
 
+# Known memory MCP names — used to detect external memory providers
+KNOWN_MEMORY_MCPS="supermemory supermemory-ai mem0 memory obsidian obsidian-mcp"
+
+# Classify which installed MCPs are memory providers
+classify_memory_mcps() {
+    local all_mcps="$1"
+    local matches="[]"
+    for name in $KNOWN_MEMORY_MCPS; do
+        if echo "$all_mcps" | jq -e --arg n "$name" 'index($n)' >/dev/null 2>&1; then
+            matches=$(echo "$matches" | jq --arg n "$name" '. + [$n]')
+        fi
+    done
+    echo "$matches"
+}
+
 # Detect MCPs from ~/.mcp.json
 detect_mcps() {
     local global_file="$HOME/.mcp.json"
@@ -245,12 +260,16 @@ main() {
         *)      apps="[]" ;;
     esac
     
+    # Classify memory MCPs from the detected set
+    local memory_mcps=$(classify_memory_mcps "$mcps")
+
     # Combine into JSON
     jq -n \
         --arg os "$os" \
         --argjson cli_tools "$cli_tools" \
         --argjson apps "$apps" \
         --argjson mcps "$mcps" \
+        --argjson memory_mcps "$memory_mcps" \
         --argjson plugins "$plugins" \
         --argjson preferences "$preferences" \
         --argjson warnings "$warnings" \
@@ -260,6 +279,7 @@ main() {
                 cli_tools: $cli_tools,
                 applications: $apps,
                 mcps: $mcps,
+                memory_mcps: $memory_mcps,
                 plugins: $plugins
             },
             preferences: $preferences,
