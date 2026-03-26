@@ -435,6 +435,57 @@ Store for summary:
 - `SKIPPED_MCPS` — list of MCPs user chose to skip
 - `CONFLICTS_RESOLVED` — list of conflict resolutions made
 
+### Detect external memory MCPs
+
+After MCP installation, check whether the user already has an external memory provider configured. This determines whether `flux-brain` and `flux-reflect` should offer cross-project routing.
+
+Known memory MCPs: `supermemory`, `supermemory-ai`, `mem0`, `memory`, `obsidian`, `obsidian-mcp`.
+
+```bash
+KNOWN_MEMORY_MCPS="supermemory supermemory-ai mem0 memory obsidian obsidian-mcp"
+DETECTED_MEMORY_MCP=""
+
+for name in $KNOWN_MEMORY_MCPS; do
+  if echo "$MCP_LIST" | grep -qx "$name"; then
+    DETECTED_MEMORY_MCP="$name"
+    break
+  fi
+done
+```
+
+If a memory MCP is detected:
+
+1. **Log advisory** — tell the user what this means:
+
+```
+External memory detected: {DETECTED_MEMORY_MCP}
+  → Brain vault (.flux/brain/) will handle repo-specific knowledge
+  → Cross-project/personal preferences should go to {DETECTED_MEMORY_MCP}
+  → flux-brain and flux-reflect will offer {DETECTED_MEMORY_MCP} as a destination for personal-scope learnings
+```
+
+2. **Write to config** — record the provider so downstream skills can check it:
+
+```bash
+if [ -n "$DETECTED_MEMORY_MCP" ]; then
+  "$PLUGIN_ROOT/scripts/fluxctl" config set externalMemory.provider "$DETECTED_MEMORY_MCP"
+
+  # Map provider to its MCP search tool name
+  case "$DETECTED_MEMORY_MCP" in
+    supermemory|supermemory-ai) MEMORY_TOOL="search_supermemory_memory_api_for" ;;
+    mem0)                       MEMORY_TOOL="search_mem0" ;;
+    obsidian|obsidian-mcp)      MEMORY_TOOL="search_obsidian" ;;
+    *)                          MEMORY_TOOL="" ;;
+  esac
+
+  [ -n "$MEMORY_TOOL" ] && "$PLUGIN_ROOT/scripts/fluxctl" config set externalMemory.tool "$MEMORY_TOOL"
+fi
+```
+
+3. **Track for summary** — add `DETECTED_MEMORY_MCP` to the Step 8 summary output.
+
+If no memory MCP is detected, skip silently — no config is written, and brain/reflect behave as before.
+
 ### Manual fallback
 
 If settings are not writable or `jq` is missing, print manual instructions:
