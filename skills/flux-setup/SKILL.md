@@ -39,6 +39,8 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **X Research Skill** — structured X/Twitter research and summarization
 - **Optional** task tracker integration:
   - **Linear** — installs the [Linear CLI skill](https://skills.sh/schpet/linear-cli/linear-cli) so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
+- **Optional** auto-fix (cloud PR babysitting):
+  - **Claude Code Auto-Fix** — after Flux submits a PR, Claude watches it remotely in the cloud, automatically fixing CI failures and addressing review comments. Requires the [Claude GitHub App](https://github.com/apps/claude).
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
 
 ## Workflow

@@ -432,6 +432,19 @@ Ralph closes done epics at the end of the loop.
 
 Then push + open PR if user wants.
 
+**After PR is opened**, check how to handle post-submit PR activity:
+
+```bash
+AUTOFIX_ENABLED=$($FLUXCTL config get autofix.enabled --json 2>/dev/null | jq -r '.value // empty')
+REVIEW_BOT=$($FLUXCTL config get review.bot --json 2>/dev/null | jq -r '.value // empty')
+```
+
+**If `autofix.enabled` is `true`** → invoke `/flux:autofix {PR_URL}` automatically. This is non-blocking — auto-fix runs remotely in the cloud and handles everything: CI failures, human review comments, and bot review comments (Greptile/CodeRabbit). Reflect continues independently.
+
+**If `autofix.enabled` is NOT `true` but `review.bot` is set** (`greptile` or `coderabbit`) → run the BYORB self-heal loop locally against the PR. The PR now exists, so the bot can review it. Follow the External Bot Self-Heal Phase from `flux-epic-review/workflow.md` (poll for bot comments, filter by severity, fix, push, re-poll — max 2 iterations). This is the fallback for users without Claude Code web/mobile.
+
+**If neither is configured** → proceed directly to Reflect.
+
 ## Definition of Done
 
 Confirm before ship:
@@ -458,6 +471,10 @@ Phase 1 (resolve) → Phase 2 (branch) → Phase 3:
   │       ├─ yes → grill → gaps? → create fix tasks → loop to 3a
   │       └─ no → Phase 4
   └─ Phase 4 (quality) → Phase 5 (ship)
+      └─ PR opened:
+          ├─ autofix.enabled? → /flux:autofix (cloud, handles everything) → Reflect
+          ├─ !autofix + review.bot? → BYORB local self-heal (bot comments only, max 2) → Reflect
+          └─ neither → Reflect
 ```
 
 ## Philosophy: Tight Loops, Not Waterfall

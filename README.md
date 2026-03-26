@@ -202,6 +202,7 @@ flowchart TD
     Grill["Grill<br/>(behavioral stress test)"]
     Quality["Quality<br/>(tests + desloppify scan)"]
     Submit["Submit<br/>(push + PR)"]
+    Autofix["Autofix<br/>(cloud PR babysitting)"]
     Reflect["Reflect<br/>(capture learnings)"]
     Meditate["Meditate<br/>(prune + promote)"]
     Ruminate["Ruminate<br/>(mine past sessions)"]
@@ -273,7 +274,9 @@ flowchart TD
     Grill -->|"all verified"| Quality
     FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| GrillOffer
     Quality --> Submit
-    Submit --> Reflect
+    Submit -->|"autofix.enabled"| Autofix
+    Autofix -->|"non-blocking<br/>remote session"| Reflect
+    Submit -->|"skip"| Reflect
     Reflect -->|"20+ pitfall files"| Meditate
     Reflect -->|"brain healthy"| Done["Done"]
     Meditate --> Done
@@ -308,6 +311,7 @@ flowchart TD
 | **Grill** | *After Epic Review (offered for 5+ task epics):* Relentless behavioral stress test — walks every branch of the decision tree, verifying implemented behavior matches intent. Finds gaps the spec didn't mention but users will encounter. Can create new tasks if gaps are found. | Epic review checks code quality — but code can be perfect and still do the wrong thing. Grill checks *behavioral correctness*: does the implementation match what was intended? It's the difference between "the code compiles" and "the feature works." Especially valuable for large epics where requirements can drift across many tasks. |
 | **Quality** | Tests, lint/format, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
+| **Autofix** | *Automatic after Submit (config-driven):* activates Claude Code's cloud auto-fix on the PR. Claude watches remotely for CI failures and review comments, pushes fixes automatically. Non-blocking — Reflect runs independently. Enabled via `/flux:setup`. | CI failures and review comments are the #1 reason PRs sit idle. Auto-fix handles the mechanical back-and-forth (fixing lint errors, updating test assertions, addressing clear review feedback) so you can walk away. Claude asks before acting on anything ambiguous or architectural. Requires the [Claude GitHub App](https://github.com/apps/claude). |
 | **Reflect** | *Auto after Submit:* captures session learnings to brain vault and extracts reusable skills while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
 | **Meditate** | *Auto after Reflect (conditional):* prunes stale notes, promotes pitfalls to principles. Triggers when 20+ pitfall files accumulate. | The brain vault grows without bound. Old pitfalls become irrelevant (code was refactored), recurring patterns deserve promotion to principles (stronger signal). Without periodic curation, the brain becomes noise — too many files, contradictory advice, stale warnings about code that no longer exists. |
 | **Ship** | PR merged + deployed. | Happens outside Flux's session scope — CI/CD, human review, merge. Flux's job ends at Submit. |
@@ -329,6 +333,7 @@ flowchart TD
 | **Design Interface** | During scope, if complex module boundary detected | Automatic — spawns parallel sub-agents with different design constraints |
 | **TDD** | During work, if `--tdd` flag or task spec requests it | Automatic — switches worker to red-green-refactor vertical slices |
 | **Grill** | After epic review, for epics with 5+ tasks | Semi-automatic — offered to user, strongly recommended for large epics |
+| **Autofix** | After PR is submitted, if enabled in setup | Automatic — config-driven, non-blocking cloud PR babysitting |
 | **Improve** | During epic review, if friction score >= 3 | Automatic — fetches and matches recommendations |
 | **Setup** (`/flux:setup`) | First install; re-run after major upgrades | Manual — Flux nudges if setup version is stale after upgrade |
 | **Prime** (`/flux:prime`) | First session per project | Manual — but `session-state` blocks until done |
