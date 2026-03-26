@@ -35,6 +35,7 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `needs_completion_review` | All tasks done. Epic review required. | `epic_review` | Epic Review |
 | `epic_review` | Full review pipeline running. | `quality` (SHIP), `in_progress` (NEEDS_WORK fix loop) | Epic Review Pipeline |
 | `quality` | Tests, lint/format, desloppify scan on changed files. | `submit` | Quality |
+| `grill` | Behavioral stress test — walks decision tree verifying behavior matches intent. | `quality`, `in_progress` (if gaps found) | Grill |
 | `submit` | Push + open PR. Code ready for review/merge. | `reflect` | Submit |
 | `reflect` | Capture session learnings to brain vault, extract skills. | `meditate`, `done` | Reflect |
 | `meditate` | Prune stale brain notes, promote pitfalls to principles. | `done` | Meditate |
@@ -66,7 +67,7 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 
 ### Valid Phases
 
-`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `quality`, `submit`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`
+`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `quality`, `submit`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `tdd`, `design_interface`, `ubiquitous_language`
 
 ### Skill → Phase Mapping
 
@@ -87,6 +88,10 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 | `/flux:rca` | `rca` |
 | `/flux:improve` | `improve` |
 | `/flux:remember` | `remember` |
+| `/flux:grill` | `grill` |
+| `/flux:tdd` | `tdd` |
+| `/flux:design-interface` | `design_interface` |
+| `/flux:ubiquitous-language` | `ubiquitous_language` |
 
 ---
 
@@ -231,6 +236,15 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │        │ SHIP
   │        │ (NEEDS_WORK → fix loop back to work)
   │        ▼
+  │  ASK: Grill behavior? (offer /flux:grill)
+  │    │ yes                    │ no
+  │    ▼                        │
+  │  GRILL (grill)              │
+  │  → walk decision tree       │
+  │  → verify edge cases        │
+  │  → gaps? → create fix tasks │
+  │    │ all verified            │
+  │    ▼                        ▼
   │  QUALITY (quality)
   │  → tests, lint/format, desloppify scan
   │        │
@@ -273,6 +287,8 @@ The brain vault is stored in `.flux/brain/`. This maps every interaction:
 | **Meditate** | READ+WRITE | Prune stale notes, promote recurring pitfalls to principles |
 | **Remember** (flux-brain) | WRITE | `.flux/brain/<category>/` or `CLAUDE.md` based on content analysis |
 | **Propose** | READ+WRITE | Read `.flux/brain/business/`, write back new glossary terms and area context |
+| **Ubiquitous Language** | READ+WRITE | Read `.flux/brain/business/glossary.md`, write canonical glossary with flagged ambiguities |
+| **Grill** | READ+WRITE | Read epic spec + task specs + brain vault decisions; write resolved ambiguities and new fix tasks |
 
 ---
 
@@ -293,7 +309,11 @@ The following routing happens when a user provides natural language instead of a
 | "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 6 |
 | "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 7 |
 | "review this" / "check my code" | `/flux:impl-review` | 8 |
-| "reflect" / "what did we learn" | `/flux:reflect` | 9 |
+| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 9 |
+| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 10 |
+| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 11 |
+| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 12 |
+| "reflect" / "what did we learn" | `/flux:reflect` | 13 |
 
 ### Intra-Skill Routing
 
@@ -315,6 +335,13 @@ Skills can route to other skills during execution:
 | `/flux:epic-review` | NEEDS_WORK verdict | Fix loop → re-review |
 | `/flux:epic-review` | SHIP → Quality → Submit | `/flux:reflect` (auto) |
 | `/flux:reflect` | Pitfalls >= 20 | `/flux:meditate` (auto) |
+| `/flux:epic-review` | SHIP verdict + user accepts grill offer | `/flux:grill` (user choice) |
+| `/flux:grill` | Gaps found requiring new tasks | `in_progress` (fix tasks) |
+| `/flux:grill` | All behaviors verified | `quality` |
+| `/flux:work` | Worker spawn + TDD requested or `--tdd` flag | `/flux:tdd` (replaces standard worker) |
+| `/flux:scope` | Solution phase + complex interface design needed | `/flux:design-interface` (user choice) |
+| `/flux:scope` | Problem phase complete + domain terms ambiguous | `/flux:ubiquitous-language` (user choice) |
+| `/flux:propose` | Domain terms ambiguous during interview | `/flux:ubiquitous-language` (user choice) |
 | Recommendation pulse | New tools detected (1x/day) | Nudge `/flux:improve` |
 
 ### State Guards

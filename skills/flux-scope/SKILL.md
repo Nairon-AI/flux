@@ -287,6 +287,30 @@ Does this capture it? What would you change?
 
 ---
 
+# STEP 6.05: UBIQUITOUS LANGUAGE CHECK (auto after Step 6)
+
+After the problem statement is confirmed, check if domain terminology is ambiguous. Signals:
+- The user used different words for the same concept during Steps 1-6
+- Domain terms overlap with technical terms (e.g., "account" meaning both billing and auth)
+- The codebase uses inconsistent naming for the same domain concept (found during business context load)
+- No `.flux/brain/business/glossary.md` exists yet and this is a domain-heavy feature
+
+If signals are present, offer:
+
+```
+I noticed some domain terms were used inconsistently during scoping
+(e.g., "[term A]" and "[term B]" seem to mean the same thing).
+
+Want to harden the terminology before we plan? This takes ~3 min and
+produces a glossary that all future tasks will reference.
+[y/n]
+```
+
+- If **yes** → invoke `/flux:ubiquitous-language`. The glossary feeds into task specs and is read by workers during re-anchor.
+- If **no** → continue to Step 6.1.
+
+---
+
 # STEP 6.1: ASSUMPTION STRESS TEST (auto-triggers after Step 6)
 
 After the problem statement is confirmed, scan the conversation (Steps 1-6) for these signals:

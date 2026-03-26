@@ -18,8 +18,9 @@ Tasks: N total | Sizes: Xs S, Ym M
 
 Next steps:
 1) Start work: /flux:work <epic-id>
-2) Review the plan: /flux:plan-review <epic-id>
-3) Deep dive on specific tasks: /flux:scope <task-id> --deep
+2) Start work (TDD): /flux:work <epic-id> --tdd
+3) Review the plan: /flux:plan-review <epic-id>
+4) Deep dive on specific tasks: /flux:scope <task-id> --deep
 ```
 
 **If Linear mode was used**, also show:

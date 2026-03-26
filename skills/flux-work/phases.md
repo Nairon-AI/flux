@@ -172,7 +172,14 @@ Use the Task tool to spawn a `worker` subagent. The worker gets fresh context an
 - Review cycles (if enabled)
 - Completing the task (fluxctl done)
 
-**Prompt template for worker:**
+**TDD Mode Detection**: Before spawning the worker, check if TDD mode is requested:
+- `--tdd` flag was passed to `/flux:work`
+- Task spec mentions "TDD", "test-driven", or "red-green"
+- User explicitly asked for TDD during feel-check or adapt-plan
+
+If TDD mode: invoke `/flux:tdd <task-id>` instead of spawning the standard worker. TDD skill handles the full red-green-refactor cycle and marks the task done. After TDD completes, continue to 3d as normal.
+
+**Prompt template for worker (standard mode):**
 
 Pass config values only. Worker reads worker.md for phases. Do NOT paraphrase or add step-by-step instructions - worker.md has them.
 
@@ -342,6 +349,7 @@ $FLUXCTL show <epic-id> --json | jq -r '.completion_review_status'
 
 2. After skill returns with SHIP:
    - Set status: `$FLUXCTL epic set-completion-review-status <epic-id> --status ship --json`
+   - **Offer behavioral grill** (see Phase 3j below)
    - Go to Phase 4 (Quality)
 
 **Note:** The epic-review skill gets SHIP from the reviewer but does NOT set the status itself. The caller (work skill or Ralph) sets `completion_review_status=ship` after successful review.
@@ -354,6 +362,29 @@ $FLUXCTL show <epic-id> --json | jq -r '.completion_review_status'
 5. Repeat until SHIP
 
 Only after SHIP does control return here. If skill outputs `<promise>RETRY</promise>`, there was a backend error - retry the skill invocation.
+
+### 3j. Behavioral Grill (optional, after epic-review SHIP)
+
+After epic-review returns SHIP, offer the user a behavioral stress test. This is different from epic-review (which checks code quality) — grill checks whether the *behavior* matches intent.
+
+Prompt the user:
+
+```
+Epic review passed (SHIP). Before quality checks, would you like to grill the behavior?
+
+/flux:grill walks every branch of the decision tree — verifying edge cases,
+error states, and behavioral correctness against the epic spec.
+
+[y/n] (Enter to skip)
+```
+
+- If **yes** → invoke `/flux:grill <epic-id>`. Grill may create new fix tasks — if it does, loop back to 3a to execute them, then re-run epic-review.
+- If **no** or **skip** → proceed to Phase 4 (Quality).
+
+**When to strongly recommend grill:**
+- Epic has 5+ tasks (complex behavioral surface)
+- Epic spec mentions user-facing workflows or state machines
+- Epic touches auth, payments, or data integrity
 
 ---
 
@@ -415,7 +446,7 @@ Confirm before ship:
 
 ```
 Phase 1 (resolve) → Phase 2 (branch) → Phase 3:
-  ├─ 3a-c: find task → start → spawn worker
+  ├─ 3a-c: find task → start → spawn worker (or /flux:tdd if TDD mode)
   ├─ 3d: verify done
   ├─ 3e: FEEL CHECK (human tests, gut check)
   ├─ 3f: ADAPT PLAN (update tasks based on learnings)
@@ -423,7 +454,9 @@ Phase 1 (resolve) → Phase 2 (branch) → Phase 3:
   ├─ 3h: EPIC_MODE? → loop to 3a | SINGLE_TASK_MODE? → Phase 4
   ├─ no more tasks → 3i: check completion_review_status
   │   ├─ status != ship → invoke /flux:epic-review → fix loop until SHIP → set status=ship
-  │   └─ status = ship → Phase 4
+  │   └─ status = ship → 3j: offer /flux:grill (behavioral stress test)
+  │       ├─ yes → grill → gaps? → create fix tasks → loop to 3a
+  │       └─ no → Phase 4
   └─ Phase 4 (quality) → Phase 5 (ship)
 ```
 

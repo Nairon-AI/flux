@@ -233,6 +233,27 @@ Must capture:
 - External docs links
 - Project conventions
 
+## Step 8.5: Interface Design (if complex module boundaries)
+
+After research, check if the epic involves designing new module interfaces, APIs, or service boundaries. Signals:
+- Research found multiple possible approaches to the same interface
+- Epic requires a new public API, SDK, or integration surface
+- Tasks will create modules consumed by multiple callers
+
+If detected, offer:
+
+```
+Research found [N] potential approaches to the [module/API] interface.
+Would you like to "design it twice" — generate multiple radically different
+interface designs in parallel and compare them before committing?
+
+This takes ~5 min and avoids locking in a suboptimal API shape.
+[y/n]
+```
+
+- If **yes** → invoke `/flux:design-interface` with the module requirements and research findings. The chosen design feeds into task specs.
+- If **no** → continue to Step 9.
+
 ## Step 9: Gap Analysis (Diverge)
 
 Run the gap analyst:
