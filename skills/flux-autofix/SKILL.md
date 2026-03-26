@@ -102,76 +102,80 @@ After installing, re-run /flux:autofix
 ```
 Stop here.
 
-### Step 3: Determine auto-fix method
+### Step 3: Start cloud auto-fix session
 
-Check the environment to decide how to enable auto-fix:
-
-**Option A — Claude Code CLI with `--remote`** (preferred, fully automated):
+Auto-fix works by spawning an independent cloud session via `claude --remote`. This creates a new Claude Code session on Anthropic's infrastructure that clones the repo, subscribes to GitHub events on the PR, and runs autonomously. The local session continues to Reflect — both run in parallel.
 
 ```bash
-# Check if claude CLI supports --remote
+# Verify claude CLI supports --remote
 claude --help 2>&1 | grep -q "\-\-remote" && echo "remote supported" || echo "no remote"
 ```
 
-If `--remote` is supported:
+**If `--remote` is supported** (standard path):
+
 ```bash
 claude --remote "Watch this PR and auto-fix any CI failures or review comments. Only address NEW activity — CI check failures and review comments posted after this point. Do not re-address bot comments (Greptile, CodeRabbit) that were already resolved in earlier commits. PR: ${PR_URL}"
 ```
 
 Tell the user:
 ```
-Auto-fix enabled remotely for: {PR_URL}
+Auto-fix session started for: {PR_URL}
 
-Claude is now watching this PR in the cloud. It will:
-- Fix CI failures (test errors, lint issues, type errors)
-- Address review comments
-- Push fixes and re-run CI
+A separate Claude Code session is now running in the cloud. It will:
+  - Fix CI failures (test errors, lint issues, type errors)
+  - Address review comments from human reviewers
+  - Handle bot feedback (Greptile/CodeRabbit) if configured
+  - Push fixes and re-run CI
 
-You can walk away. Come back to a green PR.
-
-To check status: open claude.ai/code and look for the active session.
+You can walk away — the session runs independently.
+Monitor it: run /tasks in the CLI, or open claude.ai/code.
 ```
 
-**Option B — Manual setup** (if `--remote` not available):
+**If `--remote` is NOT supported** (older CLI version or non-Claude-Code agent):
 
-Tell the user:
-```
-To enable auto-fix on this PR:
-
-1. Open claude.ai/code (web) or the Claude Code mobile app
-2. Paste this PR URL into a new session:
-
-   {PR_URL}
-
-3. Tell Claude: "Watch this PR and auto-fix any CI failures or review comments"
-
-Claude will monitor the PR remotely — fixing CI failures and addressing
-review comments — so you can walk away.
-
-Tip: On web, you can also open the CI status bar and select "Auto-fix"
-if the PR was created in a Claude Code web session.
-```
-
-### Step 4: Offer next steps
-
-After enabling (or explaining) auto-fix:
+Auto-fix cannot run autonomously without `--remote`. Tell the user:
 
 ```
-What's next?
+Auto-fix requires `claude --remote` which isn't available in your CLI version.
 
-a) Continue to /flux:reflect (capture learnings while context is fresh)
-b) Start new work (/flux:scope)
+Options:
+  1. Update Claude Code: npm i -g @anthropic-ai/claude-code@latest
+     Then auto-fix will work automatically on next PR submit.
+
+  2. Start it manually from the web:
+     - Open claude.ai/code
+     - Paste: {PR_URL}
+     - Say: "Watch this PR and auto-fix any CI failures or review comments"
+
+  3. Start it from mobile:
+     - Open the Claude Code mobile app
+     - Say: "Watch {PR_URL} and auto-fix CI failures and review comments"
+
+Proceeding to Reflect — auto-fix is not running for this PR.
+```
+
+In this case, skip auto-fix and continue to Reflect. Do NOT block the workflow.
+
+### Step 4: Continue to Reflect
+
+Auto-fix is non-blocking. Whether it started successfully or not, the local session continues:
+
+- If invoked automatically from `/flux:work` → return control to the work skill, which proceeds to Reflect
+- If invoked manually (`/flux:autofix`) → offer next steps:
+
+```
+Auto-fix is running independently. What's next?
+
+a) /flux:reflect — capture learnings while context is fresh
+b) /flux:scope — start new work
 c) Done for now
-
-The auto-fix session runs independently — you don't need to stay here.
 ```
 
-## When Auto-Fix Is Offered Automatically
+## When Auto-Fix Runs Automatically
 
-Auto-fix is offered in two places within the Flux workflow:
+Auto-fix fires once per epic, at the end of `/flux:work` Phase 5 (Ship) — immediately after the PR is created. The PR is always created at the end of the epic (after all tasks → epic review → quality → Ship). There is no earlier PR creation point in the standard Flux flow.
 
-1. **After `/flux:work` Phase 5 (Ship)** — when a PR is pushed and opened, Flux offers to enable auto-fix before moving to Reflect
-2. **After `/flux:gate`** — if staging validation finds issues that need a fix PR, auto-fix can watch that fix PR
+The `claude --remote` call spawns an independent cloud session. The local session continues to Reflect in parallel. Both run independently — the cloud session watches the PR, the local session captures learnings.
 
 ## How Claude Responds to PR Activity
 
