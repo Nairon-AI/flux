@@ -1,6 +1,6 @@
 {
   "name": "flux",
-  "version": "2.31.1-dev",
+  "version": "2.32.1-dev",
   "description": "AI-native capability benchmarking and structured SDLC workflow for Claude Code",
   "type": "module",
   "private": true,
