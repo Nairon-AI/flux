@@ -6,11 +6,11 @@ Common issues and solutions.
 
 ## Installation Issues
 
-### Plugin not found after install
+### Flux commands missing after install
 
-1. Verify files exist: `ls ~/.claude/plugins/flux/commands/flux/`
-2. Restart Claude Code
-3. Try manual install if marketplace failed
+1. Verify Flux copied local scripts: `ls .flux/bin/`
+2. Restart your agent session
+3. Re-run `/flux:setup`
 
 ### Prerequisites missing
 
@@ -48,7 +48,7 @@ Try:
 
 ### Session analysis says no sessions found
 
-Flux analyzes sessions for the current project. If your project has no session history yet, start coding and run again later.
+Flux analyzes legacy transcripts for the current project. If your project has no imported session history yet, start coding and run again later.
 
 You can still run setup-only analysis:
 

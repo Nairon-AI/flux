@@ -39,7 +39,7 @@ Track completion of every step. At the end (Step 8), verify ALL steps were execu
 - Code review bot selection
 - Severity threshold
 - Human review toggle
-- Docs block (CLAUDE.md/AGENTS.md `<!-- BEGIN FLUX -->` section)
+- Docs block (AGENTS.md and optional legacy CLAUDE.md `<!-- BEGIN FLUX -->` section)
 - Star question
 
 If you reach Step 8 without having asked the configuration questions from Step 6, **STOP and go back to Step 6.**
@@ -62,7 +62,7 @@ fi
 ```
 
 Also verify:
-- `<!-- BEGIN FLUX -->` exists in CLAUDE.md or AGENTS.md (Step 6 docs question)
+- `<!-- BEGIN FLUX -->` exists in AGENTS.md or legacy CLAUDE.md (Step 6 docs question)
 - `.flux/brain/business/context.md` exists (Step 5b)
 
 ---
@@ -105,10 +105,10 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 
 ## Step 3: Installation Scope
 
-Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory. This means:
+Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, `.codex/skills/`, and a legacy `.claude/skills/` mirror within the project directory. This means:
 
 - Different projects can have different MCP servers, skills, and Flux configs
-- No conflicts with your global `~/.claude/settings.json`
+- No conflicts with your global agent settings
 - Team members get the same setup when they clone the repo
 
 Persist the scope:
@@ -135,11 +135,11 @@ Flux recommends MCP servers that enhance your AI development workflow. Installat
 
 ### Critical execution rule
 
-Do **NOT** run `claude ...` CLI commands from inside `/flux:setup`.
+Do **NOT** run nested agent CLI commands from inside `/flux:setup`.
 
-Why: `/flux:setup` runs inside an active Claude Code session, and nested `claude` invocations fail with "cannot be launched inside another Claude Code session".
+Why: `/flux:setup` runs inside an active agent session, and nested agent invocations often fail or hang.
 
-Use direct config updates to the project-level `.mcp.json` (preferred), then tell the user to restart Claude Code with `--resume`.
+Use direct config updates to the project-level `.mcp.json` (preferred), then tell the user to restart their agent session.
 
 ### Available MCP Servers
 
@@ -491,15 +491,15 @@ If no memory MCP is detected, skip silently — no config is written, and brain/
 If settings are not writable or `jq` is missing, print manual instructions:
 
 ```
-MCP servers (install manually in Claude Code):
-  1. Run /mcp in chat
+MCP servers (install manually in your agent UI):
+  1. Open your MCP/server management UI
   2. Add these servers:
      - fff: Install binary first (curl -fsSL https://raw.githubusercontent.com/dmtrKovalenko/fff.nvim/main/install-mcp.sh | bash), then add MCP with command "fff-mcp"
      - context7: https://mcp.context7.com/mcp
      - exa: https://mcp.exa.ai/mcp
      - firecrawl: npx -y firecrawl-mcp
      - github: npx -y @modelcontextprotocol/server-github
-  3. Restart Claude Code with `--resume` to pick up where you left off
+  3. Restart your agent session to pick up where you left off
 ```
 
 ## Step 4c: Install recommended desktop applications (Optional)
@@ -536,7 +536,7 @@ echo "Detected OS: $OS_TYPE"
 | ID | Name | macOS | Linux | Windows | Benefit | Free | Install |
 |----|------|-------|-------|---------|---------|------|---------|
 | `raycast` | Raycast | Yes | No | No | **Launcher on steroids** — AI, snippets, clipboard history | Freemium | `brew install --cask raycast` |
-| `superset` | Superset | Yes | No | No | **Primary orchestrator for parallel Claude sessions** — git worktree workspace manager | Yes | `brew install --cask superset` |
+| `superset` | Superset | Yes | No | No | **Primary orchestrator for parallel Codex sessions and cross-lab review worktrees** — git worktree workspace manager | Yes | `brew install --cask superset` |
 | `wispr-flow` | Wispr Flow | Yes | No | No | **Voice-to-text 4x faster** — dictate anywhere | Freemium | Manual download |
 | `granola` | Granola | Yes | No | Yes | **AI meeting notes** — no bot joins calls | Freemium | Manual download |
 
@@ -599,7 +599,7 @@ Desktop apps already installed: <comma-separated list>
   "multiple": true,
   "options": [
     // Only include apps NOT already installed
-    {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Claude Code sessions using git worktrees (free)"},
+    {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Codex sessions and cross-lab review worktrees (free)"},
     {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
     {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
     {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
@@ -949,22 +949,23 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
-| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` |
-| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> .claude/skills/taste-skill/SKILL.md` |
-| `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` |
-| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git .claude/skills/agent-skills-vercel` |
-| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git .claude/skills/x-research-skill` |
+| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` plus mirror into `.codex/skills/` and `.claude/skills/` |
+| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> .codex/skills/taste-skill/SKILL.md` and mirror to `.claude/skills/` |
+| `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` and mirror locally |
+| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git .codex/skills/agent-skills-vercel` and mirror to `.claude/skills/agent-skills-vercel` |
+| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git .codex/skills/x-research-skill` and mirror to `.claude/skills/x-research-skill` |
 
 ### Detect existing skills
 
 ```bash
-HAVE_UI_SKILLS=$(([ -f ".claude/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/fixing-accessibility/SKILL.md" ] || [ -d ".claude/skills/ui-skills" ]) && echo 1 || echo 0)
-HAVE_TASTE_SKILL=$([ -f ".claude/skills/taste-skill/SKILL.md" ] && echo 1 || echo 0)
-HAVE_SEMVER_CHANGELOG=$(([ -d ".claude/skills/semver-changelog" ] || [ -d ".claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
-HAVE_AGENT_SKILLS_VERCEL=$([ -d ".claude/skills/agent-skills-vercel" ] && echo 1 || echo 0)
-HAVE_X_RESEARCH_SKILL=$([ -d ".claude/skills/x-research-skill" ] && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".codex/skills/fixing-accessibility/SKILL.md" ] || [ -d ".codex/skills/ui-skills" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/fixing-accessibility/SKILL.md" ] || [ -d ".claude/skills/ui-skills" ]) && echo 1 || echo 0)
+HAVE_TASTE_SKILL=$(([ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_SEMVER_CHANGELOG=$(([ -d ".codex/skills/semver-changelog" ] || [ -d ".codex/skills/semantic-version-changelog-generator" ] || [ -d ".claude/skills/semver-changelog" ] || [ -d ".claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
+HAVE_AGENT_SKILLS_VERCEL=$(([ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
+HAVE_X_RESEARCH_SKILL=$(([ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
+mkdir -p .codex/skills .claude/skills
 ```
 
 ### Ask which skills to install
@@ -1007,24 +1008,32 @@ if [ "$INSTALL_UI_SKILLS" = "1" ]; then
     echo "npx not found. Install manually: npx -y ui-skills add --all"
   fi
 
-  if [ ! -f ".claude/skills/baseline-ui/SKILL.md" ] && [ ! -f ".claude/skills/fixing-accessibility/SKILL.md" ]; then
+  [ -d ".claude/skills/baseline-ui" ] && [ ! -d ".codex/skills/baseline-ui" ] && cp -R ".claude/skills/baseline-ui" ".codex/skills/baseline-ui" 2>/dev/null || true
+  [ -d ".claude/skills/fixing-accessibility" ] && [ ! -d ".codex/skills/fixing-accessibility" ] && cp -R ".claude/skills/fixing-accessibility" ".codex/skills/fixing-accessibility" 2>/dev/null || true
+  [ -d ".codex/skills/baseline-ui" ] && [ ! -d ".claude/skills/baseline-ui" ] && cp -R ".codex/skills/baseline-ui" ".claude/skills/baseline-ui" 2>/dev/null || true
+  [ -d ".codex/skills/fixing-accessibility" ] && [ ! -d ".claude/skills/fixing-accessibility" ] && cp -R ".codex/skills/fixing-accessibility" ".claude/skills/fixing-accessibility" 2>/dev/null || true
+
+  if [ ! -f ".codex/skills/baseline-ui/SKILL.md" ] && [ ! -f ".codex/skills/fixing-accessibility/SKILL.md" ] && [ ! -f ".claude/skills/baseline-ui/SKILL.md" ] && [ ! -f ".claude/skills/fixing-accessibility/SKILL.md" ]; then
     echo "Install manually: npx -y ui-skills add --all"
   fi
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
+  mkdir -p ".codex/skills/taste-skill"
   mkdir -p ".claude/skills/taste-skill"
-  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || {
+  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o ".codex/skills/taste-skill/SKILL.md" 2>/dev/null || {
     if which git >/dev/null 2>&1; then
       TMP_TASTE_DIR=$(mktemp -d 2>/dev/null || echo "")
       if [ -n "$TMP_TASTE_DIR" ] && git clone --depth 1 https://github.com/Leonxlnx/taste-skill.git "$TMP_TASTE_DIR/taste-skill" 2>/dev/null; then
-        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
+        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" ".codex/skills/taste-skill/SKILL.md" 2>/dev/null || true
         rm -rf "$TMP_TASTE_DIR"
       fi
     fi
   }
 
-  if [ ! -s ".claude/skills/taste-skill/SKILL.md" ]; then
+  [ -f ".codex/skills/taste-skill/SKILL.md" ] && cp ".codex/skills/taste-skill/SKILL.md" ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
+
+  if [ ! -s ".codex/skills/taste-skill/SKILL.md" ] && [ ! -s ".claude/skills/taste-skill/SKILL.md" ]; then
     echo "Install manually: https://github.com/Leonxlnx/taste-skill"
   fi
 fi
@@ -1037,26 +1046,35 @@ if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
   else
     echo "npx not found. Install manually: https://skills.sh/prulloac/agent-skills/semver-changelog"
   fi
+
+  [ -d ".claude/skills/semver-changelog" ] && [ ! -d ".codex/skills/semver-changelog" ] && cp -R ".claude/skills/semver-changelog" ".codex/skills/semver-changelog" 2>/dev/null || true
+  [ -d ".claude/skills/semantic-version-changelog-generator" ] && [ ! -d ".codex/skills/semantic-version-changelog-generator" ] && cp -R ".claude/skills/semantic-version-changelog-generator" ".codex/skills/semantic-version-changelog-generator" 2>/dev/null || true
+  [ -d ".codex/skills/semver-changelog" ] && [ ! -d ".claude/skills/semver-changelog" ] && cp -R ".codex/skills/semver-changelog" ".claude/skills/semver-changelog" 2>/dev/null || true
+  [ -d ".codex/skills/semantic-version-changelog-generator" ] && [ ! -d ".claude/skills/semantic-version-changelog-generator" ] && cp -R ".codex/skills/semantic-version-changelog-generator" ".claude/skills/semantic-version-changelog-generator" 2>/dev/null || true
 fi
 
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
-  if [ -d ".claude/skills/agent-skills-vercel" ]; then
-    git -C ".claude/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
+  if [ -d ".codex/skills/agent-skills-vercel" ]; then
+    git -C ".codex/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
   else
-    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git ".claude/skills/agent-skills-vercel" 2>/dev/null || {
+    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git ".codex/skills/agent-skills-vercel" 2>/dev/null || {
       echo "Install manually: https://github.com/vercel-labs/agent-skills"
     }
   fi
+  rm -rf ".claude/skills/agent-skills-vercel"
+  [ -d ".codex/skills/agent-skills-vercel" ] && cp -R ".codex/skills/agent-skills-vercel" ".claude/skills/agent-skills-vercel" 2>/dev/null || true
 fi
 
 if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
-  if [ -d ".claude/skills/x-research-skill" ]; then
-    git -C ".claude/skills/x-research-skill" pull --ff-only 2>/dev/null || true
+  if [ -d ".codex/skills/x-research-skill" ]; then
+    git -C ".codex/skills/x-research-skill" pull --ff-only 2>/dev/null || true
   else
-    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git ".claude/skills/x-research-skill" 2>/dev/null || {
+    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git ".codex/skills/x-research-skill" 2>/dev/null || {
       echo "Install manually: https://github.com/rohunvora/x-research-skill"
     }
   fi
+  rm -rf ".claude/skills/x-research-skill"
+  [ -d ".codex/skills/x-research-skill" ] && cp -R ".codex/skills/x-research-skill" ".claude/skills/x-research-skill" 2>/dev/null || true
 fi
 ```
 
@@ -1064,11 +1082,11 @@ fi
 
 After running installs, verify each selected skill path exists before marking success:
 
-- UI Skills: `.claude/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`)
-- Taste Skill: `.claude/skills/taste-skill/SKILL.md`
-- Semver Changelog: `.claude/skills/semver-changelog` or `.claude/skills/semantic-version-changelog-generator`
-- Agent Skills (Vercel): `.claude/skills/agent-skills-vercel` directory
-- X Research Skill: `.claude/skills/x-research-skill` directory
+- UI Skills: `.codex/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`) with a `.claude/skills/` mirror
+- Taste Skill: `.codex/skills/taste-skill/SKILL.md`
+- Semver Changelog: `.codex/skills/semver-changelog` or `.codex/skills/semantic-version-changelog-generator`
+- Agent Skills (Vercel): `.codex/skills/agent-skills-vercel` directory
+- X Research Skill: `.codex/skills/x-research-skill` directory
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
@@ -1499,7 +1517,7 @@ Only include lines for config values that are set. If no config is set, skip thi
 
 Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
 
-**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and `.claude/skills/` within the project directory.
+**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, `.codex/skills/`, and a legacy `.claude/skills/` mirror within the project directory.
 
 Available questions (include only if corresponding config is unset):
 
@@ -1548,9 +1566,9 @@ Available questions (include only if corresponding config is unset):
   "header": "Scout Model",
   "question": "Which model should scout agents use? (Scouts analyze your codebase during /flux:prime)",
   "options": [
-    {"label": "claude-haiku-4-5 (Recommended)", "description": "Fast and cost-effective. Works with any Anthropic API access."},
-    {"label": "gpt-5.3-codex-spark", "description": "OpenAI's fastest model. Requires ChatGPT Pro."},
-    {"label": "gpt-5.3-codex", "description": "Balanced OpenAI model. Requires ChatGPT Plus or higher."},
+    {"label": "gpt-5.3-codex-spark (Recommended)", "description": "Fastest Codex scout path. Best default when Codex is your primary driver."},
+    {"label": "gpt-5.3-codex", "description": "Balanced Codex model. More depth for repo scouting."},
+    {"label": "claude-haiku-4-5", "description": "Anthropic fallback when you want scouts off Codex."},
     {"label": "gpt-5.4", "description": "Most capable OpenAI model. Requires ChatGPT Plus or higher."},
     {"label": "o4-mini", "description": "OpenAI reasoning model. Requires ChatGPT Plus or higher."}
   ],
@@ -1735,9 +1753,9 @@ If Reviewer 1 is an OpenAI model, show the recommendation nudge for cross-lab (A
   "header": "Docs",
   "question": "Update project documentation with Flux instructions?",
   "options": [
-    {"label": "CLAUDE.md only", "description": "Add flux section to CLAUDE.md"},
-    {"label": "AGENTS.md only", "description": "Add flux section to AGENTS.md"},
-    {"label": "Both", "description": "Add flux section to both files"},
+    {"label": "AGENTS.md only (Recommended)", "description": "Add flux section to AGENTS.md"},
+    {"label": "Both", "description": "Add flux section to AGENTS.md and legacy CLAUDE.md"},
+    {"label": "CLAUDE.md only", "description": "Legacy compatibility only"},
     {"label": "Skip", "description": "Don't update documentation"}
   ],
   "multiSelect": false
@@ -1746,7 +1764,7 @@ If Reviewer 1 is an OpenAI model, show the recommendation nudge for cross-lab (A
 
 **Auto-fix question** (include if `autofix.enabled` is empty):
 
-Auto-fix uses Claude Code's cloud feature to watch PRs after submit — fixing CI failures and review comments remotely so you can walk away. Before asking, explain what it does:
+Auto-fix uses Claude's optional cloud feature to watch PRs after submit — fixing CI failures and review comments remotely so you can walk away. Before asking, explain what it does:
 
 First, check if the user configured a review bot (Greptile/CodeRabbit) earlier in setup:
 
@@ -1757,9 +1775,9 @@ CURRENT_BOT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.bot --json 2>/d
 Then explain what auto-fix does and how it interacts with the review bot:
 
 ```
-Claude Code recently shipped "Auto-Fix" — a cloud feature that watches your PRs
-after you submit them. When CI fails or a reviewer leaves a comment, Claude
-investigates and pushes a fix automatically. It runs remotely (on Claude Code
+Claude offers an optional "Auto-Fix" cloud workflow that watches your PRs after
+you submit them. When CI fails or a reviewer leaves a comment, Claude
+investigates and pushes a fix automatically. It runs remotely (on Claude
 web/mobile), so you can close your laptop and come back to a green, ready-to-merge PR.
 
 What it handles:
@@ -1789,7 +1807,7 @@ Then the requirements:
 ```
 Auto-fix requires two things:
   1. The Claude GitHub App installed on your repo (free)
-  2. Claude Code web or mobile access (the auto-fix session runs in the cloud)
+  2. Claude web or mobile access (the auto-fix session runs in the cloud)
 ```
 
 **If a review bot IS configured**, the question defaults to "Yes" more strongly:
@@ -1902,9 +1920,9 @@ Only process answers for questions that were asked (config values that were unse
 - If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.github false --json`
 
 **Scout Model** (if question was asked):
-- If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
 - If "gpt-5.3-codex-spark": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex-spark" --json`
 - If "gpt-5.3-codex": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.3-codex" --json`
+- If "claude-haiku-4-5": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "claude-haiku-4-5" --json`
 - If "gpt-5.4": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "gpt-5.4" --json`
 - If "o4-mini": `"${PLUGIN_ROOT}/scripts/fluxctl" config set scouts.model "o4-mini" --json`
 
@@ -1919,7 +1937,7 @@ Only process answers for questions that were asked (config values that were unse
      ```bash
      npx skills add https://github.com/schpet/linear-cli --skill linear-cli
      ```
-  3. Verify install: check `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: npx skills add https://github.com/schpet/linear-cli --skill linear-cli`
+  3. Verify install: check `.codex/skills/linear-cli/SKILL.md` or `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: npx skills add https://github.com/schpet/linear-cli --skill linear-cli`
   4. Check Linear CLI is installed:
      ```bash
      which linear >/dev/null 2>&1 && echo "LINEAR_CLI_OK=1" || echo "LINEAR_CLI_OK=0"
@@ -2097,7 +2115,7 @@ Expected outputs:
 - `Logged in using API key` → authenticated via API key ✅
 - Anything else → not authenticated ❌
 
-**IMPORTANT**: Do NOT attempt to run `codex login` from within Claude Code. The OAuth flow opens a browser and requires interactive input — it will hang in the Bash tool.
+**IMPORTANT**: Do NOT attempt to run `codex login` from inside the current agent session. The OAuth flow opens a browser and requires interactive input — it will hang in the Bash tool.
 
 If not authenticated, tell the user:
 
@@ -2108,7 +2126,7 @@ Run this in a separate terminal:
   codex login
 
 This will open your browser for ChatGPT authentication.
-After logging in, restart Claude Code with --resume and re-run /flux:setup.
+After logging in, restart your agent session and re-run /flux:setup.
 ```
 
 Save the config and continue setup — **do not block or wait**. The user will authenticate externally and re-run setup.
@@ -2128,8 +2146,8 @@ Based on the checks above, include one of these lines in the Step 8 summary unde
 **Before printing the summary, run the verification gate.** This catches steps that were accidentally skipped.
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FC="$PLUGIN_ROOT/scripts/fluxctl"
 
 # Check required config keys
@@ -2272,7 +2290,7 @@ Configuration (use fluxctl config set to change):
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
 - GitHub scout: <enabled|disabled>
-- Scout model: <claude-haiku-4-5|gpt-5.3-codex-spark>
+- Scout model: <gpt-5.3-codex-spark|gpt-5.3-codex|claude-haiku-4-5>
 - Review backend: <codex|rp|none>
 - Adversarial reviewer 1: <model>
 - Adversarial reviewer 2: <model>
@@ -2303,7 +2321,7 @@ Print this **exactly** after the summary block, with a blank line before it:
 
 What to do next:
 
-  1. Restart Claude Code with `--resume` (required for new MCP servers to activate)
+  1. Restart your agent session (required for new MCP servers to activate)
   2. Run /flux:prime — this audits the repo for agent-readiness and inefficiencies. It only runs once.
 
 After prime completes, the core loop is:
@@ -2340,7 +2358,7 @@ Present each category that has items, and let the user choose per-category. Use 
     {"label": "Agent skills", "description": "<list from manifest, e.g. UI Skills, Taste Skill>"},
     {"label": "Desktop apps", "description": "<list from manifest, e.g. Raycast, Superset> (manual uninstall instructions)"},
     {"label": "CLI tools", "description": "<list from manifest, e.g. jq, fzf> (manual uninstall instructions)"},
-    {"label": "Just remove Flux core", "description": "Only remove .flux/, plugin, and CLAUDE.md section"}
+    {"label": "Just remove Flux core", "description": "Only remove .flux/, Flux docs sections, and related config"}
   ]
 }
 ```
@@ -2348,13 +2366,12 @@ Present each category that has items, and let the user choose per-category. Use 
 ### Step U3: Remove Flux core (always)
 
 ```bash
-# Remove Flux plugin
-# Tell user to run: /plugin uninstall flux@nairon-flux
+# Remove any legacy Flux plugin install manually if present
 
 # Remove project artifacts
 rm -rf .flux
 
-# Remove CLAUDE.md / AGENTS.md flux section
+# Remove AGENTS.md / legacy CLAUDE.md Flux section
 # Strip everything between <!-- BEGIN FLUX --> and <!-- END FLUX --> (inclusive)
 ```
 
@@ -2366,14 +2383,15 @@ For each MCP server in the manifest, remove its entry from `.mcp.json` under `mc
 **Agent skills** (if selected):
 ```bash
 # Remove each skill directory
+rm -rf .codex/skills/<skill-name>
 rm -rf .claude/skills/<skill-name>
 ```
 
 Map skill names to directories:
-- `ui-skills` → `.claude/skills/baseline-ui`, `.claude/skills/fixing-accessibility`, etc.
-- `taste-skill` → `.claude/skills/taste-skill`
-- `agent-skills-vercel` → `.claude/skills/agent-skills-vercel`
-- `x-research-skill` → `.claude/skills/x-research-skill`
+- `ui-skills` → `.codex/skills/baseline-ui`, `.codex/skills/fixing-accessibility`, plus legacy `.claude/skills/*` mirrors
+- `taste-skill` → `.codex/skills/taste-skill` plus legacy `.claude/skills/taste-skill`
+- `agent-skills-vercel` → `.codex/skills/agent-skills-vercel` plus legacy `.claude/skills/agent-skills-vercel`
+- `x-research-skill` → `.codex/skills/x-research-skill` plus legacy `.claude/skills/x-research-skill`
 
 **Desktop apps** (if selected):
 Cannot auto-uninstall GUI apps. Print manual instructions:
@@ -2400,13 +2418,13 @@ brew uninstall lefthook
 Flux has been uninstalled.
 
 Removed:
-- Flux plugin (run /plugin uninstall flux@nairon-flux to complete)
+- Flux core files
 - .flux/ directory
-- CLAUDE.md / AGENTS.md flux sections
+- AGENTS.md / legacy CLAUDE.md Flux sections
 - <list any extras that were removed>
 
 Kept:
 - <list any extras the user chose to keep>
 
-Restart Claude Code with `--resume` for changes to take effect.
+Restart your agent session for changes to take effect.
 ```

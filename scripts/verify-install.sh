@@ -99,7 +99,7 @@ EOF
             if cat "$MCP_FILE" | jq -e ".mcpServers.\"$NAME\"" > /dev/null 2>&1; then
                 echo "✓ MCP '$NAME' found in config"
                 echo ""
-                echo "Note: Full verification requires restarting Claude Code"
+                echo "Note: Full verification requires restarting your agent session"
                 echo "      and testing the MCP with a sample query."
                 cat <<EOF
 {
@@ -107,7 +107,7 @@ EOF
   "name": "$NAME",
   "verify_type": "mcp_connect",
   "config_file": "$MCP_FILE",
-  "note": "Restart Claude Code to activate"
+  "note": "Restart your agent session to activate"
 }
 EOF
             else

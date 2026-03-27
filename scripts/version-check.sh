@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT:-$(dirname "$(dirname "$0")")}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || dirname "$(dirname "$0")")}}"
 LOCAL_VERSION=$(jq -r '.version' "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "unknown")
 
 # Check remote version (cache for 1 hour to avoid rate limits)
@@ -48,6 +48,6 @@ cat << EOJSON
   "local_version": "$LOCAL_VERSION",
   "remote_version": "${REMOTE_VERSION:-unknown}",
   "update_available": $UPDATE_AVAILABLE,
-  "update_command": "/plugin add https://github.com/Nairon-AI/flux@latest"
+  "update_command": "Update Flux from the same source you installed it from, then restart your agent session."
 }
 EOJSON

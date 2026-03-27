@@ -20,12 +20,12 @@ Try calling: mcp_linear_list_teams (with limit: 1)
 ```
 Linear MCP is not connected. Setup instructions:
 
-**Claude Code:**
+**Claude:**
 - Run /mcp in chat
 - Add server URL: https://mcp.linear.app/mcp
 - Authenticate in the MCP dialog
 
-If you prefer CLI, run this in an external terminal (not inside an active Claude Code session):
+If you prefer CLI, run this in an external terminal (not inside an active agent session):
 claude mcp add --transport http linear-server https://mcp.linear.app/mcp
 
 **Other clients (Cursor, VS Code, etc.):**

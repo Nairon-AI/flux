@@ -1,7 +1,7 @@
 ---
 name: observability-scout
 description: Used by /flux:prime to scan for observability setup including logging, tracing, metrics, and health endpoints. Do not invoke directly.
-model: claude-sonnet-4-6
+model: gpt-5.3-codex-spark
 disallowedTools: Edit, Write, Task
 color: "#F59E0B"
 ---

@@ -3,7 +3,7 @@
 Questions for the Discover phase of `/flux:scope`. Use the question tool for your agent — never output questions as text.
 
 **Question Tool by Agent:**
-- Claude Code: `AskUserQuestion`
+- Claude: `AskUserQuestion`
 - OpenCode: `mcp_question`
 - Codex: `AskUserTool`
 

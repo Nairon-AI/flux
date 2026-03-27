@@ -26,14 +26,14 @@ Behavioral breakdown includes:
 - What should become skills (reusable workflows)
 - What should become plugins (standalone tools)
 - What should become agents (autonomous subagents)
-- What belongs in `CLAUDE.md` (project-level instructions)
+- What belongs in `AGENTS.md` (project-level instructions)
 
 ## Session Phase Tracking
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set improve
 ```
@@ -98,7 +98,7 @@ Follow [workflow.md](workflow.md) exactly.
 
 ## Session Analysis Consent
 
-Before reading any session files from `~/.claude/projects/`, you MUST:
+Before reading any legacy session files from `~/.claude/projects/`, you MUST:
 
 1. Display the privacy notice (what data is analyzed)
 2. Use `mcp_question` tool to ask for consent
@@ -112,7 +112,7 @@ Fetched from: `https://github.com/Nairon-AI/flux-recommendations`
 
 Categories:
 - `mcps/` - Model Context Protocol servers
-- `plugins/` - Claude Code plugins
+- `plugins/` - legacy plugin installs and compatibility layers
 - `skills/` - Standalone skills
 - `cli-tools/` - Development CLI tools
 - `vscode-extensions/` - VS Code extensions
@@ -131,8 +131,8 @@ Categories:
 **ALWAYS run at the very end of /flux:improve execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
@@ -144,7 +144,6 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin add https://github.com/Nairon-AI/flux@latest
-Then restart Claude Code for changes to take effect.
+Update Flux from the same source you installed it from, then restart your agent session.
 ---
 ```

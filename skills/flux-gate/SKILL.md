@@ -12,8 +12,8 @@ Validates that a staging deployment is healthy after a PR merge, then creates a 
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set gate
 ```
@@ -32,7 +32,7 @@ $FLUXCTL session-phase set idle
 ### Step 1: Read environment config
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 STAGING_BRANCH=$("${PLUGIN_ROOT}/scripts/fluxctl" config get environments.staging.branch --json 2>/dev/null | jq -r '.value // empty')
 STAGING_URL=$("${PLUGIN_ROOT}/scripts/fluxctl" config get environments.staging.url --json 2>/dev/null | jq -r '.value // empty')
 PROD_BRANCH=$("${PLUGIN_ROOT}/scripts/fluxctl" config get environments.production.branch --json 2>/dev/null | jq -r '.value // empty')
@@ -246,7 +246,7 @@ Merge when ready to deploy to production. Flux will not auto-merge to production
 **ALWAYS run at the very end of command execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 CURRENT_VERSION=$(jq -r '.version' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null)
 MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' "${PLUGIN_ROOT}/.claude-plugin/marketplace.json" 2>/dev/null)
 if [ "$CURRENT_VERSION" != "$MARKETPLACE_VERSION" ] && [ -n "$MARKETPLACE_VERSION" ]; then

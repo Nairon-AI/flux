@@ -88,7 +88,7 @@ echo "✓ Installed MCP: $NAME"
 echo "  Config: $MCP_FILE"
 echo "  Backup: $BACKUP_DIR/mcp.json"
 echo ""
-echo "Note: Restart Claude Code for the MCP to take effect"
+echo "Note: Restart your agent session for the MCP to take effect"
 
 # Output JSON result for script consumption
 cat <<EOF

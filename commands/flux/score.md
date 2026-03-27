@@ -1,20 +1,20 @@
 ---
 name: flux:score
-description: Compute AI-native capability score from Claude Code session data
+description: Compute AI-native capability score from legacy session transcript data
 argument-hint: "[--since YYYY-MM-DD] [--until YYYY-MM-DD] [--format table|json|yaml] [--export FILE]"
 ---
 
 # Flux Score
 
-Compute your AI-native capability score from Claude Code session data.
+Compute your AI-native capability score from legacy session transcript data.
 
 ## Usage
 
 Run the scoring script. The plugin root is detected automatically:
 
 ```bash
-# Detect plugin root (Claude Code doesn't always set CLAUDE_PLUGIN_ROOT)
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+# Detect plugin root
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 if [ -z "$PLUGIN_ROOT" ]; then
   # Fallback: find latest version in plugin cache
   PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)

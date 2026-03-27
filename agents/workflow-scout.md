@@ -1,7 +1,7 @@
 ---
 name: workflow-scout
 description: Used by /flux:prime to scan for CI/CD, PR templates, issue templates, and workflow automation. Do not invoke directly.
-model: claude-sonnet-4-6
+model: gpt-5.3-codex-spark
 disallowedTools: Edit, Write, Task
 color: "#8B5CF6"
 ---

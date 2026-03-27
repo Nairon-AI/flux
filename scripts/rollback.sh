@@ -67,7 +67,7 @@ if [ -f "$SNAPSHOT_DIR/plugins.txt" ]; then
     echo "Previous plugins were:"
     cat "$SNAPSHOT_DIR/plugins.txt"
     echo ""
-    echo "Note: Plugin rollback requires manual uninstall via Claude Code"
+    echo "Note: Legacy plugin rollback requires manual uninstall in the Claude plugin UI"
 fi
 
 # Restore skills
@@ -75,8 +75,11 @@ for skill_dir in "$SNAPSHOT_DIR"/*/; do
     if [ -d "$skill_dir" ]; then
         skill_name=$(basename "$skill_dir")
         if [[ "$skill_name" != "." && "$skill_name" != ".." ]]; then
-            SKILL_DEST="${HOME}/.claude/skills/$skill_name"
-            cp -r "$skill_dir" "$SKILL_DEST"
+            CODEX_SKILL_DEST="${HOME}/.codex/skills/$skill_name"
+            LEGACY_SKILL_DEST="${HOME}/.claude/skills/$skill_name"
+            mkdir -p "${HOME}/.codex/skills" "${HOME}/.claude/skills"
+            cp -r "$skill_dir" "$CODEX_SKILL_DEST"
+            cp -r "$skill_dir" "$LEGACY_SKILL_DEST"
             echo "✓ Restored skill: $skill_name"
             RESTORED+=("skill:$skill_name")
         fi
@@ -89,7 +92,7 @@ if [ ${#RESTORED[@]} -eq 0 ]; then
 else
     echo "Rollback complete. Restored ${#RESTORED[@]} item(s)."
     echo ""
-    echo "Note: You may need to restart Claude Code for changes to take effect."
+    echo "Note: You may need to restart your agent session for changes to take effect."
 fi
 
 # Output JSON result

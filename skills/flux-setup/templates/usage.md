@@ -118,9 +118,9 @@ If Flux commands fail, return "Unknown skill", or behave unexpectedly:
 3. **If fixes don't work**, create a GitHub issue: https://github.com/Nairon-AI/flux/issues
 
 Common fixes:
-- "Unknown skill" → Check `~/.claude/settings.json` has `"flux@nairon-flux": true` in `enabledPlugins`
-- Stale commands → Clear cache: `rm -rf ~/.claude/plugins/cache/nairon-flux`
-- After any fix → Restart Claude Code and run `/flux:setup` again
+- "Unknown skill" → Verify Flux is installed and the skill exists in `.codex/skills/` (or `~/.codex/skills/` for global installs)
+- Stale commands → Refresh Flux from the same source you installed it from
+- After any fix → Restart your agent session and run `/flux:setup` again
 
 ## More Info
 

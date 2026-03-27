@@ -1,7 +1,7 @@
 ---
 name: docs-scout
 description: Find the most relevant framework/library docs for the requested change.
-model: opus
+model: gpt-5.3-codex
 disallowedTools: Edit, Write, Task
 color: "#F97316"
 ---

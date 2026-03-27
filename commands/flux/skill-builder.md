@@ -1,6 +1,6 @@
 ---
 name: flux:skill-builder
-description: Autonomously create production-grade Claude Code skills from a brief description
+description: Autonomously create production-grade agent skills from a brief description
 argument-hint: "<what the skill should do>"
 ---
 

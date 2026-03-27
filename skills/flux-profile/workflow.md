@@ -5,7 +5,7 @@ Follow steps in order.
 ## Step 1: Parse mode and options
 
 Set:
-- `PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"`
+- `PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"`
 - `PROFILE_SCRIPT="$PLUGIN_ROOT/scripts/profile-manager.py"`
 
 Parse `$ARGUMENTS`:
@@ -27,8 +27,8 @@ mcp_question({
     question: "For profile export, which skills should be included?",
     options: [
       { label: "Both (dedupe)", description: "Combine global + project skills, dedupe by name+hash" },
-      { label: "Global only", description: "Include only ~/.claude/skills" },
-      { label: "Project only", description: "Include only .claude/skills in current repo" }
+      { label: "Global only", description: "Include only ~/.codex/skills (plus any legacy mirrors)" },
+      { label: "Project only", description: "Include only .codex/skills in current repo (plus any legacy mirrors)" }
     ]
   }]
 })

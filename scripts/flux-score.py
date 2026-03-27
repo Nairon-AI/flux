@@ -2,7 +2,7 @@
 """
 Flux Score Calculator
 
-Computes AI-native capability score from Claude Code session data.
+Computes AI-native capability score from legacy session transcript data.
 Reference: https://github.com/douglance/ccql
 
 Data sources:
@@ -168,9 +168,9 @@ def load_history(
 def load_transcripts(
     data_dir: Path, since: Optional[datetime] = None, until: Optional[datetime] = None
 ) -> list[TranscriptEntry]:
-    """Load transcript entries from Claude Code session files.
+    """Load transcript entries from legacy session files.
 
-    Claude Code stores sessions in:
+    Flux currently imports legacy sessions from:
     - ~/.claude/projects/{project-path}/*.jsonl (per-project sessions)
     - ~/.claude/transcripts/*.jsonl (legacy location)
     """
@@ -695,7 +695,7 @@ def identify_strengths_and_growth(dimensions: dict) -> tuple[list[str], list[str
 def compute_flux_score(
     data_dir: Path, since: Optional[datetime] = None, until: Optional[datetime] = None
 ) -> FluxScore:
-    """Compute full Flux score from Claude Code data."""
+    """Compute full Flux score from legacy session data."""
 
     # Load data
     history = load_history(data_dir, since, until)
@@ -954,7 +954,7 @@ def sync_to_universe(score: FluxScore) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Compute Flux AI-native capability score from Claude Code data",
+        description="Compute Flux AI-native capability score from legacy session data",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

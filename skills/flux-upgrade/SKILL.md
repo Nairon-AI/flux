@@ -1,6 +1,6 @@
 ---
 name: flux-upgrade
-description: Use when upgrading Flux itself after a new release or when plugin metadata/cache drift leaves Claude on an older version. Refresh marketplace metadata, clear plugin cache, update the install record, and route `/flux:upgrade`.
+description: Use when upgrading Flux itself after a new release or when legacy plugin metadata/cache drift leaves Flux on an older version. Refresh marketplace metadata, clear plugin cache, update the install record, and route `/flux:upgrade`.
 user-invocable: true
 ---
 
@@ -10,7 +10,7 @@ Upgrades the Flux plugin to the latest version from GitHub. Handles all three la
 
 ## What This Does
 
-Claude Code's plugin system has three separate caches that must all agree:
+Flux's legacy plugin packaging has three separate caches that must all agree:
 
 1. **Marketplace metadata** (`~/.claude/plugins/marketplaces/nairon-flux/`) — git clone with marketplace.json
 2. **Plugin code cache** (`~/.claude/plugins/cache/nairon-flux/`) — extracted plugin files, keyed by version
@@ -68,7 +68,7 @@ echo "Plugin cache cleared"
 
 ### Step 5: Update install record
 
-Update `installed_plugins.json` so Claude Code loads the new version on restart:
+Update `installed_plugins.json` so the legacy plugin install loads the new version on restart:
 
 ```bash
 INSTALLED_JSON="$HOME/.claude/plugins/installed_plugins.json"
@@ -194,7 +194,7 @@ If setup re-run IS needed:
 ```
 ## What to do now
 
-1. Restart Claude Code to load the new version
+1. Restart your agent session to load the new version
    (use `--resume` to keep your current context)
 
 2. After restart, run `/flux:setup` to pick up new options:
@@ -209,7 +209,7 @@ If setup re-run is NOT needed:
 ```
 ## What to do now
 
-Restart Claude Code to load the new version.
+Restart your agent session to load the new version.
 (Use `--resume` to keep your current context.)
 
 That's it — no need to re-run `/flux:setup`. All changes in this

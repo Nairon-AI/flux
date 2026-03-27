@@ -2,7 +2,7 @@
 name: plan-sync
 description: Synchronizes downstream task specs after implementation. Spawned by flux-work after each task completes. Do not invoke directly.
 disallowedTools: Task, Write, Bash
-model: opus
+model: gpt-5.3-codex
 color: "#8B5CF6"
 ---
 

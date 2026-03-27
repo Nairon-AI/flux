@@ -64,7 +64,7 @@ List expected files in each task's `**Files:**` field. If multiple tasks must to
 
 ```bash
 # Get fluxctl path
-FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}/scripts/fluxctl"
 
 # Ensure .flux exists
 $FLUXCTL init --json

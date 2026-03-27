@@ -17,11 +17,10 @@ For the formal workflow state machine (all states, transitions, and routing rule
 </details>
 
 ```bash
-# Claude Code (recommended)
-/plugin add https://github.com/Nairon-AI/flux@latest
+# Codex CLI (recommended primary driver)
+npm install -g @openai/codex
+codex login
 ```
-
-Important: `/plugin add` is a Claude Code slash command. Run it in Claude Code chat input, not in your terminal.
 
 ---
 
@@ -141,15 +140,15 @@ Executes a task with automatic context reload and drift checks.
 | `/flux:reflect` | `/flux:reflect` | Capture learnings from the current session into brain vault |
 | `/flux:ruminate` | `/flux:ruminate` | Mine past conversations for uncaptured patterns |
 | `/flux:meditate` | `/flux:meditate` | Audit brain vault — prune stale content, promote patterns |
-| "remember X" | `remember always use pnpm` | Smart routing — stores in CLAUDE.md (actionable rules) or `.flux/brain/` (deeper context) |
+| "remember X" | `remember always use pnpm` | Smart routing — stores in `AGENTS.md` (actionable rules) or `.flux/brain/` (deeper context) |
 
 ### Natural Language Memory
 
 You don't need a slash command. Just say:
-- **"remember always use pnpm"** → adds to CLAUDE.md (short rule, every session)
+- **"remember always use pnpm"** → adds to `AGENTS.md` (short rule, every session)
 - **"remember Sarah is the PM"** → adds to `.flux/brain/business/` (team context)
 - **"don't forget the API rate limit is 100/min"** → adds to `.flux/brain/codebase/` (technical context)
-- **"from now on, run tests before committing"** → adds to CLAUDE.md (constraint)
+- **"from now on, run tests before committing"** → adds to `AGENTS.md` (constraint)
 
 Flux classifies the content and asks you to confirm the destination before writing.
 
@@ -270,7 +269,7 @@ Flux classifies the content and asks you to confirm the destination before writi
 | `/flux:desloppify` | `/flux:desloppify [scan\|status\|next\|plan]` | Systematic codebase quality improvement |
 | `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
 | `/flux:contribute` | `/flux:contribute <issue description>` | Report a Flux bug and create a PR to fix it |
-| `/flux:skill-builder` | `/flux:skill-builder <what the skill should do>` | Autonomously create production-grade Claude Code skills from a brief description |
+| `/flux:skill-builder` | `/flux:skill-builder <what the skill should do>` | Autonomously create production-grade agent skills from a brief description |
 | `/flux:upgrade` | `/flux:upgrade` | Upgrade Flux plugin and optionally update project setup |
 | `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
 | `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |

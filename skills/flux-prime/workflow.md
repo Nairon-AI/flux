@@ -4,7 +4,7 @@
 
 Execute these phases in order. Reference [pillars.md](pillars.md) for scoring criteria and [remediation.md](remediation.md) for fix templates.
 
-**Model guidance**: This skill uses sonnet for synthesis and report generation. Scouts use the model configured during `/flux:setup`.
+**Model guidance**: This skill is intended to run with Codex as the primary driver. Scouts use the model configured during `/flux:setup`.
 
 ---
 
@@ -16,18 +16,18 @@ Before launching scouts, read the configured scout model:
 SCOUT_MODEL=$(.flux/bin/fluxctl config get scouts.model --json 2>/dev/null | jq -r '.value // empty')
 ```
 
-If `SCOUT_MODEL` is empty, default to `claude-sonnet-4-6`.
+If `SCOUT_MODEL` is empty, default to `gpt-5.3-codex-spark`.
 
 Determine the scout backend:
 - If `SCOUT_MODEL` starts with `claude-` → use **Claude backend** (Task tool with agent definitions)
 - If `SCOUT_MODEL` starts with `gpt-` or `o1` or `o3` or `o4` → use **Codex backend** (`codex exec` CLI)
-- Otherwise → use **Claude backend** as fallback
+- Otherwise → use **Codex backend** as fallback
 
 ---
 
 ## Phase 1: Parallel Assessment
 
-### Claude backend (default)
+### Claude backend (fallback)
 
 If using Claude backend, run all 9 scouts in parallel using the Task tool:
 
@@ -89,11 +89,11 @@ timeout 30 codex exec -m "$SCOUT_MODEL" --ephemeral --sandbox read-only -o /dev/
 If the probe fails (timeout, error, or model access denied): skip Codex backend, fall back to Claude backend, and warn:
 
 ```
-⚠️  Cannot access model <SCOUT_MODEL>. This may require a ChatGPT Pro subscription.
+⚠️  Cannot access model <SCOUT_MODEL>. This may require a ChatGPT plan with Codex access.
 Falling back to Claude scouts for this run.
 
-To fix permanently, run: .flux/bin/fluxctl config set scouts.model "claude-haiku-4-5"
-Or upgrade your OpenAI plan and retry.
+To stay Codex-first, fix Codex access and retry.
+If you need a temporary fallback, run: .flux/bin/fluxctl config set scouts.model "claude-haiku-4-5"
 ```
 
 **Only proceed with Codex scouts if all 3 checks pass.** On any failure, fall through to the Claude backend section above — do not fail the entire prime.
@@ -607,7 +607,7 @@ After marking prime complete, check if the brain vault is thin and past conversa
 
 **Trigger conditions** (ALL must be true):
 1. Brain vault has fewer than 5 files across `.flux/brain/pitfalls/` and `.flux/brain/principles/`
-2. Past Claude Code conversations exist (`~/.claude/projects/` has session data for this project)
+2. Past legacy session transcripts exist (`~/.claude/projects/` has session data for this project)
 
 ```bash
 # Count brain files (directories may not exist yet — 2>/dev/null handles this)
@@ -635,7 +635,7 @@ If `BRAIN_FILES < 5` and `PAST_SESSIONS > 0`, use `AskUserQuestion` to ask:
 ```json
 {
   "questions": [{
-    "question": "Your brain vault is thin but you have past Claude Code sessions in this project. Want to mine them for patterns and learnings? This will populate the brain vault so Flux doesn't start from zero.",
+    "question": "Your brain vault is thin but you have past session transcripts in this project. Want to mine them for patterns and learnings? This will populate the brain vault so Flux doesn't start from zero.",
     "header": "Ruminate",
     "multiSelect": false,
     "options": [

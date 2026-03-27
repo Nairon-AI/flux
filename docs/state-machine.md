@@ -294,7 +294,7 @@ The brain vault is stored in `.flux/brain/`. This maps every interaction:
 | **Scope** | READ | `.flux/brain/principles.md` + relevant principle files, `.flux/brain/pitfalls/<relevant-area>/`, `.flux/brain/business/context.md`, `.flux/brain/business/glossary.md` |
 | **Work** (per task) | READ | Re-anchor: `.flux/brain/pitfalls/<relevant-area>/`, `.flux/brain/principles.md` |
 | **Learning Capture** (during epic review) | WRITE | `.flux/brain/pitfalls/<area>/<new-pitfall>.md` |
-| **Reflect** | WRITE | `.flux/brain/` (learnings), `.claude/skills/` (extracted skills) |
+| **Reflect** | WRITE | `.flux/brain/` (learnings), `.codex/skills/` with optional `.claude/skills/` mirror (extracted skills) |
 | **Ruminate** | WRITE | `.flux/brain/` (mined patterns from past conversations) |
 | **Meditate** | READ+WRITE | Prune stale notes, promote recurring pitfalls to principles |
 | **Remember** (flux-brain) | WRITE | `.flux/brain/<category>/` or `CLAUDE.md` based on content analysis |
