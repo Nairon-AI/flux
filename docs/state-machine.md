@@ -36,7 +36,8 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `epic_review` | Full review pipeline running. | `quality` (SHIP), `in_progress` (NEEDS_WORK fix loop) | Epic Review Pipeline |
 | `quality` | Tests, lint/format, desloppify scan on changed files. | `submit` | Quality |
 | `grill` | Behavioral stress test — walks decision tree verifying behavior matches intent. | `quality`, `in_progress` (if gaps found) | Grill |
-| `submit` | Push + open PR. Code ready for review/merge. | `reflect` | Submit |
+| `submit` | Push + open PR. Code ready for review/merge. | `autofix`, `reflect` | Submit |
+| `autofix` | Cloud auto-fix enabled on PR — Claude watches for CI failures and review comments remotely. Non-blocking. | `reflect` | Autofix |
 | `reflect` | Capture session learnings to brain vault, extract skills. | `meditate`, `done` | Reflect |
 | `meditate` | Prune stale brain notes, promote pitfalls to principles. | `done` | Meditate |
 | `done` | Epic complete, all reviews passed, learnings captured. | `fresh_session_no_objective` | Done |
@@ -67,7 +68,7 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 
 ### Valid Phases
 
-`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `quality`, `submit`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `tdd`, `design_interface`, `ubiquitous_language`
+`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `tdd`, `design_interface`, `ubiquitous_language`
 
 ### Skill → Phase Mapping
 
@@ -83,6 +84,7 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 | `/flux:epic-review` | `epic_review` |
 | `/flux:reflect` | `reflect` |
 | `/flux:meditate` | `meditate` |
+| `/flux:autofix` | `autofix` |
 | `/flux:gate` | `gate` |
 | `/flux:propose` | `propose` |
 | `/flux:rca` | `rca` |
@@ -253,6 +255,16 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │  → push + open PR
   │        │
   │        ▼
+  │  [post-submit routing]
+  │    │                        │                       │
+  │    │ autofix.enabled        │ !autofix +            │ neither
+  │    │                        │ review.bot set        │
+  │    ▼                        ▼                       │
+  │  AUTOFIX (autofix)     BYORB (within submit)        │
+  │  → cloud, handles all  → bot comments only         │
+  │  → non-blocking        → max 2 iterations          │
+  │    │                        │                       │
+  │    ▼                        ▼                       ▼
   │  REFLECT (reflect)
   │  → capture learnings, extract skills
   │  → write brain (learnings + skills)
@@ -313,7 +325,8 @@ The following routing happens when a user provides natural language instead of a
 | "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 10 |
 | "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 11 |
 | "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 12 |
-| "reflect" / "what did we learn" | `/flux:reflect` | 13 |
+| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 13 |
+| "reflect" / "what did we learn" | `/flux:reflect` | 14 |
 
 ### Intra-Skill Routing
 
@@ -334,6 +347,7 @@ Skills can route to other skills during execution:
 | `/flux:epic-review` | Frustration score >= 3 | Auto-fetch recommendations |
 | `/flux:epic-review` | NEEDS_WORK verdict | Fix loop → re-review |
 | `/flux:epic-review` | SHIP → Quality → Submit | `/flux:reflect` (auto) |
+| `/flux:work` | PR submitted + `autofix.enabled: true` | `/flux:autofix` (automatic, non-blocking, then reflect) |
 | `/flux:reflect` | Pitfalls >= 20 | `/flux:meditate` (auto) |
 | `/flux:epic-review` | SHIP verdict + user accepts grill offer | `/flux:grill` (user choice) |
 | `/flux:grill` | Gaps found requiring new tasks | `in_progress` (fix tasks) |
@@ -469,6 +483,7 @@ Override with `.flux/config.json`:
 | Scope | Start new work | **Manual** |
 | Work | Execute tasks | **Manual** |
 | Ralph | Autonomous execution | **Manual** — offered after scoping |
+| Autofix | After PR submit, if `autofix.enabled: true` | **Automatic** (config-driven, non-blocking) |
 | Gate | Validate staging after merge | **Manual** (or CI auto) |
 | Upgrade | Get latest Flux version | **Manual** |
 

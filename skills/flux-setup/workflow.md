@@ -1458,6 +1458,7 @@ CURRENT_TRACKER=$("${PLUGIN_ROOT}/scripts/fluxctl" config get tracker.provider -
 CURRENT_REVIEWER1=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.reviewer1 --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_REVIEWER2=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.reviewer2 --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_REVIEW_BOT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.bot --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_AUTOFIX=$("${PLUGIN_ROOT}/scripts/fluxctl" config get autofix.enabled --json 2>/dev/null | jq -r '.value // empty')
 ```
 
 Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
@@ -1489,6 +1490,7 @@ Current configuration:
 - GitHub scout: <enabled|disabled> (change with: fluxctl config set scouts.github <true|false>)
 - Scout model: <model-name> (change with: fluxctl config set scouts.model <model-name>)
 - Task tracker: <linear|none> (change with: fluxctl config set tracker.provider <linear|none>)
+- Auto-fix: <enabled|disabled> (change with: fluxctl config set autofix.enabled <true|false>)
 ```
 
 Only include lines for config values that are set. If no config is set, skip this notice.
@@ -1742,6 +1744,128 @@ If Reviewer 1 is an OpenAI model, show the recommendation nudge for cross-lab (A
 }
 ```
 
+**Auto-fix question** (include if `autofix.enabled` is empty):
+
+Auto-fix uses Claude Code's cloud feature to watch PRs after submit — fixing CI failures and review comments remotely so you can walk away. Before asking, explain what it does:
+
+First, check if the user configured a review bot (Greptile/CodeRabbit) earlier in setup:
+
+```bash
+CURRENT_BOT=$("${PLUGIN_ROOT}/scripts/fluxctl" config get review.bot --json 2>/dev/null | jq -r '.value // empty')
+```
+
+Then explain what auto-fix does and how it interacts with the review bot:
+
+```
+Claude Code recently shipped "Auto-Fix" — a cloud feature that watches your PRs
+after you submit them. When CI fails or a reviewer leaves a comment, Claude
+investigates and pushes a fix automatically. It runs remotely (on Claude Code
+web/mobile), so you can close your laptop and come back to a green, ready-to-merge PR.
+
+What it handles:
+  - CI failures (lint errors, type errors, test assertion mismatches) → auto-fixed
+  - Review comments (clear requests like "rename this" or "add validation") → auto-fixed
+  - Ambiguous/architectural feedback → Claude asks you before acting
+```
+
+**If a review bot is configured** (`CURRENT_BOT` is `greptile` or `coderabbit`), add this context and strongly recommend enabling auto-fix:
+
+```
+You have {Greptile/CodeRabbit} configured as your review bot. Auto-fix is
+strongly recommended because:
+
+  {Greptile/CodeRabbit} posts review comments on your PR AFTER it's submitted.
+  Without auto-fix, nobody is watching to fix those comments automatically —
+  they just sit there until you manually address them.
+
+  With auto-fix enabled, Claude watches the PR in the cloud and automatically
+  fixes {Greptile/CodeRabbit}'s comments alongside CI failures and human reviews.
+  Without it, Flux falls back to a local self-heal loop (max 2 iterations,
+  bot comments only — CI failures and human reviews are not handled).
+```
+
+Then the requirements:
+
+```
+Auto-fix requires two things:
+  1. The Claude GitHub App installed on your repo (free)
+  2. Claude Code web or mobile access (the auto-fix session runs in the cloud)
+```
+
+**If a review bot IS configured**, the question defaults to "Yes" more strongly:
+
+```json
+{
+  "header": "Auto-Fix (Cloud PR Babysitting)",
+  "question": "Enable auto-fix? Since you have {Greptile/CodeRabbit} configured, auto-fix is the recommended way to handle its review comments automatically.",
+  "options": [
+    {"label": "Yes (Strongly Recommended)", "description": "Auto-fix handles {Greptile/CodeRabbit} comments + CI failures + human reviews. You walk away, come back to green."},
+    {"label": "No", "description": "Flux falls back to local bot self-heal (max 2 iterations, bot comments only). CI failures and human reviews are not handled. Enable later: fluxctl config set autofix.enabled true"}
+  ],
+  "multiSelect": false
+}
+```
+
+**If NO review bot is configured**, use the standard question:
+
+```json
+{
+  "header": "Auto-Fix (Cloud PR Babysitting)",
+  "question": "Enable auto-fix? After every /flux:work PR submit, Claude will automatically watch the PR in the cloud.",
+  "options": [
+    {"label": "Yes (Recommended)", "description": "Auto-fix runs after every PR submit. Handles CI failures and human reviews. You walk away, come back to green."},
+    {"label": "No", "description": "CI failures and human reviews are not handled automatically. Enable later: fluxctl config set autofix.enabled true"}
+  ],
+  "multiSelect": false
+}
+```
+
+### If "Yes" — Guide Claude GitHub App installation
+
+Auto-fix requires the Claude GitHub App. Guide the user through installation:
+
+```
+Auto-fix needs the Claude GitHub App installed on your repo.
+It takes about 30 seconds:
+
+  1. Open this link in your browser:
+
+     https://github.com/apps/claude
+
+  2. Click "Install" (or "Configure" if you've installed it on other repos)
+
+  3. Choose which repositories to grant access to:
+     - "All repositories" — auto-fix works on all your repos (recommended)
+     - "Only select repositories" — pick this repo
+
+  4. Click "Install" to confirm
+
+If you've already installed it, you're all set.
+```
+
+Use `AskUserQuestion`:
+```json
+{
+  "question": "Have you installed the Claude GitHub App (or was it already installed)?",
+  "options": [
+    {"label": "Yes, it's installed", "description": "Installed just now or was already installed"},
+    {"label": "I'll do it later", "description": "Auto-fix will be enabled in config — install the app anytime before your first PR submit"},
+    {"label": "I don't use GitHub", "description": "Auto-fix requires GitHub. Config will be saved but auto-fix won't activate."}
+  ]
+}
+```
+
+For all answers, save the config — auto-fix is enabled regardless. If `claude --remote` can't connect to the GitHub App at runtime, it will fail gracefully and the workflow continues to Reflect.
+
+Tell the user:
+```
+Auto-fix enabled. After every /flux:work PR submit, a cloud session will
+start watching the PR automatically.
+
+If the Claude GitHub App isn't installed yet when a PR is submitted, auto-fix
+will skip gracefully for that PR. Install it anytime: https://github.com/apps/claude
+```
+
 **Star question** (always include):
 ```json
 {
@@ -1928,6 +2052,10 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 1. Read the file (create if doesn't exist)
 2. If marker exists: replace everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive)
 3. If no marker: append the snippet from [templates/claude-md-snippet.md](templates/claude-md-snippet.md)
+
+**Auto-fix** (if question was asked):
+- If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set autofix.enabled true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/fluxctl" config set autofix.enabled false --json`
 
 **Star:**
 - If "Yes, star it":
@@ -2151,6 +2279,7 @@ Configuration (use fluxctl config set to change):
 - Code review bot: <greptile|coderabbit|none>
 - Review severities: <critical,major,minor,style>
 - PR template: <created|skipped|already exists>
+- Auto-fix: <enabled|disabled> (requires Claude GitHub App: https://github.com/apps/claude)
 
 Documentation updated:
 - <files updated or "none">

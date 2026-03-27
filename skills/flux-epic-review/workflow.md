@@ -550,7 +550,22 @@ Security findings are also captured in the Learning Capture phase.
 
 ## External Bot Self-Heal Phase
 
-**Only runs if `REVIEW_BOT` is configured (`greptile` or `coderabbit`) AND a PR exists.**
+**Only runs if ALL of these conditions are met:**
+1. `REVIEW_BOT` is configured (`greptile` or `coderabbit`)
+2. `autofix.enabled` is NOT `true` (if auto-fix is enabled, bot comments are handled post-submit by `/flux:autofix` instead — see below)
+3. A PR exists
+
+**Why auto-fix takes priority:** In the standard Flux flow, the PR is created during Submit (Phase 5), which comes *after* epic-review. This means BYORB usually skips anyway because no PR exists yet. When auto-fix is enabled, it handles bot comments post-submit in the cloud — with unlimited iterations and alongside CI failures and human reviews. BYORB only runs as a fallback when auto-fix is disabled, giving users without Claude Code web/mobile the same bot self-heal capability.
+
+### Check auto-fix config
+
+```bash
+AUTOFIX_ENABLED=$($FLUXCTL config get autofix.enabled --json 2>/dev/null | jq -r '.value // empty')
+if [[ "$AUTOFIX_ENABLED" == "true" ]]; then
+  echo "Auto-fix is enabled — bot review comments will be handled post-submit by /flux:autofix. Skipping BYORB."
+  # Skip to Browser QA
+fi
+```
 
 ### Prerequisite: Ensure PR Exists
 
