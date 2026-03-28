@@ -1936,6 +1936,10 @@ Only process answers for questions that were asked (config values that were unse
   2. Install Linear CLI skill (project-local):
      ```bash
      npx skills add https://github.com/schpet/linear-cli --skill linear-cli
+
+     mkdir -p .codex/skills .claude/skills
+     [ -d ".claude/skills/linear-cli" ] && [ ! -d ".codex/skills/linear-cli" ] && cp -R ".claude/skills/linear-cli" ".codex/skills/linear-cli" 2>/dev/null || true
+     [ -d ".codex/skills/linear-cli" ] && [ ! -d ".claude/skills/linear-cli" ] && cp -R ".codex/skills/linear-cli" ".claude/skills/linear-cli" 2>/dev/null || true
      ```
   3. Verify install: check `.codex/skills/linear-cli/SKILL.md` or `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: npx skills add https://github.com/schpet/linear-cli --skill linear-cli`
   4. Check Linear CLI is installed:
