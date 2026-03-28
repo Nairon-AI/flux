@@ -1111,7 +1111,7 @@ fi
 if [ "$INSTALL_DIFFITY_TOUR" = "1" ]; then
   "$INSTALL_SKILL_CMD" "diffity-tour" "https://github.com/kamranahmedse/diffity" project 2>/dev/null || {
     echo "Install manually: secureskills add https://github.com/kamranahmedse/diffity --skill diffity-tour && secureskills enable codex"
-  fi
+  }
 fi
 
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
@@ -2351,6 +2351,7 @@ CLI tools:
 ```
 
 Use tracking variables from Step 4d. If gh was already installed before setup, show "already installed".
+Use `DIFFITY_CLI_STATUS` from Step 4e for the Diffity CLI line so the summary can distinguish "skill installed, CLI skipped/failed" from "ready-to-run".
 
 **Agent skills section** (only show if offered):
 
@@ -2360,6 +2361,7 @@ Agent skills:
 - Dejank: <installed | already installed | skipped | failed | not offered (non-React repo)>
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
+- Diffity Tour: <installed | already installed | skipped | failed>
 - Find Skills (Vercel): <installed | already installed | skipped | failed>
 - X Research Skill: <installed | already installed | skipped | failed>
 ```
