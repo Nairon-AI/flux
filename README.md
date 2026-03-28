@@ -110,6 +110,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Lefthook](https://github.com/evilmartians/lefthook) | Fast git hooks for pre-commit checks |
 | [agent-browser](https://github.com/nichochar/agent-browser) | Headless browser for automated UI QA during epic reviews |
 | [CLI Continues](https://github.com/nichochar/continues) | Session handoff — pick up where you left off across terminals |
+| [React Doctor](https://www.react.doctor/) | Diff-scoped React code health scan with an opt-in pre-commit gate for changed files |
 | [PlaTo](https://github.com/Alt5r/Plato) | Secure skill installer for Codex and Claude — signs and verifies project-local skills before runtime exposure |
 
 **Desktop Apps** (macOS):
@@ -133,8 +134,10 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Find Skills (Vercel)](https://github.com/vercel-labs/agent-skills) | Secure bootstrap for Vercel's skill catalog, then add more through PlaTo |
 | [X Research Skill](https://github.com/rohunvora/x-research-skill) | Summarize high-signal X threads for research |
 
-`Dejank` is only offered when Flux detects a React-based repo during setup.
-After it is installed, trigger it explicitly with `/flux:dejank` or by directly asking the agent to use `dejank`.
+`React Doctor` and `Dejank` are only offered when Flux detects a React-based repo during setup.
+Selecting React Doctor during setup also wires an opt-in pre-commit hook so changed React code gets scanned before commit.
+When React Doctor is available, Flux still uses it again in the quality pass for changed React code before submit.
+Dejank stays the symptom-driven workflow: trigger it explicitly with `/flux:dejank` or by directly asking the agent to use `dejank`.
 Casual React jank complaints like "this flickers" or "the layout jumps" should also route there automatically once Flux is installed in the repo.
 
 </details>
@@ -296,7 +299,7 @@ These utility skills run *inside* the owning phase rather than creating a new to
 | **Work** | Task loop: spawn worker per task with fresh context, brain re-anchor, impl-review after each. Codex is the recommended implementation engine; after each task, Flux checks for friction signals (build errors, lint failures, API hallucinations) and offers targeted tool recommendations inline — install, skip, or snooze for 7 days. Snoozed signals automatically resurface to check for new tooling. In Ralph mode, this loop runs autonomously without stopping. | Long tasks degrade agent quality — context bloats, the agent forgets constraints, output gets sloppy. Fresh workers per task keep context tight. Inline friction detection catches recurring pain points *during* the build, not after — so you can unblock immediately instead of suffering through an entire epic before getting a recommendation. |
 | **Review** | Per-task lightweight (`impl-review`), per-epic thorough (`epic-review` — adversarial, security, BYORB *optional*, browser QA, learning capture). Review handling uses `flux-receive-review` to interpret reviewer/bot comments before code changes and `flux-verify-claims` before advancing to SHIP. Manual review findings can also be structuralized: if the developer confirms a repeatable anti-pattern, Flux can route it toward a project rule candidate (for example a `lintcn` rule). Codex handles the primary review backend; Claude is still a strong adversarial reviewer in cross-lab pairings. | Self-review is unreliable — the same model that wrote the code reviews it. Adversarial review (multiple models reaching consensus) catches what single-model review misses. BYORB (Greptile, CodeRabbit, etc.) is optional — skipped if no bot is configured. Browser QA catches what code review can't see at all. |
 | **Grill** | *After Epic Review (offered for 5+ task epics):* Relentless behavioral stress test — walks every branch of the decision tree, verifying implemented behavior matches intent. Finds gaps the spec didn't mention but users will encounter. Can create new tasks if gaps are found. | Epic review checks code quality — but code can be perfect and still do the wrong thing. Grill checks *behavioral correctness*: does the implementation match what was intended? It's the difference between "the code compiles" and "the feature works." Especially valuable for large epics where requirements can drift across many tasks. |
-| **Quality** | Tests, repo-defined lint/format gates (for example `lintcn`), desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
+| **Quality** | Tests, repo-defined lint/format gates (for example `lintcn`), optional `react-doctor` diff scan for React changes as a backstop after the pre-commit hook, desloppify scan on changed files. | Agents skip tests, ignore lint errors, and leave dead code. Quality is the gate before Submit — nothing ships without passing. |
 | **Submit** | Push + open PR. Code is ready for review/merge. | Separates "code is done" from "code is shipped." The PR is the handoff point where human reviewers and CI take over. |
 | **Autofix** | *Automatic after Submit (config-driven):* optional Anthropic-backed cloud PR babysitting after the main Codex implementation path is done. Non-blocking — Reflect runs independently. Enabled via `/flux:setup`. | CI failures and review comments are the #1 reason PRs sit idle. Auto-fix handles the mechanical back-and-forth after shipping, while keeping core implementation and review Codex-first. |
 | **Reflect** | *Auto after Submit/Autofix:* captures session learnings to brain vault, extracts reusable skills, and routes confirmed recurring review findings into structural prevention where appropriate (lint rules, guards, scripts) while context is fresh. | The agent just spent an entire session learning your codebase, hitting bugs, getting corrected. If you don't capture those learnings *now*, they're gone — the next session starts from scratch. Reflect is the difference between an agent that gets smarter over time and one that makes the same mistakes forever. |
@@ -414,7 +417,7 @@ The result: Flux gets smarter every session — new tools surface proactively, f
 
 Systematic code quality improvement powered by [desloppify](https://github.com/peteromallet/desloppify). Combines mechanical detection with LLM-based review. The scoring system resists gaming — you can't suppress warnings, you have to actually fix the code.
 
-When installed, Flux automatically runs a lightweight desloppify scan after epic review to surface quality regressions introduced during the epic. If the score drops below 85, it suggests a full fix pass.
+When installed, Flux automatically runs a lightweight desloppify scan after epic review to surface quality regressions introduced during the epic. In React repos where React Doctor is available, Flux also runs a diff-scoped React Doctor pass during quality before submit. If the desloppify score drops below 85, it suggests a full fix pass.
 
 ```bash
 /flux:desloppify scan     # See your score
