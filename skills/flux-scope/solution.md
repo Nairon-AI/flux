@@ -233,6 +233,34 @@ Must capture:
 - External docs links
 - Project conventions
 
+## Step 8.2: Future Pressure Pass
+
+After research and before gap analysis, run a future-pressure pass. This is mandatory for every epic, but depth should match blast radius.
+
+**Quick pass** (default, 2-3 min):
+- What are the next 2-3 likely features that will want to reuse or extend this?
+- If traffic, tenants, or data grows 10x, what breaks first?
+- What failure modes will users or on-call actually feel?
+- If this guess is wrong, what is the cheapest reversal path?
+- Are we about to encode a workaround into a durable schema, enum, API, or abstraction?
+
+**Deep pass required** when the epic touches:
+- shared module boundaries or platform surfaces
+- public APIs or SDKs
+- database schemas, state machines, auth, permissions
+- analytics/event models
+- workflow engines, orchestration, or anything likely to accrete follow-on features
+
+**Deep pass output**:
+- **Product pressure**: adjacent features likely in 6-12 months
+- **Reuse pressure**: who else will consume this surface
+- **Scale pressure**: growth bottlenecks
+- **Failure pressure**: invalid states, retries, degraded mode, support burden
+- **Observability pressure**: metrics, logs, traces, analytics needed
+- **Migration pressure**: rollback path, compatibility window, reversal cost
+
+Write the result into the epic spec under `## Future Pressure`. If there is no significant pressure, say so explicitly instead of skipping the section.
+
 ## Step 8.5: Interface Design (if complex module boundaries)
 
 After research, check if the epic involves designing new module interfaces, APIs, or service boundaries. Signals:
@@ -350,10 +378,22 @@ sessions. This task adds OAuth2 support alongside the existing flow."]
 - All new API endpoints must use the `withAuth` middleware
 - Database migrations must be backwards-compatible (no column drops)
 
+## Pitfalls to Avoid
+[Known ways this task can create slop or future rework:]
+- Do not introduce a boolean if the domain already has 3+ lifecycle states
+- Do not duplicate validation logic that should live in the shared boundary
+- Do not add workaround-only fields without documenting the migration/removal path
+
 ## Dependencies
 [What must be done before this task, and what this task produces for later tasks:]
 - **Depends on:** fn-1-slug.1 (schema must exist before this task can create queries)
 - **Produces:** the `UserService` class that fn-1-slug.3 will import
+
+## Future Pressure Checks
+[Only include what matters for this task:]
+- Follow-on feature likely: <what is probably coming next>
+- Reversal trigger: <signal that this abstraction/model needs to change>
+- Observability needed: <metric/log/trace/test hook to add if relevant>
 
 ## Acceptance
 - [ ] [Specific, testable criterion — not vague]
@@ -460,6 +500,13 @@ step in signup — our analytics show 40% drop-off at registration.">
 
 ### Assumptions Deferred to Implementation
 <assumptions that couldn't be resolved during scoping — validate during these tasks>
+
+## Future Pressure
+- **Likely follow-on features**: <next 2-3 plausible asks that will reuse this>
+- **Reuse / boundary pressure**: <where abstraction could spread>
+- **Failure / observability pressure**: <failure modes users feel + what to instrument>
+- **Migration / reversal path**: <how we back out or evolve this safely>
+- **Validation triggers**: <signals that tell us the current design is no longer enough>
 
 ## Design Brief
 <Frontend only. Capture the visual and interaction guardrails before implementation.

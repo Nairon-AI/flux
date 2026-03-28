@@ -10,6 +10,8 @@ user-invocable: false
 
 Conduct a John Carmack-level review of epic plans.
 
+Plans that touch one-way doors or shared surfaces must be reviewed for future pressure, not just local correctness. A plan can be feasible today and still be wrong for the system six weeks from now.
+
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Backends**: RepoPrompt (rp) or Codex CLI (codex)
 

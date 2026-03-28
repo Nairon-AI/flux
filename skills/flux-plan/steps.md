@@ -15,6 +15,7 @@
 
 - Plan references existing files/patterns with line refs
 - Reuse points are explicit (centralized code called out)
+- Future pressure is explicit for one-way doors, shared abstractions, and public surfaces
 - Acceptance checks are testable
 - Tasks are small enough for one `/flux:work` iteration (split if not)
 - **No implementation code** — specs describe WHAT, not HOW (see SKILL.md Golden Rule)
@@ -139,6 +140,26 @@ Run the gap analyst subagent:
 
 Fold gaps + questions into the plan.
 
+## Step 3.5: Future Pressure Check
+
+Run a future-pressure pass before finalizing the plan.
+
+**Always do a quick pass**:
+- What are the next 2-3 likely features that will want to reuse this?
+- If usage or data grows 10x, what breaks first?
+- What failure modes will users or on-call feel?
+- If the decision is wrong, what is the reversal path?
+- Are we encoding a workaround into a durable schema, API, or abstraction?
+
+**Go deep** when the plan touches:
+- schemas, state machines, auth, permissions
+- shared abstractions or module boundaries
+- public APIs, SDKs, integrations
+- analytics/event models
+- workflows likely to become platform surfaces
+
+Capture the answer in the epic spec under `## Future Pressure`. If no notable pressure exists, say that explicitly.
+
 ## Step 4: Pick depth
 
 Default to standard unless complexity demands more or less.
@@ -205,13 +226,18 @@ Default to standard unless complexity demands more or less.
 
 3. Write epic spec (use stdin heredoc):
    ```bash
-   # Include: Overview, Scope, Approach, Quick commands (REQUIRED), Acceptance, References
+   # Include: Overview, Scope, Approach, Future Pressure, Quick commands (REQUIRED), Acceptance, References
    # Add mermaid diagram if data model or architecture changes
    $FLUXCTL epic set-plan <epic-id> --file - --json <<'EOF'
    # Epic Title
 
    ## Overview
    ...
+
+   ## Future Pressure
+   - Likely follow-on features: ...
+   - Failure / observability pressure: ...
+   - Migration / reversal path: ...
 
    ## Quick commands
    ```bash
@@ -270,6 +296,13 @@ Default to standard unless complexity demands more or less.
 
    ## Key context
    [Only for recent API changes, surprising patterns, or non-obvious gotchas]
+
+   ## Pitfalls to Avoid
+   - [How this task could create future slop if implemented naively]
+
+   ## Future Pressure Checks
+   - [Follow-on feature likely]
+   - [Reversal trigger or observability signal if relevant]
 
    ## Acceptance
    - [ ] Criterion 1

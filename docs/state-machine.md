@@ -18,7 +18,7 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `needs_ruminate` | Brain is thin (<5 files) and past sessions exist. Offered after prime via AskUserQuestion. | `ruminate` → `fresh_session`, or skip → `fresh_session` | Ruminate |
 | `fresh_session_no_objective` | Primed, no active work. Ready for new work. | `scope`, `plan`, `propose`, `rca`, `improve`, `remember` | Scope / Propose / RCA |
 | `resume_scope` | Scope was interrupted mid-session. | `scope` (resume from last step) | Scope |
-| `scoping` | Actively in the scoping interview (Steps 1-6). | `stress_test`, `plan_creation`, `propose`, `rca` | Scope |
+| `scoping` | Actively in the scoping interview, including stress test and future-pressure forecasting for risky decisions. | `stress_test`, `plan_creation`, `propose`, `rca` | Scope |
 | `stress_testing` | Dialectic subagents spawned, arguing opposing positions. | `execution_choice` | Stress Test |
 | `execution_choice` | User chooses: task-by-task (interactive) or Ralph mode (autonomous). | `ready_for_work`, `ralph_mode` | Execute how? |
 | `plan_creation` | Creating epic + tasks via `/flux:plan`. | `needs_plan_review`, `ready_for_work` | Scope → Plan |
@@ -39,7 +39,7 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `submit` | Push + open PR. Code ready for review/merge. | `autofix`, `reflect` | Submit |
 | `autofix` | Cloud auto-fix enabled on PR — Claude watches for CI failures and review comments remotely. Non-blocking. | `reflect` | Autofix |
 | `reflect` | Capture session learnings to brain vault, extract skills. | `meditate`, `done` | Reflect |
-| `meditate` | Prune stale brain notes, promote pitfalls to principles. | `done` | Meditate |
+| `meditate` | Prune stale brain notes, promote pitfalls to principles, and audit repeated forecast misses. | `done` | Meditate |
 | `done` | Epic complete, all reviews passed, learnings captured. | `fresh_session_no_objective` | Done |
 | `idle_with_open_epics` | Some epics open but no active task. | `in_progress` (next epic), `reflect` | — |
 | `gate` | Staging validation after merge — browser QA against staging URL, then promotion PR. | `done` | Gate |
@@ -503,6 +503,7 @@ Override with `.flux/config.json`:
 | `session-state` routing | Before any work-like request | **Automatic** — routes to prime/scope/work/review |
 | Stress test | During scope, if one-way door / UX assumption / deferred authority | **Automatic** — spawns opposing subagents |
 | Parallel dispatch utility | During Prime scouts or Scope explore fan-out | **Automatic within owning phase** — uses `flux-parallel-dispatch` to keep parallel work isolated |
+| Future pressure | During scope/plan, always quick; deeper for one-way doors/shared surfaces | **Automatic** — forecasts follow-on features, failure modes, observability, and reversal path |
 | Friction check + inline improve | After each task SHIP | **Automatic** — checks for recurring friction signals |
 | Verify claims utility | Before claiming fixed/green/done or advancing to SHIP | **Automatic within owning phase** — uses `flux-verify-claims` inside work/review/autofix |
 | Receive review utility | When reviewer or bot comments need interpretation | **Automatic within owning phase** — uses `flux-receive-review` inside impl-review/epic-review/autofix |

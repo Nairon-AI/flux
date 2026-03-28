@@ -72,6 +72,11 @@ Abstract worker spawning so any CLI (claude, codex, gemini) can run workers.
 - File-based completion detection (not process exit codes) — workers are detached
 - Prompt via CLI arg for claude, stdin for codex (per their docs)
 
+## Future Pressure
+- Likely follow-on features: retry policies, backend-specific health checks, more worker CLIs
+- Reuse pressure: all worker runtimes will depend on this boundary
+- Migration path: keep old spawn path behind an adapter until both backends are stable
+
 ## Quick commands
 \`\`\`bash
 bun test src/lib/backend.test.ts
@@ -165,6 +170,14 @@ Create claude backend following WorkerBackend interface.
 - Must be detached process (background worker pattern)
 - Log to `logFile` parameter for verdict parsing
 
+## Pitfalls to Avoid
+- Do not re-embed backend-specific branching into shared registry code
+- Do not depend on process exit alone for completion detection
+
+## Future Pressure Checks
+- Follow-on feature likely: per-backend timeout / retry tuning
+- Reversal trigger: if lifecycle methods diverge by backend, split the interface before more backends land
+
 ## Acceptance
 - [ ] Implements spawn/isAlive/kill per interface
 - [ ] Registered on module import
@@ -220,6 +233,10 @@ Implement Google OAuth:
 - Create passport strategy following pattern at `src/auth/strategies/local.ts`
 - Add /auth/google and /auth/google/callback routes per `src/routes/auth.ts:50-80`
 
+## Future Pressure Checks
+- Likely follow-on feature: additional OAuth providers using the same auth surface
+- Reversal trigger: if provider-specific branching leaks into shared auth flow, extract provider abstraction before adding another provider
+
 ## Acceptance
 - [ ] Env vars validated on startup
 - [ ] OAuth flow redirects to Google and back
@@ -233,6 +250,9 @@ Implement Google OAuth:
 
 Add Google sign-in button following existing auth buttons
 at `src/components/LoginForm.tsx:25-40`.
+
+## Pitfalls to Avoid
+- Do not hardcode provider-specific copy in a way that blocks multi-provider auth later
 
 ## Acceptance
 - [ ] Button renders with Google branding

@@ -67,6 +67,8 @@ Continue regardless (non-blocking).
 **Goal**: produce an epic with tasks that match existing conventions and reuse points.
 **Task size**: every task must fit one `/flux:work` iteration (~100k tokens max). If it won't, split it.
 
+Every non-trivial plan must include a future-pressure pass: forecast likely follow-on features, failure modes, reuse pressure, and reversal cost before tasks are finalized. Do not turn this into a giant ceremony for trivial changes; go deep only on one-way doors and shared surfaces.
+
 ## The Golden Rule: No Implementation Code
 
 **Plans are specs, not implementations.** Do NOT write the code that will be implemented.
