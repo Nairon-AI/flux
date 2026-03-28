@@ -8,6 +8,7 @@ All notable changes to Flux will be documented in this file.
 
 - `fluxctl agentmap` now uses a built-in Flux implementation instead of requiring an external `agentmap` CLI in `PATH`
 - `/flux:setup` no longer recommends or installs `agentmap` as a separate tool
+- `/flux:setup` now offers CodexBar on macOS so users can monitor Codex and Claude Code subscription usage from the menu bar.
 
 ### Improved
 

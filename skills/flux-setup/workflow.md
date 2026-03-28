@@ -537,13 +537,14 @@ echo "Detected OS: $OS_TYPE"
 |----|------|-------|-------|---------|---------|------|---------|
 | `raycast` | Raycast | Yes | No | No | **Launcher on steroids** — AI, snippets, clipboard history | Freemium | `brew install --cask raycast` |
 | `superset` | Superset | Yes | No | No | **Primary orchestrator for parallel Codex sessions and cross-lab review worktrees** — git worktree workspace manager | Yes | `brew install --cask superset` |
+| `codexbar` | CodexBar | Yes | No | No | **See Codex + Claude Code usage in the menu bar** — session and reset windows without logging in | Yes | `brew install --cask steipete/tap/codexbar` |
 | `wispr-flow` | Wispr Flow | Yes | No | No | **Voice-to-text 4x faster** — dictate anywhere | Freemium | Manual download |
 | `granola` | Granola | Yes | No | Yes | **AI meeting notes** — no bot joins calls | Freemium | Manual download |
 
 ### OS Compatibility Matrix
 
 ```
-macOS:   Raycast, Superset, Wispr Flow, Granola (all 4)
+macOS:   Raycast, Superset, CodexBar, Wispr Flow, Granola (all 5)
 Linux:   (none)
 Windows: Granola only
 ```
@@ -564,6 +565,7 @@ if [ "$OS_TYPE" = "macos" ]; then
   # Check if already installed - macOS
   HAVE_RAYCAST=$([ -d "/Applications/Raycast.app" ] && echo 1 || echo 0)
   HAVE_SUPERSET=$([ -d "/Applications/Superset.app" ] && echo 1 || echo 0)
+  HAVE_CODEXBAR=$([ -d "/Applications/CodexBar.app" ] && echo 1 || echo 0)
   HAVE_WISPR=$([ -d "/Applications/Wispr Flow.app" ] && echo 1 || echo 0)
 fi
 
@@ -600,6 +602,7 @@ Desktop apps already installed: <comma-separated list>
   "options": [
     // Only include apps NOT already installed
     {"label": "Superset (Recommended)", "description": "Primary orchestrator for parallel Codex sessions and cross-lab review worktrees (free)"},
+    {"label": "CodexBar", "description": "Menu bar usage meter for Codex and Claude Code subscriptions (free)"},
     {"label": "Raycast", "description": "Launcher with AI, snippets, clipboard history (free, Pro $10/mo)"},
     {"label": "Wispr Flow", "description": "Voice-to-text 4x faster than typing (free tier available)"},
     {"label": "Granola", "description": "AI meeting notes without bot joining calls (25 free/mo)"}
@@ -660,6 +663,18 @@ if [ "$OS_TYPE" = "macos" ]; then
   }
 fi
 ```
+
+**CodexBar (macOS only):**
+```bash
+if [ "$OS_TYPE" = "macos" ]; then
+  brew install --cask steipete/tap/codexbar 2>/dev/null || {
+    echo "Download CodexBar: https://github.com/steipete/CodexBar/releases"
+    open "https://github.com/steipete/CodexBar/releases" 2>/dev/null || true
+  }
+fi
+```
+
+After install, tell the user to open CodexBar and enable the `Codex` and `Claude` providers in Settings → Providers so usage and reset windows appear in the menu bar.
 
 **Wispr Flow (macOS/iOS - manual):**
 ```bash
@@ -1327,7 +1342,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "installed_by_flux": {
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
-    "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, wispr-flow, granola>"],
+    "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, codexbar, wispr-flow, granola>"],
     "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
@@ -2231,6 +2246,7 @@ MCP servers: skipped (install later with /flux:setup or manually)
 Desktop applications (<OS_TYPE>):
 - Raycast: <installed | already installed | skipped | conflict: kept Alfred>
 - Superset: <installed | already installed | skipped>
+- CodexBar: <installed | already installed | skipped>
 - Wispr Flow: <installed | already installed | skipped>
 - Granola: <installed | already installed | skipped>
 ```
