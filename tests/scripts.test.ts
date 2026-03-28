@@ -6,7 +6,7 @@
  */
 
 import { test, expect, describe, beforeAll } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync, chmodSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, chmodSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { $ } from 'bun'
 
@@ -158,6 +158,50 @@ describe('Flux Scripts', () => {
       const output = await runScript('analyze-context.sh')
       const parsed = JSON.parse(output)
       expect(parsed.repo.frameworks).toBeInstanceOf(Array)
+    }, SCRIPT_TIMEOUT)
+
+    test('detects Next.js and React projects', async () => {
+      const tmpRoot = `/tmp/flux-analyze-react-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      writeFileSync(
+        join(tmpRoot, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            next: '^15.0.0',
+            react: '^19.0.0',
+          },
+        })
+      )
+
+      const output = await runScript('analyze-context.sh', [], tmpRoot)
+      const parsed = JSON.parse(output)
+
+      expect(parsed.repo.frameworks).toEqual(expect.arrayContaining(['next', 'react']))
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
+    test('detects Remix and React Router projects', async () => {
+      const tmpRoot = `/tmp/flux-analyze-remix-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      writeFileSync(
+        join(tmpRoot, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            '@remix-run/react': '^2.0.0',
+            'react-router-dom': '^7.0.0',
+          },
+        })
+      )
+
+      const output = await runScript('analyze-context.sh', [], tmpRoot)
+      const parsed = JSON.parse(output)
+
+      expect(parsed.repo.frameworks).toEqual(
+        expect.arrayContaining(['remix', 'react-router'])
+      )
+
+      rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)
 
     test('identifies repo characteristics', async () => {
@@ -395,6 +439,9 @@ describe('Fluxctl CLI', () => {
 
     expect(parsed.state).toBe('fresh_session_no_objective')
     expect(parsed.flux_exists).toBe(false)
+    expect(parsed.router.command).toBe('/flux:setup')
+    expect(parsed.router.skill).toBe('flux-setup')
+    expect(parsed.router.node).toBe('Setup')
   }, SCRIPT_TIMEOUT)
 
   test('session-state requires prime before any scoped workflow', async () => {
@@ -407,6 +454,9 @@ describe('Fluxctl CLI', () => {
     const session = JSON.parse(sessionRaw)
     expect(session.state).toBe('needs_prime')
     expect(session.next_action).toBe('/flux:prime')
+    expect(session.router.command).toBe('/flux:prime')
+    expect(session.router.skill).toBe('flux-prime')
+    expect(session.router.node).toBe('Prime')
     expect(session.architecture.status).toBe('seeded')
     expect(session.architecture.needs_refresh).toBe(true)
 
@@ -420,6 +470,9 @@ describe('Fluxctl CLI', () => {
     const afterPrimeRaw = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
     const afterPrime = JSON.parse(afterPrimeRaw)
     expect(afterPrime.state).toBe('fresh_session_no_objective')
+    expect(afterPrime.router.command).toBe('/flux:scope')
+    expect(afterPrime.router.skill).toBe('flux-scope')
+    expect(afterPrime.router.node).toBe('Scope')
     expect(afterPrime.architecture.status).toBe('seeded')
   }, SCRIPT_TIMEOUT)
 
@@ -487,6 +540,9 @@ flowchart TD
     const session = JSON.parse(sessionRaw)
     expect(session.state).toBe('resume_scope')
     expect(session.objective.id).toBe(epic.id)
+    expect(session.router.command).toBe('/flux:scope')
+    expect(session.router.skill).toBe('flux-scope')
+    expect(session.router.node).toBe('Scope')
   }, SCRIPT_TIMEOUT)
 
   test('agentmap --check reports built-in availability', async () => {
@@ -812,6 +868,72 @@ describe('Skill File Structure', () => {
   test('flux-scope command file exists', () => {
     const commandFile = join(FLUX_ROOT, 'commands', 'flux', 'scope.md')
     expect(existsSync(commandFile)).toBe(true)
+  })
+
+  test('documented routed workflow commands exist', () => {
+    const expectedCommands = [
+      'autofix.md',
+      'dejank.md',
+      'design-interface.md',
+      'epic-review.md',
+      'export-context.md',
+      'gate.md',
+      'grill.md',
+      'improve-claude-md.md',
+      'impl-review.md',
+      'plan.md',
+      'plan-review.md',
+      'prime.md',
+      'propose.md',
+      'rca.md',
+      'release.md',
+      'remember.md',
+      'reflect.md',
+      'ruminate.md',
+      'scope.md',
+      'security-review.md',
+      'security-scan.md',
+      'setup.md',
+      'sync.md',
+      'tdd.md',
+      'threat-model.md',
+      'ubiquitous-language.md',
+      'vuln-validate.md',
+      'work.md',
+    ]
+
+    for (const command of expectedCommands) {
+      expect(existsSync(join(FLUX_ROOT, 'commands', 'flux', command))).toBe(true)
+    }
+  })
+
+  test('command-backed Flux skills have supported session phases', () => {
+    const commandDir = join(FLUX_ROOT, 'commands', 'flux')
+    const utilsText = readFileSync(join(FLUX_ROOT, 'scripts', 'fluxctl_pkg', 'utils.py'), 'utf8')
+    const phaseBlock = utilsText.match(/SESSION_PHASES = \[(.*?)\]\n\n/s)
+    expect(phaseBlock).toBeTruthy()
+
+    const supportedPhases = new Set(
+      [...(phaseBlock?.[1].matchAll(/"([^"]+)"/g) || [])].map((match) => match[1])
+    )
+
+    const commandFiles = readdirSync(commandDir).filter((entry) => entry.endsWith('.md'))
+
+    for (const commandFile of commandFiles) {
+      const skillDir = join(FLUX_ROOT, 'skills', `flux-${commandFile.replace(/\.md$/, '')}`)
+      const skillFile = join(skillDir, 'SKILL.md')
+      if (!existsSync(skillFile)) {
+        continue
+      }
+
+      const skillText = readFileSync(skillFile, 'utf8')
+      const phases = [...skillText.matchAll(/session-phase set ([A-Za-z0-9_-]+)/g)].map((match) => match[1])
+      expect(phases.length).toBeGreaterThan(0)
+
+      for (const phase of phases) {
+        expect(supportedPhases.has(phase)).toBe(true)
+      }
+    }
   })
 
   test('flux-plan skill has required files', () => {

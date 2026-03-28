@@ -141,6 +141,26 @@ If 3+ signals are present and zero engineer signals, ask:
 - If **stakeholder** → hand off to `flux-propose` skill with their input preserved. Stop here.
 - If **engineer** → continue with `/flux:scope` normally.
 
+## Detect React Visual Jank
+
+After stakeholder detection, check whether the request is really a React visual-jank complaint that should route to Dejank instead of the normal scoping flow.
+
+**Preconditions:**
+- Repo looks React-based (`react`, `next`, `@remix-run/react`, `react-router`, etc.)
+- `dejank` is installed in the repo (`.secureskills/store/dejank/manifest.json`, `.codex/skills/dejank/SKILL.md`, or `.claude/skills/dejank/SKILL.md`)
+
+**Visual-jank signals** (check the input text):
+- Uses language like: "flicker", "flash", "blink", "layout shift", "jump", "jank", "stutter", "pop in", "scroll reset", "feels rebuilt"
+- Describes a visible UI continuity problem rather than a thrown error
+- Mentions React UI behavior, rendering, hydration, or first-render instability
+
+If those signals are strong and Dejank is available, ask:
+
+> "This sounds like React visual jank rather than a normal feature scope. Would you like me to run Dejank instead? It specializes in flicker, layout shift, flashes, and render-stability issues."
+
+- If **yes** → hand off to `dejank` with the user input preserved. Stop here.
+- If **no** → continue with `/flux:scope` normally.
+
 ## Detect Bug vs Feature
 
 After stakeholder detection, check if this is a bug report that should route to RCA.
@@ -178,7 +198,7 @@ Before scoping, check if the user is actually asking to remember something, not 
 - Input starts with "remember", "don't forget", "keep in mind", "note that", "from now on"
 - Input contains "always ..." or "never ..." as a rule/constraint (not a question)
 
-If detected → **hand off to `flux-brain` skill** (which handles the "Remember" flow). Stop here.
+If detected → **hand off to `/flux:remember`** (which routes into the `flux-brain` "Remember" flow). Stop here.
 
 ## Session Realignment
 

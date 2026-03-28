@@ -4,6 +4,10 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `/flux:setup` can now offer the `dejank` skill for React-based repos, installing it project-locally through PlaTo into the repo `.secureskills/` store
+
 ### Changed
 
 - Flux now bootstraps PlaTo (`secureskills`) and uses it as the preferred secure installer for supported project-local skills
@@ -16,6 +20,7 @@ All notable changes to Flux will be documented in this file.
 - project skill detection, verification, uninstall docs, and troubleshooting now understand PlaTo-managed `.secureskills/` stores
 - Flux setup docs now position Flux as a safe skill installer backed by PlaTo for supported project-local installs
 - setup docs now describe agentmap generation as a native Flux capability
+- React framework detection now recognizes Remix and React Router stacks for setup-time skill gating
 - built-in tests now validate actual map generation logic instead of a stubbed external binary
 
 ## [1.9.5] - 2026-03-12

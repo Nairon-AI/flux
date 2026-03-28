@@ -68,12 +68,13 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 
 ### Valid Phases
 
-`idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `tdd`, `design_interface`, `ubiquitous_language`
+`setup`, `idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `desloppify`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `export_context`, `dejank`, `tdd`, `design_interface`, `ubiquitous_language`, `sync`, `security_scan`, `security_review`, `threat_model`, `vuln_validate`, `skill_build`, `profile`, `ralph`, `contribute`, `upgrade`, `release`, `improve-claude-md`
 
 ### Skill → Phase Mapping
 
 | Skill | Phase set on entry |
 |-------|--------------------|
+| `/flux:setup` | `setup` |
 | `/flux:prime` | `prime` |
 | `/flux:ruminate` | `ruminate` |
 | `/flux:scope` | `scope` |
@@ -85,15 +86,30 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 | `/flux:reflect` | `reflect` |
 | `/flux:meditate` | `meditate` |
 | `/flux:autofix` | `autofix` |
+| `/flux:export-context` | `export_context` |
 | `/flux:gate` | `gate` |
 | `/flux:propose` | `propose` |
 | `/flux:rca` | `rca` |
 | `/flux:improve` | `improve` |
 | `/flux:remember` | `remember` |
+| `/flux:dejank` | `dejank` |
 | `/flux:grill` | `grill` |
+| `/flux:desloppify` | `desloppify` |
 | `/flux:tdd` | `tdd` |
 | `/flux:design-interface` | `design_interface` |
 | `/flux:ubiquitous-language` | `ubiquitous_language` |
+| `/flux:sync` | `sync` |
+| `/flux:security-scan` | `security_scan` |
+| `/flux:security-review` | `security_review` |
+| `/flux:threat-model` | `threat_model` |
+| `/flux:vuln-validate` | `vuln_validate` |
+| `/flux:skill-builder` | `skill_build` |
+| `/flux:profile` | `profile` |
+| `/flux:ralph-init` | `ralph` |
+| `/flux:contribute` | `contribute` |
+| `/flux:upgrade` | `upgrade` |
+| `/flux:release` | `release` |
+| `/flux:improve-claude-md` | `improve-claude-md` |
 
 ---
 
@@ -314,20 +330,29 @@ The following routing happens when a user provides natural language instead of a
 | Signal | Route To | Priority |
 |--------|----------|----------|
 | Stakeholder language (outcomes, no implementation detail) | `/flux:propose` | 1 |
-| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 2 |
-| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:brain` ("Remember" flow) | 3 |
-| Feature/refactor description | `/flux:scope` | 4 |
-| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 5 |
-| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 5 |
-| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 6 |
-| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 7 |
-| "review this" / "check my code" | `/flux:impl-review` | 8 |
-| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 9 |
-| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 10 |
-| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 11 |
-| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 12 |
-| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 13 |
-| "reflect" / "what did we learn" | `/flux:reflect` | 14 |
+| React visual-jank signals ("flicker", "flash", "blink", "layout shift", "jank", "scroll reset", "feels rebuilt") and `dejank` is installed | `/flux:dejank` | 2 |
+| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 3 |
+| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:remember` | 4 |
+| Feature/refactor description | `/flux:scope` | 5 |
+| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 6 |
+| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 6 |
+| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 7 |
+| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 8 |
+| "review this" / "check my code" | `/flux:impl-review` | 9 |
+| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 10 |
+| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 11 |
+| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 12 |
+| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 13 |
+| "export this for ChatGPT/Claude web" / "external LLM review" / "review with ChatGPT" | `/flux:export-context` | 14 |
+| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 15 |
+| "reflect" / "what did we learn" | `/flux:reflect` | 16 |
+| "validate staging" / "promote staging" / "ship staging to production" | `/flux:gate` | 17 |
+| "cut a release" / "publish Flux vX.Y.Z" / "release this version" | `/flux:release` | 18 |
+| "improve CLAUDE.md" / "restructure AGENTS.md" / "add important if blocks" | `/flux:improve-claude-md` | 19 |
+| "export my setup" / "share this Flux profile" / "import a profile" | `/flux:profile` | 20 |
+| "build me a skill" / "create a skill for X" | `/flux:skill-builder` | 21 |
+| "upgrade Flux" / "update the plugin" | `/flux:upgrade` | 22 |
+| "report a Flux bug" / "contribute a fix" | `/flux:contribute` | 23 |
 
 ### Intra-Skill Routing
 
@@ -336,8 +361,9 @@ Skills can route to other skills during execution:
 | From | Condition | Routes To |
 |------|-----------|-----------|
 | `/flux:scope` | Stakeholder detected (3+ signals, 0 engineer signals) | `/flux:propose` |
+| `/flux:scope` | React visual-jank signals + `dejank` installed + user confirms | `/flux:dejank` |
 | `/flux:scope` | Bug signals detected + user confirms | `/flux:rca` |
-| `/flux:scope` | "remember X" detected | `/flux:brain` |
+| `/flux:scope` | "remember X" detected | `/flux:remember` |
 | `/flux:scope` | `--explore` flag | Explore mode (internal) |
 | `/flux:scope` | Stress test signals detected | Dialectic subagents (internal) |
 | `/flux:scope` | Scoping complete → user chooses execution mode | `/flux:work` (interactive) or Ralph mode |

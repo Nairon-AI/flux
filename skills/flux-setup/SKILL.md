@@ -8,6 +8,21 @@ user-invocable: false
 
 Install fluxctl locally and add instructions to project docs. **Fully optional** - Flux works without this local setup, but this is the preferred path for Codex-first repos.
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set setup
+```
+
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Benefits
 
 - `fluxctl` accessible from command line (add `.flux/bin` to PATH)
@@ -35,6 +50,7 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Granola** — AI meeting notes companion (macOS/Windows)
 - **Optional** additional agent skill:
   - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
+  - **Dejank** — React visual-jank detection and diagnosis (18 anti-patterns + runtime workflows)
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Find Skills (Vercel)** — secure bootstrap for Vercel's skill catalog via PlaTo
@@ -57,6 +73,7 @@ A step completion checklist and verification gate at the end of workflow.md will
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
 - All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs now go into PlaTo's `.secureskills/` store, with loose `.codex/skills/` / `.claude/skills/` folders retained only as compatibility fallbacks when needed
+- React-only skills should only be offered when the repo actually uses React or a React-based framework
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 

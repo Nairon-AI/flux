@@ -7,7 +7,7 @@ For the formal workflow state machine (all states, transitions, routing rules, a
 ## High-Level Flow
 
 1. User runs `/flux:*` command.
-2. Command file in `commands/flux/*.md` routes to a skill.
+2. Command file in `commands/flux/*.md` routes to a built-in Flux skill or an optional project-installed skill.
 3. Skill orchestrates scripts in `scripts/`.
 4. Scripts return structured JSON.
 5. Skill presents output and executes selected actions.
@@ -23,6 +23,7 @@ Example:
 - `/flux:improve` -> `skills/flux-improve/`
 - `/flux:plan` -> `skills/flux-plan/`
 - `/flux:work` -> `skills/flux-work/`
+- `/flux:dejank` -> optional installed `dejank` skill (when present in the repo)
 
 ### Skill Layer
 
