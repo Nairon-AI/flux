@@ -116,7 +116,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 
 <important if="you are building, redesigning, or restyling a user-facing frontend">
 **Frontend rules:**
-- If project-local frontend skills exist, you MUST load and follow them before making UI changes. Check `.codex/skills/` first, then `.claude/skills/` mirrors.
+- If project-local frontend skills exist, you MUST load and follow them before making UI changes. Check `.secureskills/store/<skill>/manifest.json` first, then `.codex/skills/`, then `.claude/skills/` mirrors.
 - Treat `taste-skill` as mandatory for frontend generation when present.
 - Treat installed UI skills as mandatory guardrails when present. At minimum, load `baseline-ui`; also load `fixing-accessibility`, `fixing-motion-performance`, and `fixing-metadata` when the task touches those concerns.
 - If the repo has substantive frontend work to do and these skills are missing, strongly recommend running `/flux:setup` to install `UI Skills` and `Taste Skill` before large UI changes.
