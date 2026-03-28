@@ -95,6 +95,7 @@ detect_macos_apps() {
     # Check /Applications
     [ -d "/Applications/Raycast.app" ] && apps+=("raycast")
     [ -d "/Applications/Superset.app" ] && apps+=("superset")
+    [ -d "/Applications/CodexBar.app" ] && apps+=("codexbar")
     [ -d "/Applications/Granola.app" ] && apps+=("granola")
     [ -d "/Applications/Wispr Flow.app" ] && apps+=("wispr-flow")
     [ -d "/Applications/Dia.app" ] && apps+=("dia")
@@ -113,6 +114,7 @@ detect_macos_apps() {
     # Check ~/Applications too
     [ -d "$HOME/Applications/Raycast.app" ] && apps+=("raycast")
     [ -d "$HOME/Applications/Superset.app" ] && apps+=("superset")
+    [ -d "$HOME/Applications/CodexBar.app" ] && apps+=("codexbar")
     [ -d "$HOME/Applications/Granola.app" ] && apps+=("granola")
     
     # Deduplicate

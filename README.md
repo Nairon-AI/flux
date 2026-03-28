@@ -116,6 +116,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | App | Why |
 |-----|-----|
 | [Superset](https://superset.dev) | Parallel Codex sessions with git worktree workspace management |
+| [CodexBar](https://github.com/steipete/CodexBar) | Menu bar visibility into Codex and Claude Code subscription usage and reset windows |
 | [Raycast](https://raycast.com) | Launcher with AI, snippets, clipboard history |
 | [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
 | [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
