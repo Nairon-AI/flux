@@ -8,6 +8,21 @@ user-invocable: true
 
 Upgrades the Flux plugin to the latest version from GitHub. Handles all three layers of the plugin cache, shows the user what changed, and tells them exactly what to do next.
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set upgrade
+```
+
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## What This Does
 
 Flux's legacy plugin packaging has three separate caches that must all agree:

@@ -131,19 +131,25 @@ def validate_skill(skill_dir: Path) -> SkillReport:
             "description is not clearly trigger-oriented; add 'Use when', 'Triggers:', or similar language"
         )
 
-    if frontmatter.get("user-invocable", "").strip().lower() == "true" and skill_dir.name.startswith("flux-"):
+    command_path = None
+    if skill_dir.name.startswith("flux-"):
         command_name = skill_dir.name.removeprefix("flux-")
         command_path = ROOT / "commands" / "flux" / f"{command_name}.md"
-        if not command_path.exists():
+        if frontmatter.get("user-invocable", "").strip().lower() == "true" and not command_path.exists():
             report.errors.append(
                 f"user-invocable skill is missing command file commands/flux/{command_name}.md"
             )
 
-    for phase in sorted(set(SESSION_PHASE_RE.findall(text))):
+    phases_used = sorted(set(SESSION_PHASE_RE.findall(text)))
+    for phase in phases_used:
         if phase not in SESSION_PHASES:
             report.errors.append(
                 f"uses unsupported session phase '{phase}' (add it to scripts/fluxctl_pkg/utils.py::SESSION_PHASES)"
             )
+    if command_path and command_path.exists() and not phases_used:
+        report.errors.append(
+            f"command-backed skill is missing session-phase tracking for commands/flux/{command_path.name}"
+        )
 
     if len(lines) > HARD_LINE_LIMIT:
         report.errors.append(

@@ -10,6 +10,21 @@ You are a senior security engineer conducting a focused security review using LL
 
 Adapted from [Factory AI security-engineer plugin](https://github.com/Factory-AI/factory-plugins).
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set security_review
+```
+
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## When to Use This Skill
 
 - **PR security review** - Analyze code changes before merge

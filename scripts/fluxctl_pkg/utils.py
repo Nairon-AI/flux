@@ -86,6 +86,7 @@ SESSION_PHASES = [
     "tdd",               # Test-driven implementation mode
     "design_interface",  # Parallel interface design exploration
     "ubiquitous_language",  # Domain glossary extraction
+    "desloppify",        # Code quality improvement workflow
     "quality",           # Tests + lint + desloppify
     "submit",            # Push + PR
     "autofix",           # Post-submit PR babysitting

@@ -907,7 +907,7 @@ describe('Skill File Structure', () => {
     }
   })
 
-  test('user-invocable Flux skills have command files and supported session phases', () => {
+  test('command-backed Flux skills have supported session phases', () => {
     const commandDir = join(FLUX_ROOT, 'commands', 'flux')
     const utilsText = readFileSync(join(FLUX_ROOT, 'scripts', 'fluxctl_pkg', 'utils.py'), 'utf8')
     const phaseBlock = utilsText.match(/SESSION_PHASES = \[(.*?)\]\n\n/s)
@@ -917,20 +917,21 @@ describe('Skill File Structure', () => {
       [...(phaseBlock?.[1].matchAll(/"([^"]+)"/g) || [])].map((match) => match[1])
     )
 
-    const skillDirs = readdirSync(join(FLUX_ROOT, 'skills'), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && entry.name.startsWith('flux-'))
-      .map((entry) => entry.name)
+    const commandFiles = readdirSync(commandDir).filter((entry) => entry.endsWith('.md'))
 
-    for (const skillName of skillDirs) {
-      const skillText = readFileSync(join(FLUX_ROOT, 'skills', skillName, 'SKILL.md'), 'utf8')
-
-      if (/user-invocable:\s*true/m.test(skillText)) {
-        const commandName = `${skillName.replace(/^flux-/, '')}.md`
-        expect(existsSync(join(commandDir, commandName))).toBe(true)
+    for (const commandFile of commandFiles) {
+      const skillDir = join(FLUX_ROOT, 'skills', `flux-${commandFile.replace(/\.md$/, '')}`)
+      const skillFile = join(skillDir, 'SKILL.md')
+      if (!existsSync(skillFile)) {
+        continue
       }
 
-      for (const match of skillText.matchAll(/session-phase set ([A-Za-z0-9_-]+)/g)) {
-        expect(supportedPhases.has(match[1])).toBe(true)
+      const skillText = readFileSync(skillFile, 'utf8')
+      const phases = [...skillText.matchAll(/session-phase set ([A-Za-z0-9_-]+)/g)].map((match) => match[1])
+      expect(phases.length).toBeGreaterThan(0)
+
+      for (const phase of phases) {
+        expect(supportedPhases.has(phase)).toBe(true)
       }
     }
   })

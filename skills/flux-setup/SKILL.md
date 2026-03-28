@@ -8,6 +8,21 @@ user-invocable: false
 
 Install fluxctl locally and add instructions to project docs. **Fully optional** - Flux works without this local setup, but this is the preferred path for Codex-first repos.
 
+## Session Phase Tracking
+
+On entry, set the session phase:
+```bash
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
+$FLUXCTL session-phase set setup
+```
+
+On completion, reset:
+```bash
+$FLUXCTL session-phase set idle
+```
+
 ## Benefits
 
 - `fluxctl` accessible from command line (add `.flux/bin` to PATH)

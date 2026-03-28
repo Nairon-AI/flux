@@ -68,7 +68,7 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 
 ### Valid Phases
 
-`setup`, `idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `export_context`, `dejank`, `tdd`, `design_interface`, `ubiquitous_language`, `sync`, `security_scan`, `security_review`, `threat_model`, `vuln_validate`, `skill_build`, `profile`, `ralph`, `contribute`, `upgrade`, `release`, `improve-claude-md`
+`setup`, `idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `desloppify`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `export_context`, `dejank`, `tdd`, `design_interface`, `ubiquitous_language`, `sync`, `security_scan`, `security_review`, `threat_model`, `vuln_validate`, `skill_build`, `profile`, `ralph`, `contribute`, `upgrade`, `release`, `improve-claude-md`
 
 ### Skill → Phase Mapping
 
@@ -94,6 +94,7 @@ Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). T
 | `/flux:remember` | `remember` |
 | `/flux:dejank` | `dejank` |
 | `/flux:grill` | `grill` |
+| `/flux:desloppify` | `desloppify` |
 | `/flux:tdd` | `tdd` |
 | `/flux:design-interface` | `design_interface` |
 | `/flux:ubiquitous-language` | `ubiquitous_language` |
