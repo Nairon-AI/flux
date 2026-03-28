@@ -4,6 +4,9 @@ fluxctl_pkg.config - Config loading/saving, defaults, deep_merge.
 
 import json
 import os
+import shlex
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -40,6 +43,39 @@ def get_default_config() -> dict:
     }
 
 
+def ensure_config_file() -> Path:
+    """Create config.json with defaults if it does not exist."""
+    config_path = get_flux_dir() / CONFIG_FILE
+    if not config_path.exists():
+        atomic_write_json(config_path, get_default_config())
+    return config_path
+
+
+def load_raw_config(strict: bool = False) -> dict:
+    """Load config.json without merging defaults."""
+    config_path = get_flux_dir() / CONFIG_FILE
+    if not config_path.exists():
+        return {}
+
+    try:
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        if strict:
+            raise ValueError(f"Invalid JSON in {config_path}: {exc}") from exc
+        return {}
+    except Exception as exc:
+        if strict:
+            raise ValueError(f"Unable to read {config_path}: {exc}") from exc
+        return {}
+
+    if not isinstance(data, dict):
+        if strict:
+            raise ValueError(f"{config_path} must contain a JSON object.")
+        return {}
+
+    return data
+
+
 def deep_merge(base: dict, override: dict) -> dict:
     """Deep merge override into base. Override values win for conflicts."""
     result = base.copy()
@@ -53,17 +89,9 @@ def deep_merge(base: dict, override: dict) -> dict:
 
 def load_flux_config() -> dict:
     """Load .flux/config.json, merging with defaults for missing keys."""
-    config_path = get_flux_dir() / CONFIG_FILE
     defaults = get_default_config()
-    if not config_path.exists():
-        return defaults
-    try:
-        data = json.loads(config_path.read_text(encoding="utf-8"))
-        if isinstance(data, dict):
-            return deep_merge(defaults, data)
-        return defaults
-    except (json.JSONDecodeError, Exception):
-        return defaults
+    data = load_raw_config(strict=False)
+    return deep_merge(defaults, data)
 
 
 def get_config(key: str, default=None):
@@ -80,14 +108,8 @@ def get_config(key: str, default=None):
 
 def set_config(key: str, value) -> dict:
     """Set nested config value and return updated config."""
-    config_path = get_flux_dir() / CONFIG_FILE
-    if config_path.exists():
-        try:
-            config = json.loads(config_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, Exception):
-            config = get_default_config()
-    else:
-        config = get_default_config()
+    config_path = ensure_config_file()
+    config = load_raw_config(strict=False) or get_default_config()
 
     # Navigate/create nested path
     parts = key.split(".")
@@ -109,6 +131,112 @@ def set_config(key: str, value) -> dict:
     current[parts[-1]] = value
     atomic_write_json(config_path, config)
     return config
+
+
+def resolve_editor(editor: str | None = None) -> list[str] | None:
+    """Resolve an editor command to execute."""
+    candidates: list[str] = []
+
+    if editor:
+        candidates.append(editor)
+
+    for env_key in ("VISUAL", "EDITOR"):
+        env_val = os.environ.get(env_key, "").strip()
+        if env_val:
+            candidates.append(env_val)
+
+    if os.name == "nt":
+        candidates.extend(["code --wait", "notepad"])
+    else:
+        candidates.extend(["code --wait", "nano", "vi"])
+
+    for candidate in candidates:
+        parts = shlex.split(candidate)
+        if parts and shutil.which(parts[0]):
+            return parts
+
+    return None
+
+
+def cmd_config_list(args) -> None:
+    """List the full config."""
+    if not ensure_flux_exists():
+        error_exit(
+            ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
+        )
+
+    config_path = get_flux_dir() / CONFIG_FILE
+    try:
+        config = deep_merge(get_default_config(), load_raw_config(strict=True))
+    except ValueError as exc:
+        error_exit(str(exc), use_json=args.json)
+        return
+
+    if args.json:
+        json_output({"path": str(config_path), "config": config})
+    else:
+        print(f"Config path: {config_path}")
+        print(json.dumps(config, indent=2, sort_keys=True))
+
+
+def cmd_config_toggle(args) -> None:
+    """Toggle a boolean config value."""
+    if not ensure_flux_exists():
+        error_exit(
+            ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
+        )
+
+    current = get_config(args.key)
+    if not isinstance(current, bool):
+        error_exit(
+            f"{args.key} is not a boolean config value and cannot be toggled.",
+            use_json=args.json,
+        )
+
+    new_value = not current
+    set_config(args.key, new_value)
+
+    if args.json:
+        json_output({"key": args.key, "value": new_value, "message": f"{args.key} toggled"})
+    else:
+        print(f"{args.key} set to {new_value}")
+
+
+def cmd_config_edit(args) -> None:
+    """Open config.json in the user's editor."""
+    if not ensure_flux_exists():
+        error_exit(
+            ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
+        )
+
+    config_path = ensure_config_file()
+    editor_cmd = resolve_editor(args.editor)
+    if not editor_cmd:
+        error_exit(
+            f"No editor found. Set $EDITOR or use --editor. Config file: {config_path}",
+            use_json=args.json,
+        )
+
+    try:
+        result = subprocess.run([*editor_cmd, str(config_path)], check=False)
+    except Exception as exc:
+        error_exit(
+            f"Failed to launch editor {' '.join(editor_cmd)}: {exc}",
+            use_json=args.json,
+        )
+        return
+
+    if result.returncode != 0:
+        error_exit(
+            f"Editor exited with status {result.returncode}. Config file: {config_path}",
+            code=result.returncode,
+            use_json=args.json,
+        )
+
+    if args.json:
+        json_output({"path": str(config_path), "editor": " ".join(editor_cmd)})
+    else:
+        print(f"Edited {config_path} with {' '.join(editor_cmd)}")
 
 
 def cmd_config_get(args) -> None:
@@ -169,5 +297,4 @@ def cmd_review_backend(args) -> None:
         json_output({"backend": backend, "source": source})
     else:
         print(backend)
-
 

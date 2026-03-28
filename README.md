@@ -489,7 +489,9 @@ Connect Flux to [Linear](https://linear.app) during `/flux:setup` — epics auto
 
 ```bash
 /flux:setup              # Select "Linear" when prompted for task tracker
+fluxctl config list      # See all current setup/config values
 fluxctl config get tracker.provider   # Check current tracker config
+fluxctl config edit      # Open .flux/config.json in your editor
 ```
 
 ---

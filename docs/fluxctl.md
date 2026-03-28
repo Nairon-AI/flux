@@ -451,6 +451,9 @@ Exits with code 1 if validation fails (for CI use).
 Manage project configuration stored in `.flux/config.json`.
 
 ```bash
+# Show all current config (merged with defaults)
+fluxctl config list [--json]
+
 # Get a config value
 fluxctl config get review.backend [--json]
 
@@ -459,19 +462,24 @@ fluxctl config set review.backend codex [--json]  # rp, codex, or none
 
 # Toggle boolean config
 fluxctl config toggle planSync.enabled [--json]
+
+# Edit the config file directly
+fluxctl config edit [--editor "code --wait"] [--json]
 ```
 
 **Available settings:**
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `planSync.enabled` | bool | `false` | Enable plan-sync after task completion |
+| `planSync.enabled` | bool | `true` | Enable plan-sync after task completion |
 | `scouts.github` | bool | `false` | Enable github-scout during planning (requires gh CLI) |
 | `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLUX_REVIEW_BACKEND`. |
 
 Priority: `--review=...` argument > `FLUX_REVIEW_BACKEND` env > `.flux/config.json` > error.
 
 No auto-detect. Run `/flux:setup` (or `fluxctl config set review.backend ...`) to configure.
+
+`config list` prints the current runtime config as Flux sees it, including default values for unset keys. `config edit` opens `.flux/config.json` using `--editor`, `$VISUAL`, `$EDITOR`, or a fallback editor if available.
 
 > **Note:** Learnings (pitfalls, conventions, decisions) are stored in `.flux/brain/`. See `.flux/brain/index.md`.
 
