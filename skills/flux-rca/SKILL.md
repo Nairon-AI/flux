@@ -56,6 +56,11 @@ $FLUXCTL session-phase set idle
 
 **Tone**: Precise, calm, investigative. Think "incident commander during a postmortem" — not "developer who just wants to get this ticket closed."
 
+**Operating stance**:
+- Treat generic review prompts like "any concerns?" or "does this look sound?" as insufficient for bug work.
+- Ask targeted failure questions from concrete production perspectives: scale, deployment topology, concurrency, retries, large datasets, slow dependencies, restarts, and partial failure.
+- Do not stop because the code looks reasonable in isolation. Many real bugs only appear when the code meets production conditions.
+
 ## Input
 
 Full request: $ARGUMENTS
@@ -115,8 +120,8 @@ Based on the symptom, classify into a severity tier. This determines how deep th
 | Tier | Description | Examples | Investigation depth |
 |------|-------------|----------|-------------------|
 | **Quick** | Cosmetic, non-blocking, isolated | CSS glitch, typo in UI, wrong color | Targeted trace, skip adversarial review |
-| **Standard** | Functional breakage, affects users | Feature not working, wrong data displayed, API returning errors | Full backward trace, standard review |
-| **Critical** | Data loss, security, system-wide | Data corruption, auth bypass, crash loop, payment errors | Full trace + adversarial review + mandatory regression test |
+| **Standard** | Functional breakage, affects users | Feature not working, wrong data displayed, API returning errors, production-only behavior with user impact | Full backward trace, production interrogation, standard review |
+| **Critical** | Data loss, security, system-wide | Data corruption, auth bypass, crash loop, payment errors, duplicated jobs, resource-exhaustion outages | Full trace + production interrogation + adversarial review + mandatory regression test |
 
 Tell the user the classification and ask if they agree:
 > "I'm classifying this as [tier] severity because [reason]. Does that feel right, or is this more/less severe than that?"
@@ -177,6 +182,34 @@ Level N: [file:line]
 - Thinking "this quick fix will prevent it" without knowing WHY it happened
 - Abandoning the trace because it's getting complicated
 
+### Production Interrogation (All Investigation Paths)
+
+For **Standard** and **Critical** bugs, and for any bug involving backend systems, retries, queues, schedulers, exports, databases, concurrency, or production-only behavior, run a production interrogation before concluding the investigation.
+
+Do **not** ask a vague question like "any production concerns?" Ask specific scenario questions that force a concrete failure analysis:
+
+- **Scale**: "What happens if 1,000 clients hit this simultaneously?"
+- **Topology**: "What happens if two or more instances run behind a load balancer?"
+- **Data volume**: "What happens when this table/file/queue is 100x larger than the happy path?"
+- **Retries and partial failure**: "What happens if the upstream flakes for 5 seconds? Do retries synchronize or amplify load?"
+- **Resource exhaustion**: "What happens to memory, threads, DB connections, file handles, or worker slots under stress?"
+- **Timing**: "What happens if jobs run slowly, clocks drift, or the process restarts mid-flight?"
+- **Duplicates and idempotency**: "What happens if this runs twice?"
+
+Treat these as perspective assignments, not optional brainstorming. The goal is to surface bugs that live in deployment conditions rather than in the local code path.
+
+Document the answers in the investigation notes:
+```
+Production perspective:
+  Scale: [failure mode / none]
+  Topology: [failure mode / none]
+  Data volume: [failure mode / none]
+  Resource limits: [failure mode / none]
+  Timing / retries: [failure mode / none]
+```
+
+If the concrete question reveals a failure mode, fold it into the root cause analysis even if the code originally looked "safe."
+
 ### Path B: RepoPrompt Investigate
 
 Use RepoPrompt's investigate flow via the existing Flux RP integration:
@@ -192,7 +225,7 @@ Then leverage the RP investigate flow:
 - **Evidence**: Gather proof for/against each hypothesis
 - **Findings**: Structured report with root cause identified
 
-After RP investigation completes, continue to Phase 3 with the findings.
+After RP investigation completes, run the same **Production Interrogation** against the findings, then continue to Phase 3.
 
 ## Step 5: Present Root Cause
 
@@ -209,6 +242,8 @@ Present the root cause clearly:
   1. [Root cause]: [description] (file:line)
   2. [Propagation]: [how bad state traveled] (file:line)
   3. [Symptom]: [what the user saw] (file:line)
+
+**Production trigger**: [Why this broke in the real environment: scale, topology, data size, concurrency, retry behavior, etc.]
 
 **Why it wasn't caught**: [Why existing tests/checks didn't catch this]
 
@@ -236,12 +271,19 @@ Before writing the fix, verify the root cause analysis is correct. The goal is t
 3. "Are there other code paths that could produce the same symptom for a different reason?"
 4. "If I fix this, will it definitely fix the reported bug?"
 5. "Could this fix introduce new bugs?"
+6. "What breaks at production scale, not just in this unit of code?"
+7. "What changes when multiple workers/instances/processes run this at once?"
+8. "What happens when inputs become much larger or slower than the happy path?"
+9. "Does a retry, scheduler, or batch flow need jitter, idempotency, streaming, locking, or backpressure?"
+10. "Am I certifying something as safe without proving behavior under realistic load or topology?"
+
+**Important**: Never accept "the logic is sound" as a stopping condition for backend or production-facing bugs. Force at least one concrete scale/topology/data-volume question.
 
 **For Critical severity**: If RepoPrompt or Codex is available, run a second-model review:
 ```bash
 # If RP available
 $FLUXCTL rp setup-review
-$FLUXCTL rp chat-send --message "Review this root cause analysis. Challenge the conclusion. Are there alternative explanations? [RCA summary]"
+$FLUXCTL rp chat-send --message "Review this root cause analysis. Challenge the conclusion. Are there alternative explanations? Also analyze concrete production failure modes: scale, multi-instance deployment, retries, large datasets, resource exhaustion, and duplicate execution. [RCA summary]"
 
 # If Codex available
 # Export context and send to Codex for adversarial review
@@ -265,6 +307,7 @@ Before writing code, plan the fix:
 **Defense-in-depth**: [additional validation at intermediate layers, if warranted]
 **Blast radius**: [what else this change touches]
 **Risk**: [could this fix break anything else?]
+**Production guardrail**: [what specifically prevents recurrence under real operating conditions]
 ```
 
 **Key principle**: Fix at the source. If the root cause is in file A but the symptom appears in file Z, fix file A. Add defensive validation at intermediate layers only if the data crosses trust boundaries.
@@ -272,6 +315,26 @@ Before writing code, plan the fix:
 ## Step 8: Implement the Fix
 
 Write the fix. Keep it minimal — this is a bug fix, not a refactor. Resist the urge to clean up surrounding code.
+
+## Step 8b: Second-Guess the Fix
+
+Before you trust the fix, force a skeptical second pass on your own work:
+
+1. **Re-read the original request** — verify you fixed what the user reported, not what you inferred or wish they had asked for.
+2. **Read the diff carefully** — not a skim. Review the actual changed lines as if someone else wrote them.
+3. **Challenge the patch like a reviewer would**:
+   - Does the fix actually address the root cause?
+   - Did you add unrelated behavior, cleanup, or scope creep?
+   - Is there logic that looks right but is still wrong under real conditions?
+   - Are there obvious edge cases, naming mistakes, copy-paste leftovers, or unused imports?
+4. **Ask what you forgot**:
+   - Tests or manual verification updates?
+   - Other files, call sites, configs, docs, or contracts affected by the change?
+   - Follow-up validation for the production trigger?
+5. **Run the thing** — execute the relevant tests, build, lint, reproduction steps, or manual checks. Confidence is not verification.
+6. **Fix what this review finds** — then review those fixes too. If the skeptical pass changes the patch materially, repeat this step once more.
+
+If the second pass finds nothing, say so explicitly in the summary.
 
 ## Step 9: Regression Test
 
@@ -281,6 +344,7 @@ Write a regression test that:
 1. **Reproduces the original bug** — the test must fail without the fix
 2. **Passes with the fix applied**
 3. **Tests the root cause**, not just the symptom — if possible, test at the source level
+4. **Exercises the production trigger** when feasible — concurrency, duplicate execution, large input volume, retry timing, or resource limits
 
 > "A regression test that doesn't fail without the fix is not a regression test — it's a regular test that happens to pass."
 
@@ -299,6 +363,7 @@ Write a **manual verification checklist** instead:
 2. [ ] Test the specific scenario that triggered it
 3. [ ] Test related scenarios that could be affected
 4. [ ] Check edge cases: [list specific ones based on the root cause]
+5. [ ] If relevant, simulate production conditions: concurrent users, multiple instances, large datasets, slow upstreams, retries, restarts, or duplicate execution
 ```
 
 Also note in the PR:
@@ -319,6 +384,7 @@ $FLUXCTL desloppify-scan --changed-only
 Check for:
 - Did the fix introduce any code quality issues?
 - Are there similar patterns elsewhere in the codebase that could have the same bug? (If so, flag them — don't fix them in this PR, but note them.)
+- Did the skeptical second pass uncover anything that was fixed afterward? If yes, make sure the final diff and verification reflect the corrected version, not the first attempt.
 
 ---
 
@@ -345,10 +411,13 @@ Write to `.flux/brain/pitfalls/[descriptive-slug].md`:
 [One sentence: the bug and its root cause]
 
 ## Why it happened
-[The deeper reason — missing validation, wrong assumption, unclear contract]
+[The deeper reason — missing validation, wrong assumption, unclear contract, missing production guardrail, or failure to reason about scale/topology]
 
 ## How to avoid
-[Specific guidance for future development]
+[Specific guidance for future development, including the exact production question that would have exposed it earlier]
+
+## Trigger conditions
+[The real-world conditions that activated the bug: scale, topology, data size, retries, timing, etc.]
 
 ## Related files
 - [file:line] — where the root cause was
@@ -363,6 +432,7 @@ Ask: "Could this class of bug be prevented structurally?" Check each option:
 2. **Type constraint** — could stronger types prevent this? (e.g., branded types, non-nullable)
 3. **Runtime check** — should there be a validation at a trust boundary?
 4. **CI check** — should a CI step catch this class of issue?
+5. **Production scenario check** — should tests or review templates always ask a concrete scale/topology/data-volume question for this class of change?
 
 If any apply, tell the user and offer to implement:
 > "This bug could be prevented in the future with [specific mechanism]. Want me to add that?"
@@ -388,6 +458,7 @@ If systemic, flag it:
 **Bug**: [one sentence description]
 **Severity**: [Quick / Standard / Critical]
 **Root cause**: [one sentence — at the source, not the symptom]
+**Production trigger**: [the real operating condition that made it fail]
 **Fix**: [what was changed and where]
 **Investigation**: [Flux RCA / RepoPrompt Investigate]
 **Regression test**: [added / manual checklist (no test infra)]
