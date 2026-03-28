@@ -160,6 +160,50 @@ describe('Flux Scripts', () => {
       expect(parsed.repo.frameworks).toBeInstanceOf(Array)
     }, SCRIPT_TIMEOUT)
 
+    test('detects Next.js and React projects', async () => {
+      const tmpRoot = `/tmp/flux-analyze-react-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      writeFileSync(
+        join(tmpRoot, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            next: '^15.0.0',
+            react: '^19.0.0',
+          },
+        })
+      )
+
+      const output = await runScript('analyze-context.sh', [], tmpRoot)
+      const parsed = JSON.parse(output)
+
+      expect(parsed.repo.frameworks).toEqual(expect.arrayContaining(['next', 'react']))
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
+    test('detects Remix and React Router projects', async () => {
+      const tmpRoot = `/tmp/flux-analyze-remix-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      writeFileSync(
+        join(tmpRoot, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            '@remix-run/react': '^2.0.0',
+            'react-router-dom': '^7.0.0',
+          },
+        })
+      )
+
+      const output = await runScript('analyze-context.sh', [], tmpRoot)
+      const parsed = JSON.parse(output)
+
+      expect(parsed.repo.frameworks).toEqual(
+        expect.arrayContaining(['remix', 'react-router'])
+      )
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
     test('identifies repo characteristics', async () => {
       const output = await runScript('analyze-context.sh')
       const parsed = JSON.parse(output)

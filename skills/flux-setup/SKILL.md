@@ -35,6 +35,7 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **Granola** — AI meeting notes companion (macOS/Windows)
 - **Optional** additional agent skill:
   - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
+  - **Dejank** — React visual-jank detection and diagnosis (18 anti-patterns + runtime workflows)
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Find Skills (Vercel)** — secure bootstrap for Vercel's skill catalog via PlaTo
@@ -57,6 +58,7 @@ A step completion checklist and verification gate at the end of workflow.md will
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
 - All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs now go into PlaTo's `.secureskills/` store, with loose `.codex/skills/` / `.claude/skills/` folders retained only as compatibility fallbacks when needed
+- React-only skills should only be offered when the repo actually uses React or a React-based framework
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 

@@ -990,6 +990,7 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
 | `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `install-skill.sh <skill> <repo> project` via PlaTo secure store |
+| `dejank` | Dejank | **Detect React visual jank** — static scan of 18 anti-patterns plus runtime investigation workflows | `install-skill.sh dejank https://github.com/gbasin/dejank project` via PlaTo secure store; only offer for React-based repos |
 | `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `install-skill.sh taste-skill https://github.com/Leonxlnx/taste-skill project` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `install-skill.sh semver-changelog https://github.com/prulloac/agent-skills project` |
 | `agent-skills-vercel` | Find Skills (Vercel) | **Catalog bootstrap** — securely install Vercel's `find-skills` helper, then use PlaTo to add more | `install-skill.sh find-skills https://github.com/vercel-labs/agent-skills project` |
@@ -997,8 +998,21 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 ### Detect existing skills
 
+Detect whether this repo is React-based before building the skill menu:
+
+```bash
+IS_REACT_BASED=0
+if [ -f "package.json" ]; then
+  REPO_DEPS=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]' package.json 2>/dev/null || true)
+  if echo "$REPO_DEPS" | grep -Eq '^(react|react-dom|next|@remix-run/react|react-router|react-router-dom|gatsby|expo|react-native|@vitejs/plugin-react|@vitejs/plugin-react-swc)$'; then
+    IS_REACT_BASED=1
+  fi
+fi
+```
+
 ```bash
 HAVE_UI_SKILLS=$(([ -f ".secureskills/store/baseline-ui/manifest.json" ] || [ -f ".secureskills/store/fixing-accessibility/manifest.json" ] || [ -f ".secureskills/store/fixing-metadata/manifest.json" ] || [ -f ".secureskills/store/fixing-motion-performance/manifest.json" ] || [ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_DEJANK=$(([ -f ".secureskills/store/dejank/manifest.json" ] || [ -f ".codex/skills/dejank/SKILL.md" ] || [ -f ".claude/skills/dejank/SKILL.md" ]) && echo 1 || echo 0)
 HAVE_TASTE_SKILL=$(([ -f ".secureskills/store/taste-skill/manifest.json" ] || [ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
 HAVE_SEMVER_CHANGELOG=$(([ -f ".secureskills/store/semver-changelog/manifest.json" ] || [ -d ".codex/skills/semver-changelog" ] || [ -d ".claude/skills/semver-changelog" ]) && echo 1 || echo 0)
 HAVE_AGENT_SKILLS_VERCEL=$(([ -f ".secureskills/store/find-skills/manifest.json" ] || [ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
@@ -1010,6 +1024,13 @@ mkdir -p .secureskills
 
 ### Ask which skills to install
 
+If `IS_REACT_BASED=0`, do **not** offer Dejank. Mention why:
+
+```
+React-based framework not detected, so Flux will skip offering Dejank during setup.
+Re-run /flux:setup later if this repo adds React.
+```
+
 ```json
 {
   "header": "Agent Skills",
@@ -1017,6 +1038,7 @@ mkdir -p .secureskills
   "multiple": true,
   "options": [
     {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design (secured with PlaTo)"},
+    {"label": "Dejank", "description": "React-only visual jank audit: 18 anti-patterns plus runtime investigation workflows"},
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
     {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper securely, then add more catalog skills via PlaTo"},
@@ -1026,10 +1048,16 @@ mkdir -p .secureskills
 }
 ```
 
+Build the options array dynamically:
+- Always include UI Skills, Taste Skill, Semver Changelog, Find Skills (Vercel), X Research Skill, and Skip
+- Include Dejank **only** when `IS_REACT_BASED=1`
+- If a skill is already installed, either omit it or label it as already installed
+
 Map selected skill options to install flags:
 
 ```bash
 INSTALL_UI_SKILLS=0
+INSTALL_DEJANK=0
 INSTALL_TASTE_SKILL=0
 INSTALL_SEMVER_CHANGELOG=0
 INSTALL_AGENT_SKILLS_VERCEL=0
@@ -1048,6 +1076,18 @@ if [ "$INSTALL_UI_SKILLS" = "1" ]; then
   "$INSTALL_SKILL_CMD" "fixing-accessibility" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
   "$INSTALL_SKILL_CMD" "fixing-metadata" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
   "$INSTALL_SKILL_CMD" "fixing-motion-performance" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
+fi
+
+if [ "$INSTALL_DEJANK" = "1" ]; then
+  if [ "$IS_REACT_BASED" != "1" ]; then
+    echo "Skipping Dejank: this repo does not look React-based."
+  elif [ "$HAVE_GIT" = "1" ]; then
+    "$INSTALL_SKILL_CMD" "dejank" "https://github.com/gbasin/dejank" project 2>/dev/null || {
+      echo "Install manually: secureskills add https://github.com/gbasin/dejank --skill dejank && secureskills enable codex"
+    }
+  else
+    echo "git not found. Install manually: secureskills add https://github.com/gbasin/dejank --skill dejank && secureskills enable codex"
+  fi
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
@@ -1080,6 +1120,7 @@ fi
 After running installs, verify each selected skill path exists before marking success:
 
 - UI Skills: `.secureskills/store/baseline-ui/manifest.json` (or one of the other secured UI skill manifests)
+- Dejank: `.secureskills/store/dejank/manifest.json`
 - Taste Skill: `.secureskills/store/taste-skill/manifest.json`
 - Semver Changelog: `.secureskills/store/semver-changelog/manifest.json`
 - Find Skills (Vercel): `.secureskills/store/find-skills/manifest.json`
@@ -1323,7 +1364,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "setup_date": "<ISO_DATE>",
   "installed_by_flux": {
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
-    "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, find-skills>"],
+    "skills": ["<list of skill names installed this session, e.g. ui-skills, dejank, taste-skill, find-skills>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, codexbar, wispr-flow, granola>"],
     "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, plato>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
@@ -2260,6 +2301,7 @@ Use tracking variables from Step 4d. If gh was already installed before setup, s
 ```
 Agent skills:
 - UI Skills: <installed | already installed | skipped | failed>
+- Dejank: <installed | already installed | skipped | failed | not offered (non-React repo)>
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
 - Find Skills (Vercel): <installed | already installed | skipped | failed>
@@ -2388,6 +2430,7 @@ rm -rf .claude/skills/<skill-name>
 
 Map skill names to directories:
 - `ui-skills` → `.secureskills/store/baseline-ui`, `.secureskills/store/fixing-accessibility`, `.secureskills/store/fixing-metadata`, `.secureskills/store/fixing-motion-performance`
+- `dejank` → `.secureskills/store/dejank` plus any legacy loose mirrors
 - `taste-skill` → `.secureskills/store/taste-skill` plus any legacy loose mirrors
 - `semver-changelog` → `.secureskills/store/semver-changelog` plus any legacy loose mirrors
 - `agent-skills-vercel` → `.secureskills/store/find-skills` plus any legacy loose mirrors

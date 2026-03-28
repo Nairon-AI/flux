@@ -48,8 +48,15 @@ detect_js_frameworks() {
         case "$dep" in
             next) frameworks="${frameworks}\"next\"," ;;
             react) frameworks="${frameworks}\"react\"," ;;
+            react-router|react-router-dom) frameworks="${frameworks}\"react-router\"," ;;
+            @remix-run/react) frameworks="${frameworks}\"remix\"," ;;
+            gatsby) frameworks="${frameworks}\"gatsby\"," ;;
+            expo) frameworks="${frameworks}\"expo\"," ;;
+            react-native) frameworks="${frameworks}\"react-native\"," ;;
+            @vitejs/plugin-react|@vitejs/plugin-react-swc) frameworks="${frameworks}\"vite\",\"react\"," ;;
             vue) frameworks="${frameworks}\"vue\"," ;;
             svelte) frameworks="${frameworks}\"svelte\"," ;;
+            astro) frameworks="${frameworks}\"astro\"," ;;
             express) frameworks="${frameworks}\"express\"," ;;
             fastify) frameworks="${frameworks}\"fastify\"," ;;
             convex) frameworks="${frameworks}\"convex\"," ;;

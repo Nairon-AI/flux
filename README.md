@@ -122,6 +122,18 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
 | [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
 
+**Agent Skills** — optional project-local skill installs during `/flux:setup`, secured with PlaTo:
+
+| Skill | Why |
+|------|-----|
+| [UI Skills](https://www.npmjs.com/package/ui-skills) | Accessibility, metadata, motion, and design polish for frontend output |
+| [Dejank](https://github.com/gbasin/dejank) | React visual-jank audits: 18 anti-patterns plus runtime investigation workflows |
+| [Taste Skill](https://github.com/Leonxlnx/taste-skill) | Reduce generic/sloppy UI generation |
+| [Semver Changelog](https://skills.sh/prulloac/agent-skills/semver-changelog) | Structured changelog and release-note hygiene |
+| [Find Skills (Vercel)](https://github.com/vercel-labs/agent-skills) | Secure bootstrap for Vercel's skill catalog, then add more through PlaTo |
+| [X Research Skill](https://github.com/rohunvora/x-research-skill) | Summarize high-signal X threads for research |
+
+`Dejank` is only offered when Flux detects a React-based repo during setup.
 
 </details>
 
