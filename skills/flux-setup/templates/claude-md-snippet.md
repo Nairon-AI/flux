@@ -63,6 +63,12 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - especially when the user is talking about a React UI, first render, hydration, or visual instability
   - Check install by looking for `.secureskills/store/dejank/manifest.json` first, then legacy `.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`
   - If the repo does not have Dejank installed, continue with the normal Flux routing path and mention `/flux:setup` if Dejank would help
+- Treat these as **codebase understanding requests** — if `diffity-tour` is installed in the repo, route directly to `/diffity-tour`:
+  - "how does this work", "walk me through auth", "help me understand the billing flow", "show me what touches checkout"
+  - especially when the user wants a guided explanation of an existing feature, subsystem, codepath, or cross-cutting behavior
+  - Do not use this route when the user is clearly asking you to change or build something rather than understand it
+  - Check install by looking for `.secureskills/store/diffity-tour/manifest.json` first, then legacy `.codex/skills/diffity-tour/SKILL.md` or `.claude/skills/diffity-tour/SKILL.md`
+  - If the repo does not have Diffity Tour installed, continue with the normal Flux routing path and mention `/flux:setup` if Diffity Tour would help
 - Treat these as **specialist workflow requests** — route directly instead of making the user rephrase:
   - "grill me", "stress test the behavior", "verify behavior" → `/flux:grill`
   - "TDD", "test first", "red green refactor" → `/flux:tdd`
@@ -88,6 +94,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If `session-state` says `resume_work`: resume the active task/objective unless the user clearly wants a new one.
 - If `session-state` says `needs_completion_review`: route to review before claiming the work is fully done.
 - If the message is a React visual-jank complaint and Dejank is installed, prefer `/flux:dejank` over generic scope/RCA routing.
+- If the user asks how an existing feature or subsystem works and Diffity Tour is installed, prefer `/diffity-tour` over generic scoping as long as they are not asking for code changes yet.
 - If `session-state` says `fresh_session_no_objective`: start `/flux:scope`.
 - If the user clearly starts a new objective while another is active, ask whether to switch objectives, then use `.flux/bin/fluxctl objective switch <epic-id>` when needed.
 </important>

@@ -331,28 +331,29 @@ The following routing happens when a user provides natural language instead of a
 |--------|----------|----------|
 | Stakeholder language (outcomes, no implementation detail) | `/flux:propose` | 1 |
 | React visual-jank signals ("flicker", "flash", "blink", "layout shift", "jank", "scroll reset", "feels rebuilt") and `dejank` is installed | `/flux:dejank` | 2 |
-| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 3 |
-| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:remember` | 4 |
-| Feature/refactor description | `/flux:scope` | 5 |
-| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 6 |
-| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 6 |
-| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 7 |
-| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 8 |
-| "review this" / "check my code" | `/flux:impl-review` | 9 |
-| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 10 |
-| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 11 |
-| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 12 |
-| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 13 |
-| "export this for ChatGPT/Claude web" / "external LLM review" / "review with ChatGPT" | `/flux:export-context` | 14 |
-| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 15 |
-| "reflect" / "what did we learn" | `/flux:reflect` | 16 |
-| "validate staging" / "promote staging" / "ship staging to production" | `/flux:gate` | 17 |
-| "cut a release" / "publish Flux vX.Y.Z" / "release this version" | `/flux:release` | 18 |
-| "improve CLAUDE.md" / "restructure AGENTS.md" / "add important if blocks" | `/flux:improve-claude-md` | 19 |
-| "export my setup" / "share this Flux profile" / "import a profile" | `/flux:profile` | 20 |
-| "build me a skill" / "create a skill for X" | `/flux:skill-builder` | 21 |
-| "upgrade Flux" / "update the plugin" | `/flux:upgrade` | 22 |
-| "report a Flux bug" / "contribute a fix" | `/flux:contribute` | 23 |
+| Codebase-understanding signals ("how does X work", "walk me through Y", "help me understand Z", "show me what touches X") and `diffity-tour` is installed | `/diffity-tour` | 3 |
+| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 4 |
+| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:remember` | 5 |
+| Feature/refactor description | `/flux:scope` | 6 |
+| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 7 |
+| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 7 |
+| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 8 |
+| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 9 |
+| "review this" / "check my code" | `/flux:impl-review` | 10 |
+| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 11 |
+| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 12 |
+| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 13 |
+| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 14 |
+| "export this for ChatGPT/Claude web" / "external LLM review" / "review with ChatGPT" | `/flux:export-context` | 15 |
+| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 16 |
+| "reflect" / "what did we learn" | `/flux:reflect` | 17 |
+| "validate staging" / "promote staging" / "ship staging to production" | `/flux:gate` | 18 |
+| "cut a release" / "publish Flux vX.Y.Z" / "release this version" | `/flux:release` | 19 |
+| "improve CLAUDE.md" / "restructure AGENTS.md" / "add important if blocks" | `/flux:improve-claude-md` | 20 |
+| "export my setup" / "share this Flux profile" / "import a profile" | `/flux:profile` | 21 |
+| "build me a skill" / "create a skill for X" | `/flux:skill-builder` | 22 |
+| "upgrade Flux" / "update the plugin" | `/flux:upgrade` | 23 |
+| "report a Flux bug" / "contribute a fix" | `/flux:contribute` | 24 |
 
 ### Intra-Skill Routing
 
@@ -362,6 +363,7 @@ Skills can route to other skills during execution:
 |------|-----------|-----------|
 | `/flux:scope` | Stakeholder detected (3+ signals, 0 engineer signals) | `/flux:propose` |
 | `/flux:scope` | React visual-jank signals + `dejank` installed + user confirms | `/flux:dejank` |
+| `/flux:scope` | User is trying to understand an existing feature/codepath + `diffity-tour` installed + no change request yet | `/diffity-tour` |
 | `/flux:scope` | Bug signals detected + user confirms | `/flux:rca` |
 | `/flux:scope` | "remember X" detected | `/flux:remember` |
 | `/flux:scope` | `--explore` flag | Explore mode (internal) |
