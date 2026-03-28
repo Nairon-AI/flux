@@ -316,6 +316,26 @@ Before writing code, plan the fix:
 
 Write the fix. Keep it minimal — this is a bug fix, not a refactor. Resist the urge to clean up surrounding code.
 
+## Step 8b: Second-Guess the Fix
+
+Before you trust the fix, force a skeptical second pass on your own work:
+
+1. **Re-read the original request** — verify you fixed what the user reported, not what you inferred or wish they had asked for.
+2. **Read the diff carefully** — not a skim. Review the actual changed lines as if someone else wrote them.
+3. **Challenge the patch like a reviewer would**:
+   - Does the fix actually address the root cause?
+   - Did you add unrelated behavior, cleanup, or scope creep?
+   - Is there logic that looks right but is still wrong under real conditions?
+   - Are there obvious edge cases, naming mistakes, copy-paste leftovers, or unused imports?
+4. **Ask what you forgot**:
+   - Tests or manual verification updates?
+   - Other files, call sites, configs, docs, or contracts affected by the change?
+   - Follow-up validation for the production trigger?
+5. **Run the thing** — execute the relevant tests, build, lint, reproduction steps, or manual checks. Confidence is not verification.
+6. **Fix what this review finds** — then review those fixes too. If the skeptical pass changes the patch materially, repeat this step once more.
+
+If the second pass finds nothing, say so explicitly in the summary.
+
 ## Step 9: Regression Test
 
 **If testing infrastructure exists (`HAS_TESTS=1`)**:
@@ -364,6 +384,7 @@ $FLUXCTL desloppify-scan --changed-only
 Check for:
 - Did the fix introduce any code quality issues?
 - Are there similar patterns elsewhere in the codebase that could have the same bug? (If so, flag them — don't fix them in this PR, but note them.)
+- Did the skeptical second pass uncover anything that was fixed afterward? If yes, make sure the final diff and verification reflect the corrected version, not the first attempt.
 
 ---
 
