@@ -134,6 +134,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [X Research Skill](https://github.com/rohunvora/x-research-skill) | Summarize high-signal X threads for research |
 
 `Dejank` is only offered when Flux detects a React-based repo during setup.
+After it is installed, trigger it explicitly with `/flux:dejank` or by directly asking the agent to use `dejank`.
 
 </details>
 
@@ -482,6 +483,7 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
 | `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
 | `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |
+| `/flux:dejank [target or symptom]` | React visual-jank audit via the optional Dejank skill | Anytime in React repos after installing Dejank through `/flux:setup` — investigate flicker, layout shift, flashes, or run a preventive scan |
 | `/flux:grill` | Behavioral stress test — walk every decision branch, verify behavior matches intent | 6.5. Offered after epic review for epics with 5+ tasks. Also callable standalone ("grill me") to stress-test any implemented feature |
 | `/flux:tdd` | Test-driven development with red-green-refactor vertical slices | During `/flux:work` — activated by `--tdd` flag, task spec, or user request. Also callable standalone for any feature or bugfix |
 | `/flux:design-interface` | Generate 3+ radically different interface designs via parallel sub-agents, compare, and recommend | During `/flux:scope` — auto-triggered when complex module boundaries are detected. Also callable standalone when designing any module API |

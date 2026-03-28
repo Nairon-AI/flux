@@ -36,6 +36,7 @@ Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported
 | `/flux:scope` | `/flux:scope <idea> [--deep] [--explore N]` | **Full guided scoping workflow** (recommended) |
 | `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks only |
 | `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
+| `/flux:dejank` | `/flux:dejank [component|path|symptom]` | Trigger the optional Dejank skill for React visual-jank audits and debugging |
 
 ### /flux:propose
 
@@ -140,6 +141,19 @@ The underlying `fluxctl` helper also exposes:
 .flux/bin/fluxctl architecture path
 .flux/bin/fluxctl architecture write --file architecture.md --summary "Updated auth/data flow" --source flux:work
 ```
+
+### /flux:dejank
+
+Explicit entrypoint for the optional `dejank` skill after it has been installed through `/flux:setup` in a React-based repo.
+
+Use it when you want a dedicated visual-jank pass instead of hoping the model picks the skill implicitly:
+
+```bash
+/flux:dejank src/components/Sidebar.tsx
+/flux:dejank the settings panel flashes blank on first render
+```
+
+If `dejank` is not installed in the repo yet, the command should stop and tell you to install it through `/flux:setup` or with `secureskills add`.
 
 ---
 
