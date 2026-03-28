@@ -7,6 +7,7 @@ from .utils import (
 )
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
 from .config import cmd_config_get, cmd_config_set, cmd_review_backend
+from .architecture import cmd_architecture_status, cmd_architecture_path, cmd_architecture_write
 from .epics import (
     cmd_epic_create, cmd_show, cmd_epics, cmd_list, cmd_cat,
     cmd_epic_set_plan, cmd_epic_set_plan_review_status, cmd_epic_set_completion_review_status,
@@ -129,6 +130,34 @@ def main() -> None:
     )
     p_review_backend.add_argument("--json", action="store_true", help="JSON output")
     p_review_backend.set_defaults(func=cmd_review_backend)
+
+    # architecture
+    p_architecture = subparsers.add_parser(
+        "architecture", help="Canonical architecture diagram commands"
+    )
+    architecture_sub = p_architecture.add_subparsers(dest="architecture_cmd", required=True)
+
+    p_architecture_status = architecture_sub.add_parser("status", help="Show architecture status")
+    p_architecture_status.add_argument("--json", action="store_true", help="JSON output")
+    p_architecture_status.set_defaults(func=cmd_architecture_status)
+
+    p_architecture_path = architecture_sub.add_parser("path", help="Show architecture file path")
+    p_architecture_path.add_argument("--json", action="store_true", help="JSON output")
+    p_architecture_path.set_defaults(func=cmd_architecture_path)
+
+    p_architecture_write = architecture_sub.add_parser("write", help="Write architecture diagram")
+    p_architecture_write.add_argument(
+        "--file", required=True, help="Markdown file with diagram content (use '-' for stdin)"
+    )
+    p_architecture_write.add_argument(
+        "--status",
+        choices=["missing", "seeded", "current", "needs_update"],
+        help="Architecture freshness state",
+    )
+    p_architecture_write.add_argument("--summary", help="Short summary of the architecture change")
+    p_architecture_write.add_argument("--source", help="Command or workflow that updated it")
+    p_architecture_write.add_argument("--json", action="store_true", help="JSON output")
+    p_architecture_write.set_defaults(func=cmd_architecture_write)
 
     # epic create
     p_epic = subparsers.add_parser("epic", help="Epic commands")

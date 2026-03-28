@@ -39,19 +39,23 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 **Read brain pitfalls and principles:**
 ```bash
 # Engineering principles
-cat "$REPO_ROOT/brain/principles.md" 2>/dev/null || true
+cat "$REPO_ROOT/.flux/brain/principles.md" 2>/dev/null || true
 
-# Known pitfalls — organized by area (brain/pitfalls/<area>/<pattern>.md)
+# Known pitfalls — organized by area (.flux/brain/pitfalls/<area>/<pattern>.md)
 # List available areas, then read ONLY areas relevant to this task
-ls "$REPO_ROOT/brain/pitfalls" 2>/dev/null || true
-# e.g., for a frontend task: read brain/pitfalls/frontend/
-# e.g., for an API task: read brain/pitfalls/api/ and brain/pitfalls/security/
-for f in "$REPO_ROOT/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do cat "$f"; done
+ls "$REPO_ROOT/.flux/brain/pitfalls" 2>/dev/null || true
+# e.g., for a frontend task: read .flux/brain/pitfalls/frontend/
+# e.g., for an API task: read .flux/brain/pitfalls/api/ and .flux/brain/pitfalls/security/
+for f in "$REPO_ROOT/.flux/brain/pitfalls/<relevant-area>"/*.md 2>/dev/null; do cat "$f"; done
 
 # Project conventions
-for f in "$REPO_ROOT/brain/conventions"/*.md 2>/dev/null; do cat "$f"; done
+for f in "$REPO_ROOT/.flux/brain/conventions"/*.md 2>/dev/null; do cat "$f"; done
 # Architectural decisions
-for f in "$REPO_ROOT/brain/decisions"/*.md 2>/dev/null; do cat "$f"; done
+for f in "$REPO_ROOT/.flux/brain/decisions"/*.md 2>/dev/null; do cat "$f"; done
+# Canonical product architecture diagram
+cat "$REPO_ROOT/.flux/brain/codebase/architecture.md" 2>/dev/null || true
+# Architecture artifact status (seeded/current/needs_update)
+<FLUXCTL> architecture status --json
 ```
 Determine relevant pitfall areas by analyzing the task spec — file paths, technology, acceptance criteria. Only load matching areas to keep context lean. Read individual principle files in full if they relate to the task.
 
@@ -78,6 +82,18 @@ echo "BASE_COMMIT=$BASE_COMMIT"
 Save this - you'll pass it to impl-review so it only reviews THIS task's changes.
 
 Read relevant code, implement the feature/fix. Follow existing patterns.
+
+If the task changes high-level architecture, update the canonical architecture note before review:
+- New service, worker, queue, datastore, or third-party integration
+- New trust boundary, auth flow, deployment boundary, or data flow
+- Significant change to ownership between subsystems
+
+Use:
+```bash
+<FLUXCTL> architecture write --file - --summary "<what changed>" --source flux:work <<'EOF'
+<updated markdown note with mermaid diagram>
+EOF
+```
 
 Rules:
 - Small, focused changes

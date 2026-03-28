@@ -10,10 +10,10 @@ cat > /dev/null
 set -euo pipefail
 
 # Find brain directory
-if [ -d "brain" ]; then
-  BRAIN_DIR="brain"
-elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR/brain" ]; then
-  BRAIN_DIR="$CLAUDE_PROJECT_DIR/brain"
+if [ -d ".flux/brain" ]; then
+  BRAIN_DIR=".flux/brain"
+elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR/.flux/brain" ]; then
+  BRAIN_DIR="$CLAUDE_PROJECT_DIR/.flux/brain"
 else
   exit 0
 fi
@@ -49,7 +49,7 @@ dirs=$(echo "$disk" | grep '/' | sed 's|/.*||' | sort -u)
 
 # Rebuild index
 {
-    echo "# Brain"
+    echo "# Brain Index"
     for section in $dirs; do
         files=$(echo "$disk" | grep "^${section}\(/\|$\)" || true)
         [ -z "$files" ] && continue

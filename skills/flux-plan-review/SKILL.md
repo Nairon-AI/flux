@@ -101,6 +101,7 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-t
 [ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+$FLUXCTL architecture status --json
 ```
 
 ### Step 0: Detect Backend
@@ -131,6 +132,9 @@ $FLUXCTL codex plan-review "$EPIC_ID" --files "$CODE_FILES" --receipt "$RECEIPT_
 ```
 
 On NEEDS_WORK: fix plan via `$FLUXCTL epic set-plan` AND sync affected task specs via `$FLUXCTL task set-spec`, then re-run (receipt enables session continuity).
+
+If the plan changes subsystem boundaries, major integrations, trust boundaries, or system flows,
+it must explicitly account for updating `.flux/brain/codebase/architecture.md`.
 
 **Note**: `codex plan-review` automatically includes task specs in the review prompt.
 

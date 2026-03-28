@@ -115,6 +115,7 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-t
 [ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+$FLUXCTL architecture status --json
 ```
 
 ### Step 0: Parse Arguments
@@ -153,6 +154,9 @@ $FLUXCTL codex completion-review "$EPIC_ID" --receipt "$RECEIPT_PATH"
 ```
 
 On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
+
+Missing architecture-diagram updates are in scope here when the epic changed the product's
+high-level architecture. `.flux/brain/codebase/architecture.md` is a canonical artifact, not optional docs.
 
 #### RepoPrompt Backend
 

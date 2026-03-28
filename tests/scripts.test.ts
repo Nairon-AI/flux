@@ -289,6 +289,7 @@ describe('Fluxctl CLI', () => {
 
     expect(existsSync(join(tmpRoot, '.flux', 'brain', 'index.md'))).toBe(true)
     expect(existsSync(join(tmpRoot, '.flux', 'brain', 'business', 'index.md'))).toBe(true)
+    expect(existsSync(join(tmpRoot, '.flux', 'brain', 'codebase', 'architecture.md'))).toBe(true)
     expect(existsSync(join(tmpRoot, '.flux', 'brain', 'pitfalls', 'index.md'))).toBe(true)
     expect(existsSync(join(tmpRoot, '.flux', 'brain', 'principles'))).toBe(true)
     expect(existsSync(join(tmpRoot, 'brain'))).toBe(false)
@@ -328,6 +329,8 @@ describe('Fluxctl CLI', () => {
     const session = JSON.parse(sessionRaw)
     expect(session.state).toBe('needs_prime')
     expect(session.next_action).toBe('/flux:prime')
+    expect(session.architecture.status).toBe('seeded')
+    expect(session.architecture.needs_refresh).toBe(true)
 
     await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
 
@@ -339,6 +342,46 @@ describe('Fluxctl CLI', () => {
     const afterPrimeRaw = await $`${fluxctl} session-state --json`.cwd(tmpRoot).text()
     const afterPrime = JSON.parse(afterPrimeRaw)
     expect(afterPrime.state).toBe('fresh_session_no_objective')
+    expect(afterPrime.architecture.status).toBe('seeded')
+  }, SCRIPT_TIMEOUT)
+
+  test('architecture write updates canonical diagram status and metadata', async () => {
+    const tmpRoot = `/tmp/flux-architecture-write-${Date.now()}`
+    const architectureFile = join(tmpRoot, 'architecture.md')
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+    writeFileSync(
+      architectureFile,
+      `# System Architecture Diagram
+
+## Diagram
+
+\`\`\`mermaid
+flowchart TD
+  UI[Web App] --> API[API]
+  API --> DB[(Postgres)]
+\`\`\`
+`
+    )
+
+    const writeRaw = await $`${fluxctl} architecture write --file ${architectureFile} --summary "Captured web app to API to Postgres flow" --source flux:prime --json`
+      .cwd(tmpRoot)
+      .text()
+    const writeResult = JSON.parse(writeRaw)
+    expect(writeResult.architecture.status).toBe('current')
+    expect(writeResult.architecture.summary).toBe('Captured web app to API to Postgres flow')
+    expect(writeResult.architecture.source).toBe('flux:prime')
+
+    const statusRaw = await $`${fluxctl} architecture status --json`.cwd(tmpRoot).text()
+    const status = JSON.parse(statusRaw)
+    expect(status.architecture.status).toBe('current')
+    expect(status.architecture.needs_refresh).toBe(false)
+    expect(status.architecture.summary).toBe('Captured web app to API to Postgres flow')
+
+    const persisted = readFileSync(join(tmpRoot, '.flux', 'brain', 'codebase', 'architecture.md'), 'utf8')
+    expect(persisted).toContain('flowchart TD')
+    expect(persisted).toContain('Postgres')
   }, SCRIPT_TIMEOUT)
 
   test('scope-status reflects active objective workflow metadata', async () => {

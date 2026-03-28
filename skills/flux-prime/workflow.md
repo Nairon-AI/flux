@@ -133,6 +133,32 @@ If any individual scout output is empty or missing, note the failure but continu
 
 Wait for all scouts to complete. Collect findings.
 
+## Phase 1.5: Seed Or Refresh Architecture Diagram
+
+After the docs and repo scouts finish, inspect the canonical architecture artifact:
+
+```bash
+.flux/bin/fluxctl architecture status --json 2>/dev/null
+cat .flux/brain/codebase/architecture.md 2>/dev/null
+```
+
+Prime must ensure every Flux repo has a centralized high-level architecture note at
+`.flux/brain/codebase/architecture.md`. If the note is still in the seeded template state,
+replace it with a real Markdown note that includes:
+
+- one high-level Mermaid diagram
+- core subsystems and boundaries
+- critical data / request / async flows
+- trust boundaries and external integrations
+
+Write updates through Flux so metadata stays in sync:
+
+```bash
+.flux/bin/fluxctl architecture write --file - --summary "Prime baseline architecture captured" --source flux:prime <<'EOF'
+<updated markdown note with mermaid diagram>
+EOF
+```
+
 ---
 
 ## Phase 2: Verification (Optional but Recommended)

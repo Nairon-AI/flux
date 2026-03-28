@@ -321,6 +321,7 @@ fluxctl agentmap --write   # Writes .flux/context/agentmap.yaml
 Flux's brain is an Obsidian-compatible vault stored in `.flux/brain/`. Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing), it's wired into every core workflow:
 
 - **Scoping** reads brain principles, pitfalls, and business context to ground research and plan structure
+- **Architecture-aware flows** read `.flux/brain/codebase/architecture.md` as the canonical high-level system diagram during scope, work, and review
 - **Propose** reads business context and glossary, does a real codebase investigation, then writes back new domain terms and area-specific context learned during the session
 - **Worker** reads pitfalls (only from relevant area) and principles during re-anchor before each task
 - **Epic review** writes learnings back to `.flux/brain/pitfalls/<area>/` after SHIP, categorized by domain
@@ -338,6 +339,8 @@ Flux's brain is an Obsidian-compatible vault stored in `.flux/brain/`. Adapted f
     security/    #   e.g., greptile-auth-gap.md
     async/       #   e.g., consensus-race-condition.md
   conventions/   # Project-specific patterns
+  codebase/      # Canonical repo-level diagrams and technical notes
+    architecture.md # High-level Mermaid system diagram used by scope/work/review
   decisions/     # Architectural decisions with rationale
   plans/         # From scope/plan
 ```

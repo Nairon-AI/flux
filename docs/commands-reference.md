@@ -109,7 +109,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/` and the canonical brain vault at `.flux/brain/`, configures preferences, and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
+Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
 
 ### /flux:plan
 
@@ -130,6 +130,14 @@ Breaks down an idea into atomic tasks with dependencies and acceptance criteria.
 </details>
 
 Executes a task with automatic context reload and drift checks.
+
+The underlying `fluxctl` helper also exposes:
+
+```bash
+.flux/bin/fluxctl architecture status
+.flux/bin/fluxctl architecture path
+.flux/bin/fluxctl architecture write --file architecture.md --summary "Updated auth/data flow" --source flux:work
+```
 
 ---
 
