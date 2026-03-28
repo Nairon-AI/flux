@@ -131,6 +131,8 @@ If any individual scout output is empty or missing, note the failure but continu
 
 **Important**: Launch all 9 scouts in parallel for speed (~15-20 seconds total).
 
+Apply `flux-parallel-dispatch`: all scouts are read-only and independent, so they should launch together in one batch rather than sequentially.
+
 Wait for all scouts to complete. Collect findings.
 
 ## Phase 1.5: Seed Or Refresh Architecture Diagram

@@ -80,6 +80,7 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 **For all backends:**
 - If `REVIEW_RECEIPT_PATH` set: write receipt after review (any verdict)
 - Any failure → output `<promise>RETRY</promise>` and stop
+- Use `flux-receive-review` when interpreting reviewer comments or deciding whether to push back.
 
 **FORBIDDEN**:
 - Self-declaring SHIP without actual backend verdict
@@ -172,6 +173,8 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 5. **Repeat** until `<verdict>SHIP</verdict>`
 
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
+
+Before replying that an issue is fixed or advancing to SHIP, apply `flux-verify-claims`.
 
 **Note**: This is a lightweight per-task pass. The full adversarial review (dual-model consensus, external bot self-heal, browser QA, learning capture) runs at epic completion via `/flux:epic-review`.
 

@@ -286,6 +286,8 @@ For approaches [a, b, c]:
 
 **CRITICAL**: Launch ALL agents in a single message with multiple Task calls. This enables true parallel execution.
 
+Apply `flux-parallel-dispatch` here: parallelize only when each approach is isolated and can succeed with task-local context.
+
 ### 6.7.3: Handle Results
 
 Collect results from all agents:

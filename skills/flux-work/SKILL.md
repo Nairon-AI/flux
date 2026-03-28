@@ -45,6 +45,7 @@ $FLUXCTL session-phase set idle
 - Do NOT claim completion until `fluxctl show <task>` reports `status: done`.
 - Do NOT invoke `/flux:impl-review` until tests/Quick commands are green.
 - If a task changes high-level product architecture, you MUST update `.flux/brain/codebase/architecture.md` via `fluxctl architecture write` before review/completion.
+- Use `flux-verify-claims` before saying a task is green, fixed, or done.
 
 **Role**: execution lead, plan fidelity first.
 **Goal**: complete every task in order with tests.
