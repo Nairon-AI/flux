@@ -12,7 +12,7 @@ Automated tools that catch bugs instantly. Without them, agents waste cycles on 
 
 | ID | Criterion | Pass Condition |
 |----|-----------|----------------|
-| SV1 | Linter configured | ESLint, Biome, oxlint, Flake8, Ruff, golangci-lint, or Clippy config exists |
+| SV1 | Linter configured | ESLint, Biome, oxlint, lintcn, Flake8, Ruff, golangci-lint, or Clippy config exists |
 | SV2 | Formatter configured | Prettier, Biome, Black, gofmt, or rustfmt config/usage detected |
 | SV3 | Type checking | TypeScript strict, mypy, pyright, or language with static types |
 | SV4 | Pre-commit hooks | Husky, pre-commit, lefthook, or similar configured with lint + typecheck |

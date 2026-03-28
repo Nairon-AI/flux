@@ -59,6 +59,7 @@ detect_cli_tools() {
     cmd_exists oxlint && tools+=("oxlint")
     cmd_exists biome && tools+=("biome")
     cmd_exists eslint && tools+=("eslint")
+    cmd_exists lintcn && tools+=("lintcn")
     cmd_exists prettier && tools+=("prettier")
     
     # Task tracking

@@ -70,7 +70,7 @@ Also detected **implicitly** — if someone uses `/flux:scope` with non-technica
 2. **Investigate** — choose Flux's backward trace or RepoPrompt Investigate (if installed)
 3. **Verify** — adversarial review of root cause analysis (Standard + Critical)
 4. **Fix** — write fix at the source, not the symptom, with mandatory regression test
-5. **Learn** — write pitfall to brain vault, propose structural prevention (lint rules, type constraints)
+5. **Learn** — write pitfall to brain vault, and when manual review confirms a repeatable anti-pattern, propose structural prevention (lint rules such as `lintcn`, type constraints, scripts)
 
 Also detected **implicitly** — if someone uses `/flux:scope` with bug signals (error messages, "broken", "not working"), Flux asks if they want RCA instead of standard scoping.
 

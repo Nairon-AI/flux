@@ -189,7 +189,7 @@ HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false
 
 If `HUMAN_REVIEW` is `true`, ask the user:
 
-> **Review passed — SHIP.** Want to review the diff yourself before moving on?
+> **Review passed — SHIP.** Want to review the diff yourself before moving on? If you spot a pattern you do not want repeated in this repo, reply with it and Flux will help decide whether it should become a project rule (for example a `lintcn` rule).
 
 If the user says yes, print the command and move on immediately (non-blocking):
 
@@ -205,9 +205,16 @@ If the user says yes, print the command and move on immediately (non-blocking):
 └─────────────────────────────────────────────────────┘
 ```
 
+If the user comes back with a manual review finding, do **not** treat it as an unstructured comment. Invoke `review-for-engineering-taste` and run the structuralization checkpoint in [../../docs/review-structuralization.md](../../docs/review-structuralization.md):
+
+- confirm whether the pattern was actually undesirable here
+- decide whether it is an objective anti-pattern, a project convention, or a one-off
+- if it is confirmed and machine-detectable, recommend or implement a `lintcn` rule
+- default new taste-driven rules to `warn` unless the pattern is clearly an objective anti-pattern
+
 If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
 
-**Do NOT wait for the user to finish reviewing. Move on immediately.**
+**Do NOT block on the external review command finishing.** But if the user reports findings in-session, process them through the checkpoint before closing the review thread.
 
 ---
 

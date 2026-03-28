@@ -34,7 +34,7 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `plan_sync` | Update downstream todo tasks based on implementation drift. | `in_progress` (next task) | Plan Sync |
 | `needs_completion_review` | All tasks done. Epic review required. | `epic_review` | Epic Review |
 | `epic_review` | Full review pipeline running. | `quality` (SHIP), `in_progress` (NEEDS_WORK fix loop) | Epic Review Pipeline |
-| `quality` | Tests, lint/format, desloppify scan on changed files. | `submit` | Quality |
+| `quality` | Tests, repo-defined lint/format gates (for example `lintcn`), desloppify scan on changed files. | `submit` | Quality |
 | `grill` | Behavioral stress test — walks decision tree verifying behavior matches intent. | `quality`, `in_progress` (if gaps found) | Grill |
 | `submit` | Push + open PR. Code ready for review/merge. | `autofix`, `reflect` | Submit |
 | `autofix` | Cloud auto-fix enabled on PR — Claude watches for CI failures and review comments remotely. Non-blocking. | `reflect` | Autofix |
@@ -248,7 +248,7 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │    │ all verified            │
   │    ▼                        ▼
   │  QUALITY (quality)
-  │  → tests, lint/format, desloppify scan
+  │  → tests, repo-defined lint/format gates, desloppify scan
   │        │
   │        ▼
   │  SUBMIT (submit)
@@ -370,7 +370,7 @@ These prevent invalid transitions:
 | Tasks not created | `/flux:work <epic>` | Epic must have tasks |
 | Dependencies not met | `fluxctl start <task>` | All dependency tasks must be `done` |
 | Review not passed | Epic close | `completion_review_status == ship` |
-| Quality not passed | Submit | Tests pass, lint/format pass |
+| Quality not passed | Submit | Tests pass, repo lint/format gates pass |
 
 ---
 

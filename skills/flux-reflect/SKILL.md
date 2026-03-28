@@ -77,6 +77,7 @@ If `EXTERNAL_MEMORY_PROVIDER` is NOT set, skip both behaviors — reflect works 
    - Decisions made and their rationale
    - Friction in skill execution, orchestration, or delegation
    - Repeated manual steps that could be automated or encoded
+   - Human review findings where the developer confirmed "we do not want this pattern in this repo"
    - Non-obvious debugging solutions (>10 min investigation, not in docs)
    - Error resolutions where the error message was misleading
    - Workarounds discovered through trial-and-error
@@ -92,7 +93,7 @@ Not everything belongs in the brain. Route each learning to where it will have t
 
 For each learning, ask in order:
 
-1. **Can this be a lint rule, script, metadata flag, or runtime check?** → Encode it structurally. See `.flux/brain/principles/encode-lessons-in-structure.md`.
+1. **Can this be a lint rule, script, metadata flag, or runtime check?** → Encode it structurally. See `.flux/brain/principles/encode-lessons-in-structure.md` and `docs/review-structuralization.md`.
 2. **Is this a reusable, non-obvious solution with clear trigger conditions?** → Extract as a new skill (see Skill Extraction below).
 3. **Is this about how an existing skill works?** → Update that skill directly.
 4. **Is this codebase knowledge, a principle, or a gotcha?** → Write to `.flux/brain/`.
@@ -134,12 +135,29 @@ Do NOT manually create skill files. The skill builder encodes all best practices
 - It duplicates existing documentation
 - The solution hasn't been verified
 
+### Review-derived structuralization
+
+When the session includes a manual review or engineering-taste review, look specifically for developer-confirmed patterns:
+
+- "Yes, we do not want this abstraction/pattern in this repo."
+- "This should be blocked going forward."
+- "This is acceptable here, but not as a general pattern."
+
+For those, run the structuralization checkpoint from `docs/review-structuralization.md`:
+
+- if the pattern is repeatable and machine-detectable, prefer a `lintcn` rule
+- if it is important but too nuanced to lint, write a brain principle or pitfall instead
+- if it is not worth encoding, do not create structural churn just because it came up in review
+
+Default new taste-oriented `lintcn` rules to `warn`, and escalate to `error` only for clear anti-patterns or after the codebase has been cleaned up.
+
 ## Gotchas
 
 - Do not create a new skill when updating an existing one would cover the same trigger.
 - Do not dump project-specific knowledge into a reusable skill. Route that to `.flux/brain/`.
 - Do not restate generic engineering advice the model already knows. Capture non-obvious triggers, constraints, and failure modes.
 - If the lesson can become a script, lint rule, config flag, or runtime guard, prefer that over more prose.
+- Do not turn a subjective review opinion into a `lintcn` rule without developer confirmation that the pattern should be enforced repo-wide.
 
 ### Skill improvements (`skills/<skill>/`)
 

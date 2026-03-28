@@ -122,11 +122,24 @@ has_ci() {
 
 # Check for linter
 has_linter() {
-    if [ -f ".eslintrc" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ] || [ -f "biome.json" ] || [ -f "oxlint.json" ]; then
+    if [ -f ".eslintrc" ] || [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ] || [ -f "biome.json" ] || [ -f "oxlint.json" ] || [ -d ".lintcn" ]; then
         echo "true"
-    else
-        echo "false"
+        return
     fi
+
+    if [ -f "package.json" ]; then
+        if jq -e '((.dependencies // {}) + (.devDependencies // {})) | has("lintcn")' package.json >/dev/null 2>&1; then
+            echo "true"
+            return
+        fi
+
+        if jq -e '(.scripts // {}) | any(.[]; test("(^|[[:space:]])(npx[[:space:]]+)?lintcn([[:space:]]|$)"))' package.json >/dev/null 2>&1; then
+            echo "true"
+            return
+        fi
+    fi
+
+    echo "false"
 }
 
 # Check for formatter

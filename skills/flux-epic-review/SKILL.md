@@ -106,7 +106,7 @@ The epic review is a multi-phase pipeline:
 5. **Security Scan** — STRIDE-based vulnerability scan on changed files (auto-triggered for security-sensitive changes)
 6. **External Bot Self-Heal** — poll Greptile/CodeRabbit for additional issues (if configured)
 7. **Browser QA** — test acceptance criteria via QA checklist from scoping (if agent-browser available)
-8. **Learning Capture** — extract patterns from NEEDS_WORK iterations to `.flux/brain/pitfalls/`
+8. **Learning Capture** — extract patterns from NEEDS_WORK iterations and human-confirmed review anti-patterns to `.flux/brain/pitfalls/` or structural rule candidates
 9. **Desloppify Scan** — lightweight quality scan on changed files (if desloppify installed)
 10. **Frustration Signal** — auto-trigger recommendation search if friction score >= 3
 
