@@ -860,7 +860,7 @@ HUMAN_REVIEW=$($FLUXCTL config get review.humanReview 2>/dev/null || echo "false
 
 If `HUMAN_REVIEW` is `true`, ask the user:
 
-> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off?
+> **All automated reviews passed.** Want to review the full branch diff yourself before final sign-off? If you spot a pattern you do not want repeated in this repo, reply with it and Flux will help decide whether it should become a project rule.
 
 If the user says yes, print the command and move on immediately (non-blocking):
 
@@ -876,9 +876,16 @@ If the user says yes, print the command and move on immediately (non-blocking):
 └──────────────────────────────────────────────────────────┘
 ```
 
+If the user returns with a manual review finding, run the structuralization checkpoint in [../../docs/review-structuralization.md](../../docs/review-structuralization.md):
+
+- classify the finding as objective anti-pattern, project convention, contextual, or not machine-detectable
+- confirm repo-wide undesirability with the developer for subjective taste issues
+- prefer a `lintcn` rule when the pattern is repeatable and machine-detectable
+- default new taste-driven rules to `warn` unless the pattern is clearly a hard anti-pattern
+
 If the user says no, or if `HUMAN_REVIEW` is `false`, skip silently.
 
-**Do NOT wait for the user to finish reviewing. Proceed directly to Learning Capture.**
+**Do NOT block on the external review command finishing.** But if the user reports findings in-session, process them through the checkpoint before finalizing Learning Capture.
 
 ---
 
@@ -895,6 +902,7 @@ Review all NEEDS_WORK iterations across the pipeline and extract generalizable p
 3. **Security scan findings** — STRIDE vulnerabilities caught post-implementation (auth gaps, injection vectors, data exposure)
 4. **Bot-caught patterns** — recurring issues Greptile/CodeRabbit caught that models missed
 5. **Browser QA failures** — UI/UX issues missed during implementation
+6. **Human-confirmed taste anti-patterns** — patterns the developer explicitly rejected during manual review and wants prevented structurally in the future
 
 ### How to Capture
 
@@ -921,6 +929,8 @@ UI components lacked error/empty states specified in acceptance criteria.
 **Date**: 2026-03-14
 EOF
 ```
+
+If a manual review finding is repeatable and machine-detectable, also consider a `lintcn` rule candidate using `docs/review-structuralization.md` rather than only writing prose.
 
 **Area selection rules:**
 1. Check existing area directories in `.flux/brain/pitfalls/` — use one if it fits

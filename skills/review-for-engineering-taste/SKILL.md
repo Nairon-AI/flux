@@ -9,6 +9,8 @@ Use this skill for a taste review, not a correctness review.
 
 The job is to spot small design decisions that individually look acceptable but collectively make a codebase slower to change, harder to trust, or easier to bloat. Focus on choices that create future drag: awkward boundaries, vague ownership, leaky abstractions, incidental complexity, and defensive structure added before it pays for itself.
 
+If a concern looks repeatable, do not stop at the review comment. Run the structuralization checkpoint in [../../docs/review-structuralization.md](../../docs/review-structuralization.md) so the developer can decide whether the pattern should become a project constraint, a `lintcn` rule, a brain note, or just a one-off fix.
+
 ## Default Stance
 
 - Review the shape of the solution before the syntax.
@@ -22,9 +24,24 @@ The job is to spot small design decisions that individually look acceptable but 
 1. Build a quick mental model of the change or area under review.
 2. Run the question set below.
 3. Report only the questions that surfaced real risk.
-4. End with the top 1 to 3 slop-creep concerns and the smallest worthwhile correction for each.
+4. For any repeatable concern, run the structuralization checkpoint with the developer.
+5. End with the top 1 to 3 slop-creep concerns and the smallest worthwhile correction for each.
 
 If nothing rises above taste preference, say that explicitly.
+
+## Structuralization Checkpoint
+
+When a concern looks like something the codebase could accidentally normalize, ask before encoding:
+
+- "Is this actually undesirable in this repo, or was it a reasonable tradeoff here?"
+- "If it's undesirable, do you want to enforce that going forward?"
+
+Then use [../../docs/review-structuralization.md](../../docs/review-structuralization.md) to decide whether the finding should become:
+- a `lintcn` rule
+- a brain principle or pitfall
+- a one-off correction with no structural follow-up
+
+Default to `warn` for new taste-oriented `lintcn` rules unless the pattern is an objective anti-pattern with low false-positive risk.
 
 ## Question Set
 
@@ -91,6 +108,7 @@ When you find issues, report them as:
 - `Question:` the specific question that tripped
 - `Why it matters:` the slop-creep risk, in concrete terms
 - `Smallest fix:` the least invasive correction that would materially improve the design
+- `Structural follow-up:` only when applicable. State whether this should become a `lintcn` rule candidate, a brain principle, or nothing structural.
 
 Keep the final summary high signal:
 
@@ -105,3 +123,4 @@ Keep the final summary high signal:
 - Do not recommend framework-shaped patterns unless they clearly improve local reasoning in this codebase.
 - Do not confuse "a little duplication" with a design failure. Premature deduplication is a common source of slop.
 - Do not produce a long list of weak nits. If the issue would not matter six months from now, drop it.
+- Do not create a `lintcn` rule candidate without confirming that the developer actually wants repo-wide enforcement for subjective taste issues.
