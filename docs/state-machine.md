@@ -314,20 +314,21 @@ The following routing happens when a user provides natural language instead of a
 | Signal | Route To | Priority |
 |--------|----------|----------|
 | Stakeholder language (outcomes, no implementation detail) | `/flux:propose` | 1 |
-| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 2 |
-| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:brain` ("Remember" flow) | 3 |
-| Feature/refactor description | `/flux:scope` | 4 |
-| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 5 |
-| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 5 |
-| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 6 |
-| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 7 |
-| "review this" / "check my code" | `/flux:impl-review` | 8 |
-| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 9 |
-| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 10 |
-| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 11 |
-| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 12 |
-| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 13 |
-| "reflect" / "what did we learn" | `/flux:reflect` | 14 |
+| React visual-jank signals ("flicker", "flash", "blink", "layout shift", "jank", "scroll reset", "feels rebuilt") and `dejank` is installed | `/flux:dejank` | 2 |
+| Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 3 |
+| "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:brain` ("Remember" flow) | 4 |
+| Feature/refactor description | `/flux:scope` | 5 |
+| Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 6 |
+| Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 6 |
+| "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 7 |
+| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 8 |
+| "review this" / "check my code" | `/flux:impl-review` | 9 |
+| "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 10 |
+| "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 11 |
+| "design the interface" / "design it twice" / "compare interfaces" | `/flux:design-interface` | 12 |
+| "ubiquitous language" / "define terms" / "domain glossary" / "DDD" | `/flux:ubiquitous-language` | 13 |
+| "watch this PR" / "auto-fix" / "babysit" / "fix CI" | `/flux:autofix` | 14 |
+| "reflect" / "what did we learn" | `/flux:reflect` | 15 |
 
 ### Intra-Skill Routing
 
@@ -336,6 +337,7 @@ Skills can route to other skills during execution:
 | From | Condition | Routes To |
 |------|-----------|-----------|
 | `/flux:scope` | Stakeholder detected (3+ signals, 0 engineer signals) | `/flux:propose` |
+| `/flux:scope` | React visual-jank signals + `dejank` installed + user confirms | `/flux:dejank` |
 | `/flux:scope` | Bug signals detected + user confirms | `/flux:rca` |
 | `/flux:scope` | "remember X" detected | `/flux:brain` |
 | `/flux:scope` | `--explore` flag | Explore mode (internal) |

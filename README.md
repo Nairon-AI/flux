@@ -135,6 +135,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 
 `Dejank` is only offered when Flux detects a React-based repo during setup.
 After it is installed, trigger it explicitly with `/flux:dejank` or by directly asking the agent to use `dejank`.
+Casual React jank complaints like "this flickers" or "the layout jumps" should also route there automatically once Flux is installed in the repo.
 
 </details>
 

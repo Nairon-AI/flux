@@ -153,6 +153,8 @@ Use it when you want a dedicated visual-jank pass instead of hoping the model pi
 /flux:dejank the settings panel flashes blank on first render
 ```
 
+When Flux is installed in the repo, casual React jank complaints like "this flickers", "the layout jumps", or "the pane feels rebuilt" should also route here automatically when `dejank` is installed.
+
 If `dejank` is not installed in the repo yet, the command should stop and tell you to install it through `/flux:setup` or with `secureskills add`.
 
 ---

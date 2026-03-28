@@ -53,6 +53,11 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - "is there a tool for...", "what MCP should I use for..."
   - Any request asking about optimizations, tools, or recommendations for a specific area
   - Example: "find me tools for growth engineering" → `/flux:improve --user-context "growth engineering"`
+- Treat these as **React visual-jank requests** — if `dejank` is installed in the repo, route directly to `/flux:dejank`:
+  - "flicker", "flash", "blink", "layout shift", "jank", "stutter", "jump", "pop in", "scroll reset", "feels rebuilt"
+  - especially when the user is talking about a React UI, first render, hydration, or visual instability
+  - Check install by looking for `.secureskills/store/dejank/manifest.json` first, then legacy `.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`
+  - If the repo does not have Dejank installed, continue with the normal Flux routing path and mention `/flux:setup` if Dejank would help
 - Before scoping or coding, reconcile the user's message with Flux state.
 - Do not silently ignore active Flux state just because the user phrased the request casually.
 
@@ -62,6 +67,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If `session-state` says `resume_scope`: continue the current scoped objective unless the user clearly wants a new one.
 - If `session-state` says `resume_work`: resume the active task/objective unless the user clearly wants a new one.
 - If `session-state` says `needs_completion_review`: route to review before claiming the work is fully done.
+- If the message is a React visual-jank complaint and Dejank is installed, prefer `/flux:dejank` over generic scope/RCA routing.
 - If `session-state` says `fresh_session_no_objective`: start `/flux:scope`.
 - If the user clearly starts a new objective while another is active, ask whether to switch objectives, then use `.flux/bin/fluxctl objective switch <epic-id>` when needed.
 </important>
