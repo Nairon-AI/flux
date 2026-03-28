@@ -936,6 +936,40 @@ describe('Skill File Structure', () => {
     }
   })
 
+  test('workflow-embedded utility skills are anchored to the correct workflow touchpoints', () => {
+    const expectedReferences: Record<string, string[]> = {
+      'flux-parallel-dispatch': [
+        'skills/flux-prime/SKILL.md',
+        'skills/flux-prime/workflow.md',
+        'skills/flux-scope/SKILL.md',
+        'skills/flux-scope/explore-steps.md',
+      ],
+      'flux-receive-review': [
+        'skills/flux-impl-review/SKILL.md',
+        'skills/flux-epic-review/SKILL.md',
+        'skills/flux-autofix/SKILL.md',
+      ],
+      'flux-verify-claims': [
+        'skills/flux-work/SKILL.md',
+        'skills/flux-impl-review/SKILL.md',
+        'skills/flux-epic-review/SKILL.md',
+        'skills/flux-autofix/SKILL.md',
+      ],
+    }
+
+    for (const [skillName, refs] of Object.entries(expectedReferences)) {
+      const skillPath = join(FLUX_ROOT, 'skills', skillName, 'SKILL.md')
+      expect(existsSync(skillPath)).toBe(true)
+
+      for (const ref of refs) {
+        const refPath = join(FLUX_ROOT, ref)
+        expect(existsSync(refPath)).toBe(true)
+        const text = readFileSync(refPath, 'utf8')
+        expect(text).toContain(skillName)
+      }
+    }
+  })
+
   test('flux-plan skill has required files', () => {
     const skillDir = join(FLUX_ROOT, 'skills', 'flux-plan')
     expect(existsSync(join(skillDir, 'SKILL.md'))).toBe(true)

@@ -18,6 +18,8 @@ START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
 - **Deep (`--deep`)**: ~45 min total. Full staged workflow with stronger gates, more edge cases, and richer handoff.
 - **Explore (`--explore [N]`)**: Generate N competing approaches, scaffold each in parallel, compare visually, pick winner.
 
+When Explore fans out multiple approach scaffolds, apply `flux-parallel-dispatch` so only isolated variants run in parallel.
+
 > "Understand the problem before solving it. Most failed features solve the wrong problem."
 > "Write ten specs. Test them all. Throw away nine."
 

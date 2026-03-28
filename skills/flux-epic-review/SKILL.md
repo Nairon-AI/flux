@@ -79,6 +79,7 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 **For all backends:**
 - If `REVIEW_RECEIPT_PATH` set: write receipt after SHIP verdict (RP writes manually after fix loop; codex writes automatically via `--receipt`)
 - Any failure → output `<promise>RETRY</promise>` and stop
+- Use `flux-receive-review` when sorting valid issues from reviewer or bot feedback.
 
 **FORBIDDEN**:
 - Self-declaring SHIP without actual backend verdict
@@ -208,6 +209,8 @@ If verdict is NEEDS_WORK and fix-list is non-empty, loop internally until SHIP:
 **CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.
 
 **MAX ITERATIONS**: Limit fix+re-review cycles to **${MAX_REVIEW_ITERATIONS:-3}** iterations. If still NEEDS_WORK after max rounds, output `<promise>RETRY</promise>` and stop.
+
+Before declaring SHIP at any phase boundary, apply `flux-verify-claims`.
 
 ### Step 6: Security Scan (auto-triggered)
 

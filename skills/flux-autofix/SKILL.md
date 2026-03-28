@@ -42,6 +42,8 @@ Claude's auto-fix subscribes to GitHub activity on the PR. When a check fails or
 
 Review comment replies are posted using **your GitHub account** but labeled as coming from Claude.
 
+When evaluating human or bot review comments, use `flux-receive-review`. Before posting that something is fixed, apply `flux-verify-claims`.
+
 ## Input
 
 Full request: $ARGUMENTS

@@ -66,6 +66,8 @@ $FLUXCTL session-phase set idle
 
 Phase is stored in `{state-dir}/session_phase.json` (shared across worktrees). The `session-state --json` output includes `session_phase` alongside the coarse routing state.
 
+Workflow-embedded utility skills such as `flux-parallel-dispatch`, `flux-receive-review`, and `flux-verify-claims` intentionally do **not** set their own session phases. They run inside an already-active parent phase such as `scope`, `work`, `impl_review`, `epic_review`, or `autofix`.
+
 ### Valid Phases
 
 `setup`, `idle`, `prime`, `ruminate`, `scope`, `stress_test`, `plan`, `plan_review`, `work`, `impl_review`, `epic_review`, `grill`, `desloppify`, `quality`, `submit`, `autofix`, `reflect`, `meditate`, `gate`, `propose`, `rca`, `improve`, `remember`, `export_context`, `dejank`, `tdd`, `design_interface`, `ubiquitous_language`, `sync`, `security_scan`, `security_review`, `threat_model`, `vuln_validate`, `skill_build`, `profile`, `ralph`, `contribute`, `upgrade`, `release`, `improve-claude-md`
@@ -498,7 +500,10 @@ Override with `.flux/config.json`:
 | Recommendation pulse | Every session (rate-limited 1x/day) | **Automatic** — nudges for new tools, brain vault health |
 | `session-state` routing | Before any work-like request | **Automatic** — routes to prime/scope/work/review |
 | Stress test | During scope, if one-way door / UX assumption / deferred authority | **Automatic** — spawns opposing subagents |
+| Parallel dispatch utility | During Prime scouts or Scope explore fan-out | **Automatic within owning phase** — uses `flux-parallel-dispatch` to keep parallel work isolated |
 | Friction check + inline improve | After each task SHIP | **Automatic** — checks for recurring friction signals |
+| Verify claims utility | Before claiming fixed/green/done or advancing to SHIP | **Automatic within owning phase** — uses `flux-verify-claims` inside work/review/autofix |
+| Receive review utility | When reviewer or bot comments need interpretation | **Automatic within owning phase** — uses `flux-receive-review` inside impl-review/epic-review/autofix |
 | Plan sync | After task done, if enabled | **Automatic** — updates downstream todo tasks |
 | Epic review pipeline | All tasks done | **Automatic** — full pipeline runs in order |
 | Reflect | After submit | **Automatic** — captures learnings while context is fresh |
