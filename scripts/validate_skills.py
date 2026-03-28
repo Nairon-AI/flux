@@ -9,6 +9,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from fluxctl_pkg.utils import SESSION_PHASES
+
 
 FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 FIELD_RE = re.compile(r"^([A-Za-z0-9_-]+):\s*(.*)$")
@@ -17,6 +22,7 @@ TRIGGER_HINT_RE = re.compile(
     re.IGNORECASE,
 )
 HEADER_RE = re.compile(r"^##+\s+(.+?)\s*$", re.MULTILINE)
+SESSION_PHASE_RE = re.compile(r"session-phase set ([A-Za-z0-9_-]+)")
 GOTCHA_EQUIVALENTS = {
     "gotchas",
     "guardrails",
@@ -125,6 +131,20 @@ def validate_skill(skill_dir: Path) -> SkillReport:
             "description is not clearly trigger-oriented; add 'Use when', 'Triggers:', or similar language"
         )
 
+    if frontmatter.get("user-invocable", "").strip().lower() == "true" and skill_dir.name.startswith("flux-"):
+        command_name = skill_dir.name.removeprefix("flux-")
+        command_path = ROOT / "commands" / "flux" / f"{command_name}.md"
+        if not command_path.exists():
+            report.errors.append(
+                f"user-invocable skill is missing command file commands/flux/{command_name}.md"
+            )
+
+    for phase in sorted(set(SESSION_PHASE_RE.findall(text))):
+        if phase not in SESSION_PHASES:
+            report.errors.append(
+                f"uses unsupported session phase '{phase}' (add it to scripts/fluxctl_pkg/utils.py::SESSION_PHASES)"
+            )
+
     if len(lines) > HARD_LINE_LIMIT:
         report.errors.append(
             f"SKILL.md is {len(lines)} lines; keep it at or below {HARD_LINE_LIMIT} and move detail into supporting files"
@@ -166,7 +186,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parent.parent
+    root = ROOT
     skill_dirs = [Path(p).resolve() for p in args.paths] if args.paths else sorted(
         path for path in (root / "skills").iterdir() if path.is_dir()
     )

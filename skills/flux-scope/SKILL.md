@@ -198,7 +198,7 @@ Before scoping, check if the user is actually asking to remember something, not 
 - Input starts with "remember", "don't forget", "keep in mind", "note that", "from now on"
 - Input contains "always ..." or "never ..." as a rule/constraint (not a question)
 
-If detected → **hand off to `flux-brain` skill** (which handles the "Remember" flow). Stop here.
+If detected → **hand off to `/flux:remember`** (which routes into the `flux-brain` "Remember" flow). Stop here.
 
 ## Session Realignment
 

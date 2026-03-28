@@ -37,6 +37,14 @@ Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported
 | `/flux:plan` | `/flux:plan <idea or fn-N>` | Convert request into structured epic + tasks only |
 | `/flux:work` | `/flux:work <fn-N or fn-N.M>` | Execute plan with checks and drift controls |
 | `/flux:dejank` | `/flux:dejank [component|path|symptom]` | Trigger the optional Dejank skill for React visual-jank audits and debugging |
+| `/flux:grill` | `/flux:grill [epic-id|feature]` | Behavioral stress test of implemented behavior |
+| `/flux:tdd` | `/flux:tdd <task-id|feature|bugfix>` | Run the TDD workflow explicitly |
+| `/flux:design-interface` | `/flux:design-interface <module|API>` | Compare multiple interface designs |
+| `/flux:ubiquitous-language` | `/flux:ubiquitous-language [domain area]` | Extract and formalize domain terminology |
+| `/flux:export-context` | `/flux:export-context <plan <epic-id>|impl> [focus]` | Export a review pack for external LLMs |
+| `/flux:autofix` | `/flux:autofix [pr-url|pr-number]` | Start Claude cloud auto-fix on a PR |
+| `/flux:remember` | `/flux:remember <memory>` | Explicit memory-routing entrypoint for durable repo facts and rules |
+| `/flux:gate` | `/flux:gate [staging-url|pr-number]` | Validate staging after merge and prepare production promotion |
 
 ### /flux:propose
 
@@ -159,6 +167,25 @@ If `dejank` is not installed in the repo yet, the command should stop and tell y
 
 ---
 
+### Specialist Workflows
+
+Flux also exposes these explicit specialist workflows when you want to jump directly to them instead of relying on implicit routing:
+
+- `/flux:grill` — behavioral verification after implementation
+- `/flux:tdd` — red-green-refactor execution
+- `/flux:design-interface` — parallel interface design exploration
+- `/flux:ubiquitous-language` — DDD glossary extraction
+- `/flux:export-context` — external review-pack export
+- `/flux:autofix` — post-submit cloud PR babysitting
+- `/flux:remember` — explicit durable-memory routing
+- `/flux:gate` — staging validation and promotion workflow
+- `/flux:release` — Flux maintainer release publishing
+- `/flux:improve-claude-md` — instruction-file adherence hardening
+
+These are also part of the natural-language router when the request clearly matches them.
+
+---
+
 ## Knowledge & Memory
 
 | Command | Usage | Purpose |
@@ -166,6 +193,7 @@ If `dejank` is not installed in the repo yet, the command should stop and tell y
 | `/flux:reflect` | `/flux:reflect` | Capture learnings from the current session into brain vault |
 | `/flux:ruminate` | `/flux:ruminate` | Mine past conversations for uncaptured patterns |
 | `/flux:meditate` | `/flux:meditate` | Audit brain vault — prune stale content, promote patterns |
+| `/flux:remember` | `/flux:remember <memory>` | Explicit alias for remember/don't-forget requests |
 | "remember X" | `remember always use pnpm` | Smart routing — stores in `AGENTS.md` (actionable rules) or `.flux/brain/` (deeper context) |
 
 ### Natural Language Memory
@@ -294,9 +322,12 @@ Flux classifies the content and asks you to confirm the destination before writi
 | `/flux:prime` | `/flux:prime [--report-only\|--fix-all\|path]` | Run readiness audit and optional fixes |
 | `/flux:desloppify` | `/flux:desloppify [scan\|status\|next\|plan]` | Systematic codebase quality improvement |
 | `/flux:sync` | `/flux:sync <id> [--dry-run]` | Sync downstream specs after implementation drift |
+| `/flux:gate` | `/flux:gate [staging-url\|pr-number]` | Validate staging and create the promotion path to production |
 | `/flux:contribute` | `/flux:contribute <issue description>` | Report a Flux bug and create a PR to fix it |
 | `/flux:skill-builder` | `/flux:skill-builder <what the skill should do>` | Autonomously create production-grade agent skills from a brief description |
 | `/flux:upgrade` | `/flux:upgrade` | Upgrade Flux plugin and optionally update project setup |
+| `/flux:release` | `/flux:release vX.Y.Z [--title "..."]` | Cut a Flux release with synced manifests, changelog, tag, and notes |
+| `/flux:improve-claude-md` | `/flux:improve-claude-md [path-to-AGENTS-or-CLAUDE]` | Restructure instruction files for stronger conditional adherence |
 | `/flux:ralph-init` | `/flux:ralph-init` | Scaffold repo-local Ralph autonomous harness |
 | `/flux:uninstall` | `/flux:uninstall` | Remove Flux project-local files |
 

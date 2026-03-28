@@ -160,6 +160,8 @@ flowchart TD
     Prime["Prime<br/>(readiness audit)"]
     Propose["Propose<br/>(stakeholder intake)"]
     RCA["RCA<br/>(root cause analysis)"]
+    Dejank["Dejank<br/>(React jank audit)"]
+    Remember["Remember<br/>(memory router)"]
     Scope["Scope<br/>(problem definition)"]
     StressTest{"Stress Test<br/>(assumption dialectic)"}
     Work["Work<br/>(task loop)"]
@@ -168,6 +170,7 @@ flowchart TD
     Grill["Grill<br/>(behavioral stress test)"]
     Quality["Quality<br/>(tests + desloppify scan)"]
     Submit["Submit<br/>(push + PR)"]
+    Gate["Gate<br/>(staging validation)"]
     Autofix["Autofix<br/>(cloud PR babysitting)"]
     Reflect["Reflect<br/>(capture learnings)"]
     Meditate["Meditate<br/>(prune + promote)"]
@@ -180,9 +183,13 @@ flowchart TD
     Prime -->|"brain thin +<br/>past sessions exist"| Ruminate
     Prime -->|"brain ready"| Scope
     Ruminate -->|"bootstrap brain<br/>from history"| Scope
+    SessionStart -->|"remember / don't forget"| Remember
+    Remember -->|"stores to AGENTS.md<br/>or brain vault"| Scope
     Scope -->|"non-technical user<br/>detected"| Propose
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
     Scope -->|"bug detected"| RCA
+    Scope -->|"React jank complaint +<br/>Dejank installed"| Dejank
+    Dejank -->|"static scan or runtime<br/>investigation"| Scope
     RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
     Scope -->|"ambiguous domain<br/>terms detected"| UbiqLang["Ubiquitous Language<br/>(glossary extraction)"]
     UbiqLang -->|"glossary written<br/>to brain vault"| StressTest
@@ -240,6 +247,7 @@ flowchart TD
     Grill -->|"all verified"| Quality
     FrustrationSignal -->|"yes: auto-fetch<br/>recommendations +<br/>offer installs"| GrillOffer
     Quality --> Submit
+    Submit -.->|"after merge to staging"| Gate
     Submit -->|"autofix.enabled"| Autofix
     Autofix -->|"non-blocking<br/>remote session"| Reflect
     Submit -->|"!autofix +<br/>review.bot set"| BYORB_Post["BYORB<br/>(local bot self-heal)"]
@@ -247,6 +255,7 @@ flowchart TD
     Submit -->|"neither"| Reflect
     Reflect -->|"20+ pitfall files"| Meditate
     Reflect -->|"brain healthy"| Done["Done"]
+    Gate -->|"promotion ready"| Done
     Meditate --> Done
 
     Brain["Brain Vault<br/>(pitfalls, principles,<br/>conventions, decisions)"]
@@ -261,6 +270,8 @@ flowchart TD
     Grill -.->|"write: decisions<br/>+ new tasks"| Brain
     Pulse -.->|"nudge when<br/>new tools"| Improve
 ```
+
+The diagram above shows the primary SDLC loop plus the main auxiliary routes (`/flux:remember`, `/flux:dejank`, `/flux:gate`). Flux also tracks router metadata for the utility and maintainer commands outside that loop. `fluxctl session-state --json` now returns the active router `command`, `skill`, and architecture `node`, and the full command-to-node catalog lives in [docs/state-machine.md](docs/state-machine.md).
 
 | Phase | What happens | Why it exists |
 |-------|-------------|---------------|
@@ -489,8 +500,12 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:tdd` | Test-driven development with red-green-refactor vertical slices | During `/flux:work` — activated by `--tdd` flag, task spec, or user request. Also callable standalone for any feature or bugfix |
 | `/flux:design-interface` | Generate 3+ radically different interface designs via parallel sub-agents, compare, and recommend | During `/flux:scope` — auto-triggered when complex module boundaries are detected. Also callable standalone when designing any module API |
 | `/flux:ubiquitous-language` | Extract DDD glossary from conversation + codebase, write to brain vault | During `/flux:scope` — auto-triggered when ambiguous domain terms are detected. Also callable standalone to formalize domain terminology |
+| `/flux:export-context` | Export a review pack for external LLMs like ChatGPT or Claude web | Anytime you want off-platform review while preserving Flux context selection |
+| `/flux:autofix` | Start Claude cloud auto-fix on a submitted PR | After submit — manually or automatically when configured in `/flux:setup` |
+| `/flux:remember` | Persist a repo rule or durable context into AGENTS.md or the brain vault | Anytime the user says "remember", "don't forget", "keep in mind", or wants an explicit memory write |
 | `/flux:sync <epic>` | Sync specs after drift | Anytime — you realized task 3 invalidated task 5's approach, sync updates downstream specs |
 | `/flux:desloppify` | Code quality improvement (also runs as scan after epic review) | 7. After epic review flags a low score, or manually when you want to improve code quality |
+| `/flux:gate` | Validate staging after merge and promote toward production | After a merge lands on staging and you want Flux to verify before promotion |
 
 **Security**
 
@@ -517,6 +532,8 @@ fluxctl config get tracker.provider   # Check current tracker config
 | `/flux:score` | AI-native capability score | Anytime — benchmark your repo's AI-readiness |
 | `/flux:profile` | Export/share SDLC profile | Anytime — share your Flux setup with teammates or the community |
 | `/flux:contribute` | Report bug and auto-create fix PR | When you find a Flux bug — auto-creates a fix PR on the Flux repo |
+| `/flux:release` | Cut a Flux release and keep manifests in sync | Flux-maintainer workflow for publishing a new version |
+| `/flux:improve-claude-md` | Restructure AGENTS.md/CLAUDE.md with stronger conditional blocks | When you want to harden instruction adherence in a repo-local instruction file |
 
 Full reference: `docs/commands-reference.md`
 

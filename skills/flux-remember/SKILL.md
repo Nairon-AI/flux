@@ -4,8 +4,8 @@ description: >-
   Smart "remember" routing — when user says "remember X", "don't forget X", or "keep in mind X",
   this skill decides whether to store in CLAUDE.md (short actionable rules for every session)
   or the brain vault (deeper context, decisions, business knowledge). Routes through flux-brain's
-  "Remember" flow. Triggers: "remember", "don't forget", "keep in mind", "note that".
-user-invocable: false
+  "Remember" flow. Triggers: /flux:remember, "remember", "don't forget", "keep in mind", "note that".
+user-invocable: true
 ---
 
 # Remember

@@ -1676,7 +1676,92 @@ def cmd_scope_status(args: argparse.Namespace) -> None:
 
 def cmd_session_state(args: argparse.Namespace) -> None:
     """Summarize the current workflow routing state."""
+    router_registry = {
+        "/flux:setup": {"skill": "flux-setup", "node": "Setup"},
+        "/flux:prime": {"skill": "flux-prime", "node": "Prime"},
+        "/flux:scope": {"skill": "flux-scope", "node": "Scope"},
+        "/flux:plan": {"skill": "flux-plan", "node": "Scope"},
+        "/flux:plan-review": {"skill": "flux-plan-review", "node": "Plan Review"},
+        "/flux:work": {"skill": "flux-work", "node": "Work"},
+        "/flux:impl-review": {"skill": "flux-impl-review", "node": "Impl Review"},
+        "/flux:epic-review": {"skill": "flux-epic-review", "node": "Epic Review"},
+        "/flux:grill": {"skill": "flux-grill", "node": "Grill"},
+        "/flux:tdd": {"skill": "flux-tdd", "node": "TDD"},
+        "/flux:design-interface": {
+            "skill": "flux-design-interface",
+            "node": "Design Interface",
+        },
+        "/flux:ubiquitous-language": {
+            "skill": "flux-ubiquitous-language",
+            "node": "Ubiquitous Language",
+        },
+        "/flux:propose": {"skill": "flux-propose", "node": "Propose"},
+        "/flux:rca": {"skill": "flux-rca", "node": "RCA"},
+        "/flux:dejank": {"skill": "dejank", "node": "Dejank"},
+        "/flux:reflect": {"skill": "flux-reflect", "node": "Reflect"},
+        "/flux:ruminate": {"skill": "flux-ruminate", "node": "Ruminate"},
+        "/flux:meditate": {"skill": "flux-meditate", "node": "Meditate"},
+        "/flux:remember": {"skill": "flux-remember", "node": "Remember"},
+        "/flux:improve": {"skill": "flux-improve", "node": "Improve"},
+        "/flux:autofix": {"skill": "flux-autofix", "node": "Autofix"},
+        "/flux:export-context": {
+            "skill": "flux-export-context",
+            "node": "Export Context",
+        },
+        "/flux:gate": {"skill": "flux-gate", "node": "Gate"},
+        "/flux:security-scan": {
+            "skill": "flux-security-scan",
+            "node": "Security Scan",
+        },
+        "/flux:security-review": {
+            "skill": "flux-security-review",
+            "node": "Security Review",
+        },
+        "/flux:threat-model": {
+            "skill": "flux-threat-model",
+            "node": "Threat Model",
+        },
+        "/flux:vuln-validate": {
+            "skill": "flux-vuln-validate",
+            "node": "Vuln Validate",
+        },
+        "/flux:sync": {"skill": "flux-sync", "node": "Sync"},
+        "/flux:desloppify": {"skill": "flux-desloppify", "node": "Desloppify"},
+        "/flux:skill-builder": {
+            "skill": "flux-skill-builder",
+            "node": "Skill Builder",
+        },
+        "/flux:profile": {"skill": "flux-profile", "node": "Profile"},
+        "/flux:ralph-init": {"skill": "flux-ralph-init", "node": "Ralph"},
+        "/flux:contribute": {"skill": "flux-contribute", "node": "Contribute"},
+        "/flux:upgrade": {"skill": "flux-upgrade", "node": "Upgrade"},
+        "/flux:release": {"skill": "flux-release", "node": "Release"},
+        "/flux:improve-claude-md": {
+            "skill": "flux-improve-claude-md",
+            "node": "Improve CLAUDE.md",
+        },
+    }
+
+    def router_for(next_action: str | None, state_name: str) -> dict[str, Any]:
+        if not next_action:
+            return {
+                "command": None,
+                "skill": None,
+                "node": None,
+                "reason": state_name,
+            }
+
+        command = next_action.split()[0]
+        route = router_registry.get(command, {})
+        return {
+            "command": command,
+            "skill": route.get("skill"),
+            "node": route.get("node"),
+            "reason": state_name,
+        }
+
     if not ensure_flux_exists():
+        next_action = "/flux:setup"
         result = {
             "state": "fresh_session_no_objective",
             "session_phase": {"phase": "idle", "detail": None, "epic_id": None, "task_id": None, "updated_at": None},
@@ -1686,7 +1771,8 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "prime": default_prime_state(),
             "architecture": get_architecture_state(use_json=args.json),
             "message": "Flux is not initialized yet.",
-            "next_action": "/flux:setup",
+            "next_action": next_action,
+            "router": router_for(next_action, "fresh_session_no_objective"),
         }
         if args.json:
             json_output(result)
@@ -1699,6 +1785,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     if prime_state.get("status") != "done":
         current_actor = get_actor()
         epic_data = choose_current_objective(current_actor, use_json=args.json)
+        next_action = "/flux:prime"
         result = {
             "state": "needs_prime",
             "session_phase": get_session_phase(use_json=args.json),
@@ -1718,7 +1805,8 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "prime": prime_state,
             "architecture": architecture_state,
             "message": "Flux is installed, but this repository has not been primed yet. Run /flux:prime before scoping or implementation.",
-            "next_action": "/flux:prime",
+            "next_action": next_action,
+            "router": router_for(next_action, "needs_prime"),
         }
         if args.json:
             json_output(result)
@@ -1729,6 +1817,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
     current_actor = get_actor()
     epic_data = choose_current_objective(current_actor, use_json=args.json)
     if not epic_data:
+        next_action = "/flux:scope"
         result = {
             "state": "fresh_session_no_objective",
             "session_phase": get_session_phase(use_json=args.json),
@@ -1738,7 +1827,8 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "prime": prime_state,
             "architecture": architecture_state,
             "message": "No open objective. Start a new feature, bug, or refactor scope.",
-            "next_action": "/flux:scope",
+            "next_action": next_action,
+            "router": router_for(next_action, "fresh_session_no_objective"),
         }
         if args.json:
             json_output(result)
@@ -1799,6 +1889,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         "task": None if not current_task else {"id": current_task["id"], "title": current_task["title"]},
         "message": message,
         "next_action": next_action,
+        "router": router_for(next_action, state),
     }
     if args.json:
         json_output(result)

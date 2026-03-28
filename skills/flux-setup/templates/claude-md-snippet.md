@@ -53,17 +53,37 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - "is there a tool for...", "what MCP should I use for..."
   - Any request asking about optimizations, tools, or recommendations for a specific area
   - Example: "find me tools for growth engineering" → `/flux:improve --user-context "growth engineering"`
+- Treat these as **memory capture requests** — route directly to `/flux:remember`:
+  - "remember ...", "don't forget ...", "keep in mind ...", "from now on ..."
+  - "always ..." / "never ..." when the user is setting an ongoing rule, not asking a question
+- Treat these as **task management requests** — route to the `flux` skill:
+  - "what's the status", "show me my tasks", "list epics", "what's ready", "show fn-1"
 - Treat these as **React visual-jank requests** — if `dejank` is installed in the repo, route directly to `/flux:dejank`:
   - "flicker", "flash", "blink", "layout shift", "jank", "stutter", "jump", "pop in", "scroll reset", "feels rebuilt"
   - especially when the user is talking about a React UI, first render, hydration, or visual instability
   - Check install by looking for `.secureskills/store/dejank/manifest.json` first, then legacy `.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`
   - If the repo does not have Dejank installed, continue with the normal Flux routing path and mention `/flux:setup` if Dejank would help
+- Treat these as **specialist workflow requests** — route directly instead of making the user rephrase:
+  - "grill me", "stress test the behavior", "verify behavior" → `/flux:grill`
+  - "TDD", "test first", "red green refactor" → `/flux:tdd`
+  - "design the interface", "design it twice", "compare interfaces" → `/flux:design-interface`
+  - "ubiquitous language", "define terms", "domain glossary", "DDD" → `/flux:ubiquitous-language`
+  - "export this for ChatGPT", "external LLM review", "review this with Claude web" → `/flux:export-context`
+  - "watch this PR", "auto-fix", "babysit this PR", "fix CI after submit" → `/flux:autofix`
+  - "validate staging", "promote staging", "ship staging to production" → `/flux:gate`
+  - "cut a release", "publish Flux vX.Y.Z", "release this version" → `/flux:release`
+  - "improve CLAUDE.md", "restructure AGENTS.md", "add important if blocks" → `/flux:improve-claude-md`
+  - "share my Flux setup", "export a profile", "import a profile" → `/flux:profile`
+  - "build me a skill", "create a skill for...", "scaffold a skill" → `/flux:skill-builder`
+  - "upgrade Flux", "update the plugin" → `/flux:upgrade`
+  - "report a Flux bug", "contribute a fix to Flux" → `/flux:contribute`
 - Before scoping or coding, reconcile the user's message with Flux state.
 - Do not silently ignore active Flux state just because the user phrased the request casually.
 
 <important if="you are routing a request using Flux session state">
 **Routing rules:**
 - If `session-state` says `needs_prime`: run `/flux:prime` first. Do not start scope or implementation before prime completes.
+- If the user is explicitly trying to remember a repo rule or durable fact, prefer `/flux:remember` over scoping.
 - If `session-state` says `resume_scope`: continue the current scoped objective unless the user clearly wants a new one.
 - If `session-state` says `resume_work`: resume the active task/objective unless the user clearly wants a new one.
 - If `session-state` says `needs_completion_review`: route to review before claiming the work is fully done.

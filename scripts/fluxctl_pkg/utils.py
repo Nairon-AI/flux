@@ -71,6 +71,7 @@ PRIME_STATUSES = ["not_started", "in_progress", "done"]
 # Session-level phases — tracks where the user/agent is in the full workflow lifecycle.
 # These cover the entire state machine, not just scoping phases.
 SESSION_PHASES = [
+    "setup",             # Running /flux:setup
     "idle",              # No active workflow
     "prime",             # Running /flux:prime
     "ruminate",          # Mining past conversations
@@ -81,8 +82,13 @@ SESSION_PHASES = [
     "work",              # Task loop — implementing
     "impl_review",       # Per-task lightweight review
     "epic_review",       # Per-epic thorough review
+    "grill",             # Behavioral verification
+    "tdd",               # Test-driven implementation mode
+    "design_interface",  # Parallel interface design exploration
+    "ubiquitous_language",  # Domain glossary extraction
     "quality",           # Tests + lint + desloppify
     "submit",            # Push + PR
+    "autofix",           # Post-submit PR babysitting
     "reflect",           # Capturing session learnings
     "meditate",          # Pruning brain vault
     "gate",              # Staging validation
@@ -90,6 +96,20 @@ SESSION_PHASES = [
     "rca",               # Root cause analysis
     "improve",           # Workflow optimization
     "remember",          # Storing knowledge (CLAUDE.md or .flux/brain/)
+    "export_context",    # External LLM review-pack export
+    "dejank",            # React visual-jank audit
+    "security_scan",     # Security change scanning
+    "security_review",   # Full security audit
+    "threat_model",      # Threat modeling
+    "vuln_validate",     # Vulnerability validation
+    "sync",              # Spec synchronization
+    "skill_build",       # Skill creation workflow
+    "profile",           # Profile export/import
+    "ralph",             # Ralph autonomous harness
+    "contribute",        # Flux contribution workflow
+    "upgrade",           # Flux upgrade workflow
+    "release",           # Flux release workflow
+    "improve-claude-md", # AGENTS.md / CLAUDE.md restructuring workflow
 ]
 
 TASK_SPEC_HEADINGS = [
