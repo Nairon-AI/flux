@@ -53,6 +53,7 @@ $FLUXCTL session-phase set idle
   - **Dejank** — React visual-jank detection and diagnosis (18 anti-patterns + runtime workflows)
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
+  - **Diffity Tour** — interactive browser-based walkthroughs for understanding unfamiliar codepaths and features, with optional `diffity` CLI install during setup so tours work immediately
   - **Find Skills (Vercel)** — secure bootstrap for Vercel's skill catalog via PlaTo
   - **X Research Skill** — structured X/Twitter research and summarization
 - **Optional** task tracker integration:

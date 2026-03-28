@@ -30,6 +30,7 @@ Example:
 - `/flux:plan` -> `skills/flux-plan/`
 - `/flux:work` -> `skills/flux-work/`
 - `/flux:dejank` -> optional installed `dejank` skill (when present in the repo)
+- natural-language "how does this work" requests -> optional installed `diffity-tour` skill (when present in the repo)
 
 ### Skill Layer
 

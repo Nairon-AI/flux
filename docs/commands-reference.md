@@ -24,6 +24,8 @@ codex login
 
 Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported project skills go through `secureskills` and land in `.secureskills/` instead of loose repo-local skill folders.
 
+Some optional project-installed skills do not have a `/flux:*` wrapper. Flux can still route to them implicitly when they are present in the repo.
+
 ---
 
 ## Core Workflow
@@ -164,6 +166,26 @@ Use it when you want a dedicated visual-jank pass instead of hoping the model pi
 When Flux is installed in the repo, casual React jank complaints like "this flickers", "the layout jumps", or "the pane feels rebuilt" should also route here automatically when `dejank` is installed.
 
 If `dejank` is not installed in the repo yet, the command should stop and tell you to install it through `/flux:setup` or with `secureskills add`.
+
+### /diffity-tour
+
+Optional explicit entrypoint for the project-installed `diffity-tour` skill after it has been installed through `/flux:setup`.
+
+Use it when you want an interactive walkthrough of an existing feature, subsystem, or codepath:
+
+```bash
+/diffity-tour how does authentication work?
+/diffity-tour walk me through everything that touches checkout
+```
+
+When Flux is installed in the repo, understanding requests like "how does auth work", "help me understand the billing flow", or "show me what touches notifications" should also route here automatically when `diffity-tour` is installed.
+
+If `diffity-tour` is not installed in the repo yet, Flux should continue with the normal routing path and point you to `/flux:setup` or:
+
+```bash
+secureskills add https://github.com/kamranahmedse/diffity --skill diffity-tour
+secureskills enable codex
+```
 
 ---
 

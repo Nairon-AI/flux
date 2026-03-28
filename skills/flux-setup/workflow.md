@@ -993,6 +993,7 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 | `dejank` | Dejank | **Detect React visual jank** — static scan of 18 anti-patterns plus runtime investigation workflows | `install-skill.sh dejank https://github.com/gbasin/dejank project` via PlaTo secure store; only offer for React-based repos |
 | `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `install-skill.sh taste-skill https://github.com/Leonxlnx/taste-skill project` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `install-skill.sh semver-changelog https://github.com/prulloac/agent-skills project` |
+| `diffity-tour` | Diffity Tour | **Interactive codebase walkthroughs** — generate guided browser tours for any feature or subsystem | `install-skill.sh diffity-tour https://github.com/kamranahmedse/diffity project`; optionally install `diffity` CLI so tours run immediately |
 | `agent-skills-vercel` | Find Skills (Vercel) | **Catalog bootstrap** — securely install Vercel's `find-skills` helper, then use PlaTo to add more | `install-skill.sh find-skills https://github.com/vercel-labs/agent-skills project` |
 | `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `install-skill.sh x-research-skill https://github.com/rohunvora/x-research-skill project` |
 
@@ -1016,6 +1017,8 @@ HAVE_DEJANK=$(([ -f ".secureskills/store/dejank/manifest.json" ] || [ -f ".codex
 HAVE_TASTE_SKILL=$(([ -f ".secureskills/store/taste-skill/manifest.json" ] || [ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
 HAVE_SEMVER_CHANGELOG=$(([ -f ".secureskills/store/semver-changelog/manifest.json" ] || [ -d ".codex/skills/semver-changelog" ] || [ -d ".claude/skills/semver-changelog" ]) && echo 1 || echo 0)
 HAVE_AGENT_SKILLS_VERCEL=$(([ -f ".secureskills/store/find-skills/manifest.json" ] || [ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
+HAVE_DIFFITY_TOUR=$(([ -f ".secureskills/store/diffity-tour/manifest.json" ] || [ -f ".codex/skills/diffity-tour/SKILL.md" ] || [ -f ".claude/skills/diffity-tour/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_DIFFITY_CLI=$(which diffity >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_X_RESEARCH_SKILL=$(([ -f ".secureskills/store/x-research-skill/manifest.json" ] || [ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
@@ -1041,6 +1044,7 @@ Re-run /flux:setup later if this repo adds React.
     {"label": "Dejank", "description": "React-only visual jank audit: 18 anti-patterns plus runtime investigation workflows"},
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
+    {"label": "Diffity Tour", "description": "Create interactive guided tours for understanding unfamiliar code"},
     {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper securely, then add more catalog skills via PlaTo"},
     {"label": "X Research Skill", "description": "Summarize high-signal X threads for research"},
     {"label": "Skip", "description": "No additional skills"}
@@ -1049,7 +1053,7 @@ Re-run /flux:setup later if this repo adds React.
 ```
 
 Build the options array dynamically:
-- Always include UI Skills, Taste Skill, Semver Changelog, Find Skills (Vercel), X Research Skill, and Skip
+- Always include UI Skills, Taste Skill, Semver Changelog, Diffity Tour, Find Skills (Vercel), X Research Skill, and Skip
 - Include Dejank **only** when `IS_REACT_BASED=1`
 - If a skill is already installed, either omit it or label it as already installed
 
@@ -1060,6 +1064,8 @@ INSTALL_UI_SKILLS=0
 INSTALL_DEJANK=0
 INSTALL_TASTE_SKILL=0
 INSTALL_SEMVER_CHANGELOG=0
+INSTALL_DIFFITY_TOUR=0
+INSTALL_DIFFITY_CLI=0
 INSTALL_AGENT_SKILLS_VERCEL=0
 INSTALL_X_RESEARCH_SKILL=0
 
@@ -1102,6 +1108,12 @@ if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
   }
 fi
 
+if [ "$INSTALL_DIFFITY_TOUR" = "1" ]; then
+  "$INSTALL_SKILL_CMD" "diffity-tour" "https://github.com/kamranahmedse/diffity" project 2>/dev/null || {
+    echo "Install manually: secureskills add https://github.com/kamranahmedse/diffity --skill diffity-tour && secureskills enable codex"
+  }
+fi
+
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
   "$INSTALL_SKILL_CMD" "find-skills" "https://github.com/vercel-labs/agent-skills" project 2>/dev/null || {
     echo "Install manually: secureskills add https://github.com/vercel-labs/agent-skills --skill find-skills"
@@ -1115,6 +1127,45 @@ if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
 fi
 ```
 
+### Make Diffity Tour runnable immediately
+
+If the user selected **Diffity Tour** and the `diffity` CLI is not already installed, offer to install it during setup so the skill works on first use instead of deferring to runtime.
+
+**Question (only if `INSTALL_DIFFITY_TOUR=1` and `HAVE_DIFFITY_CLI=0`):**
+
+```json
+{
+  "header": "Diffity CLI",
+  "question": "Diffity Tour installs the skill securely, but the `diffity` CLI powers the browser tour UI. Install it now so `/diffity-tour ...` works immediately?",
+  "options": [
+    {"label": "Yes, install diffity", "description": "Makes guided browser tours usable right after setup"},
+    {"label": "Skip for now", "description": "The skill stays installed; the CLI can be installed on first use later"}
+  ]
+}
+```
+
+Map the answer:
+
+```bash
+# If user chose the first option
+INSTALL_DIFFITY_CLI=1
+```
+
+Install if selected:
+
+```bash
+if [ "$INSTALL_DIFFITY_CLI" = "1" ]; then
+  if which npm >/dev/null 2>&1; then
+    npm i -g diffity 2>/dev/null || {
+      echo "Install manually: npm install -g diffity"
+    }
+  else
+    echo "npm not found. Install Node.js first: https://nodejs.org"
+    echo "Then install manually: npm install -g diffity"
+  fi
+fi
+```
+
 ### Verify skill installs (required)
 
 After running installs, verify each selected skill path exists before marking success:
@@ -1123,16 +1174,20 @@ After running installs, verify each selected skill path exists before marking su
 - Dejank: `.secureskills/store/dejank/manifest.json`
 - Taste Skill: `.secureskills/store/taste-skill/manifest.json`
 - Semver Changelog: `.secureskills/store/semver-changelog/manifest.json`
+- Diffity Tour: `.secureskills/store/diffity-tour/manifest.json`
 - Find Skills (Vercel): `.secureskills/store/find-skills/manifest.json`
 - X Research Skill: `.secureskills/store/x-research-skill/manifest.json`
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
+
+If `INSTALL_DIFFITY_CLI=1`, also verify `which diffity` succeeds before reporting Diffity Tour as ready-to-run. If the skill installed but the CLI did not, report the skill as installed and the CLI as failed/skipped rather than implying the tour is immediately runnable.
 
 ### Track installation results
 
 Store for summary:
 - `INSTALLED_SKILLS` — list of skills installed this session
 - `SKIPPED_SKILLS` — list of skills user chose to skip
+- `DIFFITY_CLI_STATUS` — `installed`, `already installed`, `skipped`, or `failed`
 
 ## Step 4f: Infrastructure & Environment Detection (Optional)
 
@@ -1364,9 +1419,9 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "setup_date": "<ISO_DATE>",
   "installed_by_flux": {
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
-    "skills": ["<list of skill names installed this session, e.g. ui-skills, dejank, taste-skill, find-skills>"],
+    "skills": ["<list of skill names installed this session, e.g. ui-skills, dejank, taste-skill, diffity-tour, find-skills>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, codexbar, wispr-flow, granola>"],
-    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, plato>"],
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, plato, diffity>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
 }
@@ -2291,10 +2346,12 @@ CLI tools:
 - Agent Browser: <installed | already installed | skipped>
 - Expect: <installed | already installed | skipped>
 - CLI Continues: <installed | already installed | skipped>
+- Diffity: <installed | already installed | skipped | not offered>
 - Browser QA preference: <agent-browser | expect | not set>
 ```
 
 Use tracking variables from Step 4d. If gh was already installed before setup, show "already installed".
+Use `DIFFITY_CLI_STATUS` from Step 4e for the Diffity CLI line so the summary can distinguish "skill installed, CLI skipped/failed" from "ready-to-run".
 
 **Agent skills section** (only show if offered):
 
@@ -2304,6 +2361,7 @@ Agent skills:
 - Dejank: <installed | already installed | skipped | failed | not offered (non-React repo)>
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
+- Diffity Tour: <installed | already installed | skipped | failed>
 - Find Skills (Vercel): <installed | already installed | skipped | failed>
 - X Research Skill: <installed | already installed | skipped | failed>
 ```
@@ -2433,6 +2491,7 @@ Map skill names to directories:
 - `dejank` → `.secureskills/store/dejank` plus any legacy loose mirrors
 - `taste-skill` → `.secureskills/store/taste-skill` plus any legacy loose mirrors
 - `semver-changelog` → `.secureskills/store/semver-changelog` plus any legacy loose mirrors
+- `diffity-tour` → `.secureskills/store/diffity-tour` plus any legacy loose mirrors
 - `agent-skills-vercel` → `.secureskills/store/find-skills` plus any legacy loose mirrors
 - `x-research-skill` → `.secureskills/store/x-research-skill` plus any legacy loose mirrors
 
@@ -2452,6 +2511,7 @@ brew uninstall gh        # GitHub CLI
 brew uninstall jq
 brew uninstall fzf
 brew uninstall lefthook
+npm uninstall -g diffity
 # etc.
 ```
 
