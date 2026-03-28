@@ -340,7 +340,7 @@ The following routing happens when a user provides natural language instead of a
 | Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 7 |
 | Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 7 |
 | "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 8 |
-| "what's the status" / "show me my tasks" / "list epics" | `/flux` (task management) | 9 |
+| "what's the status" / "show me my tasks" / "list epics" / "show my Flux config" / "what did setup configure" / "edit Flux settings" | `/flux` (task/config management) | 9 |
 | "review this" / "check my code" | `/flux:impl-review` | 10 |
 | "grill me" / "stress test the behavior" / "verify behavior" | `/flux:grill` | 11 |
 | "TDD" / "test first" / "red green refactor" | `/flux:tdd` | 12 |

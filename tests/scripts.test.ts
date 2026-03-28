@@ -993,6 +993,22 @@ describe('Skill File Structure', () => {
     }
   })
 
+  test('natural-language router docs include Flux config requests', () => {
+    const snippet = readFileSync(
+      join(FLUX_ROOT, 'skills', 'flux-setup', 'templates', 'claude-md-snippet.md'),
+      'utf8'
+    )
+    const stateMachine = readFileSync(join(FLUX_ROOT, 'docs', 'state-machine.md'), 'utf8')
+    const fluxSkill = readFileSync(join(FLUX_ROOT, 'skills', 'flux', 'SKILL.md'), 'utf8')
+
+    expect(snippet).toContain('show my Flux config')
+    expect(snippet).toContain('what did setup configure')
+    expect(stateMachine).toContain('show my Flux config')
+    expect(stateMachine).toContain('what did setup configure')
+    expect(fluxSkill).toContain('edit Flux settings')
+    expect(fluxSkill).toContain('$FLUXCTL config list --json')
+  })
+
   test('command-backed Flux skills have supported session phases', () => {
     const commandDir = join(FLUX_ROOT, 'commands', 'flux')
     const utilsText = readFileSync(join(FLUX_ROOT, 'scripts', 'fluxctl_pkg', 'utils.py'), 'utf8')

@@ -1,11 +1,11 @@
 ---
 name: flux
-description: "Manage .flux/ tasks and epics. Triggers: 'show me my tasks', 'list epics', 'what tasks are there', 'add a task', 'create task', 'what's ready', 'task status', 'show fn-1-add-oauth'. NOT for /flux:plan or /flux:work."
+description: "Manage .flux/ tasks, epics, and config. Triggers: 'show me my tasks', 'list epics', 'what tasks are there', 'add a task', 'create task', 'what's ready', 'task status', 'show fn-1-add-oauth', 'show my Flux config', 'what did setup configure', 'edit Flux settings'. NOT for /flux:plan or /flux:work."
 ---
 
-# Flux Task Management
+# Flux Management
 
-Quick task operations in `.flux/`. For planning features use `/flux:plan`, for executing use `/flux:work`.
+Quick task, epic, and config operations in `.flux/`. For planning features use `/flux:plan`, for executing use `/flux:work`.
 
 ## Setup
 
@@ -33,6 +33,12 @@ $FLUXCTL detect --json
 
 # Initialize (if needed)
 $FLUXCTL init --json
+
+# Show current Flux config
+$FLUXCTL config list --json
+
+# Open Flux config in an editor
+$FLUXCTL config edit
 
 # List everything (epics + tasks grouped)
 $FLUXCTL list --json
@@ -130,6 +136,19 @@ $FLUXCTL tasks --epic fn-1-add-oauth --json
 $FLUXCTL ready --epic fn-1-add-oauth --json
 ```
 
+### "Show me my Flux config"
+
+```bash
+# Full current config as Flux resolves it
+$FLUXCTL config list --json
+
+# Single config value
+$FLUXCTL config get review.backend --json
+
+# Open .flux/config.json in your editor
+$FLUXCTL config edit
+```
+
 ### "Show me task X"
 
 ```bash
@@ -162,7 +181,7 @@ Legacy formats `fn-N` and `fn-N-xxx` (random 3-char suffix) are still supported.
 
 ## Gotchas
 
-- This skill is for quick task and epic operations only. Do not route planning or implementation here when `/flux:plan` or `/flux:work` is the real intent.
+- This skill is for quick task, epic, and config operations only. Do not route planning or implementation here when `/flux:plan` or `/flux:work` is the real intent.
 - `fluxctl` is bundled inside the plugin cache, not on the global `PATH`. Recompute `PLUGIN_ROOT` first instead of assuming `which fluxctl` works.
 - Never edit `.flux/` task JSON or markdown files by hand. Use `fluxctl` so runtime state stays consistent.
 
