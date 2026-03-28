@@ -6,7 +6,7 @@
  */
 
 import { test, expect, describe, beforeAll } from 'bun:test'
-import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync, chmodSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { $ } from 'bun'
 
@@ -116,6 +116,25 @@ describe('Flux Scripts', () => {
       expect(parsed.preferences.dismissed).toBeInstanceOf(Array)
       expect(parsed.preferences.alternatives).toBeDefined()
     }, SCRIPT_TIMEOUT)
+
+    test('detects lintcn when it is on PATH', async () => {
+      const tempDir = mkdtempSync(join(process.env.TMPDIR || '/tmp', 'flux-lintcn-bin-'))
+      const lintcnPath = join(tempDir, 'lintcn')
+
+      try {
+        writeFileSync(lintcnPath, '#!/bin/sh\nexit 0\n')
+        chmodSync(lintcnPath, 0o755)
+
+        const output = await runScriptWithEnv('detect-installed.sh', [], FLUX_ROOT, {
+          PATH: `${tempDir}:${process.env.PATH || ''}`,
+        })
+        const parsed = JSON.parse(output)
+
+        expect(parsed.installed.cli_tools).toContain('lintcn')
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true })
+      }
+    }, SCRIPT_TIMEOUT)
   })
 
   describe('analyze-context.sh', () => {
@@ -149,6 +168,34 @@ describe('Flux Scripts', () => {
       expect(typeof parsed.repo.has_ci).toBe('boolean')
       expect(typeof parsed.repo.has_linter).toBe('boolean')
       expect(typeof parsed.repo.has_hooks).toBe('boolean')
+    }, SCRIPT_TIMEOUT)
+
+    test('treats lintcn repos as having a linter', async () => {
+      const tempDir = mkdtempSync(join(process.env.TMPDIR || '/tmp', 'flux-lintcn-repo-'))
+
+      try {
+        mkdirSync(join(tempDir, '.lintcn'))
+        writeFileSync(
+          join(tempDir, 'package.json'),
+          JSON.stringify({
+            name: 'lintcn-fixture',
+            private: true,
+            devDependencies: {
+              lintcn: '0.5.0',
+            },
+            scripts: {
+              lint: 'npx lintcn lint',
+            },
+          })
+        )
+
+        const output = await runScript('analyze-context.sh', [], tempDir)
+        const parsed = JSON.parse(output)
+
+        expect(parsed.repo.has_linter).toBe(true)
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true })
+      }
     }, SCRIPT_TIMEOUT)
   })
 

@@ -408,7 +408,7 @@ Context optimization. Each task gets fresh context:
 After all tasks complete (or periodically for large epics):
 
 - Run relevant tests
-- Run lint/format per repo
+- Run lint/format per repo. If the repo uses `lintcn`, include `npx lintcn lint` in this quality pass.
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues

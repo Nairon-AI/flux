@@ -21,8 +21,8 @@ Agents waste cycles when:
 ### Linters
 ```bash
 # JavaScript/TypeScript (check all common tools)
-ls -la .eslintrc* eslint.config.* biome.json biome.jsonc oxlint.json .oxlintrc.json 2>/dev/null
-grep -E '"(eslint|@biomejs/biome|oxlint)"' package.json 2>/dev/null
+ls -la .eslintrc* eslint.config.* biome.json biome.jsonc oxlint.json .oxlintrc.json .lintcn 2>/dev/null
+grep -E '"(eslint|@biomejs/biome|oxlint|lintcn)"' package.json 2>/dev/null
 
 # Python
 ls -la .flake8 .pylintrc pyproject.toml ruff.toml .ruff.toml 2>/dev/null
@@ -35,7 +35,7 @@ ls -la .golangci.yml .golangci.yaml 2>/dev/null
 ls -la .clippy.toml clippy.toml 2>/dev/null
 ```
 
-**Note**: ESLint, Biome, oxlint, Ruff are all valid linters. If ANY is configured, mark as ✅.
+**Note**: ESLint, Biome, oxlint, lintcn, Ruff are all valid linters. If ANY is configured, mark as ✅.
 
 ### Formatters
 ```bash
