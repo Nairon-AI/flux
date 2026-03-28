@@ -68,11 +68,12 @@ Ship with confidence. Sleep better at night.
 | Agent | Status | Install |
 |-------|--------|---------|
 | [Codex CLI](https://github.com/openai/codex) | ✅ Primary Driver | `Install Codex CLI. README: https://github.com/openai/codex` |
+| [Claude Code](https://claude.ai/code) | ✅ Secondary Reviewer | `Install Claude Code. App: https://claude.ai/code` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[████████░░░] ~80%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — brain vault, security suite, RCA, propose, gate ported |
 
-**Primary install prompt** — use this with your agent:
+**Flux install prompt** — use this with your agent:
 ```text
-Install Codex CLI. README: https://github.com/openai/codex
+Install Flux. README: https://github.com/Nairon-AI/flux
 ```
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. Codex is the primary implementation path end-to-end.
