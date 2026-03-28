@@ -471,7 +471,7 @@ Bots catch patterns that LLMs miss — dependency conflicts, project-specific co
 
 #### Browser QA — Scoping Creates the Test Plan
 
-During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Browser QA Checklist** task with testable criteria (URLs, expected elements, user flows). At epic review time, `agent-browser` follows this checklist — no manual test plan needed.
+During `/flux:scope`, Flux detects frontend/web epics and auto-creates a **Browser QA Checklist** task with testable criteria (URLs, expected elements, user flows, responsive checks). Frontend scopes also capture a lightweight design brief so implementation and QA share the same visual target. At epic review time, `agent-browser` follows this checklist — no manual test plan needed.
 
 #### Learning Capture — Reviews That Pay for Themselves
 

@@ -66,6 +66,36 @@ Parse the spec carefully. Identify:
 - Test requirements
 - Quick commands from epic spec (run these for verification)
 
+**Frontend skill bootstrap (MANDATORY for frontend tasks):**
+If the task spec, epic spec, file paths, or acceptance criteria indicate user-facing frontend work, load frontend skills before implementation.
+
+Check these paths in order and read the skill files that exist:
+```bash
+for f in \
+  ".codex/skills/taste-skill/SKILL.md" \
+  ".claude/skills/taste-skill/SKILL.md" \
+  ".codex/skills/baseline-ui/SKILL.md" \
+  ".claude/skills/baseline-ui/SKILL.md" \
+  ".codex/skills/fixing-accessibility/SKILL.md" \
+  ".claude/skills/fixing-accessibility/SKILL.md" \
+  ".codex/skills/fixing-motion-performance/SKILL.md" \
+  ".claude/skills/fixing-motion-performance/SKILL.md" \
+  ".codex/skills/fixing-metadata/SKILL.md" \
+  ".claude/skills/fixing-metadata/SKILL.md"
+do
+  [ -f "$f" ] && sed -n '1,220p' "$f"
+done
+```
+
+Rules:
+- `taste-skill` is mandatory when present for any frontend generation or redesign task.
+- `baseline-ui` is mandatory when present for any frontend task.
+- `fixing-accessibility` is mandatory when the task changes interactive UI, forms, navigation, dialogs, or other user-facing controls.
+- `fixing-motion-performance` is mandatory when the task adds or changes animation, transitions, parallax, sticky/fixed effects, or heavy visual motion.
+- `fixing-metadata` is mandatory when the task changes a page, route, landing surface, or anything that affects document metadata/social previews.
+- Do not start coding user-facing frontend changes until the relevant installed skills have been read.
+- If this is substantial frontend work and neither `taste-skill` nor UI skills are installed, call that out in your return summary so the main conversation can recommend `/flux:setup`.
+
 **Baseline check (if project has tests/lints):**
 ```bash
 # Run project's test/lint commands to confirm green baseline

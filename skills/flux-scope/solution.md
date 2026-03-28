@@ -370,6 +370,18 @@ sessions. This task adds OAuth2 support alongside the existing flow."]
 4. **Acceptance criteria are testable** — "it works" is not a criterion. Specify inputs, outputs, and edge cases
 5. **Dependencies are explicit** — state what this task consumes and produces
 
+**If the task changes user-facing UI**, also include a short design brief in the task spec:
+- **Narrative / job of the surface** — what the first screen or section must communicate
+- **Visual constraints** — typography, color roles, spacing rhythm, imagery treatment, and any "avoid" rules
+- **Layout constraints** — mobile behavior, safe areas for fixed/floating elements, whether cards are actually needed
+- **References** — screenshots, existing pages/components, or repo patterns to match
+- **Motion** — whether the task should ship intentional motion or remain static
+
+For landing pages and promotional surfaces, be explicit:
+- First viewport should read as one composition
+- One H1 + one supporting sentence + one CTA group + one dominant visual by default
+- Avoid hero cards, detached overlays on hero media, and boxed secondary promos above the fold unless the existing system truly requires them
+
 ## Step 10.5: Browser QA Checklist (if frontend/web)
 
 **Auto-create a Browser QA Checklist task when the epic involves frontend/web changes.**
@@ -401,8 +413,9 @@ cat > /tmp/qa-acc.md << 'EOF'
 - [ ] Navigate to <URL> — verify <expected element/text> renders
 - [ ] Click "<button/link>" — verify <expected result>
 - [ ] Submit <form> with valid data — verify <success state>
-- [ ] Navigate to <URL> — verify <visual state> after changes
-- [ ] Check responsive layout at mobile width (375px)
+- [ ] Navigate to <URL> — verify <visual state> after changes matches the scoped design intent
+- [ ] Check responsive layout at mobile width (375px) and desktop width (1440px)
+- [ ] Verify fixed, sticky, or floating UI does not cover primary text, inputs, or CTAs
 EOF
 
 $FLUXCTL task set-spec <qa-task-id> --description /tmp/qa-desc.md --acceptance /tmp/qa-acc.md --json
@@ -412,6 +425,8 @@ $FLUXCTL task set-spec <qa-task-id> --description /tmp/qa-desc.md --acceptance /
 - Each criterion = one URL + one action + one expected result
 - Use actual URLs/paths from the epic scope
 - Include at least one responsive/mobile check if applicable
+- Include visual hierarchy checks when the work is design-sensitive (headline/CTA visibility, dominant image, no overlapping chrome)
+- If the surface is a landing/promotional page, include one criterion for above-the-fold composition and one for brand prominence
 - Keep criteria to 5-10 items max — focused on acceptance-critical flows
 
 **If NO** (pure backend, CLI, library, or infrastructure epic) — skip this step.
@@ -445,6 +460,16 @@ step in signup — our analytics show 40% drop-off at registration.">
 
 ### Assumptions Deferred to Implementation
 <assumptions that couldn't be resolved during scoping — validate during these tasks>
+
+## Design Brief
+<Frontend only. Capture the visual and interaction guardrails before implementation.
+Include:
+- Narrative of the first viewport / primary screen
+- Visual anchor (product UI, photo, illustration, data viz, etc.)
+- Typography + color-token constraints
+- Motion expectations
+- Responsive or safe-area constraints
+- References to existing components/pages or external inspiration>
 
 ## Scope
 <List all tasks with their dependencies and sizes. This is the execution plan.>
