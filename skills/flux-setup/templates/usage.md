@@ -118,7 +118,7 @@ If Flux commands fail, return "Unknown skill", or behave unexpectedly:
 3. **If fixes don't work**, create a GitHub issue: https://github.com/Nairon-AI/flux/issues
 
 Common fixes:
-- "Unknown skill" → Verify Flux is installed and the skill exists in `.codex/skills/` (or `~/.codex/skills/` for global installs)
+- "Unknown skill" → Verify Flux is installed and, for secure installs, that `.secureskills/store/<skill>/manifest.json` exists. Legacy loose installs still use `.codex/skills/` (or `~/.codex/skills/` for global installs)
 - Stale commands → Refresh Flux from the same source you installed it from
 - After any fix → Restart your agent session and run `/flux:setup` again
 

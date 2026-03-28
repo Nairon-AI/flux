@@ -20,6 +20,7 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
 - **Optional** additional MCP:
   - **Firecrawl** — scrape websites and parse PDFs into LLM-ready markdown
 - **Optional** recommended CLI tools:
+  - **PlaTo** — secure skill installer for Codex/Claude repos; Flux uses it for supported project-local skill installs
   - **jq** — JSON parsing for scripts and API output
   - **fzf** — fuzzy finder for terminal workflows
   - **Lefthook** — fast pre-commit hooks
@@ -36,10 +37,10 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **UI Skills** — accessibility/motion/metadata/design polish for frontend output
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
-  - **Agent Skills (Vercel)** — broad reusable skills catalog
+  - **Find Skills (Vercel)** — secure bootstrap for Vercel's skill catalog via PlaTo
   - **X Research Skill** — structured X/Twitter research and summarization
 - **Optional** task tracker integration:
-  - **Linear** — installs the [Linear CLI skill](https://skills.sh/schpet/linear-cli/linear-cli) so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
+  - **Linear** — installs the [Linear CLI skill](https://github.com/schpet/linear-cli) through PlaTo so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
 - **Optional** auto-fix (cloud PR babysitting):
   - **Claude Auto-Fix** — after Flux submits a PR, Claude can watch it remotely in the cloud, automatically fixing CI failures and addressing review comments. This remains an optional secondary workflow and requires the [Claude GitHub App](https://github.com/apps/claude).
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
@@ -55,7 +56,7 @@ A step completion checklist and verification gate at the end of workflow.md will
 - **Fully optional** - standard plugin usage works without local setup
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
-- All MCPs, skills, and project state install project-local (`.mcp.json`, `.codex/skills/`, `.claude/skills/`, `.flux/`, `.flux/brain/`) — Flux keeps Codex first-class while maintaining a legacy Claude mirror where needed
+- All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs now go into PlaTo's `.secureskills/` store, with loose `.codex/skills/` / `.claude/skills/` folders retained only as compatibility fallbacks when needed
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 

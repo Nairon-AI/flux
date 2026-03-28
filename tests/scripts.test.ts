@@ -266,6 +266,37 @@ describe('Flux Scripts', () => {
       expect(result).toContain('0 error(s)')
     }, SCRIPT_TIMEOUT)
   })
+
+  describe('skill install helpers', () => {
+
+    test('install-skill.sh recommends secureskills for project installs without a source', async () => {
+      const tmpRoot = `/tmp/flux-install-skill-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'install-skill.sh')
+      const output = await $`bash ${scriptPath} baseline-ui project`.cwd(tmpRoot).text()
+      expect(output).toContain('secureskills add <source> --skill')
+      expect(output).toContain('"manual": true')
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
+    test('verify-install.sh validates PlaTo secure skill manifests', async () => {
+      const tmpRoot = `/tmp/flux-verify-secureskill-${Date.now()}`
+      mkdirSync(join(tmpRoot, '.secureskills', 'store', 'baseline-ui'), { recursive: true })
+      writeFileSync(
+        join(tmpRoot, '.secureskills', 'store', 'baseline-ui', 'manifest.json'),
+        '{}'
+      )
+
+      const output = await runScript('verify-install.sh', ['baseline-ui', 'secureskill', tmpRoot], tmpRoot)
+      const parsed = JSON.parse(output.slice(output.indexOf('{')))
+      expect(parsed.success).toBe(true)
+      expect(parsed.verify_type).toBe('secureskill')
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+  })
 })
 
 describe('Fluxctl CLI', () => {

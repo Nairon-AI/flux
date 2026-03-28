@@ -21,6 +21,7 @@ Check for overlap before creating anything new:
 
 ```bash
 # Check user-installed skills
+ls .secureskills/store/ 2>/dev/null
 ls ~/.codex/skills/ 2>/dev/null
 ls ~/.claude/skills/ 2>/dev/null
 ls .codex/skills/ 2>/dev/null
@@ -99,24 +100,30 @@ Choose structure based on complexity:
 
 **Simple skill** (< 200 lines of instruction):
 ```
-.codex/skills/<name>/
-└── SKILL.md
+.secureskills/store/<name>/    # preferred secure install target via PlaTo
+└── manifest.json
 ```
 
 **Medium skill** (200-400 lines of instruction):
 ```
-.codex/skills/<name>/
-├── SKILL.md          (overview, workflow outline, gotchas)
-└── workflow.md       (detailed step-by-step)
+.secureskills/store/<name>/    # preferred secure install target via PlaTo
+└── manifest.json
+
+.codex/skills/<name>/          # loose fallback only when PlaTo is unavailable
+├── SKILL.md                   (overview, workflow outline, gotchas)
+└── workflow.md                (detailed step-by-step)
 ```
 
 **Complex skill** (400+ lines of instruction):
 ```
-.codex/skills/<name>/
-├── SKILL.md          (overview, routing, gotchas)
-├── workflow.md       (main execution steps)
-├── examples.md       (concrete input/output examples)
-└── references/       (API docs, templates, etc.)
+.secureskills/store/<name>/    # preferred secure install target via PlaTo
+└── manifest.json
+
+.codex/skills/<name>/          # loose fallback only when PlaTo is unavailable
+├── SKILL.md                   (overview, routing, gotchas)
+├── workflow.md                (main execution steps)
+├── examples.md                (concrete input/output examples)
+└── references/                (API docs, templates, etc.)
 ```
 
 If the skill involves deterministic checks, add:
@@ -207,7 +214,7 @@ Scripts go in `scripts/` and must be executable and tested.
 ### Step 3.1: Run the Validator
 
 ```bash
-python3 "$PLUGIN_ROOT/scripts/validate_skills.py" .codex/skills/<name>/
+python3 "$PLUGIN_ROOT/scripts/validate_skills.py" .codex/skills/<name>/  # loose fallback path
 ```
 
 **If errors**: Fix them automatically. Common fixes:
@@ -258,8 +265,10 @@ Fix any issues found. Do not present known problems to the user.
 Skills are always installed at project scope. Do not prompt the user for install location.
 
 ```bash
-mkdir -p .codex/skills/<name>/ .claude/skills/<name>/
-# Write all skill files into .codex/skills/<name>/ and mirror them to .claude/skills/<name>/
+mkdir -p .codex/skills/<name>/
+# Write the generated skill files into .codex/skills/<name>/ first, then install them
+# securely into the current project when PlaTo is available:
+"$PLUGIN_ROOT/scripts/install-skill.sh" "<name>" ".codex/skills/<name>" project
 ```
 
 ### Step 4.2: Generate Trigger Report
@@ -270,7 +279,7 @@ Present a summary showing the skill is ready:
 ## Skill Created: <name>
 
 **Category**: <category from Phase 1.4>
-**Location**: .codex/skills/<name>/ (with legacy `.claude/skills/<name>/` mirror)
+**Location**: .secureskills/store/<name>/ (preferred) or `.codex/skills/<name>/` fallback
 **Files**: <list of files created>
 
 ### What it does

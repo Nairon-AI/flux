@@ -105,7 +105,7 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 
 ## Step 3: Installation Scope
 
-Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, `.codex/skills/`, and a legacy `.claude/skills/` mirror within the project directory. This means:
+Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, and, for supported secure skill installs, PlaTo's `.secureskills/` store inside the project directory. Legacy `.codex/skills/` and `.claude/skills/` folders remain compatibility fallbacks only. This means:
 
 - Different projects can have different MCP servers, skills, and Flux configs
 - No conflicts with your global agent settings
@@ -742,6 +742,7 @@ Flux recommends CLI tools that complement the AI development workflow.
 | `agent-browser` | Agent Browser | **Checklist-driven browser QA** — step-by-step UI automation with snapshots and screenshots | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
 | `expect-cli` | Expect | **Diff-driven browser QA** — AI generates test plans from git changes and runs them in a real browser | Yes | `npm i -g expect-cli` | `npm i -g expect-cli` | `npm i -g expect-cli` |
 | `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
+| `plato` | PlaTo (`secureskills`) | **Secure skill installs** — signs and verifies project-local skills before agent runtime exposure | Yes | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` |
 ### Detect existing tools
 
 ```bash
@@ -753,6 +754,7 @@ HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_EXPECT_CLI=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
+HAVE_PLATO_CLI=$(which secureskills >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_WINGET=$(which winget >/dev/null 2>&1 && echo 1 || echo 0)
 
@@ -791,6 +793,7 @@ INSTALL_LEFTHOOK=0
 INSTALL_AGENT_BROWSER=0
 INSTALL_EXPECT_CLI=0
 INSTALL_CONTINUES=0
+INSTALL_PLATO=0
 
 # Set each to 1 if selected by user
 ```
@@ -804,6 +807,7 @@ INSTALL_CONTINUES=0
 {"label": "Agent Browser", "description": "Checklist-driven browser QA — step-by-step automation with snapshots and screenshots (free)"}
 {"label": "Expect", "description": "Diff-driven browser QA — AI generates test plans from git changes, runs in real browser (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
+{"label": "PlaTo", "description": "Secure project-local skill installs for Codex and Claude via secureskills (free)"}
 ```
 
 **If GitHub MCP was installed in step 4c, mention the synergy:**
@@ -918,6 +922,7 @@ if which npm >/dev/null 2>&1; then
   [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
   [ "$INSTALL_EXPECT_CLI" = "1" ] && npm i -g expect-cli 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
+  [ "$INSTALL_PLATO" = "1" ] && "$PLUGIN_ROOT/scripts/install-plato.sh" stable codex 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
@@ -984,23 +989,23 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
-| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `npx -y ui-skills add --all` plus mirror into `.codex/skills/` and `.claude/skills/` |
-| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `curl .../taste-skill/SKILL.md -> .codex/skills/taste-skill/SKILL.md` and mirror to `.claude/skills/` |
-| `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog` and mirror locally |
-| `agent-skills-vercel` | Agent Skills (Vercel) | **Broad skill catalog** — reusable workflows across stacks | `git clone https://github.com/vercel-labs/agent-skills.git .codex/skills/agent-skills-vercel` and mirror to `.claude/skills/agent-skills-vercel` |
-| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `git clone https://github.com/rohunvora/x-research-skill.git .codex/skills/x-research-skill` and mirror to `.claude/skills/x-research-skill` |
+| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `install-skill.sh <skill> <repo> project` via PlaTo secure store |
+| `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `install-skill.sh taste-skill https://github.com/Leonxlnx/taste-skill project` |
+| `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `install-skill.sh semver-changelog https://github.com/prulloac/agent-skills project` |
+| `agent-skills-vercel` | Find Skills (Vercel) | **Catalog bootstrap** — securely install Vercel's `find-skills` helper, then use PlaTo to add more | `install-skill.sh find-skills https://github.com/vercel-labs/agent-skills project` |
+| `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `install-skill.sh x-research-skill https://github.com/rohunvora/x-research-skill project` |
 
 ### Detect existing skills
 
 ```bash
-HAVE_UI_SKILLS=$(([ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".codex/skills/fixing-accessibility/SKILL.md" ] || [ -d ".codex/skills/ui-skills" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/fixing-accessibility/SKILL.md" ] || [ -d ".claude/skills/ui-skills" ]) && echo 1 || echo 0)
-HAVE_TASTE_SKILL=$(([ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
-HAVE_SEMVER_CHANGELOG=$(([ -d ".codex/skills/semver-changelog" ] || [ -d ".codex/skills/semantic-version-changelog-generator" ] || [ -d ".claude/skills/semver-changelog" ] || [ -d ".claude/skills/semantic-version-changelog-generator" ]) && echo 1 || echo 0)
-HAVE_AGENT_SKILLS_VERCEL=$(([ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
-HAVE_X_RESEARCH_SKILL=$(([ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -f ".secureskills/store/baseline-ui/manifest.json" ] || [ -f ".secureskills/store/fixing-accessibility/manifest.json" ] || [ -f ".secureskills/store/fixing-metadata/manifest.json" ] || [ -f ".secureskills/store/fixing-motion-performance/manifest.json" ] || [ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_TASTE_SKILL=$(([ -f ".secureskills/store/taste-skill/manifest.json" ] || [ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_SEMVER_CHANGELOG=$(([ -f ".secureskills/store/semver-changelog/manifest.json" ] || [ -d ".codex/skills/semver-changelog" ] || [ -d ".claude/skills/semver-changelog" ]) && echo 1 || echo 0)
+HAVE_AGENT_SKILLS_VERCEL=$(([ -f ".secureskills/store/find-skills/manifest.json" ] || [ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
+HAVE_X_RESEARCH_SKILL=$(([ -f ".secureskills/store/x-research-skill/manifest.json" ] || [ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
-mkdir -p .codex/skills .claude/skills
+mkdir -p .secureskills
 ```
 
 ### Ask which skills to install
@@ -1008,13 +1013,13 @@ mkdir -p .codex/skills .claude/skills
 ```json
 {
   "header": "Agent Skills",
-  "question": "Flux can install optional agent skills. Which would you like?",
+  "question": "Flux can install optional agent skills. Supported project-local installs are secured with PlaTo. Which would you like?",
   "multiple": true,
   "options": [
-    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design"},
+    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design (secured with PlaTo)"},
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
-    {"label": "Agent Skills (Vercel)", "description": "Install a broad catalog of production-ready agent skills"},
+    {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper securely, then add more catalog skills via PlaTo"},
     {"label": "X Research Skill", "description": "Summarize high-signal X threads for research"},
     {"label": "Skip", "description": "No additional skills"}
   ]
@@ -1036,80 +1041,37 @@ INSTALL_X_RESEARCH_SKILL=0
 ### Install selected skills
 
 ```bash
+INSTALL_SKILL_CMD="$PLUGIN_ROOT/scripts/install-skill.sh"
+
 if [ "$INSTALL_UI_SKILLS" = "1" ]; then
-  if which npx >/dev/null 2>&1; then
-    npx -y ui-skills add --all 2>/dev/null || true
-  else
-    echo "npx not found. Install manually: npx -y ui-skills add --all"
-  fi
-
-  [ -d ".claude/skills/baseline-ui" ] && [ ! -d ".codex/skills/baseline-ui" ] && cp -R ".claude/skills/baseline-ui" ".codex/skills/baseline-ui" 2>/dev/null || true
-  [ -d ".claude/skills/fixing-accessibility" ] && [ ! -d ".codex/skills/fixing-accessibility" ] && cp -R ".claude/skills/fixing-accessibility" ".codex/skills/fixing-accessibility" 2>/dev/null || true
-  [ -d ".codex/skills/baseline-ui" ] && [ ! -d ".claude/skills/baseline-ui" ] && cp -R ".codex/skills/baseline-ui" ".claude/skills/baseline-ui" 2>/dev/null || true
-  [ -d ".codex/skills/fixing-accessibility" ] && [ ! -d ".claude/skills/fixing-accessibility" ] && cp -R ".codex/skills/fixing-accessibility" ".claude/skills/fixing-accessibility" 2>/dev/null || true
-
-  if [ ! -f ".codex/skills/baseline-ui/SKILL.md" ] && [ ! -f ".codex/skills/fixing-accessibility/SKILL.md" ] && [ ! -f ".claude/skills/baseline-ui/SKILL.md" ] && [ ! -f ".claude/skills/fixing-accessibility/SKILL.md" ]; then
-    echo "Install manually: npx -y ui-skills add --all"
-  fi
+  "$INSTALL_SKILL_CMD" "baseline-ui" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "fixing-accessibility" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "fixing-metadata" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "fixing-motion-performance" "https://github.com/ibelick/ui-skills" project 2>/dev/null || true
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
-  mkdir -p ".codex/skills/taste-skill"
-  mkdir -p ".claude/skills/taste-skill"
-  curl -fsSL https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/taste-skill/SKILL.md -o ".codex/skills/taste-skill/SKILL.md" 2>/dev/null || {
-    if which git >/dev/null 2>&1; then
-      TMP_TASTE_DIR=$(mktemp -d 2>/dev/null || echo "")
-      if [ -n "$TMP_TASTE_DIR" ] && git clone --depth 1 https://github.com/Leonxlnx/taste-skill.git "$TMP_TASTE_DIR/taste-skill" 2>/dev/null; then
-        cp "$TMP_TASTE_DIR/taste-skill/taste-skill/SKILL.md" ".codex/skills/taste-skill/SKILL.md" 2>/dev/null || true
-        rm -rf "$TMP_TASTE_DIR"
-      fi
-    fi
+  "$INSTALL_SKILL_CMD" "taste-skill" "https://github.com/Leonxlnx/taste-skill" project 2>/dev/null || {
+    echo "Install manually: secureskills add https://github.com/Leonxlnx/taste-skill --skill taste-skill"
   }
-
-  [ -f ".codex/skills/taste-skill/SKILL.md" ] && cp ".codex/skills/taste-skill/SKILL.md" ".claude/skills/taste-skill/SKILL.md" 2>/dev/null || true
-
-  if [ ! -s ".codex/skills/taste-skill/SKILL.md" ] && [ ! -s ".claude/skills/taste-skill/SKILL.md" ]; then
-    echo "Install manually: https://github.com/Leonxlnx/taste-skill"
-  fi
 fi
 
 if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
-  if which npx >/dev/null 2>&1; then
-    npx skills add https://github.com/prulloac/agent-skills --skill semver-changelog 2>/dev/null || {
-      echo "Install manually: https://skills.sh/prulloac/agent-skills/semver-changelog"
-    }
-  else
-    echo "npx not found. Install manually: https://skills.sh/prulloac/agent-skills/semver-changelog"
-  fi
-
-  [ -d ".claude/skills/semver-changelog" ] && [ ! -d ".codex/skills/semver-changelog" ] && cp -R ".claude/skills/semver-changelog" ".codex/skills/semver-changelog" 2>/dev/null || true
-  [ -d ".claude/skills/semantic-version-changelog-generator" ] && [ ! -d ".codex/skills/semantic-version-changelog-generator" ] && cp -R ".claude/skills/semantic-version-changelog-generator" ".codex/skills/semantic-version-changelog-generator" 2>/dev/null || true
-  [ -d ".codex/skills/semver-changelog" ] && [ ! -d ".claude/skills/semver-changelog" ] && cp -R ".codex/skills/semver-changelog" ".claude/skills/semver-changelog" 2>/dev/null || true
-  [ -d ".codex/skills/semantic-version-changelog-generator" ] && [ ! -d ".claude/skills/semantic-version-changelog-generator" ] && cp -R ".codex/skills/semantic-version-changelog-generator" ".claude/skills/semantic-version-changelog-generator" 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "semver-changelog" "https://github.com/prulloac/agent-skills" project 2>/dev/null || {
+    echo "Install manually: secureskills add https://github.com/prulloac/agent-skills --skill semver-changelog"
+  }
 fi
 
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
-  if [ -d ".codex/skills/agent-skills-vercel" ]; then
-    git -C ".codex/skills/agent-skills-vercel" pull --ff-only 2>/dev/null || true
-  else
-    git clone --depth 1 https://github.com/vercel-labs/agent-skills.git ".codex/skills/agent-skills-vercel" 2>/dev/null || {
-      echo "Install manually: https://github.com/vercel-labs/agent-skills"
-    }
-  fi
-  rm -rf ".claude/skills/agent-skills-vercel"
-  [ -d ".codex/skills/agent-skills-vercel" ] && cp -R ".codex/skills/agent-skills-vercel" ".claude/skills/agent-skills-vercel" 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "find-skills" "https://github.com/vercel-labs/agent-skills" project 2>/dev/null || {
+    echo "Install manually: secureskills add https://github.com/vercel-labs/agent-skills --skill find-skills"
+  }
 fi
 
 if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
-  if [ -d ".codex/skills/x-research-skill" ]; then
-    git -C ".codex/skills/x-research-skill" pull --ff-only 2>/dev/null || true
-  else
-    git clone --depth 1 https://github.com/rohunvora/x-research-skill.git ".codex/skills/x-research-skill" 2>/dev/null || {
-      echo "Install manually: https://github.com/rohunvora/x-research-skill"
-    }
-  fi
-  rm -rf ".claude/skills/x-research-skill"
-  [ -d ".codex/skills/x-research-skill" ] && cp -R ".codex/skills/x-research-skill" ".claude/skills/x-research-skill" 2>/dev/null || true
+  "$INSTALL_SKILL_CMD" "x-research-skill" "https://github.com/rohunvora/x-research-skill" project 2>/dev/null || {
+    echo "Install manually: secureskills add https://github.com/rohunvora/x-research-skill --skill x-research-skill"
+  }
 fi
 ```
 
@@ -1117,11 +1079,11 @@ fi
 
 After running installs, verify each selected skill path exists before marking success:
 
-- UI Skills: `.codex/skills/baseline-ui/SKILL.md` (or `fixing-accessibility/SKILL.md`) with a `.claude/skills/` mirror
-- Taste Skill: `.codex/skills/taste-skill/SKILL.md`
-- Semver Changelog: `.codex/skills/semver-changelog` or `.codex/skills/semantic-version-changelog-generator`
-- Agent Skills (Vercel): `.codex/skills/agent-skills-vercel` directory
-- X Research Skill: `.codex/skills/x-research-skill` directory
+- UI Skills: `.secureskills/store/baseline-ui/manifest.json` (or one of the other secured UI skill manifests)
+- Taste Skill: `.secureskills/store/taste-skill/manifest.json`
+- Semver Changelog: `.secureskills/store/semver-changelog/manifest.json`
+- Find Skills (Vercel): `.secureskills/store/find-skills/manifest.json`
+- X Research Skill: `.secureskills/store/x-research-skill/manifest.json`
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
@@ -1361,9 +1323,9 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
   "setup_date": "<ISO_DATE>",
   "installed_by_flux": {
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
-    "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, agent-skills-vercel>"],
+    "skills": ["<list of skill names installed this session, e.g. ui-skills, taste-skill, find-skills>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, codexbar, wispr-flow, granola>"],
-    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues>"],
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, plato>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
 }
@@ -1552,7 +1514,7 @@ Only include lines for config values that are set. If no config is set, skip thi
 
 Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
 
-**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, `.codex/skills/`, and a legacy `.claude/skills/` mirror within the project directory.
+**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and, for supported skill installs, `.secureskills/` within the project directory. Legacy loose skill mirrors are compatibility-only.
 
 Available questions (include only if corresponding config is unset):
 
@@ -1970,13 +1932,9 @@ Only process answers for questions that were asked (config values that were unse
      ```
   2. Install Linear CLI skill (project-local):
      ```bash
-     npx skills add https://github.com/schpet/linear-cli --skill linear-cli
-
-     mkdir -p .codex/skills .claude/skills
-     [ -d ".claude/skills/linear-cli" ] && [ ! -d ".codex/skills/linear-cli" ] && cp -R ".claude/skills/linear-cli" ".codex/skills/linear-cli" 2>/dev/null || true
-     [ -d ".codex/skills/linear-cli" ] && [ ! -d ".claude/skills/linear-cli" ] && cp -R ".codex/skills/linear-cli" ".claude/skills/linear-cli" 2>/dev/null || true
+     "$PLUGIN_ROOT/scripts/install-skill.sh" "linear-cli" "https://github.com/schpet/linear-cli" project
      ```
-  3. Verify install: check `.codex/skills/linear-cli/SKILL.md` or `.claude/skills/linear-cli/SKILL.md` exists and is non-empty. If failed, show: `Install manually: npx skills add https://github.com/schpet/linear-cli --skill linear-cli`
+  3. Verify install: check `.secureskills/store/linear-cli/manifest.json` exists and is non-empty. If failed, show: `Install manually: secureskills add https://github.com/schpet/linear-cli --skill linear-cli && secureskills enable codex`
   4. Check Linear CLI is installed:
      ```bash
      which linear >/dev/null 2>&1 && echo "LINEAR_CLI_OK=1" || echo "LINEAR_CLI_OK=0"
@@ -2304,7 +2262,7 @@ Agent skills:
 - UI Skills: <installed | already installed | skipped | failed>
 - Taste Skill: <installed | already installed | skipped | failed>
 - Semver Changelog: <installed | already installed | skipped | failed>
-- Agent Skills (Vercel): <installed | already installed | skipped | failed>
+- Find Skills (Vercel): <installed | already installed | skipped | failed>
 - X Research Skill: <installed | already installed | skipped | failed>
 ```
 
@@ -2423,15 +2381,17 @@ For each MCP server in the manifest, remove its entry from `.mcp.json` under `mc
 **Agent skills** (if selected):
 ```bash
 # Remove each skill directory
+rm -rf .secureskills/store/<skill-name>
 rm -rf .codex/skills/<skill-name>
 rm -rf .claude/skills/<skill-name>
 ```
 
 Map skill names to directories:
-- `ui-skills` → `.codex/skills/baseline-ui`, `.codex/skills/fixing-accessibility`, plus legacy `.claude/skills/*` mirrors
-- `taste-skill` → `.codex/skills/taste-skill` plus legacy `.claude/skills/taste-skill`
-- `agent-skills-vercel` → `.codex/skills/agent-skills-vercel` plus legacy `.claude/skills/agent-skills-vercel`
-- `x-research-skill` → `.codex/skills/x-research-skill` plus legacy `.claude/skills/x-research-skill`
+- `ui-skills` → `.secureskills/store/baseline-ui`, `.secureskills/store/fixing-accessibility`, `.secureskills/store/fixing-metadata`, `.secureskills/store/fixing-motion-performance`
+- `taste-skill` → `.secureskills/store/taste-skill` plus any legacy loose mirrors
+- `semver-changelog` → `.secureskills/store/semver-changelog` plus any legacy loose mirrors
+- `agent-skills-vercel` → `.secureskills/store/find-skills` plus any legacy loose mirrors
+- `x-research-skill` → `.secureskills/store/x-research-skill` plus any legacy loose mirrors
 
 **Desktop apps** (if selected):
 Cannot auto-uninstall GUI apps. Print manual instructions:
