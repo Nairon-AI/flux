@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 from .utils import (
     CONFIG_FILE,
@@ -133,9 +134,9 @@ def set_config(key: str, value) -> dict:
     return config
 
 
-def resolve_editor(editor: str | None = None) -> list[str] | None:
+def resolve_editor(editor: Optional[str] = None) -> Optional[List[str]]:
     """Resolve an editor command to execute."""
-    candidates: list[str] = []
+    candidates: List[str] = []
 
     if editor:
         candidates.append(editor)
@@ -297,4 +298,3 @@ def cmd_review_backend(args) -> None:
         json_output({"backend": backend, "source": source})
     else:
         print(backend)
-
