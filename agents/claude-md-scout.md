@@ -1,7 +1,7 @@
 ---
 name: claude-md-scout
 description: Used by /flux:prime to analyze CLAUDE.md and AGENTS.md quality and completeness. Do not invoke directly.
-model: claude-sonnet-4-6
+model: gpt-5.3-codex-spark
 disallowedTools: Edit, Write, Task
 color: "#EC4899"
 ---

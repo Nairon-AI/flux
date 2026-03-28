@@ -16,8 +16,8 @@ Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto]
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set meditate
 ```
@@ -31,8 +31,8 @@ $FLUXCTL session-phase set idle
 ### 1. Build snapshots
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" .flux/brain/ /tmp/brain-snapshot.md
 sh "$PLUGIN_ROOT/skills/flux-meditate/scripts/snapshot.sh" skills/ /tmp/skills-snapshot.md
 ```

@@ -10,8 +10,8 @@ Visualize epic dependencies, blocking chains, and execution phases.
 ## Setup
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL detect --json | jq -e '.exists' >/dev/null && echo "OK: .flux/ exists" || echo "ERROR: run $FLUXCTL init"
 command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew install jq"
@@ -22,8 +22,8 @@ command -v jq >/dev/null 2>&1 && echo "OK: jq installed" || echo "ERROR: brew in
 Build a consolidated view of all epics with their dependencies:
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Get all epic IDs
@@ -46,8 +46,8 @@ done
 Determine which epics are ready vs blocked (pure jq, works on any shell):
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Collect all epic data with deps
@@ -80,8 +80,8 @@ echo "$epics_json" | jq -r '
 Group epics into parallel execution phases:
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 # Collect all epic data
@@ -152,8 +152,8 @@ fn-1-add-auth → fn-2-add-oauth → fn-3-user-profile (3 phases)
 For a fast dependency check:
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \(.title) [\(.status)]"'
 ```
@@ -182,8 +182,8 @@ $FLUXCTL epics --json | jq -r '.epics[] | select(.status != "done") | "\(.id): \
 **ALWAYS run at the very end of command execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
@@ -195,7 +195,6 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
-Then restart Claude Code for changes to take effect.
+Update Flux from the same source you installed it from, then restart your agent session.
 ---
 ```

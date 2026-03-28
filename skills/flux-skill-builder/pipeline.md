@@ -11,7 +11,7 @@ The interactive Skill Builder asks the user 6+ questions. The autonomous version
 ### Step 1.1: Parse Intent
 
 Extract from the user's input:
-- **Core capability**: What should the skill enable Claude to do?
+- **Core capability**: What should the skill enable the agent to do?
 - **Target domain**: What area of the codebase/workflow does this touch?
 - **Implicit quality bar**: Is the user describing a quick helper or a production workflow?
 
@@ -21,7 +21,9 @@ Check for overlap before creating anything new:
 
 ```bash
 # Check user-installed skills
+ls ~/.codex/skills/ 2>/dev/null
 ls ~/.claude/skills/ 2>/dev/null
+ls .codex/skills/ 2>/dev/null
 ls .claude/skills/ 2>/dev/null
 
 # Check Flux built-in skills
@@ -38,7 +40,7 @@ Answer these questions autonomously through codebase analysis:
 
 | Question | How to Answer |
 |----------|--------------|
-| What does Claude get wrong today? | Try the task mentally. What would default Claude do? Where would it fail? Scan brain vault for related corrections. |
+| What does the default agent get wrong today? | Try the task mentally. What would the default agent do? Where would it fail? Scan brain vault for related corrections. |
 | What are 2-3 concrete use cases? | Infer from the description + codebase structure. What files/patterns would trigger this? |
 | What tools/dependencies are needed? | Scan the repo for relevant configs, packages, scripts. Check if MCP servers are involved. |
 | What are the edge cases? | Think about: empty inputs, large inputs, missing dependencies, permission errors, concurrent execution. |
@@ -97,20 +99,20 @@ Choose structure based on complexity:
 
 **Simple skill** (< 200 lines of instruction):
 ```
-.claude/skills/<name>/
+.codex/skills/<name>/
 └── SKILL.md
 ```
 
 **Medium skill** (200-400 lines of instruction):
 ```
-.claude/skills/<name>/
+.codex/skills/<name>/
 ├── SKILL.md          (overview, workflow outline, gotchas)
 └── workflow.md       (detailed step-by-step)
 ```
 
 **Complex skill** (400+ lines of instruction):
 ```
-.claude/skills/<name>/
+.codex/skills/<name>/
 ├── SKILL.md          (overview, routing, gotchas)
 ├── workflow.md       (main execution steps)
 ├── examples.md       (concrete input/output examples)
@@ -205,7 +207,7 @@ Scripts go in `scripts/` and must be executable and tested.
 ### Step 3.1: Run the Validator
 
 ```bash
-python3 "$PLUGIN_ROOT/scripts/validate_skills.py" .claude/skills/<name>/
+python3 "$PLUGIN_ROOT/scripts/validate_skills.py" .codex/skills/<name>/
 ```
 
 **If errors**: Fix them automatically. Common fixes:
@@ -256,8 +258,8 @@ Fix any issues found. Do not present known problems to the user.
 Skills are always installed at project scope. Do not prompt the user for install location.
 
 ```bash
-mkdir -p .claude/skills/<name>/
-# Write all skill files into .claude/skills/<name>/
+mkdir -p .codex/skills/<name>/ .claude/skills/<name>/
+# Write all skill files into .codex/skills/<name>/ and mirror them to .claude/skills/<name>/
 ```
 
 ### Step 4.2: Generate Trigger Report
@@ -268,7 +270,7 @@ Present a summary showing the skill is ready:
 ## Skill Created: <name>
 
 **Category**: <category from Phase 1.4>
-**Location**: .claude/skills/<name>/
+**Location**: .codex/skills/<name>/ (with legacy `.claude/skills/<name>/` mirror)
 **Files**: <list of files created>
 
 ### What it does

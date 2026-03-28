@@ -4,7 +4,7 @@ Set up a fast feedback loop for testing and improving Flux.
 
 ## For Flux Developers/Testers
 
-Add this to your project's `AGENTS.md` or `CLAUDE.md` when testing Flux:
+Add this to your project's `AGENTS.md` when testing Flux:
 
 ```markdown
 ## Flux Testing Mode
@@ -20,7 +20,7 @@ This project is being used to test the Flux plugin.
    - Make the minimal fix
    - Push and create PR with `gh pr create`
 3. Report the PR URL so it can be reviewed and merged
-4. After merge, upgrade: `/plugin add https://github.com/Nairon-AI/flux@latest`
+4. After merge, upgrade Flux from the same source you installed it from
 
 **What counts as a Flux bug:**
 - Command fails unexpectedly
@@ -40,8 +40,8 @@ This project is being used to test the Flux plugin.
 # Explicitly report an issue
 /flux:contribute "Description of the issue"
 
-# After PR is merged, upgrade
-/plugin add https://github.com/Nairon-AI/flux@latest
+# After PR is merged, upgrade Flux
+/flux:upgrade
 ```
 
 ## Workflow Diagram
@@ -78,7 +78,7 @@ This project is being used to test the Flux plugin.
                   ▼
          ┌─────────────────┐
          │ Upgrade plugin  │
-         │ /plugin add ... │
+         │ /flux:upgrade   │
          └────────┬────────┘
                   │
                   ▼

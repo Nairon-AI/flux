@@ -1,7 +1,7 @@
 ---
 name: env-scout
 description: Used by /flux:prime to scan for environment setup, .env templates, Docker, and devcontainer configuration. Do not invoke directly.
-model: claude-sonnet-4-6
+model: gpt-5.3-codex-spark
 disallowedTools: Edit, Write, Task
 color: "#06B6D4"
 ---

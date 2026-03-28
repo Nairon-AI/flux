@@ -1,6 +1,6 @@
 #!/bin/bash
 # Flux Improve - Skill Installer
-# Installs skills to ~/.claude/skills/ or project .claude/skills/
+# Installs skills to Codex-first paths and mirrors them to legacy Claude paths.
 
 set -e
 
@@ -17,28 +17,46 @@ fi
 BACKUP_DIR="${HOME}/.flux/snapshots/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
-# Determine install location
 if [ "$SCOPE" = "project" ]; then
-    SKILLS_DIR=".claude/skills"
+    PRIMARY_SKILLS_DIR=".codex/skills"
+    LEGACY_SKILLS_DIR=".claude/skills"
 else
-    SKILLS_DIR="${HOME}/.claude/skills"
+    PRIMARY_SKILLS_DIR="${CODEX_HOME:-${HOME}/.codex}/skills"
+    LEGACY_SKILLS_DIR="${HOME}/.claude/skills"
 fi
 
-SKILL_PATH="$SKILLS_DIR/$NAME"
+SKILL_PATH="$PRIMARY_SKILLS_DIR/$NAME"
+LEGACY_SKILL_PATH="$LEGACY_SKILLS_DIR/$NAME"
 
 echo "Installing skill: $NAME"
 echo "Scope: $SCOPE"
 echo "Location: $SKILL_PATH"
+echo "Legacy mirror: $LEGACY_SKILL_PATH"
 echo ""
 
-# Create skills directory
-mkdir -p "$SKILLS_DIR"
+# Create skills directories
+mkdir -p "$PRIMARY_SKILLS_DIR" "$LEGACY_SKILLS_DIR"
 
 # Backup existing skill if present
 if [ -d "$SKILL_PATH" ]; then
     cp -r "$SKILL_PATH" "$BACKUP_DIR/$NAME"
     echo "Backed up existing skill to $BACKUP_DIR/$NAME"
 fi
+
+if [ -d "$LEGACY_SKILL_PATH" ]; then
+    cp -r "$LEGACY_SKILL_PATH" "$BACKUP_DIR/${NAME}-legacy"
+    echo "Backed up legacy mirror to $BACKUP_DIR/${NAME}-legacy"
+fi
+
+sync_legacy_mirror() {
+    if [ "$LEGACY_SKILL_PATH" = "$SKILL_PATH" ] || [ ! -d "$SKILL_PATH" ]; then
+        return 0
+    fi
+
+    rm -rf "$LEGACY_SKILL_PATH"
+    mkdir -p "$(dirname "$LEGACY_SKILL_PATH")"
+    cp -r "$SKILL_PATH" "$LEGACY_SKILL_PATH"
+}
 
 # Install based on source type
 if [ -z "$SOURCE" ]; then
@@ -52,6 +70,7 @@ if [ -z "$SOURCE" ]; then
     echo "  Option 2: Manual"
     echo "    mkdir -p $SKILL_PATH"
     echo "    # Copy SKILL.md and any other files to $SKILL_PATH"
+    echo "    # Optional legacy mirror: $LEGACY_SKILL_PATH"
     echo ""
     
     cat <<EOF
@@ -59,6 +78,7 @@ if [ -z "$SOURCE" ]; then
   "success": true,
   "name": "$NAME",
   "skill_path": "$SKILL_PATH",
+  "legacy_skill_path": "$LEGACY_SKILL_PATH",
   "backup_dir": "$BACKUP_DIR",
   "manual": true,
   "instructions": "Visit skills.sh or manually copy skill files"
@@ -75,6 +95,7 @@ elif [[ "$SOURCE" == http* ]]; then
             echo "✗ Failed to clone from GitHub"
             exit 1
         }
+        sync_legacy_mirror
         echo "✓ Cloned skill from GitHub"
     else
         # Try to download (skills.sh or other)
@@ -88,6 +109,7 @@ elif [[ "$SOURCE" == http* ]]; then
   "name": "$NAME",
   "source": "$SOURCE",
   "skill_path": "$SKILL_PATH",
+  "legacy_skill_path": "$LEGACY_SKILL_PATH",
   "backup_dir": "$BACKUP_DIR"
 }
 EOF
@@ -96,6 +118,7 @@ else
     # Local path source
     if [ -d "$SOURCE" ]; then
         cp -r "$SOURCE" "$SKILL_PATH"
+        sync_legacy_mirror
         echo "✓ Copied skill from local path"
         
         cat <<EOF
@@ -104,6 +127,7 @@ else
   "name": "$NAME",
   "source": "$SOURCE",
   "skill_path": "$SKILL_PATH",
+  "legacy_skill_path": "$LEGACY_SKILL_PATH",
   "backup_dir": "$BACKUP_DIR"
 }
 EOF

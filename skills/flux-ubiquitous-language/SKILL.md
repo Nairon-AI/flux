@@ -18,8 +18,8 @@ Extract and formalize domain terminology into a consistent glossary, stored in t
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL <command>
 ```
@@ -35,7 +35,7 @@ On completion, reset:
 $FLUXCTL session-phase set idle
 ```
 
-**Agent Compatibility**: This skill works across Claude Code, OpenCode, and Codex. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
+**Agent Compatibility**: This skill works across Codex, OpenCode, and legacy Claude environments. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
 
 ## Input
 
@@ -139,8 +139,8 @@ When invoked again:
 **ALWAYS run at the very end of /flux:ubiquitous-language execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
@@ -152,8 +152,7 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
-Then restart Claude Code for changes to take effect.
+Update Flux from the same source you installed it from, then restart your agent session.
 ---
 ```
 

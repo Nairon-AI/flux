@@ -37,7 +37,7 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
      ```
      Both RepoPrompt and Codex available. Which review backend?
      a) RepoPrompt (macOS, visual builder)
-     b) Codex CLI (cross-platform, GPT 5.2 High)
+     b) Codex CLI (cross-platform, `gpt-5.3-codex`)
 
      (Reply: "a", "rp", "b", "codex", or just tell me)
      ```
@@ -84,7 +84,7 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    - Replace `WORK_REVIEW={{WORK_REVIEW}}` with `WORK_REVIEW=<chosen>`
    - Replace `COMPLETION_REVIEW={{COMPLETION_REVIEW}}` with `COMPLETION_REVIEW=<chosen>`
 
-7. Print next steps (run from terminal, NOT inside Claude Code):
+7. Print next steps (run from terminal, NOT inside an active agent session):
 
    **If UPDATE_MODE=1:**
    ```
@@ -102,7 +102,7 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    ```
    Ralph initialized!
 
-   Next steps (run from terminal, NOT inside Claude Code):
+   Next steps (run from terminal, NOT inside an active agent session):
    - Edit scripts/ralph/config.env to customize settings
    - ./scripts/ralph/ralph_once.sh (one iteration, observe)
    - ./scripts/ralph/ralph.sh (full loop, AFK)
@@ -120,8 +120,8 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
 **ALWAYS run at the very end of command execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
@@ -133,7 +133,6 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Run: /plugin uninstall flux@nairon-flux && /plugin add https://github.com/Nairon-AI/flux@latest
-Then restart Claude Code for changes to take effect.
+Update Flux from the same source you installed it from, then restart your agent session.
 ---
 ```

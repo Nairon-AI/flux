@@ -201,7 +201,7 @@ detect_mcps() {
         '$global + $local + $claude | unique'
 }
 
-# Detect Claude Code plugins
+# Detect legacy Claude plugins
 detect_plugins() {
     local settings_file="$HOME/.claude/settings.json"
     

@@ -44,7 +44,7 @@ Set defaults before parsing:
 
 For `--detect`:
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 "$PLUGIN_ROOT/scripts/detect-installed.sh" | jq .
 # Display formatted output and exit
 ```
@@ -107,7 +107,7 @@ Note: preferences live in project-local `.flux/preferences.json`.
 mcp_question({
   questions: [{
     header: "Session Analysis",
-    question: "Can I also analyze recent Claude Code sessions to find pain points? This checks ~/.claude/projects/ for error patterns, repeated failures, and knowledge gaps - all processed locally.",
+    question: "Can I also analyze recent legacy session transcripts to find pain points? This checks ~/.claude/projects/ for error patterns, repeated failures, and knowledge gaps - all processed locally.",
     options: [
       { label: "Yes, include sessions", description: "Analyze recent sessions for patterns (recommended for best results)" },
       { label: "Yes, always allow", description: "Allow and don't ask again" },
@@ -169,7 +169,7 @@ This dramatically improves match quality when user provides context.
 Run installed tools detection first:
 
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 
 # 1. Detect installed tools, apps, and user preferences
 INSTALLED=$("$PLUGIN_ROOT/scripts/detect-installed.sh" 2>/dev/null)
@@ -198,7 +198,7 @@ Current setup:
 **Only run this step if `ANALYZE_SESSIONS=true`.**
 
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 
 # Run session parser for CURRENT PROJECT ONLY (uses cwd by default)
 SESSION_INSIGHTS=$("$PLUGIN_ROOT/scripts/parse-sessions.py" --max-sessions 50 2>/dev/null)
@@ -374,7 +374,7 @@ If `--score` mode, stop here.
 Run the matching script with context and optional user input:
 
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 
 # Include user context if provided (dramatically improves accuracy)
 if [ -n "$USER_CONTEXT" ]; then
@@ -431,7 +431,7 @@ Behavioral Breakdown
 - What should become skills: <repeated multi-step workflows worth codifying>
 - What should become plugins: <repeated standalone tooling opportunities>
 - What should become agents: <autonomous subagent candidates>
-- What belongs in CLAUDE.md: <repeat project-level instructions>
+- What belongs in AGENTS.md: <repeat project-level instructions>
 ```
 
 Guidance:
@@ -449,8 +449,8 @@ After generating the "What should become skills" list, **autonomously build each
 - **Cap**: Build at most **3 skills** per improve session. If more candidates exist, build the top 3 by impact and list the rest as suggestions for a future `/flux:improve` run.
 
 For each candidate (up to 3):
-1. Check `.claude/skills/` for existing overlap. If a skill already covers the workflow, skip it.
-2. Invoke `flux-skill-builder` with the identified workflow as input. The builder handles research, drafting, validation, and installation to `.claude/skills/<name>/`.
+1. Check `.codex/skills/` and `.claude/skills/` for existing overlap. If a skill already covers the workflow, skip it.
+2. Invoke `flux-skill-builder` with the identified workflow as input. The builder handles research, drafting, validation, and installation to `.codex/skills/<name>/` with a legacy Claude mirror when needed.
 3. Report what was created in the summary.
 
 This replaces the previous behavior of listing suggestions. Improve now **acts** on skill opportunities instead of deferring them.
@@ -518,7 +518,7 @@ Select to install: [1,2,3] or 'all' or 'none'
 If `DISCOVER=true`, run an optional live search for novel optimizations:
 
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 
 if [ -n "$USER_CONTEXT" ]; then
   DISCOVERY=$(echo "$CONTEXT" | python3 "$PLUGIN_ROOT/scripts/discover-community.py" --user-context "$USER_CONTEXT" || echo '{"enabled":false,"source":"none","discoveries":[],"queries":[],"reason":"discovery script failed"}')
@@ -572,7 +572,7 @@ Based on category, use the appropriate installer:
 
 **For MCPs:**
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 MCP_CONFIG='{"command":"npx","args":["-y","@context7/mcp"]}'
 "$PLUGIN_ROOT/scripts/install-mcp.sh" "<name>" "$MCP_CONFIG"
 ```
@@ -586,7 +586,7 @@ MCP_CONFIG='{"command":"npx","args":["-y","@context7/mcp"]}'
 **For Plugins:**
 ```bash
 "$PLUGIN_ROOT/scripts/install-plugin.sh" "<name>" "<repo>"
-# Returns instructions for user to run in Claude Code
+# Returns legacy plugin install instructions when applicable
 ```
 
 **For Skills:**

@@ -1,6 +1,6 @@
 # Flux Score Schema
 
-AI-native capability scoring system built on Claude Code session data.
+AI-native capability scoring system built on legacy session transcript data.
 
 ## Overview
 

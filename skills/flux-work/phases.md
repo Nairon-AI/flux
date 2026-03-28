@@ -18,7 +18,7 @@
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 
 ```bash
-FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}/scripts/fluxctl"
 ```
 
 ## Phase 1: Resolve Input
@@ -441,7 +441,7 @@ REVIEW_BOT=$($FLUXCTL config get review.bot --json 2>/dev/null | jq -r '.value /
 
 **If `autofix.enabled` is `true`** → invoke `/flux:autofix {PR_URL}` automatically. This is non-blocking — auto-fix runs remotely in the cloud and handles everything: CI failures, human review comments, and bot review comments (Greptile/CodeRabbit). Reflect continues independently.
 
-**If `autofix.enabled` is NOT `true` but `review.bot` is set** (`greptile` or `coderabbit`) → run the BYORB self-heal loop locally against the PR. The PR now exists, so the bot can review it. Follow the External Bot Self-Heal Phase from `flux-epic-review/workflow.md` (poll for bot comments, filter by severity, fix, push, re-poll — max 2 iterations). This is the fallback for users without Claude Code web/mobile.
+**If `autofix.enabled` is NOT `true` but `review.bot` is set** (`greptile` or `coderabbit`) → run the BYORB self-heal loop locally against the PR. The PR now exists, so the bot can review it. Follow the External Bot Self-Heal Phase from `flux-epic-review/workflow.md` (poll for bot comments, filter by severity, fix, push, re-poll — max 2 iterations). This is the fallback for users without Claude web/mobile.
 
 **If neither is configured** → proceed directly to Reflect.
 

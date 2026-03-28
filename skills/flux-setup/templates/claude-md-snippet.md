@@ -3,16 +3,15 @@
 
 <important if="session start — run this check before anything else">
 **Flux install check (every session):**
-Run `claude plugin list 2>&1 | grep -qi flux` at the start of every session.
+Run `test -x .flux/bin/fluxctl` at the start of every session.
 If Flux is **not installed**, use `mcp__conductor__AskUserQuestion` (or the equivalent interactive prompt tool available in your environment) to ask:
 
-> **This project uses Flux — a self-improving harness for Claude Code. It's not installed on your machine yet. Would you like to set it up?**
+> **This project uses Flux — a self-improving Codex-first harness. It's not installed in this repo yet. Would you like to set it up?**
 
 Options:
-1. **"Yes, install Flux"** — Run these commands, then tell the user to restart with `--resume` and run `/flux:setup`:
+1. **"Yes, install Flux"** — Run `/flux:setup`, let it scaffold `.flux/bin/fluxctl`, then continue in the same repo.
    ```bash
-   claude plugin marketplace add https://github.com/Nairon-AI/flux 2>&1
-   claude plugin install flux@nairon-flux 2>&1
+   /flux:setup
    ```
 2. **"No, skip for now"** — Respect the choice. Do not ask again in the same session.
 3. **"What does Flux do?"** — Explain these benefits, then re-ask:

@@ -46,6 +46,7 @@ fi
 **Remove project-local MCP config and skills:**
 ```bash
 rm -f .mcp.json
+rm -rf .codex/skills/
 rm -rf .claude/skills/
 ```
 
@@ -98,7 +99,7 @@ Use `AskUserQuestion`:
 
 **Step 2 — Global cleanup:**
 ```bash
-# Remove plugin cache
+# Remove legacy plugin cache
 rm -rf ~/.claude/plugins/cache/nairon-flux
 ```
 
@@ -112,8 +113,8 @@ Cleaned up:
 
 Manual steps remaining:
 - <list any commands that were blocked — print the exact commands>
-- Run in your agent UI: /plugin uninstall flux@nairon-flux
-- Restart with --resume
+- If you installed Flux into any legacy agent/plugin UI, remove that install there too
+- Restart your agent session
 ```
 
-If all cleanup commands succeeded, the "Manual steps remaining" section only contains the `/plugin uninstall` and restart steps.
+If all cleanup commands succeeded, the "Manual steps remaining" section only contains any legacy plugin cleanup and restart steps.

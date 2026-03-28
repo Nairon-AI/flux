@@ -25,8 +25,8 @@ START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
 
 **CRITICAL: fluxctl is BUNDLED — NOT installed globally.** `which fluxctl` will fail (expected). Always use:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL <command>
 ```
@@ -42,10 +42,10 @@ On completion (handoff done), reset:
 $FLUXCTL session-phase set idle
 ```
 
-**Agent Compatibility**: This skill works across Claude Code, OpenCode, and Codex. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
+**Agent Compatibility**: This skill works across Codex, OpenCode, and legacy Claude environments. See [agent-compat.md](../../docs/agent-compat.md) for tool differences.
 
 **Question Tool**: Use the appropriate tool for your agent:
-- Claude Code: `AskUserQuestion`
+- Claude: `AskUserQuestion`
 - OpenCode: `mcp_question`
 - Codex: `AskUserTool`
 - Other: Output question as text, wait for response
@@ -56,7 +56,7 @@ If `.flux/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
 SETUP_VER=$(jq -r '.setup_version // empty' .flux/meta.json 2>/dev/null)
 PLUGIN_ROOT="${PLUGIN_ROOT}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 PLUGIN_JSON="${PLUGIN_ROOT}/.claude-plugin/plugin.json"
 PLUGIN_VER=$(jq -r '.version' "$PLUGIN_JSON" 2>/dev/null || echo "unknown")
 if [ -n "$SETUP_VER" ] && [ "$PLUGIN_VER" != "unknown" ]; then
@@ -205,8 +205,8 @@ If `LINEAR_ISSUE_ID` is found, set `LINEAR_MODE = true`.
 ## Setup
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL init --json
 ```

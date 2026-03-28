@@ -1,18 +1,18 @@
 ---
 name: flux:upgrade
-description: Upgrade Flux plugin and optionally update project setup
+description: Upgrade Flux and optionally refresh project setup
 ---
 
 # Flux Upgrade
 
-Upgrades the Flux plugin, shows the user what changed since their version, and tells them exactly what to do next.
+Upgrades Flux, shows the user what changed since their version, and tells them exactly what to do next.
 
 ## Step 1: Check current versions
 
 Run the version check to see where things stand:
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT:-${DROID_PLUGIN_ROOT:-$(dirname "$(dirname "$(dirname "$0")")")}}/scripts/version-check.sh"
+bash "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || dirname "$(dirname "$(dirname "$0")")")}}/scripts/version-check.sh"
 ```
 
 Parse the JSON output. Save `local_version` as `OLD_VERSION` — you'll need it later.
@@ -41,7 +41,7 @@ gh release list --repo Nairon-AI/flux --limit 30 --json tagName,name,body,publis
 
 Filter to releases where the tag version is greater than `OLD_VERSION` and less than or equal to the new version.
 
-**Fallback — CHANGELOG.md from marketplace dir:**
+**Fallback — CHANGELOG.md from legacy marketplace dir:**
 
 ```bash
 MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/nairon-flux"
@@ -79,7 +79,7 @@ Scan the release notes/changelog for setup-relevant changes. This is NOT a blind
 
 **Re-run IS needed when the changelog mentions:**
 - New MCP servers, CLI tools, desktop apps, or skills added to the setup menu
-- CLAUDE.md markers or instruction format changes
+- AGENTS.md / legacy CLAUDE.md markers or instruction format changes
 - fluxctl new subcommands requiring PATH setup
 - `.flux/` directory structure changes
 
@@ -105,8 +105,7 @@ Then next steps — adapt based on Step 5:
 ```
 ## What to do now
 
-1. Restart Claude Code to load the new version
-   (use --resume to keep your current context)
+1. Restart your agent session to load the new version
 
 2. After restart, run /flux:setup to pick up new options:
    [1-line explanation of what's new in setup]
@@ -120,8 +119,7 @@ Setup will only offer new options — nothing you've configured will change.
 ```
 ## What to do now
 
-Restart Claude Code to load the new version.
-(Use --resume to keep your current context.)
+Restart your agent session to load the new version.
 
 That's it — no need to re-run /flux:setup.
 All changes in this upgrade are plugin-level and activate after restart.
@@ -144,6 +142,6 @@ find ~/Developer ~/Projects ~/Code ~/repos ~/src ~/work ~/Desktop ~ -maxdepth 4 
 done | sort -u | head -30
 ```
 
-Present the list and ask which to upgrade. For each selected project, update `.flux/bin/` scripts and CLAUDE.md markers only. **Never touch** `.flux/tasks/`, `.flux/epics/`, `.flux/preferences.json`, `.mcp.json`, or user data.
+Present the list and ask which to upgrade. For each selected project, update `.flux/bin/` scripts and `AGENTS.md` / legacy `CLAUDE.md` markers only. **Never touch** `.flux/tasks/`, `.flux/epics/`, `.flux/preferences.json`, `.mcp.json`, or user data.
 
 Report per-project results and flag any failures for manual follow-up.

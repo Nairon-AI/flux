@@ -130,13 +130,13 @@ fluxctl epic close fn-1 [--json]
 Set default backend specs for impl/review/sync workers. Used by orchestration products (e.g., flux-swarm).
 
 ```bash
-fluxctl epic set-backend fn-1 --impl codex:gpt-5.2-codex [--json]
-fluxctl epic set-backend fn-1 --impl codex:gpt-5.2-high --review claude:opus [--json]
+fluxctl epic set-backend fn-1 --impl codex:gpt-5.3-codex [--json]
+fluxctl epic set-backend fn-1 --impl codex:gpt-5.3-codex --review claude:opus [--json]
 fluxctl epic set-backend fn-1 --impl "" [--json]  # Clear impl (inherit from config)
 ```
 
 Options:
-- `--impl SPEC`: Default impl backend (e.g., `codex:gpt-5.2-high`, `claude:opus`)
+- `--impl SPEC`: Default impl backend (e.g., `codex:gpt-5.3-codex`, `claude:opus`)
 - `--review SPEC`: Default review backend (e.g., `claude:opus`, `agent:opus-4.5-thinking`)
 - `--sync SPEC`: Default sync backend (e.g., `claude:haiku`, `gemini:gemini-2.5-flash`)
 
@@ -196,13 +196,13 @@ Use `--cascade` to also reset dependent tasks within the same epic.
 Set backend specs for impl/review/sync workers. Used by orchestration products (e.g., flux-swarm).
 
 ```bash
-fluxctl task set-backend fn-1.1 --impl codex:gpt-5.2-high [--json]
-fluxctl task set-backend fn-1.1 --impl codex:gpt-5.2-high --review claude:opus [--json]
+fluxctl task set-backend fn-1.1 --impl codex:gpt-5.3-codex [--json]
+fluxctl task set-backend fn-1.1 --impl codex:gpt-5.3-codex --review claude:opus [--json]
 fluxctl task set-backend fn-1.1 --impl "" [--json]  # Clear impl (inherit from epic/config)
 ```
 
 Options:
-- `--impl SPEC`: Impl backend (e.g., `codex:gpt-5.2-high`, `claude:opus`)
+- `--impl SPEC`: Impl backend (e.g., `codex:gpt-5.3-codex`, `claude:opus`)
 - `--review SPEC`: Review backend (e.g., `claude:opus`, `agent:opus-4.5-thinking`)
 - `--sync SPEC`: Sync backend (e.g., `claude:haiku`, `gemini:gemini-2.5-flash`)
 
@@ -218,7 +218,7 @@ fluxctl task show-backend fn-1.1 [--json]
 
 Output (text):
 ```
-impl: codex:gpt-5.2-high (task)
+impl: codex:gpt-5.3-codex (task)
 review: claude:opus (epic)
 sync: null
 ```
@@ -229,7 +229,7 @@ Output (json):
   "success": true,
   "id": "fn-1.1",
   "epic": "fn-1",
-  "impl": {"spec": "codex:gpt-5.2-high", "source": "task"},
+  "impl": {"spec": "codex:gpt-5.3-codex", "source": "task"},
   "review": {"spec": "claude:opus", "source": "epic"},
   "sync": {"spec": null, "source": null}
 }
@@ -556,7 +556,7 @@ npm install -g @openai/codex
 codex auth
 ```
 
-**Model:** Uses GPT 5.2 High by default (no user config needed). Override with `FLUX_CODEX_MODEL` env var.
+**Model:** Uses `gpt-5.3-codex` by default. Override with `FLUX_CODEX_MODEL` env var.
 
 **Commands:**
 

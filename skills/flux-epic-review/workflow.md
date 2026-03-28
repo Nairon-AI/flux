@@ -22,7 +22,7 @@ Per-task lightweight reviews happen via `/flux:impl-review`. This is the heavy-w
 
 ```bash
 set -e
-FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/fluxctl"
+FLUXCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Priority: --review flag > env > config (flag parsed in SKILL.md)
@@ -555,7 +555,7 @@ Security findings are also captured in the Learning Capture phase.
 2. `autofix.enabled` is NOT `true` (if auto-fix is enabled, bot comments are handled post-submit by `/flux:autofix` instead — see below)
 3. A PR exists
 
-**Why auto-fix takes priority:** In the standard Flux flow, the PR is created during Submit (Phase 5), which comes *after* epic-review. This means BYORB usually skips anyway because no PR exists yet. When auto-fix is enabled, it handles bot comments post-submit in the cloud — with unlimited iterations and alongside CI failures and human reviews. BYORB only runs as a fallback when auto-fix is disabled, giving users without Claude Code web/mobile the same bot self-heal capability.
+**Why auto-fix takes priority:** In the standard Flux flow, the PR is created during Submit (Phase 5), which comes *after* epic-review. This means BYORB usually skips anyway because no PR exists yet. When auto-fix is enabled, it handles bot comments post-submit in the cloud — with unlimited iterations and alongside CI failures and human reviews. BYORB only runs as a fallback when auto-fix is disabled, giving users without Claude web/mobile the same bot self-heal capability.
 
 ### Check auto-fix config
 

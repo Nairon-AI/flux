@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract user and assistant messages from Claude Code conversation JSONL files.
+"""Extract user and assistant messages from legacy conversation JSONL files.
 
 Usage: extract-conversations.py <project-dir> <output-dir> [options]
 
@@ -74,7 +74,7 @@ def file_mod_date(fpath: str) -> date:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Extract messages from Claude Code conversation JSONL files."
+        description="Extract messages from legacy conversation JSONL files."
     )
     parser.add_argument("project_dir", help="Directory containing .jsonl conversation files")
     parser.add_argument("output_dir", help="Directory to write extracted conversations")

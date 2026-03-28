@@ -2,7 +2,7 @@
 
 Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies multi-model review gates, and produces production-quality code overnight.
 
-> **TL;DR**: External shell loop → fresh Claude session per task → cross-model review gates → receipt-based proof-of-work → iterate until SHIP.
+> **TL;DR**: External shell loop → fresh Codex-driven work iteration per task → cross-model review gates → receipt-based proof-of-work → iterate until SHIP.
 
 ---
 
@@ -39,11 +39,8 @@ Ralph is Flux's repo-local autonomous harness. It loops over tasks, applies mult
 ### 1. Initialize
 
 ```bash
-# Inside Claude Code
+# Inside your agent session
 /flux:ralph-init
-
-# Or from terminal
-claude -p "/flux:ralph-init"
 ```
 
 Creates `scripts/ralph/` with:
@@ -78,7 +75,7 @@ scripts/ralph/ralph_once.sh
 scripts/ralph/ralph.sh
 ```
 
-Ralph spawns Claude sessions via `claude -p`, loops until done, and applies review gates.
+Ralph loops until done and applies review gates. Codex is the recommended implementation/review path; Claude remains useful for cross-lab review and optional autofix workflows.
 
 **Watch mode** — see activity in real-time:
 
@@ -118,7 +115,7 @@ rm -rf scripts/ralph/
 │  scripts/ralph/ralph.sh                                      │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  while fluxctl next returns work:                      │  │
-│  │    1. claude -p "/flux:plan" or :work             │  │
+│  │    1. invoke /flux:plan or /flux:work via your agent │  │
 │  │    2. check review receipts                            │  │
 │  │    3. if missing/invalid → retry                       │  │
 │  │    4. if SHIP verdict → next task                      │  │
@@ -152,7 +149,7 @@ Anthropic's official ralph-wiggum uses a Stop hook to keep Claude in the same se
 | Aspect | ralph-wiggum | Ralph |
 |--------|--------------|-------|
 | **Session** | Single, accumulating | Fresh per iteration |
-| **Loop** | Stop hook, same session | External bash, new `claude -p` |
+| **Loop** | Stop hook, same session | External bash, new agent iteration |
 | **Context** | Grows until full | Clean slate every time |
 | **Failed attempts** | Pollute future work | Gone with session |
 | **Re-anchoring** | None | Every iteration |

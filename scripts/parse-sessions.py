@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Flux Session Parser - Analyzes Claude Code sessions for pain points and patterns.
+Flux Session Parser - Analyzes legacy session transcripts for pain points and patterns.
 
 Extracts:
 - API errors and retries
@@ -473,7 +473,7 @@ def aggregate_results(sessions: list[dict]) -> dict:
 def path_to_claude_project_dir(path: Path) -> str:
     """Convert a path to Claude's project directory name format.
 
-    Claude Code stores sessions in directories like:
+    Legacy transcript exports are stored in directories like:
     ~/.claude/projects/-Users-obaid-Desktop-myproject/
 
     The path /Users/obaid/Desktop/myproject becomes -Users-obaid-Desktop-myproject
@@ -526,7 +526,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Parse Claude Code sessions for patterns"
+        description="Parse legacy session transcripts for patterns"
     )
     parser.add_argument(
         "--days", type=int, default=DEFAULT_DAYS_BACK, help="Days of history to analyze"

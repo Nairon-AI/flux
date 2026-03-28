@@ -11,7 +11,7 @@ user-invocable: true
 
 Restructure a CLAUDE.md file so Claude actually follows the instructions. Applies the `<important if="condition">` pattern to task-specific sections while keeping foundational content unwrapped.
 
-**Why**: Claude Code wraps CLAUDE.md in a `<system_reminder>` that says contents "may or may not be relevant." Long flat files cause Claude to treat individual sections as optional. Conditional blocks give a clearer signal about when to apply specific instructions.
+**Why**: Legacy Claude environments wrap `CLAUDE.md` in a `<system_reminder>` that says contents "may or may not be relevant." Long flat files cause the model to treat individual sections as optional. Conditional blocks give a clearer signal about when to apply specific instructions.
 
 ## Input
 
@@ -25,8 +25,8 @@ Accepts:
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set improve-claude-md
 ```

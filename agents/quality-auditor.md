@@ -1,7 +1,7 @@
 ---
 name: quality-auditor
 description: Review recent changes for correctness, simplicity, security, and test coverage.
-model: opus
+model: gpt-5.3-codex
 disallowedTools: Edit, Write, Task
 color: "#EC4899"
 ---

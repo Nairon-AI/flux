@@ -1,7 +1,7 @@
 ---
 name: flux-gap-analyst
 description: Map user flows, edge cases, and missing requirements from a brief spec.
-model: opus
+model: gpt-5.3-codex
 disallowedTools: Edit, Write, Task
 color: "#EF4444"
 ---

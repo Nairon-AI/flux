@@ -1,12 +1,12 @@
 ---
 name: flux-autofix
-description: Enable Claude Code's cloud auto-fix on a PR after submit. Watches for CI failures and review comments, pushes fixes remotely so you can walk away. Runs automatically after /flux:work submits a PR (when enabled via /flux:setup). Also invocable manually via /flux:autofix.
+description: Enable Claude's optional cloud auto-fix on a PR after submit. Watches for CI failures and review comments, pushes fixes remotely so you can walk away. Runs automatically after /flux:work submits a PR (when enabled via /flux:setup). Also invocable manually via /flux:autofix.
 user-invocable: true
 ---
 
 # Auto-Fix — Cloud PR Babysitting
 
-Hands off a submitted PR to Claude Code's cloud auto-fix. Claude watches the PR remotely — fixing CI failures and addressing review comments — so you can walk away and come back to a green, ready-to-merge PR.
+Hands off a submitted PR to Claude's optional cloud auto-fix. Claude watches the PR remotely — fixing CI failures and addressing review comments — so you can walk away and come back to a green, ready-to-merge PR.
 
 > "This happens remotely so you can fully walk away and come back to a ready-to-go PR." — @noahzweben
 
@@ -16,8 +16,8 @@ Hands off a submitted PR to Claude Code's cloud auto-fix. Claude watches the PR 
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set autofix
 ```
@@ -30,17 +30,17 @@ $FLUXCTL session-phase set idle
 
 - A PR must exist (just submitted via `/flux:work`, or user provides a PR URL)
 - The [Claude GitHub App](https://github.com/apps/claude) must be installed on the repository
-- Claude Code web or mobile access (auto-fix runs in the cloud, not locally)
+- Claude web or mobile access (auto-fix runs in the cloud, not locally)
 
 ## How It Works
 
-Claude Code's auto-fix subscribes to GitHub activity on the PR. When a check fails or a reviewer leaves a comment, Claude investigates and pushes a fix:
+Claude's auto-fix subscribes to GitHub activity on the PR. When a check fails or a reviewer leaves a comment, Claude investigates and pushes a fix:
 
 - **Clear fixes** (lint errors, type errors, test assertion mismatches): Claude fixes, pushes, and re-runs CI automatically
 - **Ambiguous requests** (architectural comments, multi-interpretation feedback): Claude asks you before acting
 - **Duplicate/no-action events**: Claude notes them and moves on
 
-Review comment replies are posted using **your GitHub account** but labeled as coming from Claude Code.
+Review comment replies are posted using **your GitHub account** but labeled as coming from Claude.
 
 ## Input
 
@@ -78,7 +78,7 @@ Stop here.
 
 ### Step 2: Start cloud auto-fix session
 
-Auto-fix works by spawning an independent cloud session via `claude --remote`. If `--remote` fails (Claude GitHub App not installed, auth issue, etc.), `claude` will return an error — the skill logs it and continues to Reflect without blocking. This creates a new Claude Code session on Anthropic's infrastructure that clones the repo, subscribes to GitHub events on the PR, and runs autonomously. The local session continues to Reflect — both run in parallel.
+Auto-fix works by spawning an independent cloud session via `claude --remote`. If `--remote` fails (Claude GitHub App not installed, auth issue, etc.), `claude` will return an error — the skill logs it and continues to Reflect without blocking. This creates a new Claude session on Anthropic's infrastructure that clones the repo, subscribes to GitHub events on the PR, and runs autonomously. The local session continues to Reflect — both run in parallel.
 
 ```bash
 # Verify claude CLI supports --remote
@@ -95,7 +95,7 @@ Tell the user:
 ```
 Auto-fix session started for: {PR_URL}
 
-A separate Claude Code session is now running in the cloud. It will:
+A separate Claude session is now running in the cloud. It will:
   - Fix CI failures (test errors, lint issues, type errors)
   - Address review comments from human reviewers
   - Handle bot feedback (Greptile/CodeRabbit) if configured
@@ -105,7 +105,7 @@ You can walk away — the session runs independently.
 Monitor it: run /tasks in the CLI, or open claude.ai/code.
 ```
 
-**If `--remote` is NOT supported** (older CLI version or non-Claude-Code agent):
+**If `--remote` is NOT supported** (older CLI version or a non-Claude agent):
 
 Auto-fix cannot run autonomously without `--remote`. Tell the user:
 
@@ -113,7 +113,7 @@ Auto-fix cannot run autonomously without `--remote`. Tell the user:
 Auto-fix requires `claude --remote` which isn't available in your CLI version.
 
 Options:
-  1. Update Claude Code: npm i -g @anthropic-ai/claude-code@latest
+  1. Update Claude: npm i -g @anthropic-ai/claude-code@latest
      Then auto-fix will work automatically on next PR submit.
 
   2. Start it manually from the web:
@@ -122,7 +122,7 @@ Options:
      - Say: "Watch this PR and auto-fix any CI failures or review comments"
 
   3. Start it from mobile:
-     - Open the Claude Code mobile app
+     - Open the Claude mobile app
      - Say: "Watch {PR_URL} and auto-fix CI failures and review comments"
 
 Proceeding to Reflect — auto-fix is not running for this PR.
@@ -183,7 +183,7 @@ Auto-fix and BYORB self-heal are **mutually exclusive** — they never both run.
 **If `autofix.enabled: false` (or unset):**
 - Epic-review skips BYORB as usual (no PR exists yet in the default flow)
 - After submit, Phase 5 (Ship) runs BYORB locally against the now-existing PR — polls for bot comments, self-heals (max 2 iterations)
-- This is the fallback for users without Claude Code web/mobile
+- This is the fallback for users without Claude web/mobile
 
 ```
 autofix.enabled: true                    autofix.enabled: false
@@ -218,9 +218,9 @@ reflect → done                           reflect → done
 
 - Auto-fix requires the Claude GitHub App — it won't work without it
 - Auto-fix runs remotely (cloud) — it doesn't use your local session or context window
-- Review comment replies appear under **your** GitHub username but are labeled as from Claude Code
+- Review comment replies appear under **your** GitHub username but are labeled as from Claude
 - Auto-fix is best for mechanical fixes (CI failures, clear review feedback). For architectural discussions, Claude will ask before acting
-- If you're already in a Claude Code web session that created the PR, just click "Auto-fix" in the CI status bar instead
+- If you're already in a Claude web session that created the PR, just click "Auto-fix" in the CI status bar instead
 - Auto-fix does NOT replace epic review or adversarial review — those catch code quality issues before submit. Auto-fix handles the post-submit lifecycle (CI, human reviews, bot comments).
 - Auto-fix and BYORB self-heal are **mutually exclusive**. When auto-fix is enabled, BYORB is skipped entirely — auto-fix handles bot comments post-submit. When auto-fix is disabled, BYORB runs locally after submit as a fallback (max 2 iterations, bot comments only).
 - **Ralph mode**: auto-fix still fires automatically after PR submit when `autofix.enabled: true`. Two autonomous processes run in parallel — Ralph locally, auto-fix in the cloud. This is fine; they don't interfere.
@@ -230,7 +230,7 @@ reflect → done                           reflect → done
 **ALWAYS run at the very end of command execution:**
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 CURRENT_VERSION=$(jq -r '.version' "${PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null)
 MARKETPLACE_VERSION=$(jq -r '.plugins[0].version' "${PLUGIN_ROOT}/.claude-plugin/marketplace.json" 2>/dev/null)
 if [ "$CURRENT_VERSION" != "$MARKETPLACE_VERSION" ] && [ -n "$MARKETPLACE_VERSION" ]; then

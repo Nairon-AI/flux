@@ -1,6 +1,6 @@
 #!/bin/bash
-# Flux Improve - Plugin Installer
-# Prints Claude Code slash-command install instructions
+# Flux Improve - Legacy Plugin Installer
+# Prints legacy Claude plugin install instructions
 
 set -e
 
@@ -48,13 +48,13 @@ fi
 
 INSTALL_CMD="/plugin add $SOURCE"
 
-echo "Run this slash command directly in Claude Code input (NOT in bash):"
+echo "Run this slash command directly in the legacy Claude plugin UI (NOT in bash):"
 echo ""
 echo "  $INSTALL_CMD"
 echo ""
-echo "Then fully restart Claude Code so the plugin loads at session start."
+echo "Then fully restart the legacy Claude session so the plugin loads at session start."
 
-echo "Note: Slash commands must be run in Claude Code chat, not a shell."
+echo "Note: Slash commands must be run in the legacy Claude chat UI, not a shell."
 
 # Output JSON result
 cat <<EOF
@@ -66,6 +66,6 @@ cat <<EOF
   "install_source": "$SOURCE",
   "backup_dir": "$BACKUP_DIR",
   "manual": true,
-  "instructions": "Run the slash command in Claude Code chat input and restart Claude Code"
+  "instructions": "Run the slash command in the legacy Claude chat UI and restart that session"
 }
 EOF

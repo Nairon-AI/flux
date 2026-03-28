@@ -19,8 +19,8 @@ Adapted from [brainmaxxing](https://github.com/poteto/brainmaxxing) by [@poteto]
 
 On entry, set the session phase:
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 $FLUXCTL session-phase set reflect
 ```
@@ -34,8 +34,8 @@ $FLUXCTL session-phase set idle
 Before processing learnings, check if an external memory provider is configured:
 
 ```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}"
-[ -z "$PLUGIN_ROOT" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
+PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
+[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 EXTERNAL_MEMORY_PROVIDER=$($FLUXCTL config get externalMemory.provider --json 2>/dev/null | jq -r '.value // empty')
 EXTERNAL_MEMORY_TOOL=$($FLUXCTL config get externalMemory.tool --json 2>/dev/null | jq -r '.value // empty')
@@ -106,7 +106,7 @@ Codebase knowledge, principles, gotchas — anything that informs future session
 - Group in directories with index files using `[[wikilinks]]`.
 - No inlined content in index files.
 
-### Skill extraction (`.claude/skills/`)
+### Skill extraction (`.codex/skills/`)
 
 When a learning meets ALL of these criteria, extract it as a standalone skill:
 
@@ -124,7 +124,7 @@ When a learning meets ALL of these criteria, extract it as a standalone skill:
 
 **Process:**
 
-Invoke the `flux-skill-builder` skill autonomously. Pass it the learning context — what was discovered, why it's reusable, and the verified solution from this session. The skill builder handles research, drafting, validation (`validate_skills.py`), and installation to `.claude/skills/<name>/`.
+Invoke the `flux-skill-builder` skill autonomously. Pass it the learning context — what was discovered, why it's reusable, and the verified solution from this session. The skill builder handles research, drafting, validation (`validate_skills.py`), and installation to `.codex/skills/<name>/` with a legacy Claude mirror when needed.
 
 Do NOT manually create skill files. The skill builder encodes all best practices from `docs/skills-best-practices.md` and produces validated, trigger-optimized skills with proper progressive disclosure.
 

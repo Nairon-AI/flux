@@ -1,7 +1,7 @@
 ---
 name: testing-scout
 description: Used by /flux:prime to analyze test framework setup, coverage configuration, and test commands. Do not invoke directly.
-model: claude-sonnet-4-6
+model: gpt-5.3-codex-spark
 disallowedTools: Edit, Write, Task
 color: "#22C55E"
 ---
