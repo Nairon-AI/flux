@@ -585,6 +585,14 @@ fi
 
 **REQUIRED behavior:** Always execute this desktop-apps step before CLI tools/skills on supported OS (`macos`, `linux`, `windows`). Do not silently skip it.
 
+Before asking about desktop apps, detect the active agent using [docs/agent-compat.md](../../docs/agent-compat.md) and use the matching question tool:
+- Codex: `AskUserTool`
+- OpenCode: `mcp_question`
+- Claude: `AskUserQuestion`
+- Other agents: print the question as text and wait for response
+
+This applies to the desktop apps prompt below. Do not hardcode `AskUserQuestion` when setup is running under Codex.
+
 If all compatible apps are already installed, print an explicit status line and continue:
 ```
 Desktop apps already installed: <comma-separated list>
@@ -593,6 +601,12 @@ Desktop apps already installed: <comma-separated list>
 ### Ask which to install (OS-specific questions)
 
 **For macOS users** (all 5 apps available):
+
+Present this with the appropriate question tool for the current agent. The `CodexBar` option must be included whenever it is not already installed.
+
+If the active agent is Codex, lead with Codex in the CodexBar description.
+If the active agent is Claude, lead with Claude Code in the CodexBar description.
+If the agent is unknown, use the generic wording below.
 
 ```json
 {
@@ -609,6 +623,12 @@ Desktop apps already installed: <comma-separated list>
   ]
 }
 ```
+
+**Codex-specific CodexBar description:**
+`"Menu bar usage meter for Codex and Claude Code subscriptions (free)"`
+
+**Claude-specific CodexBar description:**
+`"Menu bar usage meter for Claude Code and Codex subscriptions (free)"`
 
 **For Linux users**: Skip desktop apps section entirely and note in summary: "Desktop apps: skipped (no compatible apps for Linux)"
 
@@ -914,7 +934,7 @@ HAS_EX=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
 
 if [ "$HAS_AB" = "1" ] && [ "$HAS_EX" = "1" ]; then
   # Both available — ask preference
-  # Present as AskUserQuestion:
+  # Present with the appropriate question tool for the current agent.
 fi
 ```
 
@@ -1876,7 +1896,7 @@ It takes about 30 seconds:
 If you've already installed it, you're all set.
 ```
 
-Use `AskUserQuestion`:
+Use the appropriate question tool for the current agent:
 ```json
 {
   "question": "Have you installed the Claude GitHub App (or was it already installed)?",
@@ -1912,7 +1932,7 @@ will skip gracefully for that PR. Install it anytime: https://github.com/apps/cl
 }
 ```
 
-Use `AskUserQuestion` with the built questions array.
+Use the appropriate question tool for the current agent with the built questions array.
 
 **Note:** If docs are already current, adjust the Docs question description to mention "(already up to date)" or skip that question entirely.
 

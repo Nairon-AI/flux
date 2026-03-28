@@ -28,6 +28,7 @@ Install fluxctl locally and add instructions to project docs. **Fully optional**
   - **CLI Continues** — resume/switch session context across agent CLIs
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Codex sessions and cross-lab review worktrees
+  - **CodexBar** — menu bar visibility into Codex and Claude Code subscription usage/reset windows
   - **Raycast** — launcher/snippets/clipboard productivity layer
   - **Wispr Flow** — voice-to-text acceleration (macOS)
   - **Granola** — AI meeting notes companion (macOS/Windows)
