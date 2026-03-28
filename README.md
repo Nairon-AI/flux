@@ -67,8 +67,7 @@ Ship with confidence. Sleep better at night.
 
 | Agent | Status | Install |
 |-------|--------|---------|
-| [Codex CLI](https://github.com/openai/codex) | ✅ Primary Driver | `Install Codex CLI. README: https://github.com/openai/codex` |
-| [Claude Code](https://claude.ai/code) | ✅ Secondary Reviewer | `Install Claude Code. App: https://claude.ai/code` |
+| [Codex CLI](https://github.com/openai/codex) | ✅ Primary Driver | `Install Flux. README: https://github.com/Nairon-AI/flux` |
 | [OpenCode](https://github.com/anomalyco/opencode) | `[████████░░░] ~80%` | [flux-opencode](https://github.com/Nairon-AI/flux-opencode) — brain vault, security suite, RCA, propose, gate ported |
 
 **Flux install prompt** — use this with your agent:
