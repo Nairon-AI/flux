@@ -449,8 +449,8 @@ After generating the "What should become skills" list, **autonomously build each
 - **Cap**: Build at most **3 skills** per improve session. If more candidates exist, build the top 3 by impact and list the rest as suggestions for a future `/flux:improve` run.
 
 For each candidate (up to 3):
-1. Check `.codex/skills/` and `.claude/skills/` for existing overlap. If a skill already covers the workflow, skip it.
-2. Invoke `flux-skill-builder` with the identified workflow as input. The builder handles research, drafting, validation, and installation to `.codex/skills/<name>/` with a legacy Claude mirror when needed.
+1. Check `.secureskills/store/`, `.codex/skills/`, and `.claude/skills/` for existing overlap. If a skill already covers the workflow, skip it.
+2. Invoke `flux-skill-builder` with the identified workflow as input. The builder handles research, drafting, validation, and secure project-local installation through PlaTo when available, with loose skill folders only as fallback.
 3. Report what was created in the summary.
 
 This replaces the previous behavior of listing suggestions. Improve now **acts** on skill opportunities instead of deferring them.

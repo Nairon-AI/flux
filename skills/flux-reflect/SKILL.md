@@ -106,7 +106,7 @@ Codebase knowledge, principles, gotchas — anything that informs future session
 - Group in directories with index files using `[[wikilinks]]`.
 - No inlined content in index files.
 
-### Skill extraction (`.codex/skills/`)
+### Skill extraction (`.secureskills/` preferred)
 
 When a learning meets ALL of these criteria, extract it as a standalone skill:
 
@@ -124,7 +124,7 @@ When a learning meets ALL of these criteria, extract it as a standalone skill:
 
 **Process:**
 
-Invoke the `flux-skill-builder` skill autonomously. Pass it the learning context — what was discovered, why it's reusable, and the verified solution from this session. The skill builder handles research, drafting, validation (`validate_skills.py`), and installation to `.codex/skills/<name>/` with a legacy Claude mirror when needed.
+Invoke the `flux-skill-builder` skill autonomously. Pass it the learning context — what was discovered, why it's reusable, and the verified solution from this session. The skill builder handles research, drafting, validation (`validate_skills.py`), and installation to project-local `.secureskills/` through PlaTo when available, with loose `.codex/skills/<name>/` mirrors only as fallback.
 
 Do NOT manually create skill files. The skill builder encodes all best practices from `docs/skills-best-practices.md` and produces validated, trigger-optimized skills with proper progressive disclosure.
 

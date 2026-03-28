@@ -6,12 +6,15 @@ All notable changes to Flux will be documented in this file.
 
 ### Changed
 
+- Flux now bootstraps PlaTo (`secureskills`) and uses it as the preferred secure installer for supported project-local skills
 - `fluxctl agentmap` now uses a built-in Flux implementation instead of requiring an external `agentmap` CLI in `PATH`
 - `/flux:setup` no longer recommends or installs `agentmap` as a separate tool
 - `/flux:setup` now offers CodexBar on macOS so users can monitor Codex and Claude Code subscription usage from the menu bar.
 
 ### Improved
 
+- project skill detection, verification, uninstall docs, and troubleshooting now understand PlaTo-managed `.secureskills/` stores
+- Flux setup docs now position Flux as a safe skill installer backed by PlaTo for supported project-local installs
 - setup docs now describe agentmap generation as a native Flux capability
 - built-in tests now validate actual map generation logic instead of a stubbed external binary
 

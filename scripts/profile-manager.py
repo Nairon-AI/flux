@@ -557,18 +557,23 @@ def hash_skill_folder(path: Path) -> str:
 
 def detect_skills(scope: str, cwd: Path) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    roots: list[tuple[str, Path]] = []
+    roots: list[tuple[str, Path, str]] = []
 
     if scope in {"global", "both"}:
-        roots.append(("global", HOME / ".claude" / "skills"))
+        roots.append(("global", HOME / ".codex" / "skills", "legacy"))
+        roots.append(("global", HOME / ".claude" / "skills", "legacy"))
     if scope in {"project", "both"}:
-        roots.append(("project", cwd / ".claude" / "skills"))
+        roots.append(("project", cwd / ".secureskills" / "store", "plato"))
+        roots.append(("project", cwd / ".codex" / "skills", "legacy"))
+        roots.append(("project", cwd / ".claude" / "skills", "legacy"))
 
-    for skill_scope, root in roots:
+    for skill_scope, root, root_type in roots:
         if not root.exists():
             continue
         for child in sorted(root.iterdir()):
             if not child.is_dir():
+                continue
+            if root_type == "plato" and not (child / "manifest.json").exists():
                 continue
             skill_name = child.name
             fingerprint = hash_skill_folder(child)
@@ -577,6 +582,7 @@ def detect_skills(scope: str, cwd: Path) -> list[dict[str, Any]]:
                     "name": skill_name,
                     "hash": fingerprint,
                     "scopes": [skill_scope],
+                    "storage": root_type,
                 }
             )
 
@@ -590,6 +596,9 @@ def detect_skills(scope: str, cwd: Path) -> list[dict[str, Any]]:
         for scope_name in entry.get("scopes", []):
             existing_scopes.add(scope_name)
         deduped[key]["scopes"] = sorted(existing_scopes)
+        existing_storage = set(deduped[key].get("storage_types", []))
+        existing_storage.add(str(entry.get("storage", "")))
+        deduped[key]["storage_types"] = sorted(s for s in existing_storage if s)
 
     return sorted(deduped.values(), key=lambda x: (x["name"].lower(), x["hash"]))
 
@@ -1315,6 +1324,9 @@ def install_item(
         }
 
     verify_type, verify_arg = parse_verify_arg(item)
+    if category == "skill" and verify_type == "manual" and str(install.get("scope", "user")).strip() == "project":
+        verify_type = "secureskill"
+        verify_arg = str(Path.cwd())
     verify_command = [verify_script, name, verify_type]
     if verify_arg:
         verify_command.append(verify_arg)

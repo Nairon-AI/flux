@@ -77,7 +77,7 @@ Install Flux. README: https://github.com/Nairon-AI/flux
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. Codex is the primary implementation path end-to-end.
 
-> **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
+> **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, Flux-secured skills live in `.secureskills/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
 
 ---
 
@@ -85,7 +85,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 
 ### 1. Setup
 
-`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. Everything is opt-in — you pick what you want.
+`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. It also bootstraps [PlaTo](https://github.com/Alt5r/Plato) for project-local secure skill installs, so Flux can add supported skills through `secureskills` instead of dropping loose `SKILL.md` files into the repo. Everything is opt-in — you pick what you want.
 
 <details>
 <summary><b>What Flux offers to install</b></summary>
@@ -110,6 +110,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Lefthook](https://github.com/evilmartians/lefthook) | Fast git hooks for pre-commit checks |
 | [agent-browser](https://github.com/nichochar/agent-browser) | Headless browser for automated UI QA during epic reviews |
 | [CLI Continues](https://github.com/nichochar/continues) | Session handoff — pick up where you left off across terminals |
+| [PlaTo](https://github.com/Alt5r/Plato) | Secure skill installer for Codex and Claude — signs and verifies project-local skills before runtime exposure |
 
 **Desktop Apps** (macOS):
 
@@ -552,7 +553,7 @@ The full Product OS scoping flow (the interview, problem statement, task breakdo
 
 Flux reads your **repo structure** (files, directories, dependencies), your **installed MCP servers** (from `.mcp.json`), and optionally your **legacy session transcripts under `~/.claude/projects/`** (only when you run `/flux:improve` and give explicit consent).
 
-For project-local setup, Flux creates its core repo state inside `.flux/` — including the brain vault at `.flux/brain/`. Optional ecosystem features still use some user-global state (for example cached recommendations under `~/.flux/`, Codex skills under `~/.codex/skills/`, and legacy Claude session/plugin data under `~/.claude/`), but the main workflow state is project-local.
+For project-local setup, Flux creates its core repo state inside `.flux/` — including the brain vault at `.flux/brain/`. When you choose secure skill installs, Flux also uses PlaTo's project-local `.secureskills/` store so supported skills are signed and verified before the agent sees them. Optional ecosystem features still use some user-global state (for example cached recommendations under `~/.flux/`, the global `secureskills` CLI and shell hook metadata, and legacy Claude session/plugin data under `~/.claude/`), but the main workflow state is project-local.
 
 The only global change Flux makes is during `/flux:setup` if you choose to install CLI tools (like `jq` or `gh`) — but even that is opt-in and asks you first.
 </details>

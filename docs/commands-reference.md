@@ -22,6 +22,8 @@ npm install -g @openai/codex
 codex login
 ```
 
+Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported project skills go through `secureskills` and land in `.secureskills/` instead of loose repo-local skill folders.
+
 ---
 
 ## Core Workflow
@@ -109,7 +111,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps).
+Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store.
 
 ### /flux:plan
 

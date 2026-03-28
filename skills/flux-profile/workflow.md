@@ -27,8 +27,8 @@ mcp_question({
     question: "For profile export, which skills should be included?",
     options: [
       { label: "Both (dedupe)", description: "Combine global + project skills, dedupe by name+hash" },
-      { label: "Global only", description: "Include only ~/.codex/skills (plus any legacy mirrors)" },
-      { label: "Project only", description: "Include only .codex/skills in current repo (plus any legacy mirrors)" }
+      { label: "Global only", description: "Include globally installed skills and legacy mirrors" },
+      { label: "Project only", description: "Include project-local PlaTo skills from .secureskills plus any legacy mirrors" }
     ]
   }]
 })

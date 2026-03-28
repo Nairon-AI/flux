@@ -75,6 +75,16 @@ for skill_dir in "$SNAPSHOT_DIR"/*/; do
     if [ -d "$skill_dir" ]; then
         skill_name=$(basename "$skill_dir")
         if [[ "$skill_name" != "." && "$skill_name" != ".." ]]; then
+            if [[ "$skill_name" == *-plato ]]; then
+                secure_skill_name="${skill_name%-plato}"
+                SECURE_SKILL_DEST="./.secureskills/store/$secure_skill_name"
+                mkdir -p "./.secureskills/store"
+                rm -rf "$SECURE_SKILL_DEST"
+                cp -r "$skill_dir" "$SECURE_SKILL_DEST"
+                echo "✓ Restored secure skill: $secure_skill_name"
+                RESTORED+=("secureskill:$secure_skill_name")
+                continue
+            fi
             CODEX_SKILL_DEST="${HOME}/.codex/skills/$skill_name"
             LEGACY_SKILL_DEST="${HOME}/.claude/skills/$skill_name"
             mkdir -p "${HOME}/.codex/skills" "${HOME}/.claude/skills"

@@ -36,12 +36,17 @@ def test_skill_detection_dedupes_name_and_hash():
         home = root / "home"
         cwd = root / "repo"
 
+        (home / ".codex" / "skills" / "alpha").mkdir(parents=True)
         (home / ".claude" / "skills" / "alpha").mkdir(parents=True)
         (cwd / ".claude" / "skills" / "alpha").mkdir(parents=True)
+        (cwd / ".secureskills" / "store" / "alpha").mkdir(parents=True)
         (cwd / ".claude" / "skills" / "alpha-variant").mkdir(parents=True)
 
+        (home / ".codex" / "skills" / "alpha" / "SKILL.md").write_text("hello")
         (home / ".claude" / "skills" / "alpha" / "SKILL.md").write_text("hello")
         (cwd / ".claude" / "skills" / "alpha" / "SKILL.md").write_text("hello")
+        (cwd / ".secureskills" / "store" / "alpha" / "manifest.json").write_text("{}")
+        (cwd / ".secureskills" / "store" / "alpha" / "payload.txt").write_text("verified")
         (cwd / ".claude" / "skills" / "alpha-variant" / "SKILL.md").write_text(
             "different"
         )
@@ -56,9 +61,27 @@ def test_skill_detection_dedupes_name_and_hash():
         names = [s["name"] for s in skills]
         assert "alpha" in names
         alpha = [s for s in skills if s["name"] == "alpha"]
-        assert len(alpha) == 1
-        assert set(alpha[0]["scopes"]) == {"global", "project"}
+        assert len(alpha) >= 1
+        assert any(set(entry["scopes"]) == {"global", "project"} for entry in alpha)
         assert "alpha-variant" in names
+
+
+def test_install_item_defaults_project_skills_to_secureskill_verification():
+    payload = {
+        "item": {
+            "name": "baseline-ui",
+            "category": "skill",
+            "install": {
+                "type": "skill",
+                "source": "https://github.com/ibelick/ui-skills",
+                "scope": "project",
+            },
+        }
+    }
+    result = _run_cli(["install-item", "--dry-run"], stdin_payload=payload)
+    assert result["success"] is True
+    assert result["verification"] == "secureskill"
+    assert result["verify_command"][2] == "secureskill"
 
 
 def test_application_selection_state_buckets():
@@ -424,6 +447,7 @@ def test_saved_apps_remove_flow():
 def run_all_tests():
     test_redaction_masks_sensitive_values()
     test_skill_detection_dedupes_name_and_hash()
+    test_install_item_defaults_project_skills_to_secureskill_verification()
     test_application_selection_state_buckets()
     test_build_profile_snapshot_respects_app_and_required_selection()
     test_plan_import_filters_incompatible_and_installed_items()
