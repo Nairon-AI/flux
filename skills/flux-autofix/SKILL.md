@@ -1,10 +1,6 @@
 ---
 name: flux-autofix
-description: >-
-  Enable Claude's optional cloud auto-fix on a PR after submit. Use when a PR
-  is already open and you want Claude to watch CI failures and review comments,
-  or when invoking `/flux:autofix` manually on a PR URL or number. Runs
-  automatically after `/flux:work` submits a PR when enabled via `/flux:setup`.
+description: Use when handing a submitted PR to Claude's optional cloud auto-fix after submit. Watches for CI failures and review comments, pushes fixes remotely so you can walk away. Runs automatically after /flux:work submits a PR (when enabled via /flux:setup). Also invocable manually via /flux:autofix.
 user-invocable: true
 ---
 

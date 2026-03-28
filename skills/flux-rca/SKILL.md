@@ -15,6 +15,8 @@ Trace backward from symptom to root cause, fix at the source, verify the fix hol
 
 > "Never fix where the error appears. Always trace back to find the original trigger."
 
+This is a fundamentally different flow from feature development. Features start with "what do we want?" — bugs start with "what went wrong?" Features diverge on solutions — bugs converge on root cause.
+
 ```
 REPRODUCE → INVESTIGATE → ROOT CAUSE → FIX → VERIFY → LEARN
 ```
@@ -98,6 +100,8 @@ ls -d test tests spec __tests__ *_test.go *_test.py 2>/dev/null | head -1 && HAS
 jq -r '.scripts.test // empty' package.json 2>/dev/null | grep -v 'no test specified' && HAS_TESTS=1
 ```
 
+---
+
 # PHASE 1: REPRODUCE
 
 ## Step 1: Understand the Symptom
@@ -134,6 +138,8 @@ Before investigating, confirm the bug is reproducible:
    - "Does it only happen in a specific environment? (browser, OS, data set)"
 
 **If still not reproducible after clarification**: warn the user that fixing without reproduction is risky, but proceed to investigation if they want to continue.
+
+---
 
 # PHASE 2: INVESTIGATE
 
@@ -249,6 +255,8 @@ Present the root cause clearly:
 
 If confidence is Low, tell the user and ask if they want to investigate further or proceed with the best hypothesis.
 
+---
+
 # PHASE 3: VERIFY ROOT CAUSE (Standard + Critical only)
 
 Skip this phase for **Quick** severity bugs.
@@ -282,6 +290,8 @@ $FLUXCTL rp chat-send --message "Review this root cause analysis. Challenge the 
 ```
 
 Present any challenges from the adversarial review. If the root cause holds, proceed. If challenged, re-investigate.
+
+---
 
 # PHASE 4: FIX
 
@@ -359,6 +369,8 @@ Write a **manual verification checklist** instead:
 Also note in the PR:
 > "This codebase doesn't have automated tests yet. A regression test would have caught this bug before it reached users. Consider setting up a testing framework — `/flux:prime` can audit your test coverage and recommend a setup."
 
+---
+
 # PHASE 5: DESLOPPIFY
 
 ## Step 10: Quality Check
@@ -434,57 +446,18 @@ Search for similar patterns in the codebase:
 If systemic, flag it:
 > "I found [N] other places in the codebase with the same pattern that could have the same bug. Want me to create a task to address them?"
 
+---
+
 # COMPLETION
 
 ## Step 12: Summary
 
-```
-## RCA Summary
+Read [completion.md](completion.md) for:
+- The `RCA Summary` output template
+- PR title/body expectations after the fix is verified
+- The required end-of-command Flux update check
 
-**Bug**: [one sentence description]
-**Severity**: [Quick / Standard / Critical]
-**Root cause**: [one sentence — at the source, not the symptom]
-**Production trigger**: [the real operating condition that made it fail]
-**Fix**: [what was changed and where]
-**Investigation**: [Flux RCA / RepoPrompt Investigate]
-**Regression test**: [added / manual checklist (no test infra)]
-**Pitfall written**: [.flux/brain/pitfalls/slug.md]
-**Prevention**: [lint rule / type constraint / CI check / none needed]
-**Similar patterns found**: [N other locations flagged / none]
-
-Confidence: [High / Medium / Low]
-```
-
-After showing summary, offer to create PR:
-> "Ready to create a PR for this fix? I'll include the root cause analysis in the PR description so reviewers have full context."
-
-Create PR with:
-- **Title**: `fix: [concise bug description]`
-- **Body**: Full RCA summary + root cause chain + what was changed + regression test details
-
-## Update Check (End of Command)
-
-**ALWAYS run at the very end of /flux:rca execution:**
-
-```bash
-PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
-[ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
-UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
-UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
-LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
-REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
-```
-
-**If update available**, append to output:
-
-```
----
-Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Update Flux from the same source you installed it from, then restart your agent session.
----
-```
-
-**If no update**: Show nothing (silent).
+Follow that file exactly after the Learn phase finishes.
 
 ## Gotchas
 
