@@ -2346,6 +2346,7 @@ CLI tools:
 - Agent Browser: <installed | already installed | skipped>
 - Expect: <installed | already installed | skipped>
 - CLI Continues: <installed | already installed | skipped>
+- Diffity: <installed | already installed | skipped | not offered>
 - Browser QA preference: <agent-browser | expect | not set>
 ```
 
@@ -2508,6 +2509,7 @@ brew uninstall gh        # GitHub CLI
 brew uninstall jq
 brew uninstall fzf
 brew uninstall lefthook
+npm uninstall -g diffity
 # etc.
 ```
 
