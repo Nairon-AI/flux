@@ -12,6 +12,12 @@ For the formal workflow state machine (all states, transitions, routing rules, a
 4. Scripts return structured JSON.
 5. Skill presents output and executes selected actions.
 
+Flux also has **workflow-embedded utility skills** that do not have slash commands of their own. These run from inside long-lived workflow skills at specific points in the state machine:
+
+- `flux-parallel-dispatch` - before fan-out steps like Prime scouts or Scope explore variants
+- `flux-receive-review` - while Impl Review, Epic Review, or Autofix is interpreting reviewer/bot feedback
+- `flux-verify-claims` - before Work, Review, or Autofix claims fixed, green, SHIP, or done
+
 ## Core Components
 
 ### Command Layer
@@ -32,6 +38,11 @@ Example:
 - A skill is a folder, not just a markdown file: `SKILL.md` plus optional `references/`, `scripts/`, `assets/`, and sibling workflow docs.
 - Keep `SKILL.md` focused on routing, workflow, and gotchas; push detailed references and deterministic logic into supporting files.
 - See [skills-best-practices.md](skills-best-practices.md) for the authoring rules used in this repo.
+
+Two kinds of skills exist in Flux:
+
+- **Command-backed workflow skills** - invoked through `commands/flux/*.md` and surfaced by router metadata
+- **Workflow-embedded utility skills** - intentionally non-user-invocable; referenced by other skills and applied within an existing session phase
 
 ### Script Layer
 

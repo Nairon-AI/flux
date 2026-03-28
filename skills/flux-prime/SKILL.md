@@ -101,6 +101,8 @@ Read [workflow.md](workflow.md) and execute each phase in order.
 9. **Mark Prime Complete** — So session-state knows priming is done
 10. **Ruminate Offer** — If brain is thin + past sessions exist, ask the user if they want to populate the brain from past conversations. If they say yes, run `/flux:ruminate` immediately as part of prime — not as a separate workflow suggestion.
 
+Prime's scout fan-out should apply `flux-parallel-dispatch`: launch all read-only, independent scouts together; do not serialize them.
+
 ## Maturity Levels (Agent Readiness)
 
 | Level | Name | Description | Score |

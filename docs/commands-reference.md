@@ -186,6 +186,18 @@ These are also part of the natural-language router when the request clearly matc
 
 ---
 
+### Workflow-Embedded Utility Skills
+
+Flux also uses internal utility skills that are **not** slash commands and therefore do not appear in `commands/flux/`. They are part of the workflow contract and are invoked from within existing phases:
+
+- `flux-parallel-dispatch` — Prime scouts and Scope explore fan-out
+- `flux-receive-review` — Impl Review, Epic Review, and Autofix comment handling
+- `flux-verify-claims` — Work/Review/Autofix completion and SHIP claims
+
+These utility skills stay inside the owning phase instead of becoming router targets.
+
+---
+
 ## Knowledge & Memory
 
 | Command | Usage | Purpose |
