@@ -2,11 +2,11 @@
 # Inject brain index at session start so the agent knows what knowledge is available.
 # Adapted from brainmaxxing (https://github.com/poteto/brainmaxxing)
 
-# Find the brain directory - check project root first, then plugin root
-if [ -f "brain/index.md" ]; then
-  BRAIN_INDEX="brain/index.md"
-elif [ -n "$CLAUDE_PROJECT_DIR" ] && [ -f "$CLAUDE_PROJECT_DIR/brain/index.md" ]; then
-  BRAIN_INDEX="$CLAUDE_PROJECT_DIR/brain/index.md"
+# Find the brain directory - canonical path is project-local .flux/brain/
+if [ -f ".flux/brain/index.md" ]; then
+  BRAIN_INDEX=".flux/brain/index.md"
+elif [ -n "$CLAUDE_PROJECT_DIR" ] && [ -f "$CLAUDE_PROJECT_DIR/.flux/brain/index.md" ]; then
+  BRAIN_INDEX="$CLAUDE_PROJECT_DIR/.flux/brain/index.md"
 else
   # No brain vault found - silent exit
   exit 0
@@ -33,6 +33,8 @@ if [ -x "$FLUXCTL" ] && [ -d ".flux" ]; then
   "$FLUXCTL" session-state || true
   echo ""
   "$FLUXCTL" prime-status || true
+  echo ""
+  "$FLUXCTL" architecture status || true
   echo ""
   "$FLUXCTL" scope-status || true
 fi

@@ -96,9 +96,10 @@ Read [workflow.md](workflow.md) and execute each phase in order.
 4. **Present Report** — Full report with all 8 pillars
 5. **Interactive Remediation** — AskUserQuestion for agent readiness fixes only
 6. **Apply Fixes** — Create/modify files based on selections
-7. **Summary** — Show what was changed
-8. **Mark Prime Complete** — So session-state knows priming is done
-9. **Ruminate Offer** — If brain is thin + past sessions exist, ask the user if they want to populate the brain from past conversations. If they say yes, run `/flux:ruminate` immediately as part of prime — not as a separate workflow suggestion.
+7. **Architecture Diagram** — Seed or refresh `.flux/brain/codebase/architecture.md` as the canonical whole-product map
+8. **Summary** — Show what was changed
+9. **Mark Prime Complete** — So session-state knows priming is done
+10. **Ruminate Offer** — If brain is thin + past sessions exist, ask the user if they want to populate the brain from past conversations. If they say yes, run `/flux:ruminate` immediately as part of prime — not as a separate workflow suggestion.
 
 ## Maturity Levels (Agent Readiness)
 

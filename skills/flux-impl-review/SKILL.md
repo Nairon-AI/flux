@@ -108,6 +108,7 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-t
 [ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+$FLUXCTL architecture status --json
 ```
 
 ### Step 0: Parse Arguments
@@ -138,6 +139,9 @@ fi
 ```
 
 On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
+
+If the implementation changes high-level architecture and `.flux/brain/codebase/architecture.md`
+was not updated, treat that as a real review issue rather than optional cleanup.
 
 ### RepoPrompt Backend
 

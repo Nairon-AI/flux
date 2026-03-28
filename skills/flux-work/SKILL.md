@@ -44,6 +44,7 @@ $FLUXCTL session-phase set idle
 - You MUST stage with `git add -A` (never list files). This ensures `.flux/` and `scripts/ralph/` (if present) are included.
 - Do NOT claim completion until `fluxctl show <task>` reports `status: done`.
 - Do NOT invoke `/flux:impl-review` until tests/Quick commands are green.
+- If a task changes high-level product architecture, you MUST update `.flux/brain/codebase/architecture.md` via `fluxctl architecture write` before review/completion.
 
 **Role**: execution lead, plan fidelity first.
 **Goal**: complete every task in order with tests.

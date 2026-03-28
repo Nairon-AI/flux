@@ -98,13 +98,15 @@ Examples:
 
 If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentences."
 
-## Load Business Context
+## Load Business And Architecture Context
 
 Before starting any detection or interview, silently load business context if it exists:
 
 ```bash
 cat .flux/brain/business/context.md 2>/dev/null
 cat .flux/brain/business/glossary.md 2>/dev/null
+cat .flux/brain/codebase/architecture.md 2>/dev/null
+.flux/bin/fluxctl architecture status --json 2>/dev/null
 ```
 
 If business context exists:
@@ -112,6 +114,7 @@ If business context exists:
 - **Glossary** ensures domain terms are interpreted correctly throughout the interview — never misinterpret domain-specific language
 - **Team structure** determines whether to watch for deferred authority signals ("my co-founder said...") and whether to route to propose
 - **Area-specific files** (`.flux/brain/business/billing.md`, etc.) provide context when the scope touches those areas — read them when relevant
+- **Architecture diagram** provides the current high-level system map — use it when reasoning about boundaries, integrations, trust zones, and likely blast radius
 
 If no business context exists: continue normally.
 

@@ -38,12 +38,14 @@ Detect input type in this order (first match wins):
 - Read task: `$FLUXCTL show <id> --json`
 - Read spec: `$FLUXCTL cat <id>`
 - Get epic from task data for context: `$FLUXCTL show <epic-id> --json && $FLUXCTL cat <epic-id>`
+- Read architecture status: `$FLUXCTL architecture status --json`
 - **This is the only task to execute** — no loop to next task
 
 **Flow epic ID (fn-N-slug or legacy fn-N/fn-N-xxx)** → EPIC_MODE:
 - Read epic: `$FLUXCTL show <id> --json`
 - Read spec: `$FLUXCTL cat <id>`
 - Get first ready task: `$FLUXCTL ready --epic <id> --json`
+- Read architecture status: `$FLUXCTL architecture status --json`
 
 **Spec file start (.md path that exists)**:
 1. Check file exists: `test -f "<path>"` — if not, treat as idea text
@@ -167,6 +169,7 @@ fi
 
 Use the Task tool to spawn a `worker` subagent. The worker gets fresh context and handles:
 - Re-anchoring (reading spec, git status)
+- Reading and, when needed, updating the canonical architecture diagram
 - Implementation
 - Committing
 - Review cycles (if enabled)

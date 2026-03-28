@@ -47,6 +47,7 @@ from .utils import (
     workflow_phases_for_mode,
 )
 from .config import get_config, get_default_config, deep_merge
+from .architecture import get_architecture_state
 from . import tracker
 from .state import (
     default_prime_state,
@@ -1683,6 +1684,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "objective": None,
             "task": None,
             "prime": default_prime_state(),
+            "architecture": get_architecture_state(use_json=args.json),
             "message": "Flux is not initialized yet.",
             "next_action": "/flux:setup",
         }
@@ -1693,6 +1695,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         return
 
     prime_state = get_prime_state(use_json=args.json)
+    architecture_state = get_architecture_state(use_json=args.json)
     if prime_state.get("status") != "done":
         current_actor = get_actor()
         epic_data = choose_current_objective(current_actor, use_json=args.json)
@@ -1713,6 +1716,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             },
             "task": None,
             "prime": prime_state,
+            "architecture": architecture_state,
             "message": "Flux is installed, but this repository has not been primed yet. Run /flux:prime before scoping or implementation.",
             "next_action": "/flux:prime",
         }
@@ -1732,6 +1736,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "objective": None,
             "task": None,
             "prime": prime_state,
+            "architecture": architecture_state,
             "message": "No open objective. Start a new feature, bug, or refactor scope.",
             "next_action": "/flux:scope",
         }
@@ -1781,6 +1786,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
         "session_phase": session_phase,
         "flux_exists": True,
         "prime": prime_state,
+        "architecture": architecture_state,
         "objective": {
             "id": epic_data["id"],
             "title": epic_data["title"],
@@ -1925,6 +1931,7 @@ def cmd_prime_status(args: argparse.Namespace) -> None:
         result = {
             "flux_exists": False,
             "prime": default_prime_state(),
+            "architecture": get_architecture_state(use_json=args.json),
             "prime_required": True,
             "message": "Flux is not initialized yet.",
             "next_action": "/flux:setup",
@@ -1936,6 +1943,7 @@ def cmd_prime_status(args: argparse.Namespace) -> None:
         return
 
     prime = get_prime_state(use_json=args.json)
+    architecture = get_architecture_state(use_json=args.json)
     prime_required = prime.get("status") != "done"
     message = (
         "Prime has not completed for this repository yet."
@@ -1945,6 +1953,7 @@ def cmd_prime_status(args: argparse.Namespace) -> None:
     result = {
         "flux_exists": True,
         "prime": prime,
+        "architecture": architecture,
         "prime_required": prime_required,
         "message": message,
         "next_action": "/flux:prime" if prime_required else None,

@@ -77,6 +77,8 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - are they implementing it with AI or handing it to an engineer?
 - During scoping, show progress with `.flux/bin/fluxctl scope-status`.
 - Persist phase changes and artifacts through `fluxctl` instead of relying on chat memory alone.
+- Treat `.flux/brain/codebase/architecture.md` as the canonical whole-product architecture note.
+- If architecture changes, update it through `.flux/bin/fluxctl architecture write`.
 </important>
 
 **Quick commands:**
@@ -86,6 +88,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 .flux/bin/fluxctl objective current   # Show active objective
 .flux/bin/fluxctl session-state       # Show routing state
 .flux/bin/fluxctl prime-status        # Show whether prime is still required
+.flux/bin/fluxctl architecture status # Show architecture diagram freshness
 .flux/bin/fluxctl scope-status        # Show scoping phase/progress
 .flux/bin/fluxctl tasks --epic fn-N   # List tasks for epic
 .flux/bin/fluxctl ready --epic fn-N   # What's ready

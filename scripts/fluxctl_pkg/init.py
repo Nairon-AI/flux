@@ -51,6 +51,7 @@ from .state import (
 )
 from .config import get_default_config, deep_merge, load_flux_config
 from .ralph import find_active_runs
+from .architecture import ARCHITECTURE_TEMPLATE
 
 
 # ---------------------------------------------------------------------------
@@ -77,6 +78,7 @@ _BRAIN_FILES: dict[Path, str] = {
 - [[decisions/index]] — Architectural decisions
 - [[pitfalls/index]] — Generalizable failure patterns
 - [[codebase/index]] — Repo-specific knowledge and gotchas
+- [[codebase/architecture]] — Canonical high-level product architecture diagram
 - [[plans/index]] — Durable plan references
 """,
     Path("brain/principles.md"): """# Principles Index
@@ -105,7 +107,10 @@ Generalizable failure patterns captured from reviews and root-cause analysis.
     Path("brain/codebase/index.md"): """# Codebase Knowledge Index
 
 Repo-specific knowledge, sharp edges, and operational gotchas.
+
+- [[architecture]] — Canonical high-level product architecture diagram
 """,
+    Path("brain/codebase/architecture.md"): ARCHITECTURE_TEMPLATE,
     Path("brain/plans/index.md"): """# Plans Index
 
 Durable plan references that are useful beyond a single task loop.
