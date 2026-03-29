@@ -1,6 +1,17 @@
 {
   "description": "Flux workflow hooks: Ralph guards + Brain vault persistence",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/flux-config-route.py\" ] && \"$PLUGIN_ROOT/hooks/flux-config-route.py\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "startup|resume",
@@ -19,6 +30,16 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Bash|Execute|Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_ROOT=\"${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; [ -z \"$PLUGIN_ROOT\" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1); [ -f \"$PLUGIN_ROOT/hooks/flux-config-route.py\" ] && \"$PLUGIN_ROOT/hooks/flux-config-route.py\" || true",
+            "timeout": 5
+          }
+        ]
+      },
       {
         "matcher": "Bash|Execute",
         "hooks": [
