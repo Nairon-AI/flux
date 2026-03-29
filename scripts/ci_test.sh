@@ -164,6 +164,16 @@ fluxctl config set planSync.enabled true --json >/dev/null && pass "config set" 
 CONFIG_VAL="$(fluxctl config get planSync.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
 [[ "$CONFIG_VAL" == "True" ]] && pass "config get" || fail "config get (got $CONFIG_VAL)"
 
+CONFIG_LIST_VAL="$(fluxctl config list --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['config']['planSync']['enabled'])")"
+[[ "$CONFIG_LIST_VAL" == "True" ]] && pass "config list" || fail "config list (got $CONFIG_LIST_VAL)"
+
+fluxctl config toggle planSync.enabled --json >/dev/null && pass "config toggle" || fail "config toggle"
+TOGGLED_VAL="$(fluxctl config get planSync.enabled --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['value'])")"
+[[ "$TOGGLED_VAL" == "False" ]] && pass "config toggle applied" || fail "config toggle applied (got $TOGGLED_VAL)"
+
+EDIT_PATH="$(fluxctl config edit --editor true --json | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['path'])")"
+[[ "$EDIT_PATH" == *".flux/config.json" ]] && pass "config edit" || fail "config edit (got $EDIT_PATH)"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. Symbol Extraction
 # ─────────────────────────────────────────────────────────────────────────────

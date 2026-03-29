@@ -380,6 +380,17 @@ PY
 echo -e "${GREEN}✓${NC} config set/get"
 PASS=$((PASS + 1))
 
+echo -e "${YELLOW}--- config list ---${NC}"
+config_list_json="$(scripts/fluxctl config list --json)"
+"$PYTHON_BIN" - <<'PY' "$config_list_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["config"]["planSync"]["enabled"] is True
+assert data["path"].endswith(".flux/config.json")
+PY
+echo -e "${GREEN}✓${NC} config list"
+PASS=$((PASS + 1))
+
 echo -e "${YELLOW}--- planSync config ---${NC}"
 scripts/fluxctl config set planSync.enabled true --json >/dev/null
 config_json="$(scripts/fluxctl config get planSync.enabled --json)"
@@ -391,14 +402,24 @@ PY
 echo -e "${GREEN}✓${NC} planSync config set/get"
 PASS=$((PASS + 1))
 
-scripts/fluxctl config set planSync.enabled false --json >/dev/null
-config_json="$(scripts/fluxctl config get planSync.enabled --json)"
+config_json="$(scripts/fluxctl config toggle planSync.enabled --json)"
 "$PYTHON_BIN" - <<'PY' "$config_json"
 import json, sys
 data = json.loads(sys.argv[1])
 assert data["value"] is False, f"Expected False, got {data['value']}"
 PY
 echo -e "${GREEN}✓${NC} planSync config toggle"
+PASS=$((PASS + 1))
+
+echo -e "${YELLOW}--- config edit ---${NC}"
+config_json="$(scripts/fluxctl config edit --editor true --json)"
+"$PYTHON_BIN" - <<'PY' "$config_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["path"].endswith(".flux/config.json"), data["path"]
+assert data["editor"] == "true", data["editor"]
+PY
+echo -e "${GREEN}✓${NC} config edit"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- schema v1 validate ---${NC}"

@@ -6,7 +6,14 @@ from .utils import (
     SESSION_PHASES,
 )
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
-from .config import cmd_config_get, cmd_config_set, cmd_review_backend
+from .config import (
+    cmd_config_edit,
+    cmd_config_get,
+    cmd_config_list,
+    cmd_config_set,
+    cmd_config_toggle,
+    cmd_review_backend,
+)
 from .architecture import cmd_architecture_status, cmd_architecture_path, cmd_architecture_write
 from .epics import (
     cmd_epic_create, cmd_show, cmd_epics, cmd_list, cmd_cat,
@@ -123,6 +130,23 @@ def main() -> None:
     p_config_set.add_argument("value", help="Config value")
     p_config_set.add_argument("--json", action="store_true", help="JSON output")
     p_config_set.set_defaults(func=cmd_config_set)
+
+    p_config_list = config_sub.add_parser("list", help="List current config")
+    p_config_list.add_argument("--json", action="store_true", help="JSON output")
+    p_config_list.set_defaults(func=cmd_config_list)
+
+    p_config_toggle = config_sub.add_parser("toggle", help="Toggle boolean config value")
+    p_config_toggle.add_argument("key", help="Boolean config key (e.g., planSync.enabled)")
+    p_config_toggle.add_argument("--json", action="store_true", help="JSON output")
+    p_config_toggle.set_defaults(func=cmd_config_toggle)
+
+    p_config_edit = config_sub.add_parser("edit", help="Open config file in an editor")
+    p_config_edit.add_argument(
+        "--editor",
+        help="Editor command override (defaults to $VISUAL/$EDITOR)",
+    )
+    p_config_edit.add_argument("--json", action="store_true", help="JSON output")
+    p_config_edit.set_defaults(func=cmd_config_edit)
 
     # review-backend (helper for skills)
     p_review_backend = subparsers.add_parser(

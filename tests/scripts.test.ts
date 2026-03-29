@@ -993,6 +993,100 @@ describe('Skill File Structure', () => {
     }
   })
 
+  test('natural-language router docs include Flux config requests', () => {
+    const snippet = readFileSync(
+      join(FLUX_ROOT, 'skills', 'flux-setup', 'templates', 'claude-md-snippet.md'),
+      'utf8'
+    )
+    const stateMachine = readFileSync(join(FLUX_ROOT, 'docs', 'state-machine.md'), 'utf8')
+    const fluxSkill = readFileSync(join(FLUX_ROOT, 'skills', 'flux', 'SKILL.md'), 'utf8')
+
+    expect(snippet).toContain('show my Flux config')
+    expect(snippet).toContain('what did setup configure')
+    expect(stateMachine).toContain('show my Flux config')
+    expect(stateMachine).toContain('what did setup configure')
+    expect(fluxSkill).toContain('edit Flux settings')
+    expect(fluxSkill).toContain('$FLUXCTL config list --json')
+  })
+
+  test('flux config route hook forces config commands for matching prompts', async () => {
+    const tmpRoot = `/tmp/flux-config-route-${Date.now()}`
+    mkdirSync(tmpRoot, { recursive: true })
+
+    const hookPath = join(FLUX_ROOT, 'hooks', 'flux-config-route.py')
+    const promptInput = join(tmpRoot, 'prompt.json')
+    const blockedInput = join(tmpRoot, 'blocked.json')
+    const allowedInput = join(tmpRoot, 'allowed.json')
+    const executeInput = join(tmpRoot, 'execute.json')
+    const sessionId = `flux-config-${Date.now()}`
+
+    writeFileSync(
+      promptInput,
+      JSON.stringify({
+        session_id: sessionId,
+        hook_event_name: 'UserPromptSubmit',
+        prompt: 'edit Flux settings',
+      })
+    )
+
+    const promptOutput =
+      await $`bash -lc "python3 '${hookPath}' < '${promptInput}'"`.text()
+    const parsedPrompt = JSON.parse(promptOutput)
+    expect(parsedPrompt.hookSpecificOutput.additionalContext).toContain(
+      '.flux/bin/fluxctl config edit'
+    )
+
+    writeFileSync(
+      blockedInput,
+      JSON.stringify({
+        session_id: sessionId,
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Read',
+        tool_input: { file_path: 'AGENTS.md' },
+      })
+    )
+
+    let blocked = ''
+    try {
+      await $`bash -lc "python3 '${hookPath}' < '${blockedInput}'"`.text()
+    } catch (e: unknown) {
+      const err = e as { stderr?: Buffer; stdout?: Buffer; exitCode?: number }
+      blocked = err.stderr?.toString() || err.stdout?.toString() || ''
+      expect(err.exitCode).toBe(2)
+    }
+    expect(blocked).toContain('.flux/bin/fluxctl config edit')
+
+    writeFileSync(
+      allowedInput,
+      JSON.stringify({
+        session_id: sessionId,
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Bash',
+        tool_input: { command: '.flux/bin/fluxctl config edit' },
+      })
+    )
+
+    const allowedOutput =
+      await $`bash -lc "python3 '${hookPath}' < '${allowedInput}'"`.text()
+    expect(allowedOutput.trim()).toBe('')
+
+    writeFileSync(
+      executeInput,
+      JSON.stringify({
+        session_id: sessionId,
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Execute',
+        tool_input: { command: '.flux/bin/fluxctl config edit' },
+      })
+    )
+
+    const executeOutput =
+      await $`bash -lc "python3 '${hookPath}' < '${executeInput}'"`.text()
+    expect(executeOutput.trim()).toBe('')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  })
+
   test('command-backed Flux skills have supported session phases', () => {
     const commandDir = join(FLUX_ROOT, 'commands', 'flux')
     const utilsText = readFileSync(join(FLUX_ROOT, 'scripts', 'fluxctl_pkg', 'utils.py'), 'utf8')

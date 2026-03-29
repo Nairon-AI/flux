@@ -58,6 +58,10 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
   - "always ..." / "never ..." when the user is setting an ongoing rule, not asking a question
 - Treat these as **task management requests** — route to the `flux` skill:
   - "what's the status", "show me my tasks", "list epics", "what's ready", "show fn-1"
+- Treat these as **Flux config requests** — route to the `flux` skill:
+  - "show my Flux config", "what did setup configure", "show Flux settings", "edit Flux settings"
+  - When the user wants to inspect config, prefer `.flux/bin/fluxctl config list`
+  - When the user wants to change several settings interactively, prefer `.flux/bin/fluxctl config edit`
 - Treat these as **React visual-jank requests** — if `dejank` is installed in the repo, route directly to `/flux:dejank`:
   - "flicker", "flash", "blink", "layout shift", "jank", "stutter", "jump", "pop in", "scroll reset", "feels rebuilt"
   - especially when the user is talking about a React UI, first render, hydration, or visual instability
