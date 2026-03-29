@@ -4,6 +4,15 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `fluxctl env`, `fluxctl doctor`, and a host-aware `fluxctl version` view so Flux can report the detected primary driver, the authoritative repo-local runtime version, and host-specific install/update guidance from one place. (#132, #133)
+
+### Improved
+
+- Flux now treats the repo-local runtime as the source of truth for Codex-primary setups and reports Claude plugin state as a separate adapter surface instead of conflating the two. This makes install drift and upgrade guidance much easier to understand in mixed-host environments. (#132, #133)
+- `version-check.sh`, `verify-install.sh`, and troubleshooting/upgrade guidance now point users to host-aware diagnostics before suggesting repair steps, reducing false Claude-specific guidance for repo-local Flux users. (#132, #133)
+
 ## [2.37.0] - 2026-03-29
 
 ### Highlights
