@@ -6,7 +6,7 @@
  */
 
 import { test, expect, describe, beforeAll } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, chmodSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, chmodSync, readFileSync, lstatSync, realpathSync } from 'fs'
 import { dirname, join } from 'path'
 import { $ } from 'bun'
 
@@ -481,6 +481,40 @@ describe('Flux Scripts', () => {
       const parsed = JSON.parse(output.slice(output.indexOf('{')))
       expect(parsed.success).toBe(true)
       expect(parsed.verify_type).toBe('secureskill')
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
+    test('worktree helper shares secure skills through the git common-dir', async () => {
+      const tmpRoot = `/tmp/flux-worktree-secureskills-${Date.now()}`
+      const worktreeScript = join(FLUX_ROOT, 'skills', 'flux-worktree-kit', 'scripts', 'worktree.sh')
+      mkdirSync(tmpRoot, { recursive: true })
+
+      await $`git init -b main ${tmpRoot}`.quiet()
+      await $`git -C ${tmpRoot} config user.name "Flux Test"`.quiet()
+      await $`git -C ${tmpRoot} config user.email "flux@example.com"`.quiet()
+      writeFileSync(join(tmpRoot, 'README.md'), '# fixture\n')
+      await $`git -C ${tmpRoot} add README.md`.quiet()
+      await $`git -C ${tmpRoot} commit -m "init"`.quiet()
+
+      mkdirSync(join(tmpRoot, '.secureskills', 'store', 'baseline-ui'), { recursive: true })
+      writeFileSync(
+        join(tmpRoot, '.secureskills', 'store', 'baseline-ui', 'manifest.json'),
+        '{}'
+      )
+
+      const output = await $`bash ${worktreeScript} create feature/main main`.cwd(tmpRoot).text()
+      expect(output).toContain('created:')
+
+      const worktreeRoot = join(tmpRoot, '.worktrees', 'feature', 'main')
+      const commonDir = realpathSync((await $`git -C ${tmpRoot} rev-parse --absolute-git-dir`.text()).trim())
+      const sharedRoot = join(commonDir, 'flux-secureskills')
+
+      expect(lstatSync(join(tmpRoot, '.secureskills')).isSymbolicLink()).toBe(true)
+      expect(lstatSync(join(worktreeRoot, '.secureskills')).isSymbolicLink()).toBe(true)
+      expect(realpathSync(join(tmpRoot, '.secureskills'))).toBe(sharedRoot)
+      expect(realpathSync(join(worktreeRoot, '.secureskills'))).toBe(sharedRoot)
+      expect(existsSync(join(sharedRoot, 'store', 'baseline-ui', 'manifest.json'))).toBe(true)
 
       rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)

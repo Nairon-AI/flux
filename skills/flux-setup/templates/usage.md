@@ -90,6 +90,8 @@ Runtime state (status, assignee, etc.) is stored in `.git/flux-state/`, shared a
 .flux/bin/fluxctl migrate-state --clean   # Migrate + remove runtime from tracked files
 ```
 
+Secure skills also follow worktrees now: Flux links `.secureskills/` to a shared store under the git common-dir, so one repo/worktree family reuses the same PlaTo keys and enabled-agent marker.
+
 Migration is optional — existing repos work without changes.
 
 ## Agentmap
