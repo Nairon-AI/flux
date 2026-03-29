@@ -1,6 +1,6 @@
 ---
 name: flux-scope
-description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow.
+description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Stress Test, Future Pressure, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow.
 user-invocable: false
 ---
 
@@ -10,7 +10,7 @@ Turn a rough idea into a well-defined objective using a Product OS-style workflo
 
 **Flux Scope Flow:**
 ```
-START -> DISCOVER -> DEFINE -> DEVELOP -> DELIVER -> HANDOFF
+START -> DISCOVER -> DEFINE -> STRESS TEST -> FUTURE PRESSURE -> DEVELOP -> DELIVER -> HANDOFF
 ```
 
 **Modes**:

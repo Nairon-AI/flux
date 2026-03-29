@@ -4,6 +4,8 @@ Complete reference for all available `/flux:*` commands.
 
 Flux is designed to route from intent. In normal use, you should be able to tell the agent what you want to build, fix, refactor, or continue, and let Flux choose the right command. Treat this page as a reference, not the primary way to drive the workflow.
 
+Important: examples in this document use `/flux:*` commands because they are precise and compact, but that is documentation shorthand. The default user experience is natural language first. In day-to-day use, a developer should be able to say things like "add role-based permissions", "fix the auth redirect bug", or "continue the notifications work", and Flux should route that request without requiring an explicit slash command.
+
 For the formal workflow state machine (all states, transitions, and routing rules), see [state-machine.md](state-machine.md).
 
 ---

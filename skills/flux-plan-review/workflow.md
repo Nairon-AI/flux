@@ -212,6 +212,9 @@ Conduct a John Carmack-level review:
 8. **Task sizing** - M tasks preferred. Flag over-splitting: 7+ tasks? Sequential S tasks that should be combined?
 9. **Testability** - How will we verify this works?
 10. **Consistency** - Do task specs align with epic spec?
+11. **Future Pressure** - Does the plan acknowledge likely follow-on features, failure modes, reuse pressure, observability, and reversal cost for one-way doors or shared surfaces?
+
+Treat missing `## Future Pressure` coverage as at least **Major** when the plan includes schemas, public APIs, auth/permissions, shared abstractions, or any other one-way door.
 
 ## Output Format
 

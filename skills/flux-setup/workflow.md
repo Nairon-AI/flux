@@ -1649,6 +1649,7 @@ Store detection results for use in questions. When showing options, indicate cur
 ### 6b: Check docs status
 
 Read the template from [templates/claude-md-snippet.md](templates/claude-md-snippet.md).
+The template intentionally includes runtime-conditional MCP routing rules, so preserve lines such as "if Context7 is available..." and "if Exa is available..." when comparing or writing the Flux block.
 
 For each of CLAUDE.md and AGENTS.md:
 1. Check if file exists
@@ -1659,6 +1660,8 @@ Determine status for each file:
 - **missing**: file doesn't exist or no flux section
 - **current**: section exists and matches template
 - **outdated**: section exists but differs from template
+
+If the repo already has installed MCPs such as `context7`, `exa`, or `firecrawl`, a Flux block missing the corresponding specialist-routing lines counts as **outdated** even if the rest of the block looks correct.
 
 ### 6c: Show current config notice
 
@@ -2235,6 +2238,10 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 1. Read the file (create if doesn't exist)
 2. If marker exists: replace everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive)
 3. If no marker: append the snippet from [templates/claude-md-snippet.md](templates/claude-md-snippet.md)
+4. Keep the MCP-preference rules in that snippet intact so future Codex/Claude sessions prefer installed specialist MCPs over generic harness tools:
+   - Context7 for docs/API references
+   - Exa for broad web research
+   - Firecrawl for fetching page contents/PDFs
 
 **Auto-fix** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set autofix.enabled true --json`
@@ -2328,6 +2335,37 @@ DOCS_OK=0
 grep -q "BEGIN FLUX" CLAUDE.md 2>/dev/null && DOCS_OK=1
 grep -q "BEGIN FLUX" AGENTS.md 2>/dev/null && DOCS_OK=1
 
+DOCS_REASON=""
+docs_have_line() {
+  needle="$1"
+  grep -Fq "$needle" AGENTS.md 2>/dev/null && return 0
+  grep -Fq "$needle" CLAUDE.md 2>/dev/null && return 0
+  return 1
+}
+
+MCP_FILE=".mcp.json"
+HAVE_CONTEXT7_MCP=0
+HAVE_EXA_MCP=0
+HAVE_FIRECRAWL_MCP=0
+if [ -f "$MCP_FILE" ] && jq empty "$MCP_FILE" >/dev/null 2>&1; then
+  jq -e '.mcpServers.context7' "$MCP_FILE" >/dev/null 2>&1 && HAVE_CONTEXT7_MCP=1
+  jq -e '.mcpServers.exa' "$MCP_FILE" >/dev/null 2>&1 && HAVE_EXA_MCP=1
+  jq -e '.mcpServers.firecrawl' "$MCP_FILE" >/dev/null 2>&1 && HAVE_FIRECRAWL_MCP=1
+fi
+
+if [ "$DOCS_OK" -eq 1 ]; then
+  if [ "$HAVE_CONTEXT7_MCP" -eq 1 ] && ! docs_have_line 'If the `context7` MCP is available'; then
+    DOCS_OK=0
+    DOCS_REASON="missing Context7 routing rule"
+  elif [ "$HAVE_EXA_MCP" -eq 1 ] && ! docs_have_line 'If the `exa` MCP is available'; then
+    DOCS_OK=0
+    DOCS_REASON="missing Exa routing rule"
+  elif [ "$HAVE_FIRECRAWL_MCP" -eq 1 ] && ! docs_have_line 'If the `firecrawl` MCP is available'; then
+    DOCS_OK=0
+    DOCS_REASON="missing Firecrawl routing rule"
+  fi
+fi
+
 # Check business context
 BIZ_OK=0
 [ -f ".flux/brain/business/context.md" ] && BIZ_OK=1
@@ -2339,7 +2377,8 @@ BIZ_OK=0
 ```
 - If `MISSING` is not empty: `Missing config: <list>. Running Step 6 configuration questions now.`
   → Go back and execute Step 6 for the missing keys only.
-- If `DOCS_OK=0`: `CLAUDE.md/AGENTS.md missing Flux section. Running docs update now.`
+- If `DOCS_OK=0` and `DOCS_REASON` is empty: `CLAUDE.md/AGENTS.md missing Flux section. Running docs update now.`
+- If `DOCS_OK=0` and `DOCS_REASON` is set: `CLAUDE.md/AGENTS.md Flux block is stale: <DOCS_REASON>. Running docs update now.`
   → Execute the docs portion of Step 6.
 - If `BIZ_OK=0`: `Business context not captured. Running Step 5b now.`
   → Execute Step 5b.

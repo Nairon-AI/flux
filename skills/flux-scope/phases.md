@@ -15,7 +15,7 @@ The scarce resource has always been clarity — knowing what to build, defining 
 ## Overview
 
 ```
-START -> DISCOVER -> DEFINE -> STRESS TEST -> DEVELOP -> DELIVER -> HANDOFF
+START -> DISCOVER -> DEFINE -> STRESS TEST -> FUTURE PRESSURE -> DEVELOP -> DELIVER -> HANDOFF
 ```
 
 At all times, Flux should persist:
@@ -106,6 +106,32 @@ See [stress-test.md](stress-test.md) for full execution details.
 
 ---
 
+## FUTURE PRESSURE (Step 6.2 — runs after STRESS TEST)
+
+**Purpose**: Forecast where the product and codebase are likely to go next so the plan does not lock in abstractions that are only "correct for this prompt." This is the slop-creep prevention pass.
+
+**Always runs**: Quick future-pressure pass (~2-3 min).
+
+**Deep pass required** (~5-10 min) when the scoped work touches:
+- one-way doors
+- shared abstractions or module boundaries
+- public APIs, schemas, state machines, auth, permissions
+- analytics/event models
+- workflows that are likely to grow into a platform surface
+
+**Questions**:
+- What are the next 2-3 likely features that will want to reuse this?
+- If usage or data grows 10x, what breaks first?
+- What failure modes will users or on-call feel?
+- If this choice is wrong, what is the reversal path?
+- Are we encoding a temporary workaround into a durable schema, API, or abstraction?
+
+**Exit Signal**: The epic spec contains explicit future-pressure notes or an explicit statement that no notable pressure exists beyond standard regression coverage.
+
+**Output**: Future pressure section with reuse, scale, failure, observability, migration, and validation triggers. See [docs/future-pressure.md](../../docs/future-pressure.md).
+
+---
+
 ## SOLUTION SPACE
 
 ### DEVELOP Phase (Diverge)
@@ -163,6 +189,7 @@ See [stress-test.md](stress-test.md) for full execution details.
 |-------|------|-------|
 | Discover | 3-5 min | 5-8 questions total |
 | Define | 1-2 min | Quick synthesis |
+| Future Pressure | 2-3 min | Quick forecast, deep only if triggered |
 | Develop | 2-3 min | Focus on obvious solution, key risks only |
 | Deliver | 2-3 min | Short implementation package |
 
@@ -174,6 +201,7 @@ See [stress-test.md](stress-test.md) for full execution details.
 |-------|------|-------|
 | Discover | 15-20 min | 15-20 questions, thorough |
 | Define | 5 min | Careful synthesis |
+| Future Pressure | 5-10 min | Deep forecast for one-way doors and shared surfaces |
 | Develop | 10-15 min | Alternatives, states, trade-offs |
 | Deliver/Handoff | 10-15 min | Rich package + stronger gates |
 
@@ -192,6 +220,7 @@ See [stress-test.md](stress-test.md) for full execution details.
 ### Solution Space
 
 - **No research**: Writing tasks without understanding the codebase
+- **No future-pressure pass**: Treating a shared abstraction or schema like a local implementation detail
 - **Over-planning**: Writing implementation code in specs
 - **Under-sizing**: Creating L tasks that should be split
 - **Over-splitting**: Creating 10 S tasks that should be 3 M tasks

@@ -95,6 +95,21 @@ If business context files exist:
 
 Present business context findings alongside the brain audit report. Apply changes with user approval.
 
+### 6c. Future-pressure audit
+
+Use meditate as the periodic correction loop for slop creep.
+
+Review recent pitfalls, principles, and changed architecture notes for:
+- workaround fields that became permanent
+- duplicated abstractions solving the same pressure in different ways
+- repeated missing observability on new surfaces
+- forecast misses that should become a principle, guardrail, or checklist item
+
+If the same forecast miss appears 2+ times, prefer structural encoding over prose:
+- update a relevant skill workflow
+- add a principle
+- tighten a spec template or review gate
+
 ### 7. Housekeep
 
 Update `.flux/brain/index.md` for any files added or removed. Also update `.flux/brain/business/index.md` if business context files were added, removed, or renamed.
