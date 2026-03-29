@@ -77,6 +77,8 @@ Install Flux. README: https://github.com/Nairon-AI/flux
 
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. Codex is the primary implementation path end-to-end.
 
+> **Natural-language first:** In normal use, developers do **not** need to type slash commands. They can just say things like "add team roles and permissions", "fix the auth bug", or "continue the dashboard work", and Flux routes that intent to the right workflow. The `/flux:*` commands are the explicit/manual surface and documentation shorthand, not the default day-to-day UX.
+
 > **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, Flux-secured skills live in `.secureskills/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
 
 ---

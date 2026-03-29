@@ -1649,6 +1649,7 @@ Store detection results for use in questions. When showing options, indicate cur
 ### 6b: Check docs status
 
 Read the template from [templates/claude-md-snippet.md](templates/claude-md-snippet.md).
+The template intentionally includes runtime-conditional MCP routing rules, so preserve lines such as "if Context7 is available..." and "if Exa is available..." when comparing or writing the Flux block.
 
 For each of CLAUDE.md and AGENTS.md:
 1. Check if file exists
@@ -2235,6 +2236,10 @@ For each chosen file (CLAUDE.md and/or AGENTS.md):
 1. Read the file (create if doesn't exist)
 2. If marker exists: replace everything between `<!-- BEGIN FLUX -->` and `<!-- END FLUX -->` (inclusive)
 3. If no marker: append the snippet from [templates/claude-md-snippet.md](templates/claude-md-snippet.md)
+4. Keep the MCP-preference rules in that snippet intact so future Codex/Claude sessions prefer installed specialist MCPs over generic harness tools:
+   - Context7 for docs/API references
+   - Exa for broad web research
+   - Firecrawl for fetching page contents/PDFs
 
 **Auto-fix** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/fluxctl" config set autofix.enabled true --json`

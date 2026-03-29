@@ -156,6 +156,10 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If `.flux/context/agentmap.yaml` exists, use it as a fast structural overview of the repo before broad file exploration
 - Treat the agentmap as navigation aid only. Still read the actual files before making changes
 - If the `fff` MCP is available, prefer its tools for file search operations instead of default Glob/find — it's faster, supports fuzzy matching, and ranks by access frecency
+- Prefer installed specialist MCPs over generic/default harness tools when both can solve the task
+- If the `context7` MCP is available, use it for package, framework, SDK, and API documentation lookups. Resolve the library ID first, then query Context7. Do not use the default harness `web_search` tool or other generic web search for documentation fetching when Context7 can answer.
+- If the `exa` MCP is available, use it for broad web research, current-information lookup, and generic internet discovery instead of the default harness `web_search` tool
+- If the `firecrawl` MCP is available, use it for page extraction, crawling, and PDF/article retrieval when you need the actual page contents instead of search-result snippets
 - In Flux quality/review passes for React repos, run `react-doctor` on the current diff when available. Prefer an installed `react-doctor` binary; otherwise use `npx -y react-doctor@latest . --diff HEAD --fail-on error`. This complements `/flux:dejank`; it does not replace the jank-specific workflow.
 
 <important if="you are troubleshooting Flux commands or encountering errors">
