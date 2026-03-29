@@ -43,6 +43,7 @@ Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported
 | `/flux:ubiquitous-language` | `/flux:ubiquitous-language [domain area]` | Extract and formalize domain terminology |
 | `/flux:export-context` | `/flux:export-context <plan <epic-id>|impl> [focus]` | Export a review pack for external LLMs |
 | `/flux:autofix` | `/flux:autofix [pr-url|pr-number]` | Start Claude cloud auto-fix on a PR |
+| `/flux:observe` | `/flux:observe [on|off|status]` | Toggle or inspect the local bug-observer runtime state |
 | `/flux:remember` | `/flux:remember <memory>` | Explicit memory-routing entrypoint for durable repo facts and rules |
 | `/flux:gate` | `/flux:gate [staging-url|pr-number]` | Validate staging after merge and prepare production promotion |
 

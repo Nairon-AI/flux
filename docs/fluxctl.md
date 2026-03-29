@@ -7,7 +7,7 @@ CLI for `.flux/` task tracking. Agents must use fluxctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, prep-chat, rp, codex, checkpoint, status, state-path, agentmap, migrate-state
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, prep-chat, rp, codex, checkpoint, status, observe, state-path, agentmap, migrate-state
 ```
 
 ## Multi-User Safety
@@ -672,6 +672,28 @@ Output:
 ```
 
 Human-readable output shows epic/task counts and any active Ralph runs.
+
+### observe
+
+Manage the local observer runtime state.
+
+```bash
+fluxctl observe status [--json]
+fluxctl observe on [--json]
+fluxctl observe off [--json]
+```
+
+Modes currently surfaced:
+- `off`
+- `idle`
+- `attached`
+- `paused`
+- `degraded`
+
+This initial slice persists `observe_state.json` in the shared Flux state-dir and lets you:
+- turn the observer on (`idle`)
+- turn it off
+- inspect whether it is currently running
 
 ### session-state
 

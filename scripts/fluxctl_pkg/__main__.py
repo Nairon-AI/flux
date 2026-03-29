@@ -8,6 +8,7 @@ from .utils import (
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
 from .config import cmd_config_get, cmd_config_set, cmd_review_backend
 from .architecture import cmd_architecture_status, cmd_architecture_path, cmd_architecture_write
+from .observe import cmd_observe_off, cmd_observe_on, cmd_observe_status
 from .epics import (
     cmd_epic_create, cmd_show, cmd_epics, cmd_list, cmd_cat,
     cmd_epic_set_plan, cmd_epic_set_plan_review_status, cmd_epic_set_completion_review_status,
@@ -158,6 +159,24 @@ def main() -> None:
     p_architecture_write.add_argument("--source", help="Command or workflow that updated it")
     p_architecture_write.add_argument("--json", action="store_true", help="JSON output")
     p_architecture_write.set_defaults(func=cmd_architecture_write)
+
+    # observe
+    p_observe = subparsers.add_parser(
+        "observe", help="Background observer runtime-state commands"
+    )
+    observe_sub = p_observe.add_subparsers(dest="observe_cmd", required=True)
+
+    p_observe_status = observe_sub.add_parser("status", help="Show observer runtime status")
+    p_observe_status.add_argument("--json", action="store_true", help="JSON output")
+    p_observe_status.set_defaults(func=cmd_observe_status)
+
+    p_observe_on = observe_sub.add_parser("on", help="Enable the observer runtime state")
+    p_observe_on.add_argument("--json", action="store_true", help="JSON output")
+    p_observe_on.set_defaults(func=cmd_observe_on)
+
+    p_observe_off = observe_sub.add_parser("off", help="Disable the observer runtime state")
+    p_observe_off.add_argument("--json", action="store_true", help="JSON output")
+    p_observe_off.set_defaults(func=cmd_observe_off)
 
     # epic create
     p_epic = subparsers.add_parser("epic", help="Epic commands")

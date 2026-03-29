@@ -113,6 +113,8 @@ SESSION_PHASES = [
     "improve-claude-md", # AGENTS.md / CLAUDE.md restructuring workflow
 ]
 
+OBSERVE_MODES = ["off", "idle", "attached", "paused", "degraded"]
+
 TASK_SPEC_HEADINGS = [
     "## Description",
     "## Acceptance",

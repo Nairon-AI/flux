@@ -52,6 +52,7 @@ from .state import (
 from .config import get_default_config, deep_merge, load_flux_config
 from .ralph import find_active_runs
 from .architecture import ARCHITECTURE_TEMPLATE
+from .observe import get_observe_state
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +290,7 @@ def cmd_status(args: argparse.Namespace) -> None:
         choose_current_objective(current_actor, use_json=args.json) if flux_exists else None
     )
     prime_state = get_prime_state(use_json=args.json) if flux_exists else default_prime_state()
+    observe_state = get_observe_state(use_json=True) if flux_exists else None
 
     # Count epics and tasks by status
     epic_counts = {"open": 0, "done": 0}
@@ -356,6 +358,7 @@ def cmd_status(args: argparse.Namespace) -> None:
                     "next_action": current_objective.get("next_action"),
                 },
                 "prime": prime_state,
+                "observe": observe_state,
             }
         )
     else:
@@ -409,6 +412,11 @@ def cmd_status(args: argparse.Namespace) -> None:
             if prime_state.get("last_run_version"):
                 prime_line += f" (v{prime_state['last_run_version']})"
             print(prime_line)
+            if observe_state:
+                observe_line = f"Observe: {observe_state['mode'].upper()}"
+                if observe_state["mode"] != "off":
+                    observe_line += f" ({observe_state['findings_queued']} findings queued)"
+                print(observe_line)
 
 
 # ---------------------------------------------------------------------------

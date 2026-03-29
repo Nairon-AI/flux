@@ -476,6 +476,39 @@ describe('Fluxctl CLI', () => {
     expect(afterPrime.architecture.status).toBe('seeded')
   }, SCRIPT_TIMEOUT)
 
+  test('observe on/off/status persists observer runtime state and surfaces it in fluxctl status', async () => {
+    const tmpRoot = `/tmp/flux-observe-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+
+    const initialRaw = await $`${fluxctl} observe status --json`.cwd(tmpRoot).text()
+    const initial = JSON.parse(initialRaw)
+    expect(initial.observe.mode).toBe('off')
+    expect(initial.observe.running).toBe(false)
+
+    const onRaw = await $`${fluxctl} observe on --json`.cwd(tmpRoot).text()
+    const on = JSON.parse(onRaw)
+    expect(on.observe.mode).toBe('idle')
+    expect(on.observe.running).toBe(true)
+    expect(on.observe.started_at).toBeTruthy()
+
+    const statePath = join(tmpRoot, '.flux', 'state', 'observe_state.json')
+    expect(existsSync(statePath)).toBe(true)
+    const persisted = JSON.parse(readFileSync(statePath, 'utf8'))
+    expect(persisted.mode).toBe('idle')
+
+    const statusRaw = await $`${fluxctl} status --json`.cwd(tmpRoot).text()
+    const status = JSON.parse(statusRaw)
+    expect(status.observe.mode).toBe('idle')
+    expect(status.observe.running).toBe(true)
+
+    const offRaw = await $`${fluxctl} observe off --json`.cwd(tmpRoot).text()
+    const off = JSON.parse(offRaw)
+    expect(off.observe.mode).toBe('off')
+    expect(off.observe.running).toBe(false)
+  }, SCRIPT_TIMEOUT)
+
   test('architecture write updates canonical diagram status and metadata', async () => {
     const tmpRoot = `/tmp/flux-architecture-write-${Date.now()}`
     const architectureFile = join(tmpRoot, 'architecture.md')
@@ -881,6 +914,7 @@ describe('Skill File Structure', () => {
       'grill.md',
       'improve-claude-md.md',
       'impl-review.md',
+      'observe.md',
       'plan.md',
       'plan-review.md',
       'prime.md',
