@@ -9,8 +9,25 @@ Common issues and solutions.
 ### Flux commands missing after install
 
 1. Verify Flux copied local scripts: `ls .flux/bin/`
-2. Restart your agent session
-3. Re-run `/flux:setup`
+2. Run `.flux/bin/fluxctl doctor --json`
+3. If `primary_adapter.sync.status` is `missing` or `out_of_sync`, re-run `/flux:setup`
+4. Restart the active host session using the `guidance.restart` note from `fluxctl doctor`
+
+### Wrong upgrade instructions for the current host
+
+Run:
+
+```bash
+.flux/bin/fluxctl env --json
+```
+
+Use the output to answer three questions before you change anything:
+
+- Which host is primary right now (`primary_driver.name`)?
+- Which version is authoritative (`authoritative_version`)?
+- What exact update action should you take (`guidance.update`)?
+
+For Codex-primary repos, the repo-local runtime is the source of truth. Do not treat Claude plugin cache state as authoritative unless `primary_driver.name` is `claude`.
 
 ### Prerequisites missing
 
