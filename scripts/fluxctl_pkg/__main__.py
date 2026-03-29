@@ -38,6 +38,7 @@ from .ralph import (
     cmd_rp_select_add, cmd_rp_chat_send, cmd_rp_prompt_export, cmd_rp_setup_review,
 )
 from .codex import cmd_codex_check
+from .host import cmd_doctor, cmd_env, cmd_version
 from .review import cmd_codex_impl_review, cmd_codex_plan_review, cmd_codex_completion_review
 
 
@@ -62,6 +63,30 @@ def main() -> None:
     p_status = subparsers.add_parser("status", help="Show .flux state and active runs")
     p_status.add_argument("--json", action="store_true", help="JSON output")
     p_status.set_defaults(func=cmd_status)
+
+    # env
+    p_env = subparsers.add_parser(
+        "env", help="Detect the active host and report Flux runtime/adapter versions"
+    )
+    p_env.add_argument("--json", action="store_true", help="JSON output")
+    p_env.set_defaults(func=cmd_env)
+
+    # doctor
+    p_doctor = subparsers.add_parser(
+        "doctor", help="Host-aware Flux diagnostics and update guidance"
+    )
+    p_doctor.add_argument("--json", action="store_true", help="JSON output")
+    p_doctor.set_defaults(func=cmd_doctor)
+
+    # version
+    p_version = subparsers.add_parser("version", help="Show Flux runtime version")
+    p_version.add_argument("--json", action="store_true", help="JSON output")
+    p_version.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Include host/runtime diagnostics in JSON output",
+    )
+    p_version.set_defaults(func=cmd_version)
 
     # session-state
     p_session_state = subparsers.add_parser(

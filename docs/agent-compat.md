@@ -32,6 +32,14 @@ Detect which agent is running via environment variables:
 AGENT="${AGENT:-unknown}"
 ```
 
+Flux also exposes the same decision through runtime diagnostics:
+
+```bash
+.flux/bin/fluxctl env --json
+```
+
+Prefer `fluxctl env` or `fluxctl doctor` when you need install/update/troubleshooting behavior, because they also report which version is authoritative and whether the current host adapter is in sync.
+
 ## Skill Instructions
 
 When writing skills that need user input, use this pattern:

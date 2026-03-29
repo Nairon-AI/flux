@@ -4,8 +4,24 @@
 
 set -euo pipefail
 
+HELPER_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || dirname "$(dirname "$0")")}}"
-LOCAL_VERSION=$(jq -r '.version' "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "unknown")
+LOCAL_VERSION=$(
+  jq -r '.version // empty' "$PLUGIN_ROOT/package.json" 2>/dev/null ||
+  true
+)
+if [[ -z "$LOCAL_VERSION" ]]; then
+  LOCAL_VERSION=$(jq -r '.version // "unknown"' "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "unknown")
+fi
+
+ENV_JSON=$(
+  python3 "$HELPER_ROOT/scripts/fluxctl.py" env --json 2>/dev/null ||
+  echo '{"success":false,"primary_driver":{"name":"unknown"},"guidance":{"update":"Update Flux from the same source you installed it from, then restart your agent session.","verify":"Run `scripts/fluxctl doctor --json`."},"authoritative_version":{"source_kind":"unknown"}}'
+)
+PRIMARY_DRIVER=$(echo "$ENV_JSON" | jq -r '.primary_driver.name // "unknown"' 2>/dev/null || echo "unknown")
+UPDATE_COMMAND=$(echo "$ENV_JSON" | jq -r '.guidance.update // "Update Flux from the same source you installed it from, then restart your agent session."' 2>/dev/null || echo "Update Flux from the same source you installed it from, then restart your agent session.")
+VERIFY_COMMAND=$(echo "$ENV_JSON" | jq -r '.guidance.verify // "Run `scripts/fluxctl doctor --json`."' 2>/dev/null || echo 'Run `scripts/fluxctl doctor --json`.')
+AUTHORITATIVE_SOURCE=$(echo "$ENV_JSON" | jq -r '.authoritative_version.source_kind // "unknown"' 2>/dev/null || echo "unknown")
 
 # Check remote version (cache for 1 hour to avoid rate limits)
 CACHE_FILE="${TMPDIR:-/tmp}/flux-version-cache"
@@ -48,6 +64,9 @@ cat << EOJSON
   "local_version": "$LOCAL_VERSION",
   "remote_version": "${REMOTE_VERSION:-unknown}",
   "update_available": $UPDATE_AVAILABLE,
-  "update_command": "Update Flux from the same source you installed it from, then restart your agent session."
+  "primary_driver": "$PRIMARY_DRIVER",
+  "authoritative_source": "$AUTHORITATIVE_SOURCE",
+  "update_command": "$UPDATE_COMMAND",
+  "verify_command": "$VERIFY_COMMAND"
 }
 EOJSON

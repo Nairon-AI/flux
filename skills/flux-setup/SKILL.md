@@ -98,6 +98,7 @@ UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"upd
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 LOCAL_VER=$(echo "$UPDATE_JSON" | jq -r '.local_version')
 REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
+UPDATE_CMD=$(echo "$UPDATE_JSON" | jq -r '.update_command // "Update Flux from the same source you installed it from, then restart your agent session."')
 ```
 
 **If update available**, append to output:
@@ -105,6 +106,6 @@ REMOTE_VER=$(echo "$UPDATE_JSON" | jq -r '.remote_version')
 ```
 ---
 Flux update available: v${LOCAL_VER} → v${REMOTE_VER}
-Update Flux from the same source you installed it from, then restart your agent session.
+${UPDATE_CMD}
 ---
 ```

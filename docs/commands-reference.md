@@ -149,10 +149,15 @@ Executes a task with automatic context reload and drift checks. During the quali
 The underlying `fluxctl` helper also exposes:
 
 ```bash
+.flux/bin/fluxctl env --json
+.flux/bin/fluxctl doctor --json
+.flux/bin/fluxctl version
 .flux/bin/fluxctl architecture status
 .flux/bin/fluxctl architecture path
 .flux/bin/fluxctl architecture write --file architecture.md --summary "Updated auth/data flow" --source flux:work
 ```
+
+Use `env` or `doctor` when install/update behavior seems wrong for the current host. They report the detected primary driver, the authoritative repo-local runtime version, any Claude adapter version, and the exact host-specific update guidance.
 
 ### /flux:dejank
 

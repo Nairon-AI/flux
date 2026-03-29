@@ -25,6 +25,18 @@ $FLUXCTL session-phase set idle
 
 ## What This Does
 
+Flux now distinguishes between the repo-local runtime and host-specific adapters. Before doing any upgrade work, detect the active host:
+
+```bash
+FLUX_DOCTOR=$("${PLUGIN_ROOT}/scripts/fluxctl" doctor --json 2>/dev/null || echo '{}')
+PRIMARY_DRIVER=$(echo "$FLUX_DOCTOR" | jq -r '.primary_driver.name // "unknown"')
+UPDATE_GUIDANCE=$(echo "$FLUX_DOCTOR" | jq -r '.guidance.update // empty')
+```
+
+- If `PRIMARY_DRIVER=codex`, the repo-local runtime is authoritative. Update the Flux source you installed from, then re-run `/flux:setup` only if `primary_adapter.sync.status` is not `in_sync`. Do **not** treat Claude plugin cache state as the main source of truth for Codex-primary repos.
+- If `PRIMARY_DRIVER=claude`, use the Claude plugin workflow below.
+- If `PRIMARY_DRIVER=unknown`, show `UPDATE_GUIDANCE` and verify with `fluxctl doctor` before mutating anything.
+
 Flux's legacy plugin packaging has three separate caches that must all agree:
 
 1. **Marketplace metadata** (`~/.claude/plugins/marketplaces/nairon-flux/`) — git clone with marketplace.json

@@ -569,9 +569,10 @@ Python 3.9+, jq, git. Flux checks for these during execution and tells you what'
 > **AI Agents**: If you're debugging a Flux installation issue, follow these steps exactly. Do not guess.
 
 1. Verify you're in the project root and that `.flux/bin/fluxctl --help` works.
-2. Re-run `/flux:setup` if the repo has never been initialized or your local helper scripts are missing.
-3. If the repo was updated recently, refresh Flux from the same source you installed it from and restart your agent session.
-4. If the problem is still reproducible, open a GitHub issue with the exact failing command and output.
+2. Run `.flux/bin/fluxctl doctor --json` to see the detected primary driver, the authoritative repo-local runtime version, and whether the active host adapter is in sync.
+3. Re-run `/flux:setup` if the repo has never been initialized or the doctor output says the repo-local setup is missing or stale.
+4. If the repo was updated recently, follow the host-specific `update` guidance from `fluxctl doctor` instead of assuming Claude plugin state is authoritative.
+5. If the problem is still reproducible, open a GitHub issue with the exact failing command and output.
 
 **Still stuck?** Join [Discord](https://discord.gg/CEQMd6fmXk) or open a [GitHub issue](https://github.com/Nairon-AI/flux/issues).
 

@@ -304,6 +304,17 @@ describe('Flux Scripts', () => {
         expect(output).toBeTruthy()
       }
     }, SCRIPT_TIMEOUT)
+
+    test('includes host-aware update guidance for Codex-primary environments', async () => {
+      const output = await runScriptWithEnv('version-check.sh', [], FLUX_ROOT, {
+        CODEX_HOME: '/tmp/flux-codex-home',
+      })
+      const parsed = JSON.parse(output)
+
+      expect(parsed.primary_driver).toBe('codex')
+      expect(parsed.update_command).toContain('Codex')
+      expect(parsed.verify_command).toContain('doctor')
+    }, SCRIPT_TIMEOUT)
   })
 
   describe('install-react-doctor-hook.py', () => {
@@ -772,6 +783,87 @@ flowchart TD
     expect(readFileSync(mapPath, 'utf-8')).toContain('Test entrypoint.')
 
     rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('env reports Codex-primary repo setup drift against the runtime', async () => {
+    const tmpRoot = `/tmp/flux-env-codex-${Date.now()}`
+    mkdirSync(join(tmpRoot, '.flux', 'bin'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'package.json'),
+      JSON.stringify({ name: 'flux-fixture', version: '2.37.1-dev' })
+    )
+    writeFileSync(
+      join(tmpRoot, '.flux', 'meta.json'),
+      JSON.stringify({ schema_version: 2, next_epic: 1, active_objective: null, setup_version: '2.30.1-dev' })
+    )
+    writeFileSync(join(tmpRoot, '.flux', 'bin', 'fluxctl'), '#!/bin/sh\nexit 0\n')
+    writeFileSync(join(tmpRoot, 'AGENTS.md'), '# Flux\n')
+
+    const output = await $`${fluxctl} env --json`
+      .cwd(tmpRoot)
+      .env({
+        ...process.env,
+        CODEX_HOME: '/tmp/flux-codex-home',
+      })
+      .text()
+    const parsed = JSON.parse(output)
+
+    expect(parsed.primary_driver.name).toBe('codex')
+    expect(parsed.authoritative_version.version).toBe('2.37.1-dev')
+    expect(parsed.primary_adapter.version).toBe('2.30.1-dev')
+    expect(parsed.primary_adapter.sync.status).toBe('out_of_sync')
+    expect(parsed.guidance.update).toContain('/flux:setup')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('doctor reports Claude plugin drift separately from the repo runtime', async () => {
+    const tmpRoot = `/tmp/flux-doctor-claude-${Date.now()}`
+    const homeDir = `/tmp/flux-doctor-home-${Date.now()}`
+    const claudePluginRoot = join(homeDir, 'active-flux-plugin')
+    mkdirSync(tmpRoot, { recursive: true })
+    mkdirSync(join(homeDir, '.claude', 'plugins'), { recursive: true })
+    mkdirSync(join(claudePluginRoot, '.claude-plugin'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'package.json'),
+      JSON.stringify({ name: 'flux-fixture', version: '2.37.1-dev' })
+    )
+    writeFileSync(
+      join(claudePluginRoot, '.claude-plugin', 'plugin.json'),
+      JSON.stringify({ name: 'flux', version: '2.30.1-dev' })
+    )
+    writeFileSync(
+      join(homeDir, '.claude', 'plugins', 'installed_plugins.json'),
+      JSON.stringify({
+        plugins: {
+          'flux@nairon-flux': [
+            {
+              version: '2.30.1-dev',
+              installPath: join(homeDir, '.claude', 'plugins', 'cache', 'nairon-flux', 'flux', '2.30.1-dev'),
+            },
+          ],
+        },
+      })
+    )
+
+    const output = await $`${fluxctl} doctor --json`
+      .cwd(tmpRoot)
+      .env({
+        ...process.env,
+        HOME: homeDir,
+        CLAUDE_PLUGIN_ROOT: claudePluginRoot,
+      })
+      .text()
+    const parsed = JSON.parse(output)
+
+    expect(parsed.primary_driver.name).toBe('claude')
+    expect(parsed.authoritative_version.version).toBe('2.37.1-dev')
+    expect(parsed.primary_adapter.version).toBe('2.30.1-dev')
+    expect(parsed.primary_adapter.sync.status).toBe('out_of_sync')
+    expect(parsed.guidance.update).toContain('claude plugin update')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+    rmSync(homeDir, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)
 })
 

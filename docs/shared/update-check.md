@@ -7,6 +7,7 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-t
 [ ! -d "$PLUGIN_ROOT/scripts" ] && PLUGIN_ROOT=$(ls -td ~/.claude/plugins/cache/nairon-flux/flux/*/ 2>/dev/null | head -1)
 UPDATE_JSON=$("$PLUGIN_ROOT/scripts/version-check.sh" 2>/dev/null || echo '{"update_available":false}')
 UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
+UPDATE_CMD=$(echo "$UPDATE_JSON" | jq -r '.update_command // "Update Flux from the same source you installed it from, then restart your agent session."')
 ```
 
 **If update is available**, show notification at the very end of output:
@@ -14,7 +15,7 @@ UPDATE_AVAILABLE=$(echo "$UPDATE_JSON" | jq -r '.update_available')
 ```
 ---
 Flux update available: vX.Y.Z → vA.B.C
-Update Flux from the same source you installed it from, then restart your agent session.
+${UPDATE_CMD}
 ---
 ```
 

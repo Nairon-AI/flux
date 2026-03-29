@@ -7,6 +7,15 @@ set -e
 NAME="$1"
 VERIFY_TYPE="$2"  # command_exists, config_exists, mcp_connect, secureskill, manual
 VERIFY_ARG="$3"   # command name, config path, project root, or test command
+HELPER_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+ENV_JSON=$(
+    python3 "$HELPER_ROOT/scripts/fluxctl.py" env --json 2>/dev/null ||
+    echo '{"success":false,"primary_driver":{"name":"unknown"},"guidance":{"restart":"Restart your agent session after Flux updates or MCP/instruction-file changes.","verify":"Run `scripts/fluxctl doctor --json`."}}'
+)
+PRIMARY_DRIVER=$(echo "$ENV_JSON" | jq -r '.primary_driver.name // "unknown"' 2>/dev/null || echo "unknown")
+RESTART_NOTE=$(echo "$ENV_JSON" | jq -r '.guidance.restart // "Restart your agent session after Flux updates or MCP/instruction-file changes."' 2>/dev/null || echo "Restart your agent session after Flux updates or MCP/instruction-file changes.")
+VERIFY_HINT=$(echo "$ENV_JSON" | jq -r '.guidance.verify // "Run `scripts/fluxctl doctor --json`."' 2>/dev/null || echo 'Run `scripts/fluxctl doctor --json`.')
 
 if [ -z "$NAME" ] || [ -z "$VERIFY_TYPE" ]; then
     echo "Usage: verify-install.sh <name> <type> [arg]"
@@ -100,15 +109,19 @@ EOF
             if cat "$MCP_FILE" | jq -e ".mcpServers.\"$NAME\"" > /dev/null 2>&1; then
                 echo "✓ MCP '$NAME' found in config"
                 echo ""
-                echo "Note: Full verification requires restarting your agent session"
+                echo "Note: Full verification requires restarting the active host session"
                 echo "      and testing the MCP with a sample query."
+                echo "      Host: $PRIMARY_DRIVER"
+                echo "      Restart: $RESTART_NOTE"
                 cat <<EOF
 {
   "success": true,
   "name": "$NAME",
   "verify_type": "mcp_connect",
   "config_file": "$MCP_FILE",
-  "note": "Restart your agent session to activate"
+  "primary_driver": "$PRIMARY_DRIVER",
+  "note": "$RESTART_NOTE",
+  "verify_hint": "$VERIFY_HINT"
 }
 EOF
             else
@@ -173,13 +186,18 @@ EOF
         fi
         echo ""
         echo "Please verify the installation manually and confirm."
+        echo "Host: $PRIMARY_DRIVER"
+        echo "Restart: $RESTART_NOTE"
         cat <<EOF
 {
   "success": true,
   "name": "$NAME",
   "verify_type": "manual",
   "manual": true,
-  "instructions": "${VERIFY_ARG:-Verify installation manually}"
+  "primary_driver": "$PRIMARY_DRIVER",
+  "instructions": "${VERIFY_ARG:-Verify installation manually}",
+  "restart": "$RESTART_NOTE",
+  "verify_hint": "$VERIFY_HINT"
 }
 EOF
         ;;

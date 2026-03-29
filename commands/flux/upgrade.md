@@ -9,23 +9,38 @@ Upgrades Flux, shows the user what changed since their version, and tells them e
 
 ## Step 1: Check current versions
 
-Run the version check to see where things stand:
+Run the doctor and version checks to see where things stand:
 
 ```bash
+.flux/bin/fluxctl doctor --json 2>/dev/null || scripts/fluxctl doctor --json
 bash "${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || dirname "$(dirname "$(dirname "$0")")")}}/scripts/version-check.sh"
 ```
 
-Parse the JSON output. Save `local_version` as `OLD_VERSION` — you'll need it later.
+Parse the JSON output.
+
+From `fluxctl doctor`, save:
+- `primary_driver.name`
+- `authoritative_version.version`
+- `primary_adapter.sync.status`
+- `guidance.update`
+
+From `version-check.sh`, save `local_version` as `OLD_VERSION` — you'll need it later.
 
 Report to the user:
+- Primary driver: `primary_driver.name`
+- Authoritative version: `authoritative_version.version`
 - Current version: `local_version`
 - Latest version: `remote_version`
 
 If no update is available, tell the user they're on the latest version and stop.
 
-## Step 2: Upgrade the plugin
+## Step 2: Upgrade the active host path
 
-Follow the SKILL.md workflow Steps 2-5 to refresh marketplace metadata, clear plugin cache, and update the install record. This is the mechanical upgrade.
+Branch on `primary_driver.name`:
+
+- `codex`: update the repo-local Flux source the user installed from. If `primary_adapter.sync.status` is not `in_sync`, re-run `/flux:setup` so `.flux/bin` and `AGENTS.md` match the runtime. Do not send Codex-primary users through Claude plugin cache repair unless they explicitly want to refresh the Claude adapter too.
+- `claude`: follow the SKILL.md workflow Steps 2-5 to refresh marketplace metadata, clear plugin cache, and update the install record. This is the mechanical Claude adapter upgrade.
+- `unknown`: stop and tell the user to resolve the host ambiguity with `.flux/bin/fluxctl doctor --json` before continuing.
 
 If any step fails, report the specific error and stop. Do not continue with a partial upgrade.
 
@@ -105,7 +120,7 @@ Then next steps — adapt based on Step 5:
 ```
 ## What to do now
 
-1. Restart your agent session to load the new version
+1. Follow the host-specific update guidance from `fluxctl doctor`
 
 2. After restart, run /flux:setup to pick up new options:
    [1-line explanation of what's new in setup]
@@ -119,10 +134,10 @@ Setup will only offer new options — nothing you've configured will change.
 ```
 ## What to do now
 
-Restart your agent session to load the new version.
+Follow the host-specific restart guidance from `fluxctl doctor`.
 
 That's it — no need to re-run /flux:setup.
-All changes in this upgrade are plugin-level and activate after restart.
+All changes in this upgrade activate after the correct host restart boundary.
 ```
 
 ## Step 7 (optional): Batch project upgrade
