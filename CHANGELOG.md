@@ -4,24 +4,50 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+## [2.37.0] - 2026-03-29
+
+### Highlights
+
+- **Planning and quality gates got stricter on purpose** — Flux now brings long-horizon `Future Pressure` planning into scope and plan review, recognizes `lintcn` as a first-class quality gate, and adds a path to structuralize confirmed review findings into lint rules or durable repo principles. This moves anti-slop work earlier and makes it harder for the same bad patterns to come back later. (#120, #128)
+- **Specialist tooling now feels fully wired instead of half-optional** — Flux now bootstraps PlaTo-backed secure skill installs into `.secureskills/`, adds Diffity Tour, offers Dejank and React Doctor only when they fit the repo, and routes the right prompts to those tools automatically. The goal was to stop setup from producing “installed but not actually usable” outcomes. (#121, #122, #127, #129)
+- **Frontend work now has real guardrails end-to-end** — Flux treats `taste-skill` and installed UI skills as required re-anchoring for user-facing frontend tasks, asks for a stronger design brief during scope, and expands Browser QA expectations. This closes the gap where frontend skills could be installed but ignored at execution time. (#126)
+- **Config management is now a supported operator workflow** — `fluxctl config list`, `edit`, and `toggle` give users a direct way to inspect and change repo-local Flux settings, and natural-language config requests now route through enforced command-backed paths instead of ad hoc file editing. (#124)
+- **Reusable utility skills now cover common cross-cutting behaviors** — Flux added native verification, review-handling, and parallel-dispatch skills so these patterns stop living as repeated prose spread across multiple workflows. (#123)
+
 ### Added
 
-- `/flux:setup` can now offer the `dejank` skill for React-based repos, installing it project-locally through PlaTo into the repo `.secureskills/` store
+- `fluxctl config list`, `fluxctl config edit`, and `fluxctl config toggle` for direct management of repo-local Flux settings. (#124)
+- `Diffity Tour` as an optional setup skill, including optional `diffity` CLI installation so tours can work immediately after setup. (#127)
+- `React Doctor` as an opt-in setup path for React repos, with pre-commit hook wiring and quality-pass coverage. (#129)
+- `Future Pressure` planning documentation and workflow coverage so non-trivial work gets explicit long-horizon pressure testing before plans are finalized. (#128)
+- Flux-native utility skills for claim verification, review intake, and safe parallel dispatch. (#123)
 
 ### Changed
 
-- Flux now bootstraps PlaTo (`secureskills`) and uses it as the preferred secure installer for supported project-local skills
-- `fluxctl agentmap` now uses a built-in Flux implementation instead of requiring an external `agentmap` CLI in `PATH`
-- `/flux:setup` no longer recommends or installs `agentmap` as a separate tool
-- `/flux:setup` now offers CodexBar on macOS so users can monitor Codex and Claude Code subscription usage from the menu bar.
+- Flux now prefers PlaTo-backed secure project-local skill installs via `.secureskills/` for supported setup-time skill installs. (#122)
+- `/flux:setup` now offers Dejank only for React repos, adds Diffity Tour, and recognizes React work more accurately in monorepos. (#121, #127, #129)
+- Frontend execution now requires `taste-skill` and installed UI skills when present, and frontend scopes capture stronger design-intent and browser-QA expectations. (#126)
+- Session routing and command coverage were hardened so command-backed skills have explicit entrypoints, router metadata, and supported session-phase coverage. (#121)
+- Setup-generated repo instructions now make Flux explicitly natural-language-first and prefer specialist MCPs like Context7, Exa, and Firecrawl over generic research paths when they are installed. (#128)
 
 ### Improved
 
-- project skill detection, verification, uninstall docs, and troubleshooting now understand PlaTo-managed `.secureskills/` stores
-- Flux setup docs now position Flux as a safe skill installer backed by PlaTo for supported project-local installs
-- setup docs now describe agentmap generation as a native Flux capability
-- React framework detection now recognizes Remix and React Router stacks for setup-time skill gating
-- built-in tests now validate actual map generation logic instead of a stubbed external binary
+- Flux now detects `lintcn` as part of repo analysis and quality enforcement, and review findings can be converted into lint-rule candidates or durable repo knowledge instead of staying one-off comments. (#120)
+- Config prompts such as “show my Flux config” and “edit Flux settings” now route deterministically through dedicated commands, backed by hook-level enforcement. (#124)
+- React jank complaints can route directly to Dejank, while preventive React quality now has a separate React Doctor path. Flux now covers both symptom-driven debugging and proactive guardrails. (#121, #129)
+- Setup, verification, uninstall, and troubleshooting flows better understand secured skill installs and optional companion CLIs. (#122, #127)
+
+### PRs
+
+- #120 — [codex] Integrate lintcn into Flux quality workflow
+- #121 — [codex] Integrate Dejank and harden Flux skill routing
+- #122 — [codex] Add PlaTo-backed secure skill installs
+- #123 — [codex] add utility skills from superpowers
+- #124 — [codex] add config list/edit commands
+- #126 — [codex] enforce frontend skill routing
+- #127 — [codex] Add diffity-tour to Flux setup skills
+- #128 — [codex] add future pressure planning gate (long-horizon anti-slop forecasting)
+- #129 — [codex] Add React Doctor opt-in setup with pre-commit hook wiring
 
 ## [1.9.5] - 2026-03-12
 

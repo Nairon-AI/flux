@@ -58,7 +58,6 @@ Ship with confidence. Sleep better at night.
 - [Commands](#commands)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
-- [Roadmap](#roadmap)
 - [Community](#community)
 
 ---
@@ -651,23 +650,6 @@ By design. When a release is published (e.g., `v2.7.0`), a post-release workflow
 
 The `0.0.1` difference is just a placeholder — the next release will be whatever the conventional commits dictate (patch, minor, or major), not necessarily `2.7.1`.
 </details>
-
----
-
-## Roadmap
-
-### Next — Relay
-
-A parallel orchestration layer for Flux. Heavily inspired by [OpenAI Symphony](https://github.com/openai/symphony).
-
-Ralph already handles autonomous *serial* execution (one task at a time, unattended). Relay will coordinate multiple agents working *in parallel* across worktrees, manage task dependencies, and handle handoffs — so you can kick off a complex build, go for a walk, and come back to a PR.
-
-### Feature Roadmap
-
-| Command | Enhancement |
-|---------|-------------|
-| `/flux:work` | Git worktree support for parallel development |
-| `/flux:scope` | Meeting transcript ingestion |
 
 ---
 
