@@ -105,7 +105,7 @@ Also read plugin version from `${PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 
 ## Step 3: Installation Scope
 
-Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, and, for supported secure skill installs, PlaTo's `.secureskills/` store inside the project directory. Legacy `.codex/skills/` and `.claude/skills/` folders remain compatibility fallbacks only. This means:
+Flux always installs at project scope. Everything lives in `.flux/`, `.mcp.json`, and, for supported skill installs, repo-local `.codex/skills/` and `.claude/skills/` folders inside the project directory. This means:
 
 - Different projects can have different MCP servers, skills, and Flux configs
 - No conflicts with your global agent settings
@@ -744,7 +744,6 @@ React Doctor is React-only. Only offer it when the repo uses React or a React-ba
 | `expect-cli` | Expect | **Diff-driven browser QA** — AI generates test plans from git changes and runs them in a real browser | Yes | `npm i -g expect-cli` | `npm i -g expect-cli` | `npm i -g expect-cli` |
 | `react-doctor` | React Doctor | **React pre-commit health gate** — diff-scoped React diagnostics before commit and during review | Yes | `npm i -g react-doctor@latest` | `npm i -g react-doctor@latest` | `npm i -g react-doctor@latest` |
 | `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
-| `plato` | PlaTo (`secureskills`) | **Secure skill installs** — signs and verifies project-local skills before agent runtime exposure | Yes | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` |
 ### Detect existing tools
 
 ```bash
@@ -773,7 +772,6 @@ HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0
 HAVE_EXPECT_CLI=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_REACT_DOCTOR_CLI=$(which react-doctor >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
-HAVE_PLATO_CLI=$(which secureskills >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_WINGET=$(which winget >/dev/null 2>&1 && echo 1 || echo 0)
 
@@ -814,8 +812,6 @@ INSTALL_AGENT_BROWSER=0
 INSTALL_EXPECT_CLI=0
 INSTALL_REACT_DOCTOR=0
 INSTALL_CONTINUES=0
-INSTALL_PLATO=0
-
 # Set each to 1 if selected by user
 ```
 
@@ -829,7 +825,6 @@ INSTALL_PLATO=0
 {"label": "Expect", "description": "Diff-driven browser QA — AI generates test plans from git changes, runs in real browser (free)"}
 {"label": "React Doctor", "description": "React-only pre-commit + review gate for changed files (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
-{"label": "PlaTo", "description": "Secure project-local skill installs for Codex and Claude via secureskills (free)"}
 ```
 
 **If GitHub MCP was installed in step 4c, mention the synergy:**
@@ -945,7 +940,6 @@ if which npm >/dev/null 2>&1; then
   [ "$INSTALL_EXPECT_CLI" = "1" ] && npm i -g expect-cli 2>/dev/null || true
   [ "$INSTALL_REACT_DOCTOR" = "1" ] && npm i -g react-doctor@latest 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
-  [ "$INSTALL_PLATO" = "1" ] && "$PLUGIN_ROOT/scripts/install-plato.sh" stable codex 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
@@ -1052,12 +1046,12 @@ Offer lightweight, generally useful agent skills that improve onboarding and exe
 
 | ID | Name | Benefit | Install |
 |----|------|---------|---------|
-| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `install-skill.sh <skill> <repo> project` via PlaTo secure store |
-| `dejank` | Dejank | **Detect React visual jank** — static scan of 18 anti-patterns plus runtime investigation workflows | `install-skill.sh dejank https://github.com/gbasin/dejank project` via PlaTo secure store; only offer for React-based repos |
+| `ui-skills` | UI Skills | **Fix ugly agent UIs** — accessibility, motion, metadata, design polish | `install-skill.sh <skill> <repo> project` |
+| `dejank` | Dejank | **Detect React visual jank** — static scan of 18 anti-patterns plus runtime investigation workflows | `install-skill.sh dejank https://github.com/gbasin/dejank project`; only offer for React-based repos |
 | `taste-skill` | Taste Skill | **Anti-generic UI taste layer** — more distinctive, intentional frontend output | `install-skill.sh taste-skill https://github.com/Leonxlnx/taste-skill project` |
 | `semver-changelog` | Semver Changelog | **Release hygiene automation** — structured changelog updates from commits | `install-skill.sh semver-changelog https://github.com/prulloac/agent-skills project` |
 | `diffity-tour` | Diffity Tour | **Interactive codebase walkthroughs** — generate guided browser tours for any feature or subsystem | `install-skill.sh diffity-tour https://github.com/kamranahmedse/diffity project`; optionally install `diffity` CLI so tours run immediately |
-| `agent-skills-vercel` | Find Skills (Vercel) | **Catalog bootstrap** — securely install Vercel's `find-skills` helper, then use PlaTo to add more | `install-skill.sh find-skills https://github.com/vercel-labs/agent-skills project` |
+| `agent-skills-vercel` | Find Skills (Vercel) | **Catalog bootstrap** — install Vercel's `find-skills` helper into the repo skill folders | `install-skill.sh find-skills https://github.com/vercel-labs/agent-skills project` |
 | `x-research-skill` | X Research Skill | **Faster ecosystem intel** — summarize high-signal X threads quickly | `install-skill.sh x-research-skill https://github.com/rohunvora/x-research-skill project` |
 
 ### Detect existing skills
@@ -1083,17 +1077,16 @@ done
 ```
 
 ```bash
-HAVE_UI_SKILLS=$(([ -f ".secureskills/store/baseline-ui/manifest.json" ] || [ -f ".secureskills/store/fixing-accessibility/manifest.json" ] || [ -f ".secureskills/store/fixing-metadata/manifest.json" ] || [ -f ".secureskills/store/fixing-motion-performance/manifest.json" ] || [ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ]) && echo 1 || echo 0)
-HAVE_DEJANK=$(([ -f ".secureskills/store/dejank/manifest.json" ] || [ -f ".codex/skills/dejank/SKILL.md" ] || [ -f ".claude/skills/dejank/SKILL.md" ]) && echo 1 || echo 0)
-HAVE_TASTE_SKILL=$(([ -f ".secureskills/store/taste-skill/manifest.json" ] || [ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
-HAVE_SEMVER_CHANGELOG=$(([ -f ".secureskills/store/semver-changelog/manifest.json" ] || [ -d ".codex/skills/semver-changelog" ] || [ -d ".claude/skills/semver-changelog" ]) && echo 1 || echo 0)
-HAVE_AGENT_SKILLS_VERCEL=$(([ -f ".secureskills/store/find-skills/manifest.json" ] || [ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ]) && echo 1 || echo 0)
-HAVE_DIFFITY_TOUR=$(([ -f ".secureskills/store/diffity-tour/manifest.json" ] || [ -f ".codex/skills/diffity-tour/SKILL.md" ] || [ -f ".claude/skills/diffity-tour/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_UI_SKILLS=$(([ -f ".codex/skills/baseline-ui/SKILL.md" ] || [ -f ".claude/skills/baseline-ui/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_DEJANK=$(([ -f ".codex/skills/dejank/SKILL.md" ] || [ -f ".claude/skills/dejank/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_TASTE_SKILL=$(([ -f ".codex/skills/taste-skill/SKILL.md" ] || [ -f ".claude/skills/taste-skill/SKILL.md" ]) && echo 1 || echo 0)
+HAVE_SEMVER_CHANGELOG=$(([ -d ".codex/skills/semver-changelog" ] || [ -d ".claude/skills/semver-changelog" ]) && echo 1 || echo 0)
+HAVE_AGENT_SKILLS_VERCEL=$(([ -d ".codex/skills/agent-skills-vercel" ] || [ -d ".claude/skills/agent-skills-vercel" ] || [ -d ".codex/skills/find-skills" ] || [ -d ".claude/skills/find-skills" ]) && echo 1 || echo 0)
+HAVE_DIFFITY_TOUR=$(([ -f ".codex/skills/diffity-tour/SKILL.md" ] || [ -f ".claude/skills/diffity-tour/SKILL.md" ]) && echo 1 || echo 0)
 HAVE_DIFFITY_CLI=$(which diffity >/dev/null 2>&1 && echo 1 || echo 0)
-HAVE_X_RESEARCH_SKILL=$(([ -f ".secureskills/store/x-research-skill/manifest.json" ] || [ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
+HAVE_X_RESEARCH_SKILL=$(([ -d ".codex/skills/x-research-skill" ] || [ -d ".claude/skills/x-research-skill" ]) && echo 1 || echo 0)
 HAVE_NPX=$(which npx >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_GIT=$(which git >/dev/null 2>&1 && echo 1 || echo 0)
-mkdir -p .secureskills
 ```
 
 ### Ask which skills to install
@@ -1108,15 +1101,15 @@ Re-run /flux:setup later if this repo adds React.
 ```json
 {
   "header": "Agent Skills",
-  "question": "Flux can install optional agent skills. Supported project-local installs are secured with PlaTo. Which would you like?",
+  "question": "Flux can install optional agent skills into repo-local skill folders. Which would you like?",
   "multiple": true,
   "options": [
-    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design. Recommended by default for frontend repos and installed securely with PlaTo."},
+    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design. Recommended by default for frontend repos."},
     {"label": "Dejank", "description": "React-only visual jank audit: 18 anti-patterns plus runtime investigation workflows"},
     {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation. Recommended by default for frontend repos."},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
     {"label": "Diffity Tour", "description": "Create interactive guided tours for understanding unfamiliar code"},
-    {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper securely, then add more catalog skills via PlaTo"},
+    {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper into the repo-local skill folders"},
     {"label": "X Research Skill", "description": "Summarize high-signal X threads for research"},
     {"label": "Skip", "description": "No additional skills"}
   ]
@@ -1160,40 +1153,40 @@ if [ "$INSTALL_DEJANK" = "1" ]; then
     echo "Skipping Dejank: this repo does not look React-based."
   elif [ "$HAVE_GIT" = "1" ]; then
     "$INSTALL_SKILL_CMD" "dejank" "https://github.com/gbasin/dejank" project 2>/dev/null || {
-      echo "Install manually: secureskills add https://github.com/gbasin/dejank --skill dejank && secureskills enable codex"
+      echo "Install manually: $INSTALL_SKILL_CMD dejank https://github.com/gbasin/dejank project"
     }
   else
-    echo "git not found. Install manually: secureskills add https://github.com/gbasin/dejank --skill dejank && secureskills enable codex"
+    echo "git not found. Install manually once git is available: $INSTALL_SKILL_CMD dejank https://github.com/gbasin/dejank project"
   fi
 fi
 
 if [ "$INSTALL_TASTE_SKILL" = "1" ]; then
   "$INSTALL_SKILL_CMD" "taste-skill" "https://github.com/Leonxlnx/taste-skill" project 2>/dev/null || {
-    echo "Install manually: secureskills add https://github.com/Leonxlnx/taste-skill --skill taste-skill"
+    echo "Install manually: $INSTALL_SKILL_CMD taste-skill https://github.com/Leonxlnx/taste-skill project"
   }
 fi
 
 if [ "$INSTALL_SEMVER_CHANGELOG" = "1" ]; then
   "$INSTALL_SKILL_CMD" "semver-changelog" "https://github.com/prulloac/agent-skills" project 2>/dev/null || {
-    echo "Install manually: secureskills add https://github.com/prulloac/agent-skills --skill semver-changelog"
+    echo "Install manually: $INSTALL_SKILL_CMD semver-changelog https://github.com/prulloac/agent-skills project"
   }
 fi
 
 if [ "$INSTALL_DIFFITY_TOUR" = "1" ]; then
   "$INSTALL_SKILL_CMD" "diffity-tour" "https://github.com/kamranahmedse/diffity" project 2>/dev/null || {
-    echo "Install manually: secureskills add https://github.com/kamranahmedse/diffity --skill diffity-tour && secureskills enable codex"
+    echo "Install manually: $INSTALL_SKILL_CMD diffity-tour https://github.com/kamranahmedse/diffity project"
   }
 fi
 
 if [ "$INSTALL_AGENT_SKILLS_VERCEL" = "1" ]; then
   "$INSTALL_SKILL_CMD" "find-skills" "https://github.com/vercel-labs/agent-skills" project 2>/dev/null || {
-    echo "Install manually: secureskills add https://github.com/vercel-labs/agent-skills --skill find-skills"
+    echo "Install manually: $INSTALL_SKILL_CMD find-skills https://github.com/vercel-labs/agent-skills project"
   }
 fi
 
 if [ "$INSTALL_X_RESEARCH_SKILL" = "1" ]; then
   "$INSTALL_SKILL_CMD" "x-research-skill" "https://github.com/rohunvora/x-research-skill" project 2>/dev/null || {
-    echo "Install manually: secureskills add https://github.com/rohunvora/x-research-skill --skill x-research-skill"
+    echo "Install manually: $INSTALL_SKILL_CMD x-research-skill https://github.com/rohunvora/x-research-skill project"
   }
 fi
 ```
@@ -1241,13 +1234,13 @@ fi
 
 After running installs, verify each selected skill path exists before marking success:
 
-- UI Skills: `.secureskills/store/baseline-ui/manifest.json` (or one of the other secured UI skill manifests)
-- Dejank: `.secureskills/store/dejank/manifest.json`
-- Taste Skill: `.secureskills/store/taste-skill/manifest.json`
-- Semver Changelog: `.secureskills/store/semver-changelog/manifest.json`
-- Diffity Tour: `.secureskills/store/diffity-tour/manifest.json`
-- Find Skills (Vercel): `.secureskills/store/find-skills/manifest.json`
-- X Research Skill: `.secureskills/store/x-research-skill/manifest.json`
+- UI Skills: `.codex/skills/baseline-ui/` or `.claude/skills/baseline-ui/`
+- Dejank: `.codex/skills/dejank/` or `.claude/skills/dejank/`
+- Taste Skill: `.codex/skills/taste-skill/` or `.claude/skills/taste-skill/`
+- Semver Changelog: `.codex/skills/semver-changelog/` or `.claude/skills/semver-changelog/`
+- Diffity Tour: `.codex/skills/diffity-tour/` or `.claude/skills/diffity-tour/`
+- Find Skills (Vercel): `.codex/skills/find-skills/` or `.claude/skills/find-skills/`
+- X Research Skill: `.codex/skills/x-research-skill/` or `.claude/skills/x-research-skill/`
 
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
@@ -1493,7 +1486,7 @@ Read current `.flux/meta.json`, add/update these fields (preserve all others):
     "mcp_servers": ["<list of MCP server names installed this session, e.g. fff, context7, exa, github, firecrawl>"],
     "skills": ["<list of skill names installed this session, e.g. ui-skills, dejank, taste-skill, diffity-tour, find-skills>"],
     "desktop_apps": ["<list of desktop apps installed this session, e.g. raycast, superset, codexbar, wispr-flow, granola>"],
-    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, plato, diffity>"],
+    "cli_tools": ["<list of CLI tools installed this session, e.g. gh, jq, fzf, lefthook, agent-browser, expect-cli, cli-continues, diffity>"],
     "infra_cli": ["<platform CLI installed this session, e.g. vercel, railway, aws>"]
   }
 }
@@ -1685,7 +1678,7 @@ Only include lines for config values that are set. If no config is set, skip thi
 
 Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
 
-**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and, for supported skill installs, `.secureskills/` within the project directory. Legacy loose skill mirrors are compatibility-only.
+**Installation scope** is always project-local. No question needed — Flux always installs to `.flux/`, `.mcp.json`, and, for supported skill installs, `.codex/skills/` plus `.claude/skills/` within the project directory.
 
 Available questions (include only if corresponding config is unset):
 
@@ -2105,7 +2098,7 @@ Only process answers for questions that were asked (config values that were unse
      ```bash
      "$PLUGIN_ROOT/scripts/install-skill.sh" "linear-cli" "https://github.com/schpet/linear-cli" project
      ```
-  3. Verify install: check `.secureskills/store/linear-cli/manifest.json` exists and is non-empty. If failed, show: `Install manually: secureskills add https://github.com/schpet/linear-cli --skill linear-cli && secureskills enable codex`
+  3. Verify install: check `.codex/skills/linear-cli/` or `.claude/skills/linear-cli/` exists and is non-empty. If failed, show: `Install manually: $PLUGIN_ROOT/scripts/install-skill.sh linear-cli https://github.com/schpet/linear-cli project`
   4. Check Linear CLI is installed:
      ```bash
      which linear >/dev/null 2>&1 && echo "LINEAR_CLI_OK=1" || echo "LINEAR_CLI_OK=0"
@@ -2594,19 +2587,18 @@ For each MCP server in the manifest, remove its entry from `.mcp.json` under `mc
 **Agent skills** (if selected):
 ```bash
 # Remove each skill directory
-rm -rf .secureskills/store/<skill-name>
 rm -rf .codex/skills/<skill-name>
 rm -rf .claude/skills/<skill-name>
 ```
 
 Map skill names to directories:
-- `ui-skills` → `.secureskills/store/baseline-ui`, `.secureskills/store/fixing-accessibility`, `.secureskills/store/fixing-metadata`, `.secureskills/store/fixing-motion-performance`
-- `dejank` → `.secureskills/store/dejank` plus any legacy loose mirrors
-- `taste-skill` → `.secureskills/store/taste-skill` plus any legacy loose mirrors
-- `semver-changelog` → `.secureskills/store/semver-changelog` plus any legacy loose mirrors
-- `diffity-tour` → `.secureskills/store/diffity-tour` plus any legacy loose mirrors
-- `agent-skills-vercel` → `.secureskills/store/find-skills` plus any legacy loose mirrors
-- `x-research-skill` → `.secureskills/store/x-research-skill` plus any legacy loose mirrors
+- `ui-skills` → `.codex/skills/baseline-ui`, `.codex/skills/fixing-accessibility`, `.codex/skills/fixing-metadata`, `.codex/skills/fixing-motion-performance` plus Claude mirrors
+- `dejank` → `.codex/skills/dejank` plus Claude mirror
+- `taste-skill` → `.codex/skills/taste-skill` plus Claude mirror
+- `semver-changelog` → `.codex/skills/semver-changelog` plus Claude mirror
+- `diffity-tour` → `.codex/skills/diffity-tour` plus Claude mirror
+- `agent-skills-vercel` → `.codex/skills/find-skills` plus Claude mirror
+- `x-research-skill` → `.codex/skills/x-research-skill` plus Claude mirror
 
 **Desktop apps** (if selected):
 Cannot auto-uninstall GUI apps. Print manual instructions:

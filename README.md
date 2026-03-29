@@ -80,7 +80,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 
 > **Codex note:** Codex supports skills and prompt routing, but it may not show the same Claude-style slash-command picker UI. In Codex, treat `/flux:*` strings as explicit prompt triggers for Flux skills. If Flux is installed correctly and you start a fresh session, typing `/flux:scope` or `/flux:work fn-1` should still route correctly even if there is no visible command dropdown.
 
-> **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, Flux-secured skills live in `.secureskills/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
+> **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, optional project skills live in `.codex/skills/` and `.claude/skills/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
 
 ---
 
@@ -88,7 +88,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 
 ### 1. Setup
 
-`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. It also bootstraps [PlaTo](https://github.com/Alt5r/Plato) for project-local secure skill installs, so Flux can add supported skills through `secureskills` instead of dropping loose `SKILL.md` files into the repo. Everything is opt-in — you pick what you want.
+`/flux:setup` scaffolds `.flux/` in your project, configures your preferences, and optionally installs productivity tools. It can also install supported project-local skills into `.codex/skills/` and `.claude/skills/` so both Codex and Claude see the same repo-level helpers. Everything is opt-in — you pick what you want.
 
 <details>
 <summary><b>What Flux offers to install</b></summary>
@@ -114,7 +114,6 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [agent-browser](https://github.com/nichochar/agent-browser) | Headless browser for automated UI QA during epic reviews |
 | [CLI Continues](https://github.com/nichochar/continues) | Session handoff — pick up where you left off across terminals |
 | [React Doctor](https://www.react.doctor/) | Diff-scoped React code health scan with an opt-in pre-commit gate for changed files |
-| [PlaTo](https://github.com/Alt5r/Plato) | Secure skill installer for Codex and Claude — signs and verifies project-local skills before runtime exposure |
 
 **Desktop Apps** (macOS):
 
@@ -126,7 +125,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Wispr Flow](https://wisprflow.com) | Voice-to-text dictation — 4x faster than typing |
 | [Granola](https://granola.ai) | AI meeting notes without a bot joining your calls |
 
-**Agent Skills** — optional project-local skill installs during `/flux:setup`, secured with PlaTo:
+**Agent Skills** — optional project-local skill installs during `/flux:setup`:
 
 | Skill | Why |
 |------|-----|
@@ -134,7 +133,7 @@ After setup, just talk to the agent. Flux parses your message intent and routes 
 | [Dejank](https://github.com/gbasin/dejank) | React visual-jank audits: 18 anti-patterns plus runtime investigation workflows |
 | [Taste Skill](https://github.com/Leonxlnx/taste-skill) | Reduce generic/sloppy UI generation |
 | [Semver Changelog](https://skills.sh/prulloac/agent-skills/semver-changelog) | Structured changelog and release-note hygiene |
-| [Find Skills (Vercel)](https://github.com/vercel-labs/agent-skills) | Secure bootstrap for Vercel's skill catalog, then add more through PlaTo |
+| [Find Skills (Vercel)](https://github.com/vercel-labs/agent-skills) | Bootstrap Vercel's skill catalog into the repo-local skill folders |
 | [X Research Skill](https://github.com/rohunvora/x-research-skill) | Summarize high-signal X threads for research |
 
 `React Doctor` and `Dejank` are only offered when Flux detects a React-based repo during setup.
@@ -610,7 +609,7 @@ The full Product OS scoping flow (the interview, problem statement, task breakdo
 
 Flux reads your **repo structure** (files, directories, dependencies), your **installed MCP servers** (from `.mcp.json`), and optionally your **legacy session transcripts under `~/.claude/projects/`** (only when you run `/flux:improve` and give explicit consent).
 
-For project-local setup, Flux creates its core repo state inside `.flux/` — including the brain vault at `.flux/brain/`. When you choose secure skill installs, Flux uses PlaTo's `.secureskills/` store so supported skills are signed and verified before the agent sees them. In git repos, Flux now backs that store from the shared git common-dir and links it into each checkout, which keeps the trust root stable across worktrees while preserving the usual repo-local path. Optional ecosystem features still use some user-global state (for example cached recommendations under `~/.flux/`, the global `secureskills` CLI and shell hook metadata, and legacy Claude session/plugin data under `~/.claude/`), but the main workflow state is project-local.
+For project-local setup, Flux creates its core repo state inside `.flux/` — including the brain vault at `.flux/brain/`. Optional repo-local skills live in `.codex/skills/` and `.claude/skills/` so both agents can load them from the checkout. Optional ecosystem features still use some user-global state (for example cached recommendations under `~/.flux/` and legacy Claude session/plugin data under `~/.claude/`), but the main workflow state is project-local.
 
 The only global change Flux makes is during `/flux:setup` if you choose to install CLI tools (like `jq` or `gh`) — but even that is opt-in and asks you first.
 </details>

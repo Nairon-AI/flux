@@ -46,7 +46,6 @@ fi
 **Remove project-local MCP config and skills:**
 ```bash
 rm -f .mcp.json
-rm -rf .secureskills/
 rm -rf .codex/skills/
 rm -rf .claude/skills/
 ```

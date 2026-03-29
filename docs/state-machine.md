@@ -313,7 +313,7 @@ The brain vault is stored in `.flux/brain/`. This maps every interaction:
 | **Work** (per task) | READ | Re-anchor: `.flux/brain/pitfalls/<relevant-area>/`, `.flux/brain/principles.md`, `.flux/brain/codebase/architecture.md` |
 | **Learning Capture** (during epic review) | WRITE | `.flux/brain/pitfalls/<area>/<new-pitfall>.md` |
 | **Architecture Diagram** | READ+WRITE | `.flux/brain/codebase/architecture.md` — canonical whole-product diagram kept in sync during prime/work/review |
-| **Reflect** | WRITE | `.flux/brain/` (learnings), project-local `.secureskills/` for secure extracted skills when available, with legacy `.codex/skills/` / `.claude/skills/` fallback |
+| **Reflect** | WRITE | `.flux/brain/` (learnings) plus project-local `.codex/skills/` / `.claude/skills/` for extracted skills |
 | **Ruminate** | WRITE | `.flux/brain/` (mined patterns from past conversations) |
 | **Meditate** | READ+WRITE | Prune stale notes, promote recurring pitfalls to principles |
 | **Remember** (flux-brain) | WRITE | `.flux/brain/<category>/` or `CLAUDE.md` based on content analysis |

@@ -563,7 +563,6 @@ def detect_skills(scope: str, cwd: Path) -> list[dict[str, Any]]:
         roots.append(("global", HOME / ".codex" / "skills", "legacy"))
         roots.append(("global", HOME / ".claude" / "skills", "legacy"))
     if scope in {"project", "both"}:
-        roots.append(("project", cwd / ".secureskills" / "store", "plato"))
         roots.append(("project", cwd / ".codex" / "skills", "legacy"))
         roots.append(("project", cwd / ".claude" / "skills", "legacy"))
 
@@ -572,8 +571,6 @@ def detect_skills(scope: str, cwd: Path) -> list[dict[str, Any]]:
             continue
         for child in sorted(root.iterdir()):
             if not child.is_dir():
-                continue
-            if root_type == "plato" and not (child / "manifest.json").exists():
                 continue
             skill_name = child.name
             fingerprint = hash_skill_folder(child)
@@ -1325,7 +1322,7 @@ def install_item(
 
     verify_type, verify_arg = parse_verify_arg(item)
     if category == "skill" and verify_type == "manual" and str(install.get("scope", "user")).strip() == "project":
-        verify_type = "secureskill"
+        verify_type = "skill_exists"
         verify_arg = str(Path.cwd())
     verify_command = [verify_script, name, verify_type]
     if verify_arg:

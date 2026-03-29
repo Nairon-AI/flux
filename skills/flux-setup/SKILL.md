@@ -35,7 +35,6 @@ $FLUXCTL session-phase set idle
 - **Optional** additional MCP:
   - **Firecrawl** — scrape websites and parse PDFs into LLM-ready markdown
 - **Optional** recommended CLI tools:
-  - **PlaTo** — secure skill installer for Codex/Claude repos; Flux uses it for supported project-local skill installs
   - **jq** — JSON parsing for scripts and API output
   - **fzf** — fuzzy finder for terminal workflows
   - **Lefthook** — fast pre-commit hooks
@@ -55,10 +54,10 @@ $FLUXCTL session-phase set idle
   - **Taste Skill** — anti-generic design taste layer for better UI generation
   - **Semver Changelog** — automated semantic changelog/release-note hygiene
   - **Diffity Tour** — interactive browser-based walkthroughs for understanding unfamiliar codepaths and features, with optional `diffity` CLI install during setup so tours work immediately
-  - **Find Skills (Vercel)** — secure bootstrap for Vercel's skill catalog via PlaTo
+  - **Find Skills (Vercel)** — bootstrap for Vercel's skill catalog in repo-local skill folders
   - **X Research Skill** — structured X/Twitter research and summarization
 - **Optional** task tracker integration:
-  - **Linear** — installs the [Linear CLI skill](https://github.com/schpet/linear-cli) through PlaTo so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
+  - **Linear** — installs the [Linear CLI skill](https://github.com/schpet/linear-cli) into repo-local skill folders so the agent can manage issues and projects directly. Team gets visibility without touching the CLI.
 - **Optional** auto-fix (cloud PR babysitting):
   - **Claude Auto-Fix** — after Flux submits a PR, Claude can watch it remotely in the cloud, automatically fixing CI failures and addressing review comments. This remains an optional secondary workflow and requires the [Claude GitHub App](https://github.com/apps/claude).
 - **Smart conflict detection** — detects existing similar tools and asks how to handle (keep, switch, both)
@@ -74,7 +73,7 @@ A step completion checklist and verification gate at the end of workflow.md will
 - **Fully optional** - standard plugin usage works without local setup
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
-- All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs now go into PlaTo's `.secureskills/` store, with loose `.codex/skills/` / `.claude/skills/` folders retained only as compatibility fallbacks when needed
+- All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs go into repo-local `.codex/skills/` / `.claude/skills/`
 - React-only tools and skills should only be offered when the repo actually uses React or a React-based framework
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end

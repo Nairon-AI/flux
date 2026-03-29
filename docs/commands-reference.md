@@ -26,7 +26,7 @@ npm install -g @openai/codex
 codex login
 ```
 
-Flux setup can also install [PlaTo](https://github.com/Alt5r/Plato) so supported project skills go through `secureskills` and land in `.secureskills/` instead of loose repo-local skill folders.
+Flux setup can also install supported project skills into repo-local `.codex/skills/` and `.claude/skills/` folders so both agents can load them from the checkout.
 
 Some optional project-installed skills do not have a `/flux:*` wrapper. Flux can still route to them implicitly when they are present in the repo.
 
@@ -126,7 +126,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store; in git repos Flux links that path to shared storage under the git common-dir so worktrees reuse the same secure-skill keys and enabled-agent state. In React-based repos, setup can also offer React Doctor as an optional CLI and wire it into a pre-commit hook, with the quality pass re-running it as a backstop before submit.
+Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported repo-local skills install into `.codex/skills/` and `.claude/skills/`. In React-based repos, setup can also offer React Doctor as an optional CLI and wire it into a pre-commit hook, with the quality pass re-running it as a backstop before submit.
 
 ### /flux:plan
 
@@ -174,7 +174,7 @@ Use it when you want a dedicated visual-jank pass instead of hoping the model pi
 
 When Flux is installed in the repo, casual React jank complaints like "this flickers", "the layout jumps", or "the pane feels rebuilt" should also route here automatically when `dejank` is installed.
 
-If `dejank` is not installed in the repo yet, the command should stop and tell you to install it through `/flux:setup` or with `secureskills add`.
+If `dejank` is not installed in the repo yet, the command should stop and tell you to install it through `/flux:setup`.
 
 ### /diffity-tour
 
@@ -189,12 +189,7 @@ Use it when you want an interactive walkthrough of an existing feature, subsyste
 
 When Flux is installed in the repo, understanding requests like "how does auth work", "help me understand the billing flow", or "show me what touches notifications" should also route here automatically when `diffity-tour` is installed.
 
-If `diffity-tour` is not installed in the repo yet, Flux should continue with the normal routing path and point you to `/flux:setup` or:
-
-```bash
-secureskills add https://github.com/kamranahmedse/diffity --skill diffity-tour
-secureskills enable codex
-```
+If `diffity-tour` is not installed in the repo yet, Flux should continue with the normal routing path and point you to `/flux:setup`.
 
 ---
 

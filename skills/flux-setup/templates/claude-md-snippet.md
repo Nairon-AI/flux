@@ -67,13 +67,13 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - Treat these as **React visual-jank requests** — if `dejank` is installed in the repo, route directly to `/flux:dejank`:
   - "flicker", "flash", "blink", "layout shift", "jank", "stutter", "jump", "pop in", "scroll reset", "feels rebuilt"
   - especially when the user is talking about a React UI, first render, hydration, or visual instability
-  - Check install by looking for `.secureskills/store/dejank/manifest.json` first, then legacy `.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`
+  - Check install by looking for `.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`
   - If the repo does not have Dejank installed, continue with the normal Flux routing path and mention `/flux:setup` if Dejank would help
 - Treat these as **codebase understanding requests** — if `diffity-tour` is installed in the repo, route directly to `/diffity-tour`:
   - "how does this work", "walk me through auth", "help me understand the billing flow", "show me what touches checkout"
   - especially when the user wants a guided explanation of an existing feature, subsystem, codepath, or cross-cutting behavior
   - Do not use this route when the user is clearly asking you to change or build something rather than understand it
-  - Check install by looking for `.secureskills/store/diffity-tour/manifest.json` first, then legacy `.codex/skills/diffity-tour/SKILL.md` or `.claude/skills/diffity-tour/SKILL.md`
+  - Check install by looking for `.codex/skills/diffity-tour/SKILL.md` or `.claude/skills/diffity-tour/SKILL.md`
   - If the repo does not have Diffity Tour installed, continue with the normal Flux routing path and mention `/flux:setup` if Diffity Tour would help
 - Treat these as **specialist workflow requests** — route directly instead of making the user rephrase:
   - "grill me", "stress test the behavior", "verify behavior" → `/flux:grill`
@@ -122,7 +122,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 
 <important if="you are building, redesigning, or restyling a user-facing frontend">
 **Frontend rules:**
-- If project-local frontend skills exist, you MUST load and follow them before making UI changes. Check `.secureskills/store/<skill>/manifest.json` first, then `.codex/skills/`, then `.claude/skills/` mirrors.
+- If project-local frontend skills exist, you MUST load and follow them before making UI changes. Check `.codex/skills/` first, then `.claude/skills/`.
 - Treat `taste-skill` as mandatory for frontend generation when present.
 - Treat installed UI skills as mandatory guardrails when present. At minimum, load `baseline-ui`; also load `fixing-accessibility`, `fixing-motion-performance`, and `fixing-metadata` when the task touches those concerns.
 - If the repo has substantive frontend work to do and these skills are missing, strongly recommend running `/flux:setup` to install `UI Skills` and `Taste Skill` before large UI changes.

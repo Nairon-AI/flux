@@ -69,32 +69,27 @@ Parse the spec carefully. Identify:
 **Frontend skill bootstrap (MANDATORY for frontend tasks):**
 If the task spec, epic spec, file paths, or acceptance criteria indicate user-facing frontend work, load frontend skills before implementation.
 
-Treat `.secureskills/store/<skill>/manifest.json` as the primary "installed" signal for secure PlaTo installs. If a loose `SKILL.md` exists, read it directly:
+Treat `.codex/skills/<skill>/SKILL.md` as the primary repo-local installed signal. If a Claude mirror exists, read it too when relevant:
 ```bash
 for p in \
-  ".secureskills/store/taste-skill/manifest.json" \
-  ".secureskills/store/baseline-ui/manifest.json" \
-  ".secureskills/store/fixing-accessibility/manifest.json" \
-  ".secureskills/store/fixing-motion-performance/manifest.json" \
-  ".secureskills/store/fixing-metadata/manifest.json"
+  ".codex/skills/taste-skill/SKILL.md" \
+  ".codex/skills/baseline-ui/SKILL.md" \
+  ".codex/skills/fixing-accessibility/SKILL.md" \
+  ".codex/skills/fixing-motion-performance/SKILL.md" \
+  ".codex/skills/fixing-metadata/SKILL.md"
 do
   [ -f "$p" ] && echo "Installed frontend skill: $p"
 done
 
 for f in \
-  ".secureskills/store/taste-skill/SKILL.md" \
   ".codex/skills/taste-skill/SKILL.md" \
   ".claude/skills/taste-skill/SKILL.md" \
-  ".secureskills/store/baseline-ui/SKILL.md" \
   ".codex/skills/baseline-ui/SKILL.md" \
   ".claude/skills/baseline-ui/SKILL.md" \
-  ".secureskills/store/fixing-accessibility/SKILL.md" \
   ".codex/skills/fixing-accessibility/SKILL.md" \
   ".claude/skills/fixing-accessibility/SKILL.md" \
-  ".secureskills/store/fixing-motion-performance/SKILL.md" \
   ".codex/skills/fixing-motion-performance/SKILL.md" \
   ".claude/skills/fixing-motion-performance/SKILL.md" \
-  ".secureskills/store/fixing-metadata/SKILL.md" \
   ".codex/skills/fixing-metadata/SKILL.md" \
   ".claude/skills/fixing-metadata/SKILL.md"
 do

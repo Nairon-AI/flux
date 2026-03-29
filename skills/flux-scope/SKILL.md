@@ -149,7 +149,7 @@ After stakeholder detection, check whether the request is really a React visual-
 
 **Preconditions:**
 - Repo looks React-based (`react`, `next`, `@remix-run/react`, `react-router`, etc.)
-- `dejank` is installed in the repo (`.secureskills/store/dejank/manifest.json`, `.codex/skills/dejank/SKILL.md`, or `.claude/skills/dejank/SKILL.md`)
+- `dejank` is installed in the repo (`.codex/skills/dejank/SKILL.md` or `.claude/skills/dejank/SKILL.md`)
 
 **Visual-jank signals** (check the input text):
 - Uses language like: "flicker", "flash", "blink", "layout shift", "jump", "jank", "stutter", "pop in", "scroll reset", "feels rebuilt"

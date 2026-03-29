@@ -5,11 +5,9 @@
 set -e
 
 NAME="$1"
-VERIFY_TYPE="$2"  # command_exists, config_exists, mcp_connect, secureskill, manual
+VERIFY_TYPE="$2"  # command_exists, config_exists, mcp_connect, skill_exists, manual
 VERIFY_ARG="$3"   # command name, config path, project root, or test command
 HELPER_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# shellcheck source=./secureskills-root.sh
-source "$HELPER_ROOT/scripts/secureskills-root.sh"
 
 ENV_JSON=$(
     python3 "$HELPER_ROOT/scripts/fluxctl.py" env --json 2>/dev/null ||
@@ -21,13 +19,13 @@ VERIFY_HINT=$(echo "$ENV_JSON" | jq -r '.guidance.verify // "Run `scripts/fluxct
 
 if [ -z "$NAME" ] || [ -z "$VERIFY_TYPE" ]; then
     echo "Usage: verify-install.sh <name> <type> [arg]"
-    echo "Types: command_exists, config_exists, mcp_connect, secureskill, manual"
+    echo "Types: command_exists, config_exists, mcp_connect, skill_exists, manual"
     echo ""
     echo "Examples:"
     echo "  verify-install.sh jq command_exists jq"
     echo "  verify-install.sh biome config_exists biome.json"
     echo "  verify-install.sh context7 mcp_connect"
-    echo "  verify-install.sh baseline-ui secureskill /path/to/repo"
+    echo "  verify-install.sh baseline-ui skill_exists /path/to/repo"
     echo "  verify-install.sh raycast manual"
     exit 1
 fi
@@ -152,28 +150,38 @@ EOF
         fi
         ;;
 
-    secureskill)
-        PROJECT_ROOT="${VERIFY_ARG:-.}"
-        MANIFEST_PATH="$(secureskills_manifest_path "$PROJECT_ROOT" "$NAME")"
-        if [ -f "$MANIFEST_PATH" ]; then
-            echo "✓ Secure skill manifest found: $MANIFEST_PATH"
+    skill_exists)
+        ROOT="${VERIFY_ARG:-}"
+        if [ -n "$ROOT" ]; then
+            PRIMARY_PATH="$ROOT/.codex/skills/$NAME"
+            LEGACY_PATH="$ROOT/.claude/skills/$NAME"
+        else
+            PRIMARY_PATH="${CODEX_HOME:-${HOME}/.codex}/skills/$NAME"
+            LEGACY_PATH="${HOME}/.claude/skills/$NAME"
+        fi
+
+        if [ -d "$PRIMARY_PATH" ] || [ -d "$LEGACY_PATH" ]; then
+            FOUND_PATH="$PRIMARY_PATH"
+            [ -d "$FOUND_PATH" ] || FOUND_PATH="$LEGACY_PATH"
+            echo "✓ Skill found: $FOUND_PATH"
             cat <<EOF
 {
   "success": true,
   "name": "$NAME",
-  "verify_type": "secureskill",
-  "manifest_path": "$MANIFEST_PATH"
+  "verify_type": "skill_exists",
+  "skill_path": "$FOUND_PATH"
 }
 EOF
         else
-            echo "✗ Secure skill manifest not found: $MANIFEST_PATH"
+            echo "✗ Skill not found: $PRIMARY_PATH or $LEGACY_PATH"
             cat <<EOF
 {
   "success": false,
   "name": "$NAME",
-  "verify_type": "secureskill",
-  "manifest_path": "$MANIFEST_PATH",
-  "error": "Secure skill manifest not found"
+  "verify_type": "skill_exists",
+  "skill_path": "$PRIMARY_PATH",
+  "legacy_skill_path": "$LEGACY_PATH",
+  "error": "Skill not found"
 }
 EOF
             exit 1
@@ -206,7 +214,7 @@ EOF
         
     *)
         echo "✗ Unknown verification type: $VERIFY_TYPE"
-        echo "Valid types: command_exists, config_exists, mcp_connect, secureskill, manual"
+        echo "Valid types: command_exists, config_exists, mcp_connect, skill_exists, manual"
         exit 1
         ;;
 esac

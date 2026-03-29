@@ -21,7 +21,6 @@ Check for overlap before creating anything new:
 
 ```bash
 # Check user-installed skills
-ls .secureskills/store/ 2>/dev/null
 ls ~/.codex/skills/ 2>/dev/null
 ls ~/.claude/skills/ 2>/dev/null
 ls .codex/skills/ 2>/dev/null
@@ -100,26 +99,20 @@ Choose structure based on complexity:
 
 **Simple skill** (< 200 lines of instruction):
 ```
-.secureskills/store/<name>/    # preferred secure install target via PlaTo
-└── manifest.json
+.codex/skills/<name>/
+└── SKILL.md
 ```
 
 **Medium skill** (200-400 lines of instruction):
 ```
-.secureskills/store/<name>/    # preferred secure install target via PlaTo
-└── manifest.json
-
-.codex/skills/<name>/          # loose fallback only when PlaTo is unavailable
+.codex/skills/<name>/
 ├── SKILL.md                   (overview, workflow outline, gotchas)
 └── workflow.md                (detailed step-by-step)
 ```
 
 **Complex skill** (400+ lines of instruction):
 ```
-.secureskills/store/<name>/    # preferred secure install target via PlaTo
-└── manifest.json
-
-.codex/skills/<name>/          # loose fallback only when PlaTo is unavailable
+.codex/skills/<name>/
 ├── SKILL.md                   (overview, routing, gotchas)
 ├── workflow.md                (main execution steps)
 ├── examples.md                (concrete input/output examples)
@@ -267,7 +260,7 @@ Skills are always installed at project scope. Do not prompt the user for install
 ```bash
 mkdir -p .codex/skills/<name>/
 # Write the generated skill files into .codex/skills/<name>/ first, then install them
-# securely into the current project when PlaTo is available:
+# into the current project:
 "$PLUGIN_ROOT/scripts/install-skill.sh" "<name>" ".codex/skills/<name>" project
 ```
 
@@ -279,7 +272,7 @@ Present a summary showing the skill is ready:
 ## Skill Created: <name>
 
 **Category**: <category from Phase 1.4>
-**Location**: .secureskills/store/<name>/ (preferred) or `.codex/skills/<name>/` fallback
+**Location**: `.codex/skills/<name>/` (mirror to `.claude/skills/<name>/` when the repo supports Claude)
 **Files**: <list of files created>
 
 ### What it does

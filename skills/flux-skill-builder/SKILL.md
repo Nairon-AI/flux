@@ -54,7 +54,7 @@ Read [pipeline.md](pipeline.md) for the detailed autonomous execution pipeline.
 | 1. Research | Analyze intent, scan codebase, study existing skills | Inferred spec (category, triggers, capabilities, failure modes) |
 | 2. Draft | Write SKILL.md + supporting files using progressive disclosure | Complete skill folder |
 | 3. Validate | Run `validate_skills.py`, self-review against checklists | Pass/fail with auto-fixes |
-| 4. Deliver | Install to project-local `.secureskills/` through PlaTo when available, with loose skill mirrors only as fallback, then generate trigger test report | Installed and ready |
+| 4. Deliver | Install to project-local `.codex/skills/` and `.claude/skills/`, then generate trigger test report | Installed and ready |
 
 ## Key Principles
 
@@ -71,8 +71,8 @@ Read [pipeline.md](pipeline.md) for the detailed autonomous execution pipeline.
 - **Do not state the obvious.** Claude already knows how to code. The skill should contain information Claude does NOT have — repo-specific constraints, non-obvious failure modes, decision rules that override defaults.
 - **Do not over-railroad.** Only use rigid step sequences when deviating genuinely breaks things. For judgment-heavy tasks, give principles and examples, not exact scripts.
 - **Validate before delivering.** Always run `python3 scripts/validate_skills.py skills/<name>/` before presenting the skill. Fix errors automatically. Present warnings to the user.
-- **Check for existing skills first.** Before creating a new skill, scan `.secureskills/store/`, `~/.codex/skills/`, `~/.claude/skills/`, `.codex/skills/`, and `.claude/skills/` for overlap. Extend rather than duplicate.
-- **Validate the install path, not the repo path.** Run `validate_skills.py` against the installed skill directory. Prefer PlaTo's materialized project path when available; otherwise validate the loose fallback install path, not `skills/<name>/` inside the Flux repo.
+- **Check for existing skills first.** Before creating a new skill, scan `~/.codex/skills/`, `~/.claude/skills/`, `.codex/skills/`, and `.claude/skills/` for overlap. Extend rather than duplicate.
+- **Validate the install path, not the repo path.** Run `validate_skills.py` against the installed skill directory, not `skills/<name>/` inside the Flux repo.
 - **Restore session phase on completion.** This skill may be invoked from reflect or improve. Save the previous phase on entry and restore it on exit — do not blindly reset to `idle`.
 
 ---

@@ -28,7 +28,7 @@ mcp_question({
     options: [
       { label: "Both (dedupe)", description: "Combine global + project skills, dedupe by name+hash" },
       { label: "Global only", description: "Include globally installed skills and legacy mirrors" },
-      { label: "Project only", description: "Include project-local PlaTo skills from .secureskills plus any legacy mirrors" }
+      { label: "Project only", description: "Include project-local skills from .codex/skills and .claude/skills" }
     ]
   }]
 })

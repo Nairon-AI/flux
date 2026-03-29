@@ -457,36 +457,32 @@ describe('Flux Scripts', () => {
 
   describe('skill install helpers', () => {
 
-    test('install-skill.sh recommends secureskills for project installs without a source', async () => {
+    test('install-skill.sh recommends manual project installs without a source', async () => {
       const tmpRoot = `/tmp/flux-install-skill-${Date.now()}`
       mkdirSync(tmpRoot, { recursive: true })
 
       const scriptPath = join(FLUX_ROOT, 'scripts', 'install-skill.sh')
       const output = await $`bash ${scriptPath} baseline-ui project`.cwd(tmpRoot).text()
-      expect(output).toContain('secureskills add <source> --skill')
+      expect(output).toContain('Re-run install-skill.sh with that source URL')
       expect(output).toContain('"manual": true')
 
       rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)
 
-    test('verify-install.sh validates PlaTo secure skill manifests', async () => {
-      const tmpRoot = `/tmp/flux-verify-secureskill-${Date.now()}`
-      mkdirSync(join(tmpRoot, '.secureskills', 'store', 'baseline-ui'), { recursive: true })
-      writeFileSync(
-        join(tmpRoot, '.secureskills', 'store', 'baseline-ui', 'manifest.json'),
-        '{}'
-      )
+    test('verify-install.sh validates project-local skill directories', async () => {
+      const tmpRoot = `/tmp/flux-verify-skill-${Date.now()}`
+      mkdirSync(join(tmpRoot, '.codex', 'skills', 'baseline-ui'), { recursive: true })
 
-      const output = await runScript('verify-install.sh', ['baseline-ui', 'secureskill', tmpRoot], tmpRoot)
+      const output = await runScript('verify-install.sh', ['baseline-ui', 'skill_exists', tmpRoot], tmpRoot)
       const parsed = JSON.parse(output.slice(output.indexOf('{')))
       expect(parsed.success).toBe(true)
-      expect(parsed.verify_type).toBe('secureskill')
+      expect(parsed.verify_type).toBe('skill_exists')
 
       rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)
 
-    test('worktree helper shares secure skills through the git common-dir', async () => {
-      const tmpRoot = `/tmp/flux-worktree-secureskills-${Date.now()}`
+    test('worktree helper creates worktrees without secureskills wiring', async () => {
+      const tmpRoot = `/tmp/flux-worktree-${Date.now()}`
       const worktreeScript = join(FLUX_ROOT, 'skills', 'flux-worktree-kit', 'scripts', 'worktree.sh')
       mkdirSync(tmpRoot, { recursive: true })
 
@@ -497,24 +493,12 @@ describe('Flux Scripts', () => {
       await $`git -C ${tmpRoot} add README.md`.quiet()
       await $`git -C ${tmpRoot} commit -m "init"`.quiet()
 
-      mkdirSync(join(tmpRoot, '.secureskills', 'store', 'baseline-ui'), { recursive: true })
-      writeFileSync(
-        join(tmpRoot, '.secureskills', 'store', 'baseline-ui', 'manifest.json'),
-        '{}'
-      )
-
       const output = await $`bash ${worktreeScript} create feature/main main`.cwd(tmpRoot).text()
       expect(output).toContain('created:')
 
       const worktreeRoot = join(tmpRoot, '.worktrees', 'feature', 'main')
-      const commonDir = realpathSync((await $`git -C ${tmpRoot} rev-parse --absolute-git-dir`.text()).trim())
-      const sharedRoot = join(commonDir, 'flux-secureskills')
-
-      expect(lstatSync(join(tmpRoot, '.secureskills')).isSymbolicLink()).toBe(true)
-      expect(lstatSync(join(worktreeRoot, '.secureskills')).isSymbolicLink()).toBe(true)
-      expect(realpathSync(join(tmpRoot, '.secureskills'))).toBe(sharedRoot)
-      expect(realpathSync(join(worktreeRoot, '.secureskills'))).toBe(sharedRoot)
-      expect(existsSync(join(sharedRoot, 'store', 'baseline-ui', 'manifest.json'))).toBe(true)
+      expect(existsSync(join(worktreeRoot, 'README.md'))).toBe(true)
+      expect(existsSync(join(worktreeRoot, '.secureskills'))).toBe(false)
 
       rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)

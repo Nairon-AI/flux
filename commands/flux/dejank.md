@@ -8,18 +8,12 @@ argument-hint: "[component|path|PR context|visual symptom]"
 
 Before invoking the skill, check whether Dejank is available project-locally. Accept any of these as installed:
 
-- `.secureskills/store/dejank/manifest.json`
 - `.codex/skills/dejank/SKILL.md`
 - `.claude/skills/dejank/SKILL.md`
 
 If Dejank is **not installed**, do **not** improvise a fake `/flux:dejank` workflow. Tell the user plainly:
 
-`Dejank` is not installed in this repo. Install it through `/flux:setup`, or run:
-
-```bash
-secureskills add https://github.com/gbasin/dejank --skill dejank
-secureskills enable codex
-```
+`Dejank` is not installed in this repo. Install it through `/flux:setup`.
 
 If Dejank **is installed**, invoke the `dejank` skill and pass the user request through.
 
