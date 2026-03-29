@@ -6,6 +6,8 @@ Flux is designed to route from intent. In normal use, you should be able to tell
 
 Important: examples in this document use `/flux:*` commands because they are precise and compact, but that is documentation shorthand. The default user experience is natural language first. In day-to-day use, a developer should be able to say things like "add role-based permissions", "fix the auth redirect bug", or "continue the notifications work", and Flux should route that request without requiring an explicit slash command.
 
+Important for Codex users: Codex may not expose a Claude-style slash-command picker for custom Flux commands. Flux still treats literal `/flux:*` strings as explicit skill triggers in Codex. If Flux is installed and you restart Codex, prompts like `/flux:scope`, `/flux:prime`, and `/flux:work fn-1` should route even if there is no visible autocomplete dropdown.
+
 For the formal workflow state machine (all states, transitions, and routing rules), see [state-machine.md](state-machine.md).
 
 ---

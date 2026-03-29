@@ -1,6 +1,6 @@
 ---
 name: flux-desloppify
-description: Use when improving codebase quality systematically across dead code, duplication, complexity, naming, and architecture issues. Runs the desloppify scoring flow and favors real maintainability gains over cosmetic score-chasing.
+description: Use when improving codebase quality systematically across dead code, duplication, complexity, naming, and architecture issues. Runs the desloppify scoring flow and favors real maintainability gains over cosmetic score-chasing. Triggers on literal `/flux:desloppify`.
 user-invocable: false
 ---
 

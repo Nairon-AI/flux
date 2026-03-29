@@ -4,7 +4,8 @@ description: >-
   Extract a DDD-style ubiquitous language glossary from conversation and codebase, flagging
   ambiguities and proposing canonical terms. Saves to .flux/brain/business/glossary.md.
   Use when user wants to define domain terms, build a glossary, harden terminology, create
-  a ubiquitous language, or mentions "domain model" or "DDD".
+  a ubiquitous language, or mentions "domain model" or "DDD". Triggers on literal
+  `/flux:ubiquitous-language`.
 user-invocable: false
 ---
 

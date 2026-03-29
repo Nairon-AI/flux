@@ -70,6 +70,8 @@ PLUGIN_ROOT="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT:-$(git rev-parse --show-t
 ### Codex
 - Has multi-agent roles (0.102.0+)
 - Uses `AGENTS.md` for instructions
+- Uses skill discovery and prompt routing for custom workflows; do not assume a custom slash-command picker exists
+- Treat literal `/flux:*` strings as prompt triggers for Flux skills after install and session restart
 - Simpler `AskUserTool` interface
 - Sandbox restrictions may apply
 

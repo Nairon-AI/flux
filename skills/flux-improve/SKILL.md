@@ -1,6 +1,6 @@
 ---
 name: flux-improve
-description: Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Use when user wants to discover and install development workflow improvements.
+description: Analyze environment and recommend workflow optimizations (MCPs, plugins, skills, CLI tools, patterns). Use when user wants to discover and install development workflow improvements. Triggers on literal `/flux:improve` and requests like "find me tools for X", "what MCP should I use", or "optimize my workflow".
 user-invocable: true
 ---
 

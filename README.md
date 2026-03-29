@@ -3,7 +3,7 @@
 <img src="flux-logo.png" alt="Flux" width="300">
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v2.30.0--dev-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.37.2--dev-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-Primary-10A37F)](https://github.com/openai/codex)
 
@@ -77,6 +77,8 @@ Install Flux. README: https://github.com/Nairon-AI/flux
 After setup, just talk to the agent. Flux parses your message intent and routes to the right workflow — scope, work, review, or reflect — based on session state and what's currently in progress. Codex is the primary implementation path end-to-end.
 
 > **Natural-language first:** In normal use, developers do **not** need to type slash commands. They can just say things like "add team roles and permissions", "fix the auth bug", or "continue the dashboard work", and Flux routes that intent to the right workflow. The `/flux:*` commands are the explicit/manual surface and documentation shorthand, not the default day-to-day UX.
+
+> **Codex note:** Codex supports skills and prompt routing, but it may not show the same Claude-style slash-command picker UI. In Codex, treat `/flux:*` strings as explicit prompt triggers for Flux skills. If Flux is installed correctly and you start a fresh session, typing `/flux:scope` or `/flux:work fn-1` should still route correctly even if there is no visible command dropdown.
 
 > **Project-local setup lives in the repo.** MCP servers go in `.mcp.json`, repo instructions live in `AGENTS.md`, workflow state lives in `.flux/`, Flux-secured skills live in `.secureskills/`, and the brain vault lives in `.flux/brain/`. Flux is designed to run from the project checkout instead of depending on a Claude-specific global settings path.
 
@@ -571,8 +573,9 @@ Python 3.9+, jq, git. Flux checks for these during execution and tells you what'
 1. Verify you're in the project root and that `.flux/bin/fluxctl --help` works.
 2. Run `.flux/bin/fluxctl doctor --json` to see the detected primary driver, the authoritative repo-local runtime version, and whether the active host adapter is in sync.
 3. Re-run `/flux:setup` if the repo has never been initialized or the doctor output says the repo-local setup is missing or stale.
-4. If the repo was updated recently, follow the host-specific `update` guidance from `fluxctl doctor` instead of assuming Claude plugin state is authoritative.
-5. If the problem is still reproducible, open a GitHub issue with the exact failing command and output.
+4. In Codex, do not treat a missing slash-command picker as proof Flux is broken. Start a fresh Codex session and try an exact prompt like `/flux:scope` or `/flux:upgrade`.
+5. If the repo was updated recently, follow the host-specific `update` guidance from `fluxctl doctor` instead of assuming Claude plugin state is authoritative.
+6. If the problem is still reproducible, open a GitHub issue with the exact failing command and output.
 
 **Still stuck?** Join [Discord](https://discord.gg/CEQMd6fmXk) or open a [GitHub issue](https://github.com/Nairon-AI/flux/issues).
 

@@ -1,6 +1,6 @@
 ---
 name: flux-upgrade
-description: Use when upgrading Flux itself after a new release or when legacy plugin metadata/cache drift leaves Flux on an older version. Refresh marketplace metadata, clear plugin cache, update the install record, and route `/flux:upgrade`.
+description: Use when upgrading Flux itself after a new release or when legacy plugin metadata/cache drift leaves Flux on an older version. Refresh marketplace metadata, clear plugin cache, update the install record, and route literal `/flux:upgrade` prompts.
 user-invocable: true
 ---
 

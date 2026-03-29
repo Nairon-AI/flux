@@ -31,6 +31,8 @@ If Flux IS installed, skip this check and proceed normally.
 
 This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` instead of markdown TODOs or TodoWrite.
 
+**Codex-specific note:** Codex may not show a Claude-style slash-command picker for custom Flux commands. Treat literal `/flux:*` text as an explicit prompt trigger. If Flux is installed and the session is fresh, `/flux:scope`, `/flux:work fn-1`, and similar prompts should still route correctly even without visible autocomplete.
+
 **Mental model:**
 - Users should be able to say what they want naturally: build a feature, fix a bug, refactor something, continue work, or hand work off.
 - Flux should realign with `.flux/` state before acting.
@@ -165,6 +167,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 <important if="you are troubleshooting Flux commands or encountering errors">
 **Troubleshooting:**
 - If Flux commands fail or return "Unknown skill", consult the official README: https://github.com/Nairon-AI/flux#troubleshooting
+- In Codex, do not treat a missing slash-command picker as proof Flux is broken. Restart the session and try an exact `/flux:*` prompt first.
 - Follow the troubleshooting steps exactly — do not guess or improvise fixes
 - If the documented fixes don't work, the user should create a GitHub issue: https://github.com/Nairon-AI/flux/issues
 </important>

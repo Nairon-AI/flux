@@ -1,6 +1,6 @@
 ---
 name: flux-profile
-description: Use when exporting, publishing, importing, or tombstoning Flux SDLC profiles for reusable setup links, team replication, or immutable environment snapshots. Triggers on /flux:profile.
+description: Use when exporting, publishing, importing, or tombstoning Flux SDLC profiles for reusable setup links, team replication, or immutable environment snapshots. Triggers on literal `/flux:profile`.
 user-invocable: false
 ---
 

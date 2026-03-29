@@ -3,7 +3,8 @@ name: flux-tdd
 description: >-
   Test-driven development with red-green-refactor vertical slices. Use when implementing
   features or fixes TDD-style, when user says "TDD", "test first", "red green refactor",
-  or wants to build a feature one test at a time. Works standalone or inside /flux:work.
+  or wants to build a feature one test at a time. Triggers on literal `/flux:tdd`.
+  Works standalone or inside /flux:work.
 user-invocable: false
 ---
 

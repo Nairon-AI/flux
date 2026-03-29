@@ -824,7 +824,7 @@ flowchart TD
     mkdirSync(join(tmpRoot, '.flux', 'bin'), { recursive: true })
     writeFileSync(
       join(tmpRoot, 'package.json'),
-      JSON.stringify({ name: 'flux-fixture', version: '2.37.1-dev' })
+      JSON.stringify({ name: 'flux-fixture', version: '2.37.2-dev' })
     )
     writeFileSync(
       join(tmpRoot, '.flux', 'meta.json'),
@@ -843,7 +843,7 @@ flowchart TD
     const parsed = JSON.parse(output)
 
     expect(parsed.primary_driver.name).toBe('codex')
-    expect(parsed.authoritative_version.version).toBe('2.37.1-dev')
+    expect(parsed.authoritative_version.version).toBe('2.37.2-dev')
     expect(parsed.primary_adapter.version).toBe('2.30.1-dev')
     expect(parsed.primary_adapter.sync.status).toBe('out_of_sync')
     expect(parsed.guidance.update).toContain('/flux:setup')
@@ -860,7 +860,7 @@ flowchart TD
     mkdirSync(join(claudePluginRoot, '.claude-plugin'), { recursive: true })
     writeFileSync(
       join(tmpRoot, 'package.json'),
-      JSON.stringify({ name: 'flux-fixture', version: '2.37.1-dev' })
+      JSON.stringify({ name: 'flux-fixture', version: '2.37.2-dev' })
     )
     writeFileSync(
       join(claudePluginRoot, '.claude-plugin', 'plugin.json'),
@@ -891,7 +891,7 @@ flowchart TD
     const parsed = JSON.parse(output)
 
     expect(parsed.primary_driver.name).toBe('claude')
-    expect(parsed.authoritative_version.version).toBe('2.37.1-dev')
+    expect(parsed.authoritative_version.version).toBe('2.37.2-dev')
     expect(parsed.primary_adapter.version).toBe('2.30.1-dev')
     expect(parsed.primary_adapter.sync.status).toBe('out_of_sync')
     expect(parsed.guidance.update).toContain('claude plugin update')

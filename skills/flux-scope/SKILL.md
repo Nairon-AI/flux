@@ -1,6 +1,6 @@
 ---
 name: flux-scope
-description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Stress Test, Future Pressure, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow.
+description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Stress Test, Future Pressure, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow. Triggers on literal `/flux:scope`, including prompts like `/flux:scope Add OAuth login` or `/flux:scope fn-1 --deep`.
 user-invocable: false
 ---
 

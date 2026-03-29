@@ -1,6 +1,6 @@
 ---
 name: flux-release
-description: Use when cutting a new Flux release. Bump all manifest versions in sync, tag the release, create GitHub release notes, and prevent stale plugin metadata from drifting from the published tag. Triggers on /flux:release.
+description: Use when cutting a new Flux release. Bump all manifest versions in sync, tag the release, create GitHub release notes, and prevent stale plugin metadata from drifting from the published tag. Triggers on literal `/flux:release`.
 user-invocable: true
 ---
 

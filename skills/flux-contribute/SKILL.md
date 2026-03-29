@@ -1,6 +1,6 @@
 ---
 name: flux-contribute
-description: Use when contributing fixes to Flux itself or deciding whether a reported Flux issue actually needs a PR. Reproduce first, exhaust setup/workaround causes, and only create a PR for verified product bugs.
+description: Use when contributing fixes to Flux itself or deciding whether a reported Flux issue actually needs a PR. Reproduce first, exhaust setup/workaround causes, and only create a PR for verified product bugs. Triggers on literal `/flux:contribute` and requests like "report a Flux bug" or "contribute a fix to Flux".
 user-invocable: false
 ---
 

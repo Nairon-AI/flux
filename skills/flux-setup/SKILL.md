@@ -1,6 +1,6 @@
 ---
 name: flux-setup
-description: Optional local install of fluxctl CLI and AGENTS.md/legacy CLAUDE.md instructions. Use when user runs /flux:setup.
+description: Optional local install of fluxctl CLI and AGENTS.md/legacy CLAUDE.md instructions. Use when user runs /flux:setup. Triggers on literal `/flux:setup`.
 user-invocable: false
 ---
 
