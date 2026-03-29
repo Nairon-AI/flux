@@ -34,7 +34,7 @@ Every Flux session begins with a state check (`fluxctl session-state --json`). T
 | `plan_sync` | Update downstream todo tasks based on implementation drift. | `in_progress` (next task) | Plan Sync |
 | `needs_completion_review` | All tasks done. Epic review required. | `epic_review` | Epic Review |
 | `epic_review` | Full review pipeline running. | `quality` (SHIP), `in_progress` (NEEDS_WORK fix loop) | Epic Review Pipeline |
-| `quality` | Tests, repo-defined lint/format gates (for example `lintcn`), desloppify scan on changed files. | `submit` | Quality |
+| `quality` | Tests, repo-defined lint/format gates (for example `lintcn`), optional React Doctor diff scan for React changes, desloppify scan on changed files. | `submit` | Quality |
 | `grill` | Behavioral stress test — walks decision tree verifying behavior matches intent. | `quality`, `in_progress` (if gaps found) | Grill |
 | `submit` | Push + open PR. Code ready for review/merge. | `autofix`, `reflect` | Submit |
 | `autofix` | Cloud auto-fix enabled on PR — Claude watches for CI failures and review comments remotely. Non-blocking. | `reflect` | Autofix |
@@ -266,7 +266,7 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │    │ all verified            │
   │    ▼                        ▼
   │  QUALITY (quality)
-  │  → tests, repo-defined lint/format gates, desloppify scan
+  │  → tests, repo-defined lint/format gates, optional react-doctor diff scan, desloppify scan
   │        │
   │        ▼
   │  SUBMIT (submit)

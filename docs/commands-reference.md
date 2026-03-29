@@ -122,7 +122,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store.
+Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store. In React-based repos, setup can also offer React Doctor as an optional CLI and wire it into a pre-commit hook, with the quality pass re-running it as a backstop before submit.
 
 ### /flux:plan
 
@@ -142,7 +142,7 @@ Breaks down an idea into atomic tasks with dependencies and acceptance criteria.
 <p><em>Coming soon</em></p>
 </details>
 
-Executes a task with automatic context reload and drift checks.
+Executes a task with automatic context reload and drift checks. During the quality pass, React-based repos can also run a diff-scoped React Doctor scan when the tool is available, even if the pre-commit hook already ran.
 
 The underlying `fluxctl` helper also exposes:
 
@@ -329,6 +329,8 @@ Flux classifies the content and asks you to confirm the destination before writi
 | `/flux:plan-review` | `/flux:plan-review <fn-N> [--review=rp\|codex\|export]` | Review plan quality before execution |
 | `/flux:impl-review` | `/flux:impl-review [--review=rp\|codex\|export]` | Review implementation quality |
 | `/flux:epic-review` | `/flux:epic-review <fn-N> [--review=rp\|codex\|none]` | Confirm epic completion aligns with spec |
+
+React-based repos can add an extra static gate here: when `react-doctor` is installed or runnable via `npx`, Flux runs `react-doctor . --diff HEAD --fail-on error` before submit.
 
 ---
 

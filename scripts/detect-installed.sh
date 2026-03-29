@@ -70,6 +70,7 @@ detect_cli_tools() {
 
     # Agent workflow automation
     cmd_exists agent-browser && tools+=("agent-browser")
+    cmd_exists react-doctor && tools+=("react-doctor")
     cmd_exists secureskills && tools+=("secureskills")
     if cmd_exists continues || cmd_exists cont; then
         tools+=("cli-continues")

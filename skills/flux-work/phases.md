@@ -409,6 +409,7 @@ After all tasks complete (or periodically for large epics):
 
 - Run relevant tests
 - Run lint/format per repo. If the repo uses `lintcn`, include `npx lintcn lint` in this quality pass.
+- If the repo is React-based and the epic changed React UI code, run React Doctor on the current diff as a backstop even if the pre-commit hook already ran. Prefer an installed binary: `react-doctor . --diff HEAD --fail-on error`; otherwise use `npx -y react-doctor@latest . --diff HEAD --fail-on error`.
 - If change is large/risky, run the quality auditor subagent:
   - Task flux:quality-auditor("Review recent changes")
 - Fix critical issues

@@ -41,6 +41,7 @@ $FLUXCTL session-phase set idle
   - **Lefthook** — fast pre-commit hooks
   - **Agent Browser** — checklist-driven browser QA with snapshots and screenshots
   - **Expect** — diff-driven browser QA, AI generates test plans from git changes
+  - **React Doctor** — React code health scan with an opt-in pre-commit gate for changed files
   - **CLI Continues** — resume/switch session context across agent CLIs
 - **Optional** recommended desktop apps (OS-aware prompts in setup):
   - **Superset** — primary orchestrator for parallel Codex sessions and cross-lab review worktrees
@@ -74,7 +75,7 @@ A step completion checklist and verification gate at the end of workflow.md will
 - Copies scripts (not symlinks) for portability across environments
 - Safe to re-run - will detect existing setup and offer to update
 - All MCPs and project state install project-local (`.mcp.json`, `.flux/`, `.flux/brain/`). Supported skill installs now go into PlaTo's `.secureskills/` store, with loose `.codex/skills/` / `.claude/skills/` folders retained only as compatibility fallbacks when needed
-- React-only skills should only be offered when the repo actually uses React or a React-based framework
+- React-only tools and skills should only be offered when the repo actually uses React or a React-based framework
 - After setup + restart, run `/flux:prime` first before feature work
 - After implementation/review, run `/flux:reflect` at session end
 

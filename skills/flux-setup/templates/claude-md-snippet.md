@@ -137,6 +137,7 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If `.flux/context/agentmap.yaml` exists, use it as a fast structural overview of the repo before broad file exploration
 - Treat the agentmap as navigation aid only. Still read the actual files before making changes
 - If the `fff` MCP is available, prefer its tools for file search operations instead of default Glob/find — it's faster, supports fuzzy matching, and ranks by access frecency
+- In Flux quality/review passes for React repos, run `react-doctor` on the current diff when available. Prefer an installed `react-doctor` binary; otherwise use `npx -y react-doctor@latest . --diff HEAD --fail-on error`. This complements `/flux:dejank`; it does not replace the jank-specific workflow.
 
 <important if="you are troubleshooting Flux commands or encountering errors">
 **Troubleshooting:**

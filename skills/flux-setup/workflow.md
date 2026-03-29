@@ -722,6 +722,7 @@ Store for summary:
 Flux recommends CLI tools that complement the AI development workflow.
 
 **Note:** This step uses `OS_TYPE` detected in Step 4c. CLI tools work on all platforms.
+React Doctor is React-only. Only offer it when the repo uses React or a React-based framework. Selecting it should also wire an opt-in pre-commit hook so bad React changes are blocked before commit.
 
 ### Available CLI Tools
 
@@ -741,11 +742,28 @@ Flux recommends CLI tools that complement the AI development workflow.
 | `lefthook` | Lefthook | **Fast pre-commit hooks** — catch issues before CI | Yes | `npm i -g lefthook` | `npm i -g lefthook` | `npm i -g lefthook` |
 | `agent-browser` | Agent Browser | **Checklist-driven browser QA** — step-by-step UI automation with snapshots and screenshots | Yes | `npm i -g agent-browser` | `npm i -g agent-browser` | `npm i -g agent-browser` |
 | `expect-cli` | Expect | **Diff-driven browser QA** — AI generates test plans from git changes and runs them in a real browser | Yes | `npm i -g expect-cli` | `npm i -g expect-cli` | `npm i -g expect-cli` |
+| `react-doctor` | React Doctor | **React pre-commit health gate** — diff-scoped React diagnostics before commit and during review | Yes | `npm i -g react-doctor@latest` | `npm i -g react-doctor@latest` | `npm i -g react-doctor@latest` |
 | `cli-continues` | CLI Continues | **Session handoff between agents** — resume context across tools | Yes | `npm i -g continues` | `npm i -g continues` | `npm i -g continues` |
 | `plato` | PlaTo (`secureskills`) | **Secure skill installs** — signs and verifies project-local skills before agent runtime exposure | Yes | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` | `"$PLUGIN_ROOT/scripts/install-plato.sh" stable codex` |
 ### Detect existing tools
 
 ```bash
+IS_REACT_BASED=0
+PACKAGE_FILES=$(
+  if command -v rg >/dev/null 2>&1; then
+    rg --files -g 'package.json' -g '!**/node_modules/**' .
+  else
+    find . -name package.json -not -path '*/node_modules/*'
+  fi
+)
+for pkg in $PACKAGE_FILES; do
+  REPO_DEPS=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]?' "$pkg" 2>/dev/null || true)
+  if echo "$REPO_DEPS" | grep -Eq '^(react|react-dom|next|@remix-run/react|react-router|react-router-dom|gatsby|expo|react-native|@vitejs/plugin-react|@vitejs/plugin-react-swc)$'; then
+    IS_REACT_BASED=1
+    break
+  fi
+done
+
 # Check if tools already installed
 HAVE_GH_CLI=$(which gh >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_JQ_CLI=$(which jq >/dev/null 2>&1 && echo 1 || echo 0)
@@ -753,6 +771,7 @@ HAVE_FZF_CLI=$(which fzf >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_LEFTHOOK_CLI=$(which lefthook >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_AGENT_BROWSER_CLI=$(which agent-browser >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_EXPECT_CLI=$(which expect-cli >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_REACT_DOCTOR_CLI=$(which react-doctor >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CONTINUES_CLI=$( (which continues >/dev/null 2>&1 || which cont >/dev/null 2>&1) && echo 1 || echo 0)
 HAVE_PLATO_CLI=$(which secureskills >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_NPM=$(which npm >/dev/null 2>&1 && echo 1 || echo 0)
@@ -769,6 +788,7 @@ Build recommendations by platform so users only see installable options for thei
 - macOS: recommend brew-based tools plus npm-based tools when `npm` exists
 - Windows: recommend winget-based tools when `winget` exists, plus npm-based tools when `npm` exists
 - If `npm` is missing, do not offer npm-only tools and print: `Install Node.js first: https://nodejs.org`
+- If `IS_REACT_BASED=0`, do **not** offer React Doctor. Mention why: `React-based framework not detected, so Flux will skip offering React Doctor during setup.`
 
 Only show tools not already installed:
 
@@ -792,6 +812,7 @@ INSTALL_FZF=0
 INSTALL_LEFTHOOK=0
 INSTALL_AGENT_BROWSER=0
 INSTALL_EXPECT_CLI=0
+INSTALL_REACT_DOCTOR=0
 INSTALL_CONTINUES=0
 INSTALL_PLATO=0
 
@@ -806,6 +827,7 @@ INSTALL_PLATO=0
 {"label": "Lefthook", "description": "Fast pre-commit hooks to catch issues before CI (free)"}
 {"label": "Agent Browser", "description": "Checklist-driven browser QA — step-by-step automation with snapshots and screenshots (free)"}
 {"label": "Expect", "description": "Diff-driven browser QA — AI generates test plans from git changes, runs in real browser (free)"}
+{"label": "React Doctor", "description": "React-only pre-commit + review gate for changed files (free)"}
 {"label": "CLI Continues", "description": "Resume/switch coding session context across agent CLIs (free)"}
 {"label": "PlaTo", "description": "Secure project-local skill installs for Codex and Claude via secureskills (free)"}
 ```
@@ -921,11 +943,47 @@ if which npm >/dev/null 2>&1; then
   [ "$INSTALL_LEFTHOOK" = "1" ] && npm i -g lefthook 2>/dev/null || true
   [ "$INSTALL_AGENT_BROWSER" = "1" ] && npm i -g agent-browser 2>/dev/null || true
   [ "$INSTALL_EXPECT_CLI" = "1" ] && npm i -g expect-cli 2>/dev/null || true
+  [ "$INSTALL_REACT_DOCTOR" = "1" ] && npm i -g react-doctor@latest 2>/dev/null || true
   [ "$INSTALL_CONTINUES" = "1" ] && npm i -g continues 2>/dev/null || true
   [ "$INSTALL_PLATO" = "1" ] && "$PLUGIN_ROOT/scripts/install-plato.sh" stable codex 2>/dev/null || true
 else
   echo "npm not found. Install Node.js first: https://nodejs.org"
 fi
+```
+
+### React Doctor pre-commit hook
+
+If React Doctor was selected, wire it into a pre-commit hook immediately. This is the whole point of offering it during setup: React repos should fail fast before bad code reaches the branch.
+
+Use the helper script so the install is idempotent and deterministic:
+
+```bash
+REACT_DOCTOR_HOOK_STATUS="skipped"
+REACT_DOCTOR_HOOK_MANAGER="none"
+
+if [ "$INSTALL_REACT_DOCTOR" = "1" ]; then
+  HOOK_JSON=$(python3 "$PLUGIN_ROOT/scripts/install-react-doctor-hook.py" . 2>/dev/null || echo '{"success":false,"hook_status":"failed","manager":"none"}')
+  REACT_DOCTOR_HOOK_STATUS=$(echo "$HOOK_JSON" | jq -r '.hook_status // "failed"')
+  REACT_DOCTOR_HOOK_MANAGER=$(echo "$HOOK_JSON" | jq -r '.manager // "none"')
+fi
+```
+
+Hook behavior:
+- If Husky already exists, append the React Doctor runner to `.husky/pre-commit`
+- Else if Lefthook exists, merge a `react-doctor` command into `lefthook.yml`
+- Else create `lefthook.yml` and install Lefthook hooks
+- If Lefthook cannot be activated, fall back to `.git/hooks/pre-commit` for the current clone without deleting existing hook content; append the Flux runner instead
+
+The generated hook script should run only when staged files include `js/jsx/ts/tsx`, and should execute:
+
+```bash
+react-doctor . --diff HEAD --fail-on error
+```
+
+If the binary is unavailable, the hook may fall back to:
+
+```bash
+npx -y react-doctor@latest . --diff HEAD --fail-on error
 ```
 
 ### Browser QA preference
@@ -1003,12 +1061,20 @@ Detect whether this repo is React-based before building the skill menu:
 
 ```bash
 IS_REACT_BASED=0
-if [ -f "package.json" ]; then
-  REPO_DEPS=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]' package.json 2>/dev/null || true)
+PACKAGE_FILES=$(
+  if command -v rg >/dev/null 2>&1; then
+    rg --files -g 'package.json' -g '!**/node_modules/**' .
+  else
+    find . -name package.json -not -path '*/node_modules/*'
+  fi
+)
+for pkg in $PACKAGE_FILES; do
+  REPO_DEPS=$(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]?' "$pkg" 2>/dev/null || true)
   if echo "$REPO_DEPS" | grep -Eq '^(react|react-dom|next|@remix-run/react|react-router|react-router-dom|gatsby|expo|react-native|@vitejs/plugin-react|@vitejs/plugin-react-swc)$'; then
     IS_REACT_BASED=1
+    break
   fi
-fi
+done
 ```
 
 ```bash
@@ -2345,6 +2411,8 @@ CLI tools:
 - Lefthook: <installed | already installed | skipped>
 - Agent Browser: <installed | already installed | skipped>
 - Expect: <installed | already installed | skipped>
+- React Doctor: <installed | already installed | skipped | not offered (non-React repo)>
+- React Doctor pre-commit hook: <configured via lefthook | configured via husky | configured via git-hooks | already configured | skipped | failed>
 - CLI Continues: <installed | already installed | skipped>
 - Diffity: <installed | already installed | skipped | not offered>
 - Browser QA preference: <agent-browser | expect | not set>

@@ -7,7 +7,7 @@
 
 import { test, expect, describe, beforeAll } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, chmodSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import { $ } from 'bun'
 
 // Resolve flux root from test file location (tests/ is inside flux/)
@@ -131,6 +131,25 @@ describe('Flux Scripts', () => {
         const parsed = JSON.parse(output)
 
         expect(parsed.installed.cli_tools).toContain('lintcn')
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true })
+      }
+    }, SCRIPT_TIMEOUT)
+
+    test('detects react-doctor when it is on PATH', async () => {
+      const tempDir = mkdtempSync(join(process.env.TMPDIR || '/tmp', 'flux-react-doctor-bin-'))
+      const doctorPath = join(tempDir, 'react-doctor')
+
+      try {
+        writeFileSync(doctorPath, '#!/bin/sh\nexit 0\n')
+        chmodSync(doctorPath, 0o755)
+
+        const output = await runScriptWithEnv('detect-installed.sh', [], FLUX_ROOT, {
+          PATH: `${tempDir}:${process.env.PATH || ''}`,
+        })
+        const parsed = JSON.parse(output)
+
+        expect(parsed.installed.cli_tools).toContain('react-doctor')
       } finally {
         rmSync(tempDir, { recursive: true, force: true })
       }
@@ -284,6 +303,73 @@ describe('Flux Scripts', () => {
       } catch (e) {
         expect(output).toBeTruthy()
       }
+    }, SCRIPT_TIMEOUT)
+  })
+
+  describe('install-react-doctor-hook.py', () => {
+
+    test('creates an idempotent React Doctor pre-commit hook setup', async () => {
+      const tmpRoot = `/tmp/flux-react-doctor-hook-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      await $`git init ${tmpRoot}`.quiet()
+
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'install-react-doctor-hook.py')
+      const env = {
+        ...process.env,
+        FLUX_SKIP_LEFTHOOK_INSTALL: '1',
+      }
+
+      const first = await $`python3 ${scriptPath} ${tmpRoot}`.env(env).text()
+      const firstParsed = JSON.parse(first)
+
+      expect(firstParsed.success).toBe(true)
+      expect(firstParsed.manager).toBe('lefthook')
+      expect(existsSync(join(tmpRoot, 'lefthook.yml'))).toBe(true)
+      expect(existsSync(join(tmpRoot, '.flux', 'hooks', 'react-doctor-pre-commit.sh'))).toBe(true)
+
+      const lefthookConfig = readFileSync(join(tmpRoot, 'lefthook.yml'), 'utf-8')
+      expect(lefthookConfig).toContain('react-doctor:')
+      expect(lefthookConfig).toContain('./.flux/hooks/react-doctor-pre-commit.sh')
+
+      const second = await $`python3 ${scriptPath} ${tmpRoot}`.env(env).text()
+      const secondParsed = JSON.parse(second)
+      const secondConfig = readFileSync(join(tmpRoot, 'lefthook.yml'), 'utf-8')
+
+      expect(secondParsed.success).toBe(true)
+      expect(secondConfig.match(/react-doctor:/g)?.length).toBe(1)
+
+      rmSync(tmpRoot, { recursive: true, force: true })
+    }, SCRIPT_TIMEOUT)
+
+    test('preserves an existing native pre-commit hook when falling back', async () => {
+      const tmpRoot = `/tmp/flux-react-doctor-native-hook-${Date.now()}`
+      mkdirSync(tmpRoot, { recursive: true })
+      await $`git init ${tmpRoot}`.quiet()
+
+      const gitHooksDir = join(tmpRoot, '.git', 'hooks')
+      mkdirSync(gitHooksDir, { recursive: true })
+      writeFileSync(
+        join(gitHooksDir, 'pre-commit'),
+        '#!/bin/sh\necho "existing native hook"\n',
+      )
+
+      const scriptPath = join(FLUX_ROOT, 'scripts', 'install-react-doctor-hook.py')
+      const gitPath = (await $`which git`.text()).trim()
+      const env = {
+        ...process.env,
+        PATH: dirname(gitPath),
+      }
+
+      const output = await $`python3 ${scriptPath} ${tmpRoot}`.env(env).text()
+      const parsed = JSON.parse(output)
+      const hookContents = readFileSync(join(gitHooksDir, 'pre-commit'), 'utf-8')
+
+      expect(parsed.success).toBe(true)
+      expect(parsed.manager).toBe('git-hooks')
+      expect(hookContents).toContain('existing native hook')
+      expect(hookContents).toContain('./.flux/hooks/react-doctor-pre-commit.sh')
+
+      rmSync(tmpRoot, { recursive: true, force: true })
     }, SCRIPT_TIMEOUT)
   })
 
