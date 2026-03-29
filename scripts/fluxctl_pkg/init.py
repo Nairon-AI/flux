@@ -416,6 +416,8 @@ def cmd_status(args: argparse.Namespace) -> None:
                 observe_line = f"Observe: {observe_state['mode'].upper()}"
                 if observe_state["mode"] != "off":
                     observe_line += f" ({observe_state['findings_queued']} findings queued)"
+                    if not observe_state.get("worker_running"):
+                        observe_line += ", worker stopped"
                 print(observe_line)
 
 

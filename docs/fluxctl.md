@@ -679,7 +679,7 @@ Manage the local observer runtime state.
 
 ```bash
 fluxctl observe status [--json]
-fluxctl observe on [--json]
+fluxctl observe on [--attach-mode auto_connect|session] [--session-name <name>] [--poll-interval-secs <n>] [--json]
 fluxctl observe off [--json]
 ```
 
@@ -690,10 +690,11 @@ Modes currently surfaced:
 - `paused`
 - `degraded`
 
-This initial slice persists `observe_state.json` in the shared Flux state-dir and lets you:
-- turn the observer on (`idle`)
-- turn it off
-- inspect whether it is currently running
+This observer now runs as a detached background worker backed by `agent-browser`. It:
+- persists `observe_state.json` in the shared Flux state-dir
+- polls browser URL plus new console/page errors
+- stores findings and screenshots in the observe runtime directory
+- lets you turn the worker on/off and inspect whether it is attached or degraded
 
 ### session-state
 

@@ -476,34 +476,107 @@ describe('Fluxctl CLI', () => {
     expect(afterPrime.architecture.status).toBe('seeded')
   }, SCRIPT_TIMEOUT)
 
-  test('observe on/off/status persists observer runtime state and surfaces it in fluxctl status', async () => {
+  test('observe on/off/status manages a background worker and captures agent-browser findings', async () => {
     const tmpRoot = `/tmp/flux-observe-${Date.now()}`
     await $`mkdir -p ${tmpRoot}`.quiet()
+    const fakeAgentBrowser = join(tmpRoot, 'fake-agent-browser.py')
+
+    writeFileSync(
+      fakeAgentBrowser,
+      `#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+counter_path = Path(__file__).with_suffix(".count")
+clean = []
+i = 0
+while i < len(args):
+    arg = args[i]
+    if arg == "--json":
+        i += 1
+        continue
+    if arg == "--auto-connect":
+        i += 1
+        continue
+    if arg == "--session":
+        i += 2
+        continue
+    clean.append(arg)
+    i += 1
+
+if not clean:
+    print(json.dumps({"success": False, "error": "no command"}))
+    sys.exit(1)
+
+cmd = clean[0]
+if clean[:2] == ["get", "url"]:
+    print(json.dumps({"success": True, "data": {"url": "http://example.test/dashboard"}, "error": None}))
+elif cmd == "console":
+    count = int(counter_path.read_text() or "0") if counter_path.exists() else 0
+    count += 1
+    counter_path.write_text(str(count))
+    messages = [{"text": "Existing startup error", "timestamp": 1000, "type": "error"}]
+    if count >= 2:
+        messages.append({"text": "TypeError: boom", "timestamp": 2000, "type": "error"})
+    print(json.dumps({"success": True, "data": {"messages": messages}, "error": None}))
+elif cmd == "errors":
+    print(json.dumps({"success": True, "data": {"errors": []}, "error": None}))
+elif cmd == "screenshot":
+    path = Path(clean[1])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"fake-image")
+    print(str(path))
+else:
+    print(json.dumps({"success": True, "data": {}, "error": None}))
+`
+    )
+    chmodSync(fakeAgentBrowser, 0o755)
+
+    const env = {
+      ...process.env,
+      FLUX_OBSERVE_AGENT_BROWSER: fakeAgentBrowser,
+    }
 
     await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
 
-    const initialRaw = await $`${fluxctl} observe status --json`.cwd(tmpRoot).text()
+    const initialRaw = await $`${fluxctl} observe status --json`.env(env).cwd(tmpRoot).text()
     const initial = JSON.parse(initialRaw)
     expect(initial.observe.mode).toBe('off')
-    expect(initial.observe.running).toBe(false)
+    expect(initial.observe.worker_running).toBe(false)
 
-    const onRaw = await $`${fluxctl} observe on --json`.cwd(tmpRoot).text()
+    const onRaw = await $`${fluxctl} observe on --poll-interval-secs 0.25 --json`.env(env).cwd(tmpRoot).text()
     const on = JSON.parse(onRaw)
     expect(on.observe.mode).toBe('idle')
     expect(on.observe.running).toBe(true)
     expect(on.observe.started_at).toBeTruthy()
+    expect(typeof on.observe.pid).toBe('number')
 
     const statePath = join(tmpRoot, '.flux', 'state', 'observe_state.json')
     expect(existsSync(statePath)).toBe(true)
-    const persisted = JSON.parse(readFileSync(statePath, 'utf8'))
-    expect(persisted.mode).toBe('idle')
+    let status: any = null
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const statusRaw = await $`${fluxctl} status --json`.env(env).cwd(tmpRoot).text()
+      status = JSON.parse(statusRaw)
+      if (status.observe.mode === 'attached' && status.observe.findings_queued >= 1) {
+        break
+      }
+      await Bun.sleep(200)
+    }
 
-    const statusRaw = await $`${fluxctl} status --json`.cwd(tmpRoot).text()
-    const status = JSON.parse(statusRaw)
-    expect(status.observe.mode).toBe('idle')
-    expect(status.observe.running).toBe(true)
+    expect(status).toBeTruthy()
+    expect(status.observe.mode).toBe('attached')
+    expect(status.observe.worker_running).toBe(true)
+    expect(status.observe.findings_queued).toBe(1)
+    expect(status.observe.target).toBe('http://example.test/dashboard')
+    expect(existsSync(status.observe.last_screenshot_path)).toBe(true)
+    expect(existsSync(status.observe.findings_path)).toBe(true)
+    const findingsLines = readFileSync(status.observe.findings_path, 'utf8').trim().split('\\n')
+    expect(findingsLines.length).toBe(1)
+    expect(findingsLines[0]).toContain('TypeError: boom')
 
-    const offRaw = await $`${fluxctl} observe off --json`.cwd(tmpRoot).text()
+    const offRaw = await $`${fluxctl} observe off --json`.env(env).cwd(tmpRoot).text()
     const off = JSON.parse(offRaw)
     expect(off.observe.mode).toBe('off')
     expect(off.observe.running).toBe(false)

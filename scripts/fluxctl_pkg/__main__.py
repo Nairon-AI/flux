@@ -8,7 +8,7 @@ from .utils import (
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
 from .config import cmd_config_get, cmd_config_set, cmd_review_backend
 from .architecture import cmd_architecture_status, cmd_architecture_path, cmd_architecture_write
-from .observe import cmd_observe_off, cmd_observe_on, cmd_observe_status
+from .observe import cmd_observe_off, cmd_observe_on, cmd_observe_run_loop, cmd_observe_status
 from .epics import (
     cmd_epic_create, cmd_show, cmd_epics, cmd_list, cmd_cat,
     cmd_epic_set_plan, cmd_epic_set_plan_review_status, cmd_epic_set_completion_review_status,
@@ -171,12 +171,41 @@ def main() -> None:
     p_observe_status.set_defaults(func=cmd_observe_status)
 
     p_observe_on = observe_sub.add_parser("on", help="Enable the observer runtime state")
+    p_observe_on.add_argument(
+        "--attach-mode",
+        choices=["auto_connect", "session"],
+        help="How the observer should attach to agent-browser",
+    )
+    p_observe_on.add_argument("--session-name", help="agent-browser session name (session attach mode)")
+    p_observe_on.add_argument(
+        "--poll-interval-secs",
+        type=float,
+        help="Polling interval for the background observer worker",
+    )
     p_observe_on.add_argument("--json", action="store_true", help="JSON output")
     p_observe_on.set_defaults(func=cmd_observe_on)
 
     p_observe_off = observe_sub.add_parser("off", help="Disable the observer runtime state")
     p_observe_off.add_argument("--json", action="store_true", help="JSON output")
     p_observe_off.set_defaults(func=cmd_observe_off)
+
+    p_observe_run_loop = observe_sub.add_parser(
+        "run-loop",
+        help=argparse.SUPPRESS,
+    )
+    p_observe_run_loop.add_argument(
+        "--attach-mode",
+        choices=["auto_connect", "session"],
+        help="How the observer worker should attach to agent-browser",
+    )
+    p_observe_run_loop.add_argument("--session-name", help="agent-browser session name")
+    p_observe_run_loop.add_argument(
+        "--poll-interval-secs",
+        type=float,
+        default=3.0,
+        help="Polling interval for the observer worker",
+    )
+    p_observe_run_loop.set_defaults(func=cmd_observe_run_loop)
 
     # epic create
     p_epic = subparsers.add_parser("epic", help="Epic commands")
