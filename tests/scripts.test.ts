@@ -819,12 +819,12 @@ flowchart TD
     rmSync(tmpRoot, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)
 
-  test('env reports Codex-primary repo setup drift against the runtime', async () => {
+  test('env reports Codex-primary repo setup drift against the Flux source runtime', async () => {
     const tmpRoot = `/tmp/flux-env-codex-${Date.now()}`
     mkdirSync(join(tmpRoot, '.flux', 'bin'), { recursive: true })
     writeFileSync(
       join(tmpRoot, 'package.json'),
-      JSON.stringify({ name: 'flux-fixture', version: '2.37.2-dev' })
+      JSON.stringify({ name: 'flux', version: '2.37.2-dev' })
     )
     writeFileSync(
       join(tmpRoot, '.flux', 'meta.json'),
@@ -847,6 +847,38 @@ flowchart TD
     expect(parsed.primary_adapter.version).toBe('2.30.1-dev')
     expect(parsed.primary_adapter.sync.status).toBe('out_of_sync')
     expect(parsed.guidance.update).toContain('/flux:setup')
+
+    rmSync(tmpRoot, { recursive: true, force: true })
+  }, SCRIPT_TIMEOUT)
+
+  test('version prefers repo-local Flux setup over app package version in product repos', async () => {
+    const tmpRoot = `/tmp/flux-version-product-${Date.now()}`
+    mkdirSync(join(tmpRoot, '.flux', 'bin'), { recursive: true })
+    writeFileSync(
+      join(tmpRoot, 'package.json'),
+      JSON.stringify({ name: 'app-repo', version: '1.0.0' })
+    )
+    writeFileSync(
+      join(tmpRoot, '.flux', 'meta.json'),
+      JSON.stringify({ schema_version: 2, next_epic: 1, active_objective: null, setup_version: '2.37.2-dev' })
+    )
+    writeFileSync(join(tmpRoot, '.flux', 'bin', 'fluxctl'), '#!/bin/sh\nexit 0\n')
+    writeFileSync(join(tmpRoot, 'AGENTS.md'), '# Flux\n')
+
+    const output = await $`${fluxctl} version --json`
+      .cwd(tmpRoot)
+      .env({
+        ...process.env,
+        CODEX_HOME: '/tmp/flux-codex-home',
+      })
+      .text()
+    const parsed = JSON.parse(output)
+
+    expect(parsed.version).toBe('2.37.2-dev')
+    expect(parsed.authoritative_version.version).toBe('2.37.2-dev')
+    expect(parsed.authoritative_version.source_kind).toBe('repo_setup')
+    expect(parsed.primary_adapter.version).toBe('2.37.2-dev')
+    expect(parsed.primary_adapter.sync.status).toBe('in_sync')
 
     rmSync(tmpRoot, { recursive: true, force: true })
   }, SCRIPT_TIMEOUT)

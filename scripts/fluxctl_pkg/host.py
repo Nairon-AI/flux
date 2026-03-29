@@ -60,6 +60,30 @@ def _command_version(command: str) -> Optional[str]:
 
 
 def _runtime_details(repo_root: Path) -> dict[str, Any]:
+    repo_setup = _repo_setup_details(repo_root)
+    package_data = _read_json(repo_root / "package.json") or {}
+    package_name = package_data.get("name")
+    package_version = package_data.get("version")
+
+    # In normal product repos, the Flux runtime is the repo-local setup recorded in
+    # .flux/meta.json, not the host application's own package version.
+    if (
+        repo_setup.get("installed")
+        and isinstance(repo_setup.get("version"), str)
+        and repo_setup["version"]
+        and (
+            not isinstance(package_name, str)
+            or package_name.strip().lower() != "flux"
+        )
+    ):
+        return {
+            "version": repo_setup["version"],
+            "source": ".flux/meta.json",
+            "source_kind": "repo_setup",
+            "path": repo_setup.get("source"),
+            "authoritative": True,
+        }
+
     candidates = [
         ("package.json", repo_root / "package.json", "repo_local_runtime"),
         (".claude-plugin/plugin.json", repo_root / ".claude-plugin" / "plugin.json", "claude_adapter_manifest"),

@@ -598,10 +598,32 @@ def build_chat_payload(
 
 def current_flux_version() -> Optional[str]:
     """Best-effort local Flux version lookup."""
-    candidates = [
-        get_repo_root() / "package.json",
-        get_repo_root() / ".claude-plugin" / "plugin.json",
-    ]
+    repo_root = get_repo_root()
+    package_path = repo_root / "package.json"
+    meta_path = repo_root / ".flux" / "meta.json"
+
+    package_data: dict[str, Any] = {}
+    if package_path.exists():
+        try:
+            loaded = json.loads(package_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                package_data = loaded
+        except Exception:
+            package_data = {}
+
+    package_name = package_data.get("name")
+    if meta_path.exists() and (
+        not isinstance(package_name, str) or package_name.strip().lower() != "flux"
+    ):
+        try:
+            meta_data = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            meta_data = {}
+        setup_version = meta_data.get("setup_version")
+        if isinstance(setup_version, str) and setup_version.strip():
+            return setup_version.strip()
+
+    candidates = [package_path, repo_root / ".claude-plugin" / "plugin.json"]
     for path in candidates:
         if not path.exists():
             continue
