@@ -71,6 +71,18 @@ If the answer is assumption-based, follow up directly:
 
 This is a genuine challenge, not a formality. Developers routinely make UX assumptions that feel reasonable but haven't been validated — auth strategy, onboarding flow, navigation structure, default settings. These are often one-way door decisions that are expensive to reverse after launch. The goal is to surface these assumptions *before* any code is written, when changing direction costs nothing.
 
+### Frontend Design Brief Check (ask when the work creates or significantly changes UI)
+If the feature touches a page, major component, dashboard, onboarding flow, landing page, or visual redesign, ask enough of these to make the design intent explicit before implementation:
+- "What should the first screen communicate immediately? Brand, trust, speed, clarity, urgency, something else?"
+- "Do you have visual references, screenshots, or products whose spacing/typography/art direction are close to what you want?"
+- "What hard constraints should the design respect? For example: one H1, max section count, existing design system, one accent color, two typefaces, no cards, no dark mode."
+- "What should be the real visual anchor: product UI, photography, illustration, chart, map, environment, or something else?"
+- "Is this surface supposed to feel branded/editorial/marketing-led, or is it an in-product utility screen that should stay close to the current system?"
+
+For branded marketing surfaces, probe specifically:
+- "If I removed the nav, what should still make this unmistakably your product or brand?"
+- "What is the single action or decision the first viewport should drive?"
+
 ---
 
 ## Blind Spots

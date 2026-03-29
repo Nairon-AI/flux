@@ -403,6 +403,10 @@ Context optimization. Each task gets fresh context:
 
 **Interactive mode**: Permission prompts pass through to user. Worker runs in foreground (blocking).
 
+**Frontend implementation rule:**
+- If the task touches user-facing frontend code, the worker must load `taste-skill` plus the relevant installed UI skills from `.secureskills/store/`, `.codex/skills/`, or `.claude/skills/` before writing code.
+- Frontend tasks are not considered properly re-anchored until that skill bootstrap is done.
+
 ## Phase 4: Quality
 
 After all tasks complete (or periodically for large epics):

@@ -118,6 +118,21 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If architecture changes, update it through `.flux/bin/fluxctl architecture write`.
 </important>
 
+<important if="you are building, redesigning, or restyling a user-facing frontend">
+**Frontend rules:**
+- If project-local frontend skills exist, you MUST load and follow them before making UI changes. Check `.secureskills/store/<skill>/manifest.json` first, then `.codex/skills/`, then `.claude/skills/` mirrors.
+- Treat `taste-skill` as mandatory for frontend generation when present.
+- Treat installed UI skills as mandatory guardrails when present. At minimum, load `baseline-ui`; also load `fixing-accessibility`, `fixing-motion-performance`, and `fixing-metadata` when the task touches those concerns.
+- If the repo has substantive frontend work to do and these skills are missing, strongly recommend running `/flux:setup` to install `UI Skills` and `Taste Skill` before large UI changes.
+- Define the design system and constraints before coding: typography, color roles/tokens, spacing rhythm, image treatment, and the primary CTA.
+- Treat the first viewport as one composition, not a pile of cards. On branded pages, make the brand/product a hero-level signal.
+- On landing or promo pages, default to one H1, one short supporting sentence, one CTA group, and one dominant visual. Prefer a full-bleed hero image/background over inset media cards unless the existing design system clearly says otherwise.
+- Avoid generic UI patterns by default: weak visual hierarchy, flat single-color backgrounds, hero cards, floating badges on hero media, and card-heavy layouts where borders/backgrounds are not doing real interaction work.
+- Use real visual anchors and 2-3 intentional motions. Motion should create hierarchy or presence, not noise.
+- Preserve the existing design system when the repo already has one. Only push for bolder visual direction when the surface is actually being designed or refreshed.
+- Verify user-facing frontend work in a browser before calling it done. Check desktop and mobile layouts, ensure fixed/floating elements do not cover primary content, and confirm the final UI matches the scoped design intent.
+</important>
+
 **Quick commands:**
 ```bash
 .flux/bin/fluxctl list                # List all epics + tasks

@@ -66,6 +66,51 @@ Parse the spec carefully. Identify:
 - Test requirements
 - Quick commands from epic spec (run these for verification)
 
+**Frontend skill bootstrap (MANDATORY for frontend tasks):**
+If the task spec, epic spec, file paths, or acceptance criteria indicate user-facing frontend work, load frontend skills before implementation.
+
+Treat `.secureskills/store/<skill>/manifest.json` as the primary "installed" signal for secure PlaTo installs. If a loose `SKILL.md` exists, read it directly:
+```bash
+for p in \
+  ".secureskills/store/taste-skill/manifest.json" \
+  ".secureskills/store/baseline-ui/manifest.json" \
+  ".secureskills/store/fixing-accessibility/manifest.json" \
+  ".secureskills/store/fixing-motion-performance/manifest.json" \
+  ".secureskills/store/fixing-metadata/manifest.json"
+do
+  [ -f "$p" ] && echo "Installed frontend skill: $p"
+done
+
+for f in \
+  ".secureskills/store/taste-skill/SKILL.md" \
+  ".codex/skills/taste-skill/SKILL.md" \
+  ".claude/skills/taste-skill/SKILL.md" \
+  ".secureskills/store/baseline-ui/SKILL.md" \
+  ".codex/skills/baseline-ui/SKILL.md" \
+  ".claude/skills/baseline-ui/SKILL.md" \
+  ".secureskills/store/fixing-accessibility/SKILL.md" \
+  ".codex/skills/fixing-accessibility/SKILL.md" \
+  ".claude/skills/fixing-accessibility/SKILL.md" \
+  ".secureskills/store/fixing-motion-performance/SKILL.md" \
+  ".codex/skills/fixing-motion-performance/SKILL.md" \
+  ".claude/skills/fixing-motion-performance/SKILL.md" \
+  ".secureskills/store/fixing-metadata/SKILL.md" \
+  ".codex/skills/fixing-metadata/SKILL.md" \
+  ".claude/skills/fixing-metadata/SKILL.md"
+do
+  [ -f "$f" ] && sed -n '1,220p' "$f"
+done
+```
+
+Rules:
+- `taste-skill` is mandatory when present for any frontend generation or redesign task.
+- `baseline-ui` is mandatory when present for any frontend task.
+- `fixing-accessibility` is mandatory when the task changes interactive UI, forms, navigation, dialogs, or other user-facing controls.
+- `fixing-motion-performance` is mandatory when the task adds or changes animation, transitions, parallax, sticky/fixed effects, or heavy visual motion.
+- `fixing-metadata` is mandatory when the task changes a page, route, landing surface, or anything that affects document metadata/social previews.
+- Do not start coding user-facing frontend changes until the relevant installed skills have been detected and any available `SKILL.md` guidance has been read.
+- If this is substantial frontend work and neither `taste-skill` nor UI skills are installed, call that out in your return summary so the main conversation can recommend `/flux:setup`.
+
 **Baseline check (if project has tests/lints):**
 ```bash
 # Run project's test/lint commands to confirm green baseline

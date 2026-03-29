@@ -1043,6 +1043,11 @@ Store for summary:
 
 Offer lightweight, generally useful agent skills that improve onboarding and execution quality across most repos.
 
+**Frontend defaulting rule:**
+- If the repo has clear frontend/web signals (React, Next.js, Vue, Svelte, Tailwind, routes/pages/components, substantial CSS, or user-facing web/mobile UI), treat `UI Skills` and `Taste Skill` as the default choice.
+- In frontend repos, present them as recommended together and require an explicit opt-out to skip them.
+- Reason: Flux's frontend execution path is expected to load these skills for UI work, so setup should make them available by default.
+
 ### Available skills
 
 | ID | Name | Benefit | Install |
@@ -1106,9 +1111,9 @@ Re-run /flux:setup later if this repo adds React.
   "question": "Flux can install optional agent skills. Supported project-local installs are secured with PlaTo. Which would you like?",
   "multiple": true,
   "options": [
-    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design (secured with PlaTo)"},
+    {"label": "UI Skills", "description": "Polish frontend output: accessibility, metadata, motion, design. Recommended by default for frontend repos and installed securely with PlaTo."},
     {"label": "Dejank", "description": "React-only visual jank audit: 18 anti-patterns plus runtime investigation workflows"},
-    {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation"},
+    {"label": "Taste Skill", "description": "Reduce generic/sloppy UI generation. Recommended by default for frontend repos."},
     {"label": "Semver Changelog", "description": "Generate/update CHANGELOG with semantic version structure"},
     {"label": "Diffity Tour", "description": "Create interactive guided tours for understanding unfamiliar code"},
     {"label": "Find Skills (Vercel)", "description": "Install Vercel's find-skills helper securely, then add more catalog skills via PlaTo"},
@@ -1247,6 +1252,7 @@ After running installs, verify each selected skill path exists before marking su
 If verification fails, mark the skill as `failed` in summary and show manual install URL/command. Do **not** report global "skills installed" unless selected skills verified.
 
 If `INSTALL_DIFFITY_CLI=1`, also verify `which diffity` succeeds before reporting Diffity Tour as ready-to-run. If the skill installed but the CLI did not, report the skill as installed and the CLI as failed/skipped rather than implying the tour is immediately runnable.
+**Frontend repo note:** if the repo is frontend/web-facing and `UI Skills` or `Taste Skill` were skipped, call that out clearly in the setup summary as an explicit opt-out from Flux's preferred frontend path.
 
 ### Track installation results
 
