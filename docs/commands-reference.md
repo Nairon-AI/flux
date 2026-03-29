@@ -124,7 +124,7 @@ Use `--deep` for high-stakes or ambiguous features.
 <p><em>Coming soon</em></p>
 </details>
 
-Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store. In React-based repos, setup can also offer React Doctor as an optional CLI and wire it into a pre-commit hook, with the quality pass re-running it as a backstop before submit.
+Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at `.flux/brain/`, and the centralized architecture note at `.flux/brain/codebase/architecture.md`, then configures preferences and optionally installs productivity tools (MCP servers, CLI tools, desktop apps). Supported skill installs now go through PlaTo so Flux can use a signed, verified `.secureskills/` store; in git repos Flux links that path to shared storage under the git common-dir so worktrees reuse the same secure-skill keys and enabled-agent state. In React-based repos, setup can also offer React Doctor as an optional CLI and wire it into a pre-commit hook, with the quality pass re-running it as a backstop before submit.
 
 ### /flux:plan
 

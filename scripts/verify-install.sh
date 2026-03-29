@@ -8,6 +8,8 @@ NAME="$1"
 VERIFY_TYPE="$2"  # command_exists, config_exists, mcp_connect, secureskill, manual
 VERIFY_ARG="$3"   # command name, config path, project root, or test command
 HELPER_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=./secureskills-root.sh
+source "$HELPER_ROOT/scripts/secureskills-root.sh"
 
 ENV_JSON=$(
     python3 "$HELPER_ROOT/scripts/fluxctl.py" env --json 2>/dev/null ||
@@ -152,7 +154,7 @@ EOF
 
     secureskill)
         PROJECT_ROOT="${VERIFY_ARG:-.}"
-        MANIFEST_PATH="${PROJECT_ROOT}/.secureskills/store/${NAME}/manifest.json"
+        MANIFEST_PATH="$(secureskills_manifest_path "$PROJECT_ROOT" "$NAME")"
         if [ -f "$MANIFEST_PATH" ]; then
             echo "✓ Secure skill manifest found: $MANIFEST_PATH"
             cat <<EOF

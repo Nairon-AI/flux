@@ -10,6 +10,8 @@ SOURCE="${2:-}"  # URL or local path
 SCOPE="${3:-user}"  # user or project
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLATO_INSTALLER="$SCRIPT_DIR/install-plato.sh"
+# shellcheck source=./secureskills-root.sh
+source "$SCRIPT_DIR/secureskills-root.sh"
 
 if [ -n "$SOURCE" ] && [ -z "${3:-}" ] && { [ "$SOURCE" = "project" ] || [ "$SOURCE" = "user" ]; }; then
     SCOPE="$SOURCE"
@@ -37,7 +39,7 @@ ensure_plato() {
 }
 
 project_root() {
-    git rev-parse --show-toplevel 2>/dev/null || pwd
+    secureskills_project_root "${1:-.}"
 }
 
 if [ "$SCOPE" = "project" ]; then
@@ -48,11 +50,16 @@ else
     LEGACY_SKILLS_DIR="${HOME}/.claude/skills"
 fi
 
+PROJECT_ROOT="$(project_root)"
+if [ "$SCOPE" = "project" ]; then
+    ensure_secureskills_root "$PROJECT_ROOT" always
+fi
+
 SKILL_PATH="$PRIMARY_SKILLS_DIR/$NAME"
 LEGACY_SKILL_PATH="$LEGACY_SKILLS_DIR/$NAME"
-PROJECT_ROOT="$(project_root)"
 PLATO_STORE_PATH="$PROJECT_ROOT/.secureskills/store/$NAME"
 PLATO_MANIFEST_PATH="$PLATO_STORE_PATH/manifest.json"
+PLATO_STORAGE_DIR="$(secureskills_storage_dir "$PROJECT_ROOT")"
 
 echo "Installing skill: $NAME"
 echo "Scope: $SCOPE"
@@ -60,6 +67,9 @@ echo "Location: $SKILL_PATH"
 echo "Legacy mirror: $LEGACY_SKILL_PATH"
 if [ "$SCOPE" = "project" ]; then
     echo "Secure store: $PLATO_STORE_PATH"
+    if [ "$PLATO_STORAGE_DIR" != "$PROJECT_ROOT/.secureskills" ]; then
+        echo "Secure store backing dir: $PLATO_STORAGE_DIR"
+    fi
 fi
 echo ""
 

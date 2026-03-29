@@ -4,6 +4,9 @@ set -euo pipefail
 cmd="${1:-}"
 name="${2:-}"
 base="${3:-}"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../../../scripts/secureskills-root.sh
+source "$script_dir/../../../scripts/secureskills-root.sh"
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 if [[ -z "$repo_root" ]]; then
@@ -142,6 +145,8 @@ case "$cmd" in
       git worktree add -b "$name" -- "$target" "$start_point"
     fi
 
+    ensure_secureskills_root "$repo_root" if-present
+    ensure_secureskills_root "$target" if-present
     copy_env "$target"
     echo "created: $target"
     ;;
