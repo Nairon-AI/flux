@@ -18,6 +18,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
+
 fail() { echo "ralph_e2e_rp: $*" >&2; exit 1; }
 
 run_with_timeout() {
@@ -162,6 +164,7 @@ mkdir -p scripts/ralph
 cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 FLUXCTL="scripts/ralph/fluxctl"
 
@@ -187,6 +190,7 @@ scripts/ralph/fluxctl init --json >/dev/null
 mkdir -p .flux/bin
 cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" .flux/bin/fluxctl_pkg
 chmod +x .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .flux/usage.md
 cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md

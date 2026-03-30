@@ -16,6 +16,7 @@ const FLUX_ROOT = process.env.FLUX_ROOT ||
   join(import.meta.dir, '..')
 
 const SCRIPT_TIMEOUT = 15000
+const CREATE_APPROVAL_PHRASE = 'I_APPROVE_CREATING_EPICS_AND_TASKS'
 
 async function runScript(script: string, args: string[] = [], cwd?: string): Promise<string> {
   const scriptPath = join(FLUX_ROOT, 'scripts', script)
@@ -652,7 +653,10 @@ flowchart TD
 
     await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
     await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
-    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`.cwd(tmpRoot).text()
+    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`
+      .env({ ...process.env, FLUX_CREATE_APPROVAL: CREATE_APPROVAL_PHRASE })
+      .cwd(tmpRoot)
+      .text()
     const epic = JSON.parse(epicRaw)
 
     await $`${fluxctl} epic set-workflow ${epic.id} --phase discover --step "repro-and-impact" --status in_progress --summary "Investigating repro path" --next-action "Confirm expected behavior" --open-question "Does this affect social login?" --activate --json`.cwd(tmpRoot).quiet()

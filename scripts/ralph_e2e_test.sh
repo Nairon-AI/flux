@@ -19,6 +19,8 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
+export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
+
 fail() { echo "ralph_e2e: $*" >&2; exit 1; }
 
 cleanup() {
@@ -74,6 +76,7 @@ mkdir -p scripts/ralph
 cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 
 python3 - <<'PY'

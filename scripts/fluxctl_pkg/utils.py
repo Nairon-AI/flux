@@ -56,6 +56,8 @@ OBJECTIVE_KINDS = ["feature", "bug", "refactor"]
 SCOPE_MODES = ["shallow", "deep"]
 TECHNICAL_LEVELS = ["non_technical", "semi_technical", "technical"]
 IMPLEMENTATION_TARGETS = ["self_with_ai", "engineer_handoff"]
+CREATE_APPROVAL_ENV_VAR = "FLUX_CREATE_APPROVAL"
+CREATE_APPROVAL_PHRASE = "I_APPROVE_CREATING_EPICS_AND_TASKS"
 WORKFLOW_PHASES_DEEP = ["start", "discover", "define", "develop", "deliver", "handoff"]
 WORKFLOW_PHASES_SHALLOW = ["start", "discover", "define", "deliver", "handoff"]
 WORKFLOW_STATUSES = [
@@ -202,6 +204,22 @@ def error_exit(message: str, code: int = 1, use_json: bool = True) -> None:
     else:
         print(f"Error: {message}", file=sys.stderr)
     sys.exit(code)
+
+
+def require_creation_approval(
+    approval: Optional[str], action: str, *, use_json: bool = True
+) -> str:
+    """Require explicit developer approval before creating epics/tasks."""
+    candidate = (approval or os.environ.get(CREATE_APPROVAL_ENV_VAR) or "").strip()
+    if candidate == CREATE_APPROVAL_PHRASE:
+        return candidate
+    quoted_phrase = shlex.quote(CREATE_APPROVAL_PHRASE)
+    error_exit(
+        f"{action} requires explicit developer approval. "
+        f"Re-run with --approve {quoted_phrase} after the developer approves, "
+        f"or export {CREATE_APPROVAL_ENV_VAR}={quoted_phrase} for this shell.",
+        use_json=use_json,
+    )
 
 
 def now_iso() -> str:

@@ -62,6 +62,7 @@ git config user.email "ci@test.local"
 git config user.name "CI Test"
 
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Basic Commands
@@ -69,6 +70,18 @@ cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/
 echo -e "\n${YELLOW}--- Basic Commands ---${NC}"
 
 fluxctl init --json >/dev/null && pass "init" || fail "init"
+
+set +e
+NO_APPROVAL_JSON="$(fluxctl epic create --title "Needs approval" --json 2>&1)"
+NO_APPROVAL_RC=$?
+set -e
+if [[ "$NO_APPROVAL_RC" -ne 0 ]] && echo "$NO_APPROVAL_JSON" | grep -q "requires explicit developer approval"; then
+  pass "epic create requires approval"
+else
+  fail "epic create requires approval"
+fi
+
+export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
 
 EPIC_JSON="$(fluxctl epic create --title "Test Epic" --json)"
 EPIC_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$EPIC_JSON")"

@@ -51,16 +51,22 @@ Detect input type in this order (first match wins):
 1. Check file exists: `test -f "<path>"` — if not, treat as idea text
 2. Initialize: `$FLUXCTL init --json`
 3. Read file and extract title from first `# Heading` or use filename
-4. Create epic: `$FLUXCTL epic create --title "<extracted-title>" --json`
-5. Set spec from file: `$FLUXCTL epic set-plan <epic-id> --file <path> --json`
-6. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <title>" --json`
-7. Continue with epic-id
+4. Before creating anything, get explicit developer approval:
+   - Prefer the question tool / AskUserQuestion
+   - Fallback: require the developer to type exactly `I_APPROVE_CREATING_EPICS_AND_TASKS`
+5. Create epic: `$FLUXCTL epic create --title "<extracted-title>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json`
+6. Set spec from file: `$FLUXCTL epic set-plan <epic-id> --file <path> --json`
+7. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <title>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json`
+8. Continue with epic-id
 
 **Spec-less start (idea text)**:
 1. Initialize: `$FLUXCTL init --json`
-2. Create epic: `$FLUXCTL epic create --title "<idea>" --json`
-3. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <idea>" --json`
-4. Continue with epic-id
+2. Before creating anything, get explicit developer approval:
+   - Prefer the question tool / AskUserQuestion
+   - Fallback: require the developer to type exactly `I_APPROVE_CREATING_EPICS_AND_TASKS`
+3. Create epic: `$FLUXCTL epic create --title "<idea>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json`
+4. Create single task: `$FLUXCTL task create --epic <epic-id> --title "Implement <idea>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json`
+5. Continue with epic-id
 
 ### Linear Status Sync
 

@@ -211,20 +211,25 @@ Default to standard unless complexity demands more or less.
 
 **Route B - Input was text (new idea)**:
 
-1. Create epic:
+1. Present the proposed epic title, rough task breakdown, and any epic split to the developer, then get explicit approval before writing anything:
+   - Prefer the question tool / AskUserQuestion
+   - Fallback: require the developer to type exactly `I_APPROVE_CREATING_EPICS_AND_TASKS`
+   - If approval is missing, stop here. Do not create epics or tasks.
+
+2. Create epic:
    ```bash
-   $FLUXCTL epic create --title "<Short title>" --json
+   $FLUXCTL epic create --title "<Short title>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
    ```
    This returns the epic ID (e.g., fn-1-add-oauth).
 
-2. Set epic branch_name (deterministic):
+3. Set epic branch_name (deterministic):
    - Default: use epic ID (e.g., fn-1-add-oauth)
    ```bash
    $FLUXCTL epic set-branch <epic-id> --branch "<epic-id>" --json
    ```
    - If user specified a branch, use that instead.
 
-3. Write epic spec (use stdin heredoc):
+4. Write epic spec (use stdin heredoc):
    ```bash
    # Include: Overview, Scope, Approach, Future Pressure, Quick commands (REQUIRED), Acceptance, References
    # Add mermaid diagram if data model or architecture changes
@@ -249,7 +254,7 @@ Default to standard unless complexity demands more or less.
    EOF
    ```
 
-4. Set epic dependencies (from epic-scout findings):
+5. Set epic dependencies (from epic-scout findings):
 
    If epic-scout found dependencies, set them automatically:
    ```bash
@@ -264,18 +269,18 @@ Default to standard unless complexity demands more or less.
    - fn-N-slug → fn-5-user-model (DB): Extends User model
    ```
 
-5. Create child tasks:
+6. Create child tasks:
    ```bash
    # Task with no dependencies:
-   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --json
+   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 
    # Task with dependencies (use --deps for inline dependency declaration):
-   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --deps <dep1>,<dep2> --json
+   $FLUXCTL task create --epic <epic-id> --title "<Task title>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --deps <dep1>,<dep2> --json
    ```
 
    **TIP**: Use `--deps` to declare dependencies inline when creating tasks. Tasks must exist before being referenced, so create in dependency order.
 
-6. Write task specs (use combined set-spec):
+7. Write task specs (use combined set-spec):
    ```bash
    # For each task - single call sets both sections
    # Write description and acceptance to temp files, then:
@@ -309,7 +314,7 @@ Default to standard unless complexity demands more or less.
    - [ ] Criterion 2
    ```
 
-7. Add task dependencies (if not already set via `--deps`):
+8. Add task dependencies (if not already set via `--deps`):
 
    **Preferred**: Use `--deps` flag during task creation (step 5). This saves tool calls.
 
@@ -322,7 +327,7 @@ Default to standard unless complexity demands more or less.
 
    Use `dep add` when you need to add dependencies to existing tasks or fix missed dependencies.
 
-8. Output current state:
+9. Output current state:
    ```bash
    $FLUXCTL show <epic-id> --json
    $FLUXCTL cat <epic-id>

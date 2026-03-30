@@ -34,6 +34,7 @@ from .utils import (
     parse_id,
     read_file_or_stdin,
     read_text_or_exit,
+    require_creation_approval,
     require_keys,
     scan_max_task_id,
     task_priority,
@@ -262,6 +263,8 @@ def find_dependents(task_id: str, same_epic: bool = False) -> list[str]:
 
 def cmd_task_create(args: argparse.Namespace) -> None:
     """Create a new task under an epic."""
+    require_creation_approval(args.approve, "Task creation", use_json=args.json)
+
     if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json

@@ -3,6 +3,7 @@ import argparse
 from .utils import (
     EPIC_STATUS, TASK_STATUS, OBJECTIVE_KINDS, SCOPE_MODES,
     TECHNICAL_LEVELS, IMPLEMENTATION_TARGETS, WORKFLOW_STATUSES, PRIME_STATUSES,
+    CREATE_APPROVAL_PHRASE,
     SESSION_PHASES,
 )
 from .init import cmd_init, cmd_detect, cmd_status, cmd_state_path, cmd_agentmap, cmd_migrate_state
@@ -214,6 +215,10 @@ def main() -> None:
 
     p_epic_create = epic_sub.add_parser("create", help="Create new epic")
     p_epic_create.add_argument("--title", required=True, help="Epic title")
+    p_epic_create.add_argument(
+        "--approve",
+        help=f'Explicit approval phrase required for creation: "{CREATE_APPROVAL_PHRASE}"',
+    )
     p_epic_create.add_argument("--branch", help="Branch name to store on epic")
     p_epic_create.add_argument(
         "--kind",
@@ -374,6 +379,10 @@ def main() -> None:
     p_task_create = task_sub.add_parser("create", help="Create new task")
     p_task_create.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_task_create.add_argument("--title", required=True, help="Task title")
+    p_task_create.add_argument(
+        "--approve",
+        help=f'Explicit approval phrase required for creation: "{CREATE_APPROVAL_PHRASE}"',
+    )
     p_task_create.add_argument("--deps", help="Comma-separated dependency IDs")
     p_task_create.add_argument(
         "--acceptance-file", help="Markdown file with acceptance criteria"

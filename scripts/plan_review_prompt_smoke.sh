@@ -13,6 +13,7 @@ fi
 TEST_DIR="${TEST_DIR:-/tmp/flux-plan-review-smoke-rp-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 EPIC_ID="${EPIC_ID:-fn-1}"
+export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
 
 fail() { echo "plan_review_prompt_smoke: $*" >&2; exit 1; }
 
@@ -60,6 +61,7 @@ git commit -m "chore: init" >/dev/null
 mkdir -p scripts/ralph
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/fluxctl
 
 FLUXCTL="scripts/ralph/fluxctl"

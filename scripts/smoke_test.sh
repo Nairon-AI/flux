@@ -45,7 +45,10 @@ git init -q
 
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/fluxctl_pkg
 chmod +x scripts/fluxctl
+
+export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
 
 scripts/fluxctl init --json >/dev/null
 printf '{"commits":[],"tests":[],"prs":[]}' > "$TEST_DIR/evidence.json"
