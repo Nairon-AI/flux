@@ -81,17 +81,15 @@ else
   fail "epic create requires approval"
 fi
 
-export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
-
-EPIC_JSON="$(fluxctl epic create --title "Test Epic" --json)"
+EPIC_JSON="$(fluxctl epic create --title "Test Epic" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$EPIC_JSON")"
 [[ -n "$EPIC_ID" ]] && pass "epic create ($EPIC_ID)" || fail "epic create"
 
-TASK1_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task One" --priority 2 --json)"
+TASK1_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task One" --priority 2 --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK1_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$TASK1_JSON")"
 [[ -n "$TASK1_ID" ]] && pass "task create ($TASK1_ID)" || fail "task create"
 
-TASK2_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task Two" --priority 1 --json)"
+TASK2_JSON="$(fluxctl task create --epic "$EPIC_ID" --title "Task Two" --priority 1 --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK2_ID="$("$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['id'])" <<< "$TASK2_JSON")"
 
 fluxctl list --json >/dev/null && pass "list" || fail "list"
@@ -475,8 +473,8 @@ fluxctl ralph stop --run test-run >/dev/null
 rm -rf scripts/ralph/runs/test-run
 
 # Test task reset
-RESET_EPIC="$(fluxctl epic create --title "Reset test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-RESET_TASK="$(fluxctl task create --epic "$RESET_EPIC" --title "Test task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_EPIC="$(fluxctl epic create --title "Reset test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_TASK="$(fluxctl task create --epic "$RESET_EPIC" --title "Test task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 
 fluxctl start "$RESET_TASK" --json >/dev/null
 fluxctl done "$RESET_TASK" --json >/dev/null
@@ -493,8 +491,8 @@ set -e
 [[ $RESET_RC -ne 0 ]] && pass "task reset rejects in_progress" || fail "task reset should reject in_progress"
 
 # Test epic add-dep/rm-dep
-DEP_BASE="$(fluxctl epic create --title "Dep base" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-DEP_CHILD="$(fluxctl epic create --title "Dep child" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_BASE="$(fluxctl epic create --title "Dep base" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_CHILD="$(fluxctl epic create --title "Dep child" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 
 fluxctl epic add-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
 DEPS="$(fluxctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
@@ -536,9 +534,9 @@ ACTIVE_COUNT="$(fluxctl status --json | "$PYTHON_BIN" -c 'import json,sys; d=jso
 rm -rf scripts/ralph/runs/completed-test
 
 # Test task reset --cascade
-CASCADE_EPIC="$(fluxctl epic create --title "Cascade test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-CASCADE_T1="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Base task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-CASCADE_T2="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Dependent task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_EPIC="$(fluxctl epic create --title "Cascade test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T1="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Base task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T2="$(fluxctl task create --epic "$CASCADE_EPIC" --title "Dependent task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 fluxctl dep add "$CASCADE_T2" "$CASCADE_T1" --json >/dev/null  # T2 depends on T1
 fluxctl start "$CASCADE_T1" >/dev/null && fluxctl done "$CASCADE_T1" >/dev/null
 fluxctl start "$CASCADE_T2" >/dev/null && fluxctl done "$CASCADE_T2" >/dev/null

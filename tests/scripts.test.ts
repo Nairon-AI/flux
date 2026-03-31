@@ -653,8 +653,7 @@ flowchart TD
 
     await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
     await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
-    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`
-      .env({ ...process.env, FLUX_CREATE_APPROVAL: CREATE_APPROVAL_PHRASE })
+    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --approve ${CREATE_APPROVAL_PHRASE} --json`
       .cwd(tmpRoot)
       .text()
     const epic = JSON.parse(epicRaw)

@@ -231,7 +231,7 @@ See [stress-test.md](stress-test.md) for full execution details.
 
 ### Define → Deliver Handoff
 
-After DEFINE, create the epic immediately and start persisting structured workflow state:
+After DEFINE, present the proposed epic, get explicit approval, then start persisting structured workflow state:
 ```bash
 $FLUXCTL epic create --title "<from problem statement>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 $FLUXCTL epic set-context <id> --kind feature --scope-mode shallow --activate

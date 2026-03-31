@@ -48,8 +48,6 @@ cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/fluxctl
 cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/fluxctl_pkg
 chmod +x scripts/fluxctl
 
-export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
-
 scripts/fluxctl init --json >/dev/null
 printf '{"commits":[],"tests":[],"prs":[]}' > "$TEST_DIR/evidence.json"
 printf "ok\n" > "$TEST_DIR/summary.md"
@@ -91,10 +89,10 @@ fi
 
 echo -e "${YELLOW}--- next: plan/work/none + priority ---${NC}"
 # Capture epic ID from create output (fn-N-xxx format)
-EPIC1_JSON="$(scripts/fluxctl epic create --title "Epic One" --json)"
+EPIC1_JSON="$(scripts/fluxctl epic create --title "Epic One" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC1="$(echo "$EPIC1_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-scripts/fluxctl task create --epic "$EPIC1" --title "Low pri" --priority 5 --json >/dev/null
-scripts/fluxctl task create --epic "$EPIC1" --title "High pri" --priority 1 --json >/dev/null
+scripts/fluxctl task create --epic "$EPIC1" --title "Low pri" --priority 5 --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/fluxctl task create --epic "$EPIC1" --title "High pri" --priority 1 --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 plan_json="$(scripts/fluxctl next --require-plan-review --json)"
 "$PYTHON_BIN" - "$plan_json" "$EPIC1" <<'PY'
@@ -241,10 +239,10 @@ PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- epic set-title ---${NC}"
 # Create epic with tasks for rename test
-RENAME_EPIC_JSON="$(scripts/fluxctl epic create --title "Old Title" --json)"
+RENAME_EPIC_JSON="$(scripts/fluxctl epic create --title "Old Title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 RENAME_EPIC="$(echo "$RENAME_EPIC_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-scripts/fluxctl task create --epic "$RENAME_EPIC" --title "First task" --json >/dev/null
-scripts/fluxctl task create --epic "$RENAME_EPIC" --title "Second task" --json >/dev/null
+scripts/fluxctl task create --epic "$RENAME_EPIC" --title "First task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/fluxctl task create --epic "$RENAME_EPIC" --title "Second task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 # Add task dependency within epic
 scripts/fluxctl dep add "${RENAME_EPIC}.2" "${RENAME_EPIC}.1" --json >/dev/null
 
@@ -322,7 +320,7 @@ echo -e "${GREEN}✓${NC} set-title show works with new ID"
 PASS=$((PASS + 1))
 
 # Test 7: depends_on_epics update in other epics
-DEP_EPIC_JSON="$(scripts/fluxctl epic create --title "Depends on renamed" --json)"
+DEP_EPIC_JSON="$(scripts/fluxctl epic create --title "Depends on renamed" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 DEP_EPIC="$(echo "$DEP_EPIC_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 scripts/fluxctl epic add-dep "$DEP_EPIC" "$NEW_EPIC" --json >/dev/null
 # Rename the dependency
@@ -342,10 +340,10 @@ echo -e "${GREEN}✓${NC} set-title updates depends_on_epics in other epics"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- block + validate + epic close ---${NC}"
-EPIC2_JSON="$(scripts/fluxctl epic create --title "Epic Two" --json)"
+EPIC2_JSON="$(scripts/fluxctl epic create --title "Epic Two" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC2="$(echo "$EPIC2_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-scripts/fluxctl task create --epic "$EPIC2" --title "Block me" --json >/dev/null
-scripts/fluxctl task create --epic "$EPIC2" --title "Other" --json >/dev/null
+scripts/fluxctl task create --epic "$EPIC2" --title "Block me" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/fluxctl task create --epic "$EPIC2" --title "Other" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 printf "Blocked by test\n" > "$TEST_DIR/reason.md"
 scripts/fluxctl block "${EPIC2}.1" --reason-file "$TEST_DIR/reason.md" --json >/dev/null
 scripts/fluxctl validate --epic "$EPIC2" --json >/dev/null
@@ -631,9 +629,9 @@ echo -e "${YELLOW}--- codex e2e (requires codex CLI) ---${NC}"
 codex_available="$(scripts/fluxctl codex check --json 2>/dev/null | "$PYTHON_BIN" -c "import sys,json; print(json.load(sys.stdin).get('available', False))" 2>/dev/null || echo "False")"
 if [[ "$codex_available" == "True" ]]; then
   # Create a simple epic + task for testing
-  EPIC3_JSON="$(scripts/fluxctl epic create --title "Codex test epic" --json)"
+  EPIC3_JSON="$(scripts/fluxctl epic create --title "Codex test epic" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
   EPIC3="$(echo "$EPIC3_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-  scripts/fluxctl task create --epic "$EPIC3" --title "Test task" --json >/dev/null
+  scripts/fluxctl task create --epic "$EPIC3" --title "Test task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
   # Write a simple spec
   cat > ".flux/specs/${EPIC3}.md" << 'EOF'
@@ -733,10 +731,10 @@ fi
 echo -e "${YELLOW}--- depends_on_epics gate ---${NC}"
 cd "$TEST_DIR/repo"  # Back to test repo
 # Create epics and capture their IDs
-DEP_BASE_JSON="$(scripts/fluxctl epic create --title "Dep base" --json)"
+DEP_BASE_JSON="$(scripts/fluxctl epic create --title "Dep base" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 DEP_BASE_ID="$(echo "$DEP_BASE_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
-scripts/fluxctl task create --epic "$DEP_BASE_ID" --title "Base task" --json >/dev/null
-DEP_CHILD_JSON="$(scripts/fluxctl epic create --title "Dep child" --json)"
+scripts/fluxctl task create --epic "$DEP_BASE_ID" --title "Base task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+DEP_CHILD_JSON="$(scripts/fluxctl epic create --title "Dep child" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 DEP_CHILD_ID="$(echo "$DEP_CHILD_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 "$PYTHON_BIN" - "$DEP_CHILD_ID" "$DEP_BASE_ID" <<'PY'
 import json, sys
@@ -762,7 +760,7 @@ PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- stdin support ---${NC}"
 cd "$TEST_DIR/repo"
-STDIN_EPIC_JSON="$(scripts/fluxctl epic create --title "Stdin test" --json)"
+STDIN_EPIC_JSON="$(scripts/fluxctl epic create --title "Stdin test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 STDIN_EPIC="$(echo "$STDIN_EPIC_JSON" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
 # Test epic set-plan with stdin
 scripts/fluxctl epic set-plan "$STDIN_EPIC" --file - --json <<'EOF'
@@ -781,7 +779,7 @@ echo -e "${GREEN}✓${NC} stdin epic set-plan"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- task set-spec combined ---${NC}"
-scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Set-spec test" --json >/dev/null
+scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Set-spec test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 SETSPEC_TASK="${STDIN_EPIC}.1"
 # Write temp files for combined set-spec
 echo 'This is the description.' > "$TEST_DIR/desc.md"
@@ -796,7 +794,7 @@ echo -e "${GREEN}✓${NC} task set-spec combined"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- task set-spec --file (full replacement) ---${NC}"
-scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Full replacement test" --json >/dev/null
+scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Full replacement test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 FULLREPLACE_TASK="${STDIN_EPIC}.2"
 # Write complete spec file
 cat > "$TEST_DIR/full_spec.md" << 'FULLSPEC'
@@ -820,7 +818,7 @@ echo -e "${GREEN}✓${NC} task set-spec --file"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- task set-spec --file stdin ---${NC}"
-scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Stdin replacement test" --json >/dev/null
+scripts/fluxctl task create --epic "$STDIN_EPIC" --title "Stdin replacement test" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 STDIN_REPLACE_TASK="${STDIN_EPIC}.3"
 # Full replacement via stdin
 scripts/fluxctl task set-spec "$STDIN_REPLACE_TASK" --file - --json <<'EOF'

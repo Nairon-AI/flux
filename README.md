@@ -7,10 +7,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-Primary-10A37F)](https://github.com/openai/codex)
 
-**The missing (self-improving) harness for Coding Agents.**<br>
+**The missing (self-improving) harness for Codex CLI.**<br>
 Build software reliably.
 
-> Recommended orchestrator: [SuperSet](https://superset.sh/) — parallel Codex/ClaudeCode sessions with git worktree isolation.
+> Recommended orchestrator: [SuperSet](https://superset.sh/) — parallel Codex sessions with git worktree isolation.
 
 </div>
 

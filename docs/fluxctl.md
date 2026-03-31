@@ -80,7 +80,7 @@ Create new epic.
 fluxctl epic create --title "Epic title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" [--branch "fn-1-epic-title"] [--json]
 ```
 
-Creation is blocked unless the approval phrase is supplied via `--approve` or the `FLUX_CREATE_APPROVAL` environment variable.
+Creation is blocked unless the approval phrase is supplied via `--approve`.
 
 Output:
 ```json

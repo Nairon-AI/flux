@@ -19,8 +19,6 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
-
 fail() { echo "ralph_e2e: $*" >&2; exit 1; }
 
 cleanup() {
@@ -96,8 +94,8 @@ cfg.write_text(text)
 PY
 
 scripts/ralph/fluxctl init --json >/dev/null
-scripts/ralph/fluxctl epic create --title "Tiny lib" --json >/dev/null
-scripts/ralph/fluxctl epic create --title "Tiny follow-up" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny lib" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny follow-up" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -131,8 +129,8 @@ cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] Add README usage snippet
 EOF
 
-scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
-scripts/ralph/fluxctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() helper" --acceptance-file "$TEST_DIR/accept.md" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-2 --title "Add tiny note" --acceptance-file "$TEST_DIR/accept.md" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"

@@ -13,7 +13,6 @@ fi
 TEST_DIR="${TEST_DIR:-/tmp/flux-plan-review-smoke-rp-$$}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
 EPIC_ID="${EPIC_ID:-fn-1}"
-export FLUX_CREATE_APPROVAL="I_APPROVE_CREATING_EPICS_AND_TASKS"
 
 fail() { echo "plan_review_prompt_smoke: $*" >&2; exit 1; }
 
@@ -66,7 +65,7 @@ chmod +x scripts/ralph/fluxctl
 
 FLUXCTL="scripts/ralph/fluxctl"
 $FLUXCTL init --json >/dev/null
-$FLUXCTL epic create --title "Tiny lib" --json >/dev/null
+$FLUXCTL epic create --title "Tiny lib" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
