@@ -53,9 +53,9 @@ Task tracking for AI agents. All state lives in `.flux/`.
 .flux/bin/fluxctl agentmap --write             # Write .flux/context/agentmap.yaml
 
 # Create
-.flux/bin/fluxctl epic create --title "..."
-.flux/bin/fluxctl task create --epic fn-1-add-oauth --title "..."
-.flux/bin/fluxctl task create --epic fn-1-add-oauth --title "..." --deps fn-1-add-oauth.1,fn-1-add-oauth.2
+.flux/bin/fluxctl epic create --title "..." --approve "I_APPROVE_CREATING_EPICS_AND_TASKS"
+.flux/bin/fluxctl task create --epic fn-1-add-oauth --title "..." --approve "I_APPROVE_CREATING_EPICS_AND_TASKS"
+.flux/bin/fluxctl task create --epic fn-1-add-oauth --title "..." --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --deps fn-1-add-oauth.1,fn-1-add-oauth.2
 
 # Dependencies
 .flux/bin/fluxctl task set-deps fn-1-add-oauth.3 --deps fn-1-add-oauth.1,fn-1-add-oauth.2

@@ -60,11 +60,12 @@ git commit -m "chore: init" >/dev/null
 mkdir -p scripts/ralph
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/fluxctl
 
 FLUXCTL="scripts/ralph/fluxctl"
 $FLUXCTL init --json >/dev/null
-$FLUXCTL epic create --title "Tiny lib" --json >/dev/null
+$FLUXCTL epic create --title "Tiny lib" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib

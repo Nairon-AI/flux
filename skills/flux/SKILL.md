@@ -19,6 +19,12 @@ FLUXCTL="${PLUGIN_ROOT}/scripts/fluxctl"
 
 Then run commands with `$FLUXCTL <command>`.
 
+**Approval gate for creation:**
+- Before any `epic create` or `task create`, get explicit developer approval first.
+- Prefer the question tool / AskUserQuestion when available.
+- Fallback: require the developer to type exactly `I_APPROVE_CREATING_EPICS_AND_TASKS`.
+- Pass `--approve "I_APPROVE_CREATING_EPICS_AND_TASKS"` on the create command after approval.
+
 **Discover all commands/options:**
 ```bash
 $FLUXCTL --help
@@ -63,7 +69,7 @@ $FLUXCTL cat fn-1-add-oauth.2            # Task spec
 $FLUXCTL ready --epic fn-1-add-oauth --json
 
 # Create task under existing epic
-$FLUXCTL task create --epic fn-1-add-oauth --title "Fix bug X" --json
+$FLUXCTL task create --epic fn-1-add-oauth --title "Fix bug X" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 
 # Set task description and acceptance (combined, fewer writes)
 $FLUXCTL task set-spec fn-1-add-oauth.2 --description /tmp/desc.md --acceptance /tmp/accept.md --json
@@ -101,7 +107,7 @@ $FLUXCTL validate --all --json
 
 2. Create task:
    ```bash
-   $FLUXCTL task create --epic fn-N --title "Short title" --json
+   $FLUXCTL task create --epic fn-N --title "Short title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
    ```
 
 3. Add description + acceptance (combined):
@@ -161,7 +167,7 @@ $FLUXCTL cat fn-1-add-oauth.2           # Full spec
 ### Create new epic (rare - usually via /flux:plan)
 
 ```bash
-$FLUXCTL epic create --title "Epic title" --json
+$FLUXCTL epic create --title "Epic title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 # Returns: {"success": true, "id": "fn-N-epic-title", ...}
 ```
 

@@ -56,6 +56,7 @@ scaffold() {
   cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
   cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
   cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+  cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
   chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 }
 
@@ -188,9 +189,9 @@ latest_run_dir() {
 }
 
 echo -e "${YELLOW}--- ralph_once ---${NC}"
-EPIC1_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic" --json)"
+EPIC1_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC1="$(echo "$EPIC1_JSON" | extract_id)"
-scripts/ralph/fluxctl task create --epic "$EPIC1" --title "Ralph Task" --json >/dev/null
+scripts/ralph/fluxctl task create --epic "$EPIC1" --title "Ralph Task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph_once.sh >/dev/null
 # Mark plan review done so it doesn't block later tests when REQUIRE_PLAN_REVIEW=1
@@ -199,11 +200,11 @@ echo -e "${GREEN}✓${NC} ralph_once runs"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- ralph.sh completes epic ---${NC}"
-EPIC2_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 2" --json)"
+EPIC2_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 2" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC2="$(echo "$EPIC2_JSON" | extract_id)"
-TASK2_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 1" --json)"
+TASK2_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 1" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK2_1="$(echo "$TASK2_1_JSON" | extract_id)"
-TASK2_2_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 2" --json)"
+TASK2_2_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC2" --title "Task 2" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK2_2="$(echo "$TASK2_2_JSON" | extract_id)"
 # Use rp for both to test receipt generation (none skips receipts correctly via fix for #8)
 write_config "rp" "rp" "1" "new" "6" "5" "2"
@@ -258,9 +259,9 @@ else
 fi
 
 echo -e "${YELLOW}--- UI output verification ---${NC}"
-EPIC3_JSON="$(scripts/ralph/fluxctl epic create --title "UI Test Epic" --json)"
+EPIC3_JSON="$(scripts/ralph/fluxctl epic create --title "UI Test Epic" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC3="$(echo "$EPIC3_JSON" | extract_id)"
-scripts/ralph/fluxctl task create --epic "$EPIC3" --title "UI Test Task" --json >/dev/null
+scripts/ralph/fluxctl task create --epic "$EPIC3" --title "UI Test Task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 ui_output="$(STUB_MODE=success CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh 2>&1)"
 
@@ -310,9 +311,9 @@ else
 fi
 
 echo -e "${YELLOW}--- ralph.sh backstop ---${NC}"
-EPIC4_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 4" --json)"
+EPIC4_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 4" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC4="$(echo "$EPIC4_JSON" | extract_id)"
-TASK4_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC4" --title "Stuck Task" --json)"
+TASK4_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC4" --title "Stuck Task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK4_1="$(echo "$TASK4_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "2"
 STUB_MODE=retry CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
@@ -325,9 +326,9 @@ echo -e "${GREEN}✓${NC} blocks after attempts"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- missing receipt forces retry ---${NC}"
-EPIC5_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 5" --json)"
+EPIC5_JSON="$(scripts/ralph/fluxctl epic create --title "Ralph Epic 5" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC5="$(echo "$EPIC5_JSON" | extract_id)"
-TASK5_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC5" --title "Receipt Task" --json)"
+TASK5_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC5" --title "Receipt Task" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK5_1="$(echo "$TASK5_1_JSON" | extract_id)"
 write_config "none" "rp" "0" "new" "3" "5" "1"
 set +e
@@ -358,9 +359,9 @@ fi
 echo -e "${YELLOW}--- non-zero exit code handling (#11) ---${NC}"
 # Test 1: task done + non-zero exit -> should NOT fail
 # This validates fix for issue #11 where transient errors caused false failures
-EPIC6_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 1" --json)"
+EPIC6_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 1" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC6="$(echo "$EPIC6_JSON" | extract_id)"
-TASK6_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC6" --title "Done but exit 1" --json)"
+TASK6_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC6" --title "Done but exit 1" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK6_1="$(echo "$TASK6_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "2"
 set +e
@@ -377,9 +378,9 @@ else
 fi
 
 # Test 2: task NOT done + non-zero exit -> should fail/block
-EPIC7_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 2" --json)"
+EPIC7_JSON="$(scripts/ralph/fluxctl epic create --title "Exit Code Epic 2" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 EPIC7="$(echo "$EPIC7_JSON" | extract_id)"
-TASK7_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC7" --title "Not done and exit 1" --json)"
+TASK7_1_JSON="$(scripts/ralph/fluxctl task create --epic "$EPIC7" --title "Not done and exit 1" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json)"
 TASK7_1="$(echo "$TASK7_1_JSON" | extract_id)"
 write_config "none" "none" "0" "new" "3" "5" "1"
 set +e

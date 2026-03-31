@@ -62,6 +62,7 @@ mkdir -p scripts/ralph
 cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 FLUXCTL="scripts/ralph/fluxctl"
 
@@ -86,13 +87,14 @@ scripts/ralph/fluxctl init --json >/dev/null
 mkdir -p .flux/bin
 cp "$PLUGIN_ROOT/scripts/fluxctl" .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" .flux/bin/fluxctl.py
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" .flux/bin/fluxctl_pkg
 chmod +x .flux/bin/fluxctl
 cp "$PLUGIN_ROOT/skills/flux-setup/templates/usage.md" .flux/usage.md
 cat "$PLUGIN_ROOT/skills/flux-setup/templates/claude-md-snippet.md" > CLAUDE.md
 echo -e "${GREEN}✓${NC} Setup mirrored"
 
-scripts/ralph/fluxctl epic create --title "Add function" --json >/dev/null
-scripts/ralph/fluxctl epic create --title "Add docs" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Add function" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Add docs" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 # MINIMAL epic spec - one clear deliverable, no room for task expansion
 cat > "$TEST_DIR/epic1.md" <<'EOF'
@@ -131,8 +133,8 @@ cat > "$TEST_DIR/accept2.md" <<'EOF'
 - [ ] README mentions "tiny math library"
 EOF
 
-scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() function" --acceptance-file "$TEST_DIR/accept1.md" --json >/dev/null
-scripts/ralph/fluxctl task create --epic fn-2 --title "Add README note" --acceptance-file "$TEST_DIR/accept2.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-1 --title "Add add() function" --acceptance-file "$TEST_DIR/accept1.md" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-2 --title "Add README note" --acceptance-file "$TEST_DIR/accept2.md" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"

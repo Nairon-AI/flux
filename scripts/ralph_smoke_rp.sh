@@ -155,6 +155,7 @@ mkdir -p scripts/ralph
 cp -R "$PLUGIN_ROOT/skills/flux-ralph-init/templates/." scripts/ralph/
 cp "$PLUGIN_ROOT/scripts/fluxctl.py" scripts/ralph/fluxctl.py
 cp "$PLUGIN_ROOT/scripts/fluxctl" scripts/ralph/fluxctl
+cp -R "$PLUGIN_ROOT/scripts/fluxctl_pkg" scripts/ralph/fluxctl_pkg
 chmod +x scripts/ralph/ralph.sh scripts/ralph/ralph_once.sh scripts/ralph/fluxctl
 FLUXCTL="scripts/ralph/fluxctl"
 
@@ -175,7 +176,7 @@ cfg.write_text(text)
 PY
 
 scripts/ralph/fluxctl init --json >/dev/null
-scripts/ralph/fluxctl epic create --title "Tiny lib" --json >/dev/null
+scripts/ralph/fluxctl epic create --title "Tiny lib" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 cat > "$TEST_DIR/epic.md" <<'EOF'
 # fn-1 Tiny lib
@@ -224,7 +225,7 @@ cat > "$TEST_DIR/accept.md" <<'EOF'
 - [ ] README notes TS tooling required
 EOF
 
-scripts/ralph/fluxctl task create --epic fn-1 --title "Add docs" --acceptance-file "$TEST_DIR/accept.md" --json >/dev/null
+scripts/ralph/fluxctl task create --epic fn-1 --title "Add docs" --acceptance-file "$TEST_DIR/accept.md" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json >/dev/null
 
 mkdir -p "$TEST_DIR/bin"
 PLUGINS_DIR="$(dirname "$PLUGIN_ROOT")"

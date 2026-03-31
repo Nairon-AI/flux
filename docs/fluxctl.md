@@ -77,8 +77,10 @@ Output:
 Create new epic.
 
 ```bash
-fluxctl epic create --title "Epic title" [--branch "fn-1-epic-title"] [--json]
+fluxctl epic create --title "Epic title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" [--branch "fn-1-epic-title"] [--json]
 ```
+
+Creation is blocked unless the approval phrase is supplied via `--approve`.
 
 Output:
 ```json
@@ -147,7 +149,7 @@ Format: `backend:model` where backend is a CLI name and model is backend-specifi
 Create task under epic.
 
 ```bash
-fluxctl task create --epic fn-1 --title "Task title" [--deps fn-1.2,fn-1.3] [--acceptance-file accept.md] [--priority 10] [--json]
+fluxctl task create --epic fn-1 --title "Task title" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" [--deps fn-1.2,fn-1.3] [--acceptance-file accept.md] [--priority 10] [--json]
 ```
 
 Output:

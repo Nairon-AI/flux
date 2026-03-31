@@ -1,6 +1,6 @@
 ---
 name: flux-plan
-description: Create structured build plans from feature requests or Flow IDs. Use when planning features or designing implementation. Triggers on /flux:plan with text descriptions or Flow IDs (fn-1-add-oauth, fn-1-add-oauth.2, or legacy fn-1, fn-1.2, fn-1-xxx, fn-1-xxx.2).
+description: Create structured build plans from feature, bugfix, upgrade, or refactor requests, or from Flow IDs. Use when planning implementation after the workflow envelope is explicit. Triggers on /flux:plan with text descriptions or Flow IDs (fn-1-add-oauth, fn-1-add-oauth.2, or legacy fn-1, fn-1.2, fn-1-xxx, fn-1-xxx.2).
 user-invocable: false
 ---
 
@@ -67,6 +67,15 @@ Continue regardless (non-blocking).
 **Goal**: produce an epic with tasks that match existing conventions and reuse points.
 **Task size**: every task must fit one `/flux:work` iteration (~100k tokens max). If it won't, split it.
 
+## Mandatory Approval Gate
+
+Before any `epic create` or `task create` call, get explicit developer approval.
+
+- Prefer the question tool / AskUserQuestion when available.
+- If you cannot use a question tool, require the developer to type exactly: `I_APPROVE_CREATING_EPICS_AND_TASKS`
+- Until approval is explicit, do not create any epic or task. You may research, propose the structure, and wait.
+- After approval, pass `--approve "I_APPROVE_CREATING_EPICS_AND_TASKS"` on every `fluxctl epic create` and `fluxctl task create` call in this run.
+
 Every non-trivial plan must include a future-pressure pass: forecast likely follow-on features, failure modes, reuse pressure, and reversal cost before tasks are finalized. Do not turn this into a giant ceremony for trivial changes; go deep only on one-way doors and shared surfaces.
 
 ## The Golden Rule: No Implementation Code
@@ -92,7 +101,7 @@ Every non-trivial plan must include a future-pressure pass: forecast likely foll
 Full request: $ARGUMENTS
 
 Accepts:
-- Feature/bug description in natural language
+- Feature/bug/upgrade/refactor description in natural language
 - Flow epic ID `fn-N-slug` (e.g., `fn-1-add-oauth`) or legacy `fn-N`/`fn-N-xxx` to refine existing epic
 - Flow task ID `fn-N-slug.M` (e.g., `fn-1-add-oauth.2`) or legacy `fn-N.M`/`fn-N-xxx.M` to refine specific task
 - Chained instructions like "then review with /flux:plan-review"
@@ -103,7 +112,23 @@ Examples:
 - `/flux:plan fn-1` (legacy formats fn-1, fn-1-xxx still supported)
 - `/flux:plan fn-1-add-oauth then review via /flux:plan-review`
 
-If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences."
+If empty, ask: "What should I plan? Give me the feature, bug, upgrade, or refactor in 1-5 sentences."
+
+## Workflow Envelope Gate
+
+Before detailed planning, make the workflow envelope explicit.
+
+Always confirm:
+- **Objective kind**: `feature`, `bug`, `upgrade`, or `refactor`
+- **Technical level**: `non_technical`, `semi_technical`, or `technical`
+- **Planning path**: shallow planning directly in `/flux:plan`, or escalate to deep Double Diamond scoping first via `/flux:scope --deep`
+
+Rules:
+- If the user is **non-technical / stakeholder**, route to `flux-propose` instead of continuing in `flux-plan`.
+- If the user wants **deep Double Diamond**, switch to `/flux:scope --deep` and stop the direct plan flow there.
+- If the user wants **shallow planning**, continue in `/flux:plan`.
+- If the request is improving an existing feature rather than creating a net-new one, classify it as **`upgrade`**.
+- Do not silently assume shallow planning just because the user did not say `--deep`.
 
 ## FIRST: Parse Options or Ask Questions
 
@@ -129,7 +154,7 @@ Parse the arguments for these patterns. If found, use them and skip questions:
 
 ### If options NOT found in arguments
 
-**Plan depth** (parse from args or ask):
+**Plan depth** (this is the plan artifact depth after the workflow envelope has already established whether shallow planning is sufficient or whether deep scope should run first):
 - `--depth=short` or "quick" or "minimal" → SHORT
 - `--depth=standard` or "normal" → STANDARD
 - `--depth=deep` or "comprehensive" or "detailed" → DEEP

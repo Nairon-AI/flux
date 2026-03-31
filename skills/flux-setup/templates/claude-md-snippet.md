@@ -105,15 +105,16 @@ This project uses Flux for structured AI development. Use `.flux/bin/fluxctl` in
 - If the user clearly starts a new objective while another is active, ask whether to switch objectives, then use `.flux/bin/fluxctl objective switch <epic-id>` when needed.
 </important>
 
-<important if="you are starting a new scope or scoping a feature, bug, or refactor">
+<important if="you are starting a new scope or scoping a feature, bug, upgrade, or refactor">
 **Scoping rules:**
 - `/flux:scope` is the full scoping workflow: Start -> Discover -> Define -> Develop -> Deliver -> Handoff.
 - Prime is the first workflow step in a repository. If the repo is not primed yet, do that automatically before starting scope.
 - At the start of a new scope, ask:
-  - is this a feature, bug, or refactor?
+  - is this a feature, bug, upgrade, or refactor?
+  - is the user technical or non-technical?
   - should we go shallow or deep?
-  - how technical is the user?
   - are they implementing it with AI or handing it to an engineer?
+ - If the user is non-technical, route to `/flux:propose`.
 - During scoping, show progress with `.flux/bin/fluxctl scope-status`.
 - Persist phase changes and artifacts through `fluxctl` instead of relying on chat memory alone.
 - Treat `.flux/brain/codebase/architecture.md` as the canonical whole-product architecture note.

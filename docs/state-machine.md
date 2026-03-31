@@ -147,7 +147,7 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │                                            │
   │                  ┌─────────────────────────┤
   │                  │                         │
-  │           [stakeholder?]            [bug signals?]
+  │       [confirm audience]            [bug signals?]
   │             │ yes                      │ yes
   │             ▼                          ▼
   │        /flux:propose             ASK: RCA?
@@ -161,6 +161,10 @@ RECOMMENDATION PULSE (recommendation_pulse)
   │                  ┌──────────────────────────┘
   │                  ▼
   │             /flux:scope (scoping)
+  │                  │
+  │                  ▼
+  │      [START gate: confirm kind / audience /
+  │       depth / implementation target]
   │                  │
   │                  ▼
   │           [viability gate — 2+ red flags?]
@@ -336,7 +340,7 @@ The following routing happens when a user provides natural language instead of a
 | Codebase-understanding signals ("how does X work", "walk me through Y", "help me understand Z", "show me what touches X") and `diffity-tour` is installed | `/diffity-tour` | 3 |
 | Bug signals (error messages, "broken", stack traces) | `/flux:rca` (after confirmation) | 4 |
 | "remember X" / "don't forget X" / "keep in mind X" / "from now on X" | `/flux:remember` | 5 |
-| Feature/refactor description | `/flux:scope` | 6 |
+| Feature/upgrade/refactor description | `/flux:scope` | 6 |
 | Flow ID pattern (`fn-N-slug` or `fn-N`) | `/flux:work` (epic) | 7 |
 | Flow task ID pattern (`fn-N-slug.M` or `fn-N.M`) | `/flux:work` (single task) | 7 |
 | "improve X" / "help me find tools for X" / "optimize my workflow for X" | `/flux:improve` (with context) | 8 |
@@ -364,9 +368,12 @@ Skills can route to other skills during execution:
 | From | Condition | Routes To |
 |------|-----------|-----------|
 | `/flux:scope` | Stakeholder detected (3+ signals, 0 engineer signals) | `/flux:propose` |
+| `/flux:scope` | User explicitly confirms they are non-technical / stakeholder during the START gate | `/flux:propose` |
 | `/flux:scope` | React visual-jank signals + `dejank` installed + user confirms | `/flux:dejank` |
 | `/flux:scope` | User is trying to understand an existing feature/codepath + `diffity-tour` installed + no change request yet | `/diffity-tour` |
 | `/flux:scope` | Bug signals detected + user confirms | `/flux:rca` |
+| `/flux:plan` | User explicitly confirms they are non-technical / stakeholder during plan preflight | `/flux:propose` |
+| `/flux:plan` | User asks for deep Double Diamond before planning | `/flux:scope --deep` |
 | `/flux:scope` | "remember X" detected | `/flux:remember` |
 | `/flux:scope` | `--explore` flag | Explore mode (internal) |
 | `/flux:scope` | Stress test signals detected | Dialectic subagents (internal) |
@@ -396,11 +403,13 @@ These prevent invalid transitions:
 | Guard | Blocks | Requires |
 |-------|--------|----------|
 | Prime not done | All skills except `prime`, `setup`, `status`, `upgrade` | Run `/flux:prime` first |
+| Workflow envelope not explicit | Scope/plan progression beyond START or plan preflight | Confirm objective kind, audience, planning depth, and target |
 | No active epic | `/flux:work` without ID | Provide epic/task ID or run `/flux:scope` |
 | Tasks not created | `/flux:work <epic>` | Epic must have tasks |
 | Dependencies not met | `fluxctl start <task>` | All dependency tasks must be `done` |
 | Review not passed | Epic close | `completion_review_status == ship` |
 | Quality not passed | Submit | Tests pass, repo lint/format gates pass |
+| Explicit creation approval missing | `epic create` / `task create` | Developer approval phrase via `--approve` |
 
 ---
 
@@ -501,6 +510,7 @@ Override with `.flux/config.json`:
 | Session start hook | Every session | **Automatic** — injects brain vault index + workflow state |
 | Recommendation pulse | Every session (rate-limited 1x/day) | **Automatic** — nudges for new tools, brain vault health |
 | `session-state` routing | Before any work-like request | **Automatic** — routes to prime/scope/work/review |
+| Workflow envelope gate | Start of `/flux:scope` and natural-language `/flux:plan` | **Manual** — explicitly confirm kind, audience, depth, and target before deeper planning |
 | Stress test | During scope, if one-way door / UX assumption / deferred authority | **Automatic** — spawns opposing subagents |
 | Parallel dispatch utility | During Prime scouts or Scope explore fan-out | **Automatic within owning phase** — uses `flux-parallel-dispatch` to keep parallel work isolated |
 | Future pressure | During scope/plan, always quick; deeper for one-way doors/shared surfaces | **Automatic** — forecasts follow-on features, failure modes, observability, and reversal path |
@@ -521,6 +531,20 @@ Override with `.flux/config.json`:
 | Autofix | After PR submit, if `autofix.enabled: true` | **Automatic** (config-driven, non-blocking) |
 | Gate | Validate staging after merge | **Manual** (or CI auto) |
 | Upgrade | Get latest Flux version | **Manual** |
+
+---
+
+## Scope And Plan Entry Gates
+
+These are mandatory sub-states inside `scoping` and planning preflight even though they do not appear as top-level session states:
+
+1. **Classify the work** — `feature`, `bug`, `upgrade`, or `refactor`
+2. **Confirm audience** — technical implementer vs non-technical stakeholder
+3. **Confirm planning depth** — shallow vs deep Double Diamond
+4. **Confirm implementation target** — self with AI vs engineer handoff
+5. **Confirm persistence** — explicit approval before any epic/task creation
+
+Agents may use heuristics to suggest defaults, but they must not silently skip these confirmations on a fresh objective.
 
 ---
 

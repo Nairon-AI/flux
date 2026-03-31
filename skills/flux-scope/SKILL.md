@@ -1,6 +1,6 @@
 ---
 name: flux-scope
-description: Use when scoping a new feature, refactor, or ambiguous bugfix into a concrete Flow objective. Guides Start, Discover, Define, Stress Test, Future Pressure, Develop, Deliver, and Handoff; supports shallow mode by default and `--deep` for the full staged flow. Triggers on literal `/flux:scope`, including prompts like `/flux:scope Add OAuth login` or `/flux:scope fn-1 --deep`.
+description: Use when scoping a new feature, bugfix, upgrade to an existing feature, or refactor into a concrete Flow objective. Guides Start, Discover, Define, Stress Test, Future Pressure, Develop, Deliver, and Handoff; requires an explicit shallow-vs-deep choice before scoping continues. Triggers on literal `/flux:scope`, including prompts like `/flux:scope Add OAuth login` or `/flux:scope fn-1 --deep`.
 user-invocable: false
 ---
 
@@ -14,7 +14,7 @@ START -> DISCOVER -> DEFINE -> STRESS TEST -> FUTURE PRESSURE -> DEVELOP -> DELI
 ```
 
 **Modes**:
-- **Shallow (default)**: ~10 min total. Compressed scoping for smaller or clearer work.
+- **Shallow**: ~10 min total. Compressed scoping for smaller or clearer work.
 - **Deep (`--deep`)**: ~45 min total. Full staged workflow with stronger gates, more edge cases, and richer handoff.
 - **Explore (`--explore [N]`)**: Generate N competing approaches, scaffold each in parallel, compare visually, pick winner.
 
@@ -70,7 +70,7 @@ Continue regardless (non-blocking).
 **State Machine**: See [docs/state-machine.md](../../docs/state-machine.md) for the formal workflow state diagram, valid transitions, and routing rules. This skill is the primary entry point from `fresh_session_no_objective` state.
 
 **Role**: product-minded technical interviewer and planner
-**Goal**: understand the problem deeply, keep the user aligned to the current workflow, then create actionable implementation context
+**Goal**: understand the problem deeply, keep the user aligned to the current workflow, make the workflow envelope explicit up front, then create actionable implementation context
 
 ## Input
 
@@ -98,7 +98,7 @@ Examples:
 - `/flux:scope LIN-42` — Scope Linear issue LIN-42 directly
 - `/flux:scope PROJ-123 --deep` — Deep scope Linear issue PROJ-123
 
-If empty, ask: "What should I scope? Describe the feature or bug in 1-5 sentences."
+If empty, ask: "What should I scope? Describe the feature, bug, upgrade, or refactor in 1-5 sentences."
 
 ## Load Business And Architecture Context
 
@@ -120,32 +120,42 @@ If business context exists:
 
 If no business context exists: continue normally.
 
-## Detect Stakeholder vs Engineer
+## Establish Workflow Envelope
 
-Before detecting mode, check if the user is a non-technical stakeholder rather than an engineer.
+Before any deeper routing or scoping questions, explicitly establish the workflow envelope for this objective.
 
-**Skip detection entirely if ANY of these are present** (strong engineer signals):
-- Mentions specific files, paths, or line numbers
-- References APIs, endpoints, databases, schemas, components, services, or architecture
-- Uses technical verbs: "refactor", "migrate", "deploy", "integrate", "implement"
-- Includes code snippets, error messages, or stack traces
+**This is mandatory on every new scope. Do not rely on silent heuristics alone.**
 
-**Detection signals** (check the input text if no engineer signals found):
-- Language focuses on **outcomes** not implementation ("I want users to be able to..." vs "Add an API endpoint for...")
-- Describes **what** without **how**
-- Talks about business goals, customer needs, revenue, or user experience
-- Uses non-technical framing: "customers want...", "our team needs...", "it would be great if..."
+Always make these four fields explicit:
+- **Objective kind**: `feature`, `bug`, `upgrade`, or `refactor`
+- **Technical level**: `non_technical`, `semi_technical`, or `technical`
+- **Scope depth**: `shallow` or `deep`
+- **Implementation target**: `self_with_ai` or `engineer_handoff`
 
-If 3+ signals are present and zero engineer signals, ask:
+Use request heuristics only to pre-fill likely defaults. Then confirm them with the user before continuing.
 
-> "It sounds like you're describing what you'd like built rather than how to build it. Are you an engineer planning to implement this, or are you proposing a feature for the engineering team?"
+**Heuristics for likely defaults**:
+- **Engineer signals**: file paths, line numbers, APIs, endpoints, schemas, components, services, architecture terms, code snippets, stack traces, or verbs like "refactor", "migrate", "deploy", "integrate", "implement"
+- **Stakeholder signals**: outcome-focused language, business goals, customer pain, revenue/user-experience framing, and descriptions of what without how
+- **Bug signals**: errors, regressions, "broken", "not working", "fails", "wrong output"
+- **Upgrade signals**: extend, expand, improve, upgrade, enhance, add capability to an existing feature without replacing it wholesale
+- **Refactor signals**: restructure, simplify, extract, split, clean up, reduce coupling, improve maintainability without changing product behavior
 
-- If **stakeholder** → hand off to `flux-propose` skill with their input preserved. Stop here.
-- If **engineer** → continue with `/flux:scope` normally.
+Ask explicitly unless the user already specified every field in the command. A good envelope question is:
+
+> "Before I scope this, I want to lock the workflow envelope: is this a feature, bug, upgrade, or refactor? Are you approaching this as a technical implementer or a non-technical stakeholder? Do you want shallow planning or the full deep Double Diamond? And is the output for you to build with AI, or for engineer handoff?"
+
+**Rules**:
+- If the user explicitly says they are **non-technical / stakeholder**, route to `flux-propose` with their input preserved. Stop here.
+- If heuristics strongly suggest stakeholder, still ask the explicit technical-level question before routing.
+- If the user chooses **deep**, set `scope_mode=deep`.
+- If the user chooses **shallow**, set `scope_mode=shallow`.
+- If the user already passed `--deep`, reflect that back as the current selection when asking the envelope question instead of silently assuming it.
+- If the request is best described as improving or extending an existing shipped capability, classify it as **`upgrade`** instead of collapsing it into `feature`.
 
 ## Detect React Visual Jank
 
-After stakeholder detection, check whether the request is really a React visual-jank complaint that should route to Dejank instead of the normal scoping flow.
+After the workflow envelope is confirmed, check whether the request is really a React visual-jank complaint that should route to Dejank instead of the normal scoping flow.
 
 **Preconditions:**
 - Repo looks React-based (`react`, `next`, `@remix-run/react`, `react-router`, etc.)
@@ -163,9 +173,9 @@ If those signals are strong and Dejank is available, ask:
 - If **yes** → hand off to `dejank` with the user input preserved. Stop here.
 - If **no** → continue with `/flux:scope` normally.
 
-## Detect Bug vs Feature
+## Refine Bug Routing
 
-After stakeholder detection, check if this is a bug report that should route to RCA.
+After the workflow envelope is confirmed, check if this is a bug report that should route to RCA.
 
 **Bug signals** (check the input text):
 - Contains error messages, stack traces, or exception names
@@ -180,13 +190,13 @@ If bug signals are strong, ask:
 - If **yes** → hand off to `flux-rca` skill with their input preserved. Stop here.
 - If **no** → continue with `/flux:scope` normally (user may want to scope a larger fix around the bug).
 
-If unclear (could be a bug or a feature gap), ask:
+If unclear (could be a bug or an upgrade/feature gap), ask:
 
-> "Am I right in thinking this is a bug? Or is this more of a missing feature / improvement?"
+> "Am I right in thinking this is a bug? Or is this more of an upgrade / missing feature?"
 
-## Detect Mode
+## Confirm Scope Mode
 
-Parse arguments for `--deep` flag. Default is shallow mode.
+Parse arguments for `--deep` / `--quick` as a provisional default only. The user must still have the scope depth made explicit in the workflow envelope before Discover begins.
 
 ```
 SCOPE_MODE = "--deep" in arguments ? "deep" : "shallow"

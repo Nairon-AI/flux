@@ -5,7 +5,8 @@ description: >-
   a conversational planning session — probes for business context, pushes back like an
   engineer, estimates complexity and cost, then documents the proposal and creates a PR
   for engineering handoff. Triggers: /flux:propose, or detected implicitly when a
-  non-technical user describes a feature without implementation detail during /flux:scope.
+  non-technical user describes a feature, bugfix request, or upgrade without implementation
+  detail during /flux:scope or /flux:plan.
 user-invocable: false
 ---
 
@@ -110,14 +111,14 @@ If arguments provided:
 
 ## Implicit Detection (from /flux:scope)
 
-This skill can be triggered implicitly when `/flux:scope` detects a non-technical user. Detection signals:
+This skill can be triggered implicitly when `/flux:scope` or `/flux:plan` detects a non-technical user. Detection signals:
 
 - Language focuses on **outcomes** not implementation ("I want users to be able to..." vs "Add an API endpoint for...")
 - No technical terms (no mention of APIs, databases, components, endpoints, schemas)
 - Describes **what** without **how**
 - Talks about business goals, customer needs, or user experience without referencing architecture
 
-When detected, `/flux:scope` asks:
+When detected, Flux asks:
 
 > "It sounds like you're describing what you'd like built rather than how to build it. Are you an engineer planning to implement this, or are you proposing a feature for the engineering team?"
 

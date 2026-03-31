@@ -121,12 +121,21 @@ If the user selects **"Unassigned"**, omit the assignee field when creating issu
 
 ---
 
+## Step 6.75: Approval Gate Before Any Writes
+
+Before creating any epic or task, show the developer the proposed epic structure and rough task breakdown, then get explicit approval.
+
+- Prefer `AskUserQuestion` / the question tool when available.
+- Fallback: require the developer to type exactly `I_APPROVE_CREATING_EPICS_AND_TASKS`.
+- If approval is missing, stop after presenting the proposed structure. Do not create epics or tasks.
+- After approval, pass `--approve "I_APPROVE_CREATING_EPICS_AND_TASKS"` on every `fluxctl epic create` and `fluxctl task create` call in this run.
+
 ## Step 7: Create Epic
 
 Create the epic with the problem statement:
 
 ```bash
-$FLUXCTL epic create --title "<Short title from problem statement>" --json
+$FLUXCTL epic create --title "<Short title from problem statement>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 ```
 
 Write the problem space findings to the epic spec. **The epic spec is the high-level business context** — an agent or human reading this should understand *why* this work exists, *who* it impacts, and *what success looks like*. Implementation details belong in task specs, not here.
@@ -328,14 +337,14 @@ Tasks at the same dependency level CAN run in parallel. Call this out explicitly
 
 ```bash
 # Create tasks in dependency order — first task has no deps
-$FLUXCTL task create --epic <epic-id> --title "<Foundation task>" --json
+$FLUXCTL task create --epic <epic-id> --title "<Foundation task>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 # → returns fn-1-slug.1
 
-$FLUXCTL task create --epic <epic-id> --title "<Task that needs foundation>" --deps fn-1-slug.1 --json
+$FLUXCTL task create --epic <epic-id> --title "<Task that needs foundation>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --deps fn-1-slug.1 --json
 # → returns fn-1-slug.2
 
 # Multiple deps for tasks that need several predecessors
-$FLUXCTL task create --epic <epic-id> --title "<Integration task>" --deps fn-1-slug.2,fn-1-slug.3 --json
+$FLUXCTL task create --epic <epic-id> --title "<Integration task>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --deps fn-1-slug.2,fn-1-slug.3 --json
 ```
 
 ### Task Spec Content
@@ -434,7 +443,7 @@ Detect if the epic touches frontend/web UI by checking:
 **If YES** — create a Browser QA Checklist task:
 
 ```bash
-$FLUXCTL task create --epic <epic-id> --title "Browser QA Checklist" --json
+$FLUXCTL task create --epic <epic-id> --title "Browser QA Checklist" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
 ```
 
 Set its spec with testable acceptance criteria derived from the epic's acceptance criteria and task specs. Each criterion must be concrete and browser-testable:

@@ -42,6 +42,7 @@ from .utils import (
     parse_id,
     read_file_or_stdin,
     read_text_or_exit,
+    require_creation_approval,
     scan_max_epic_id,
     slugify,
     workflow_phases_for_mode,
@@ -467,6 +468,8 @@ TBD
 
 def cmd_epic_create(args: argparse.Namespace) -> None:
     """Create a new epic."""
+    require_creation_approval(args.approve, "Epic creation", use_json=args.json)
+
     if not ensure_flux_exists():
         error_exit(
             ".flux/ does not exist. Run 'fluxctl init' first.", use_json=args.json
@@ -1826,7 +1829,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "task": None,
             "prime": prime_state,
             "architecture": architecture_state,
-            "message": "No open objective. Start a new feature, bug, or refactor scope.",
+            "message": "No open objective. Start a new feature, bug, upgrade, or refactor scope.",
             "next_action": next_action,
             "router": router_for(next_action, "fresh_session_no_objective"),
         }

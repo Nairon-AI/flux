@@ -16,6 +16,7 @@ const FLUX_ROOT = process.env.FLUX_ROOT ||
   join(import.meta.dir, '..')
 
 const SCRIPT_TIMEOUT = 15000
+const CREATE_APPROVAL_PHRASE = 'I_APPROVE_CREATING_EPICS_AND_TASKS'
 
 async function runScript(script: string, args: string[] = [], cwd?: string): Promise<string> {
   const scriptPath = join(FLUX_ROOT, 'scripts', script)
@@ -652,7 +653,9 @@ flowchart TD
 
     await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
     await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
-    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --json`.cwd(tmpRoot).text()
+    const epicRaw = await $`${fluxctl} epic create --title "Fix login redirect" --kind bug --scope-mode deep --technical-level non_technical --implementation-target engineer_handoff --approve ${CREATE_APPROVAL_PHRASE} --json`
+      .cwd(tmpRoot)
+      .text()
     const epic = JSON.parse(epicRaw)
 
     await $`${fluxctl} epic set-workflow ${epic.id} --phase discover --step "repro-and-impact" --status in_progress --summary "Investigating repro path" --next-action "Confirm expected behavior" --open-question "Does this affect social login?" --activate --json`.cwd(tmpRoot).quiet()
@@ -674,6 +677,26 @@ flowchart TD
     expect(session.router.command).toBe('/flux:scope')
     expect(session.router.skill).toBe('flux-scope')
     expect(session.router.node).toBe('Scope')
+  }, SCRIPT_TIMEOUT)
+
+  test('epic create accepts upgrade objectives and preserves workflow metadata', async () => {
+    const tmpRoot = `/tmp/flux-upgrade-objective-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+    await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
+
+    const epicRaw = await $`${fluxctl} epic create --title "Upgrade notifications with digest controls" --kind upgrade --scope-mode shallow --technical-level technical --implementation-target self_with_ai --approve ${CREATE_APPROVAL_PHRASE} --json`
+      .cwd(tmpRoot)
+      .text()
+    const epic = JSON.parse(epicRaw)
+
+    const statusRaw = await $`${fluxctl} scope-status --json`.cwd(tmpRoot).text()
+    const status = JSON.parse(statusRaw)
+    expect(status.objective.id).toBe(epic.id)
+    expect(status.objective.objective_kind).toBe('upgrade')
+    expect(status.objective.scope_mode).toBe('shallow')
+    expect(status.objective.technical_level).toBe('technical')
   }, SCRIPT_TIMEOUT)
 
   test('agentmap --check reports built-in availability', async () => {
