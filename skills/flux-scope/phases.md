@@ -19,7 +19,7 @@ START -> DISCOVER -> DEFINE -> STRESS TEST -> FUTURE PRESSURE -> DEVELOP -> DELI
 ```
 
 At all times, Flux should persist:
-- objective kind: feature, bug, or refactor
+- objective kind: feature, bug, upgrade, or refactor
 - scope mode: shallow or deep
 - technical level
 - implementation target
@@ -34,15 +34,24 @@ Use `fluxctl scope-status` to render a progress card after each major transition
 **Purpose**: Establish the workflow envelope before asking deeper questions.
 
 **Always capture**:
-- feature, bug, or refactor
+- feature, bug, upgrade, or refactor
 - shallow or deep
 - technical level
 - self with AI or engineer handoff
 
 **Why this matters**:
+- Upgrade work is different from net-new feature work and should not be collapsed into a generic feature bucket.
 - Shallow and deep mode should feel different.
 - Non-technical users should get stronger defaults.
 - Engineer handoff should produce richer deliverables than self-build mode.
+- The user should know which gate they are in before Flux advances to the next one.
+
+**Mandatory gates in START**:
+1. Classify the work: feature, bug, upgrade, or refactor.
+2. Confirm whether the user is technical or non-technical.
+3. Confirm whether shallow planning is sufficient or whether they want the full deep Double Diamond.
+4. Confirm whether the output is for self-build with AI or engineer handoff.
+5. Show the current gate and completed gates in plain language before entering DISCOVER.
 
 ---
 
@@ -234,7 +243,7 @@ See [stress-test.md](stress-test.md) for full execution details.
 After DEFINE, present the proposed epic, get explicit approval, then start persisting structured workflow state:
 ```bash
 $FLUXCTL epic create --title "<from problem statement>" --approve "I_APPROVE_CREATING_EPICS_AND_TASKS" --json
-$FLUXCTL epic set-context <id> --kind feature --scope-mode shallow --activate
+$FLUXCTL epic set-context <id> --kind <confirmed-kind> --scope-mode <confirmed-mode> --activate
 $FLUXCTL epic set-workflow <id> --phase define --step problem-statement --status in_progress
 $FLUXCTL epic set-plan <id> --file - <<'EOF'
 # Problem Statement
@@ -246,6 +255,7 @@ EOF
 ```
 
 This anchors the remaining workflow to the defined problem.
+Do not create the epic until the START envelope has been confirmed and the developer has explicitly approved persistence.
 
 ### Deliver → Work Handoff
 

@@ -100,9 +100,10 @@ Also detected **implicitly** — if someone uses `/flux:scope` with bug signals 
 **Recommended starting point.** Runs Flux's Product OS-style scoping workflow:
 
 1. **Start**
-   - classify feature, bug, or refactor
-   - choose shallow vs deep
-   - capture technical level and implementation target
+   - classify feature, bug, upgrade, or refactor
+   - explicitly confirm technical vs non-technical
+   - explicitly choose shallow vs deep
+   - capture implementation target
 2. **Discover / Define**
    - clarify the actual problem before solutioning
 3. **Develop / Deliver / Handoff**
@@ -116,7 +117,7 @@ Also detected **implicitly** — if someone uses `/flux:scope` with bug signals 
 /flux:scope Add user notifications --deep    # Deep mode (~45 min)
 ```
 
-Use `--deep` for high-stakes or ambiguous features.
+Use `--deep` for high-stakes or ambiguous work. If the user is non-technical, Flux should route into `/flux:propose` instead of continuing straight through technical scoping.
 
 ### /flux:setup
 
@@ -136,7 +137,7 @@ Initializes Flux in your project. Creates `.flux/`, the canonical brain vault at
 <p><em>Coming soon</em></p>
 </details>
 
-Breaks down an idea into atomic tasks with dependencies and acceptance criteria.
+Breaks down an idea into atomic tasks with dependencies and acceptance criteria. Flux still confirms the workflow envelope first, and if the user wants deep Double Diamond scoping instead of shallow direct planning, it should route to `/flux:scope --deep`.
 
 ### /flux:work
 

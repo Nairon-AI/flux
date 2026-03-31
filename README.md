@@ -151,7 +151,7 @@ Casual React jank complaints like "this flickers" or "the layout jumps" should a
 
 ### 3. Build
 
-After prime, just tell the agent what you want — *build a feature, fix a bug, refactor something, continue work*. Flux uses repo state plus your message to decide whether to scope, resume, review, or hand off.
+After prime, just tell the agent what you want — *build a feature, fix a bug, upgrade an existing feature, refactor something, continue work*. Flux uses repo state plus your message to decide whether to scope, resume, review, or hand off.
 
 > **Why keep Claude around at all?** Codex is Flux's primary driver for implementation, scouting, and day-to-day execution. Claude is optional and secondary: useful as the second lab in adversarial review, for cloud PR auto-fix, and for importing learnings from older transcript archives. During epic reviews, Flux runs dual-model review so two models with different training data review independently and consensus issues get auto-fixed. You can also bring your own review bot (Greptile, CodeRabbit) for a third perspective. See [Reviews](#reviews--two-tier-architecture) below.
 
@@ -168,8 +168,11 @@ flowchart TD
     RCA["RCA<br/>(root cause analysis)"]
     Dejank["Dejank<br/>(React jank audit)"]
     Remember["Remember<br/>(memory router)"]
+    ScopeStart["Scope Start<br/>(kind + audience<br/>+ depth + target)"]
     Scope["Scope<br/>(problem definition)"]
     StressTest{"Stress Test<br/>(assumption dialectic)"}
+    PlanApprove{"Approve Epic/Task<br/>Creation?"}
+    ApprovalWait["Await Developer<br/>Approval"]
     Work["Work<br/>(task loop)"]
     ImplReview["Impl Review<br/>(per-task, lightweight)"]
     EpicReview["Epic Review<br/>(per-epic, thorough)"]
@@ -187,24 +190,28 @@ flowchart TD
     Pulse -->|"new tools?<br/>nudge /flux:improve"| Prime
     Pulse -->|"all clear"| Prime
     Prime -->|"brain thin +<br/>past sessions exist"| Ruminate
-    Prime -->|"brain ready"| Scope
-    Ruminate -->|"bootstrap brain<br/>from history"| Scope
+    Prime -->|"brain ready"| ScopeStart
+    Ruminate -->|"bootstrap brain<br/>from history"| ScopeStart
     SessionStart -->|"remember / don't forget"| Remember
-    Remember -->|"stores to AGENTS.md<br/>or brain vault"| Scope
-    Scope -->|"non-technical user<br/>detected"| Propose
+    Remember -->|"stores to AGENTS.md<br/>or brain vault"| ScopeStart
+    ScopeStart -->|"non-technical user<br/>confirmed"| Propose
     Propose -->|"creates proposal PR<br/>for engineering"| ProposeDone["Proposal Created"]
-    Scope -->|"bug detected"| RCA
-    Scope -->|"React jank complaint +<br/>Dejank installed"| Dejank
+    ScopeStart -->|"bug confirmed"| RCA
+    ScopeStart -->|"React jank complaint +<br/>Dejank installed"| Dejank
     Dejank -->|"static scan or runtime<br/>investigation"| Scope
     RCA -->|"fix + regression test<br/>+ pitfall written"| Submit
+    ScopeStart -->|"workflow envelope<br/>confirmed"| Scope
     Scope -->|"ambiguous domain<br/>terms detected"| UbiqLang["Ubiquitous Language<br/>(glossary extraction)"]
     UbiqLang -->|"glossary written<br/>to brain vault"| StressTest
     Scope -->|"problem defined"| StressTest
     StressTest -->|"one-way door /<br/>UX assumption /<br/>deferred authority"| StressTestRun["Spawn Opposing<br/>Subagents"]
-    StressTest -->|"no tensions<br/>detected"| ExecChoice
-    StressTestRun -->|"synthesize +<br/>user decides"| ExecChoice{"Execute how?"}
+    StressTest -->|"no tensions<br/>detected"| PlanApprove
+    StressTestRun -->|"synthesize +<br/>user decides"| PlanApprove
     StressTest -->|"complex module<br/>boundary"| DesignInterface["Design Interface<br/>(parallel sub-agents)"]
-    DesignInterface -->|"interface chosen"| ExecChoice
+    DesignInterface -->|"interface chosen"| PlanApprove
+    PlanApprove -->|"approved"| ExecChoice{"Execute how?"}
+    PlanApprove -->|"not yet"| ApprovalWait
+    ApprovalWait -->|"developer approves"| ExecChoice
 
     ExecChoice -->|"task-by-task<br/>(interactive)"| Work
     ExecChoice -->|"ralph mode<br/>(autonomous)"| Ralph["Ralph<br/>(autonomous harness)"]
@@ -294,7 +301,7 @@ These utility skills run *inside* the owning phase rather than creating a new to
 | **Ruminate** | *Auto after Prime (conditional):* mines past session transcripts to bootstrap the brain vault. Triggers when brain has < 5 files and past sessions exist. | You've already taught the agent things in prior sessions — corrections, preferences, domain knowledge — but that knowledge dies with each session. Ruminate recovers it so you don't repeat yourself. Only runs once when the brain is empty. |
 | **Propose** | Stakeholder feature proposal: conversational planning with deep codebase investigation, honest time estimates, and engineering pushback — all presented in plain language a non-technical founder can skim. Supports Google Doc import. Updates business context automatically. | Non-technical team members describe features without implementation detail. Without Propose, vague requests go straight to engineering as ambiguous tickets — and "just remove credits" gets treated as a quick fix when it's actually a 2-week overhaul. Propose does a real technical investigation and gives honest estimates, so stakeholders understand the true cost before engineering time is spent. |
 | **RCA** | Bug-specific flow: backward trace from symptom to root cause, adversarial verification, regression test, embedded learnings. | Agents fix symptoms, not causes. They'll patch the crash without understanding why it crashed. RCA forces backward tracing from symptom → root cause, mandates regression tests, and writes a pitfall so the same class of bug is caught earlier next time. |
-| **Scope** | Double Diamond interview: classify work, surface blind spots, run a viability gate ("should we build this?"), stress-test assumptions, run a future-pressure pass for one-way doors and shared surfaces, then create an epic with sized tasks. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature — they never say "this doesn't make sense" or "have you talked to users?" Without scoping, they miss edge cases, build the wrong thing, or validate bad ideas. The interview catches blind spots before a single line of code is written. The viability gate is the anti-sycophancy mechanism. The future-pressure pass is the anti-slop mechanism — it forces the plan to account for likely next features, failure modes, and reversal cost before the codebase calcifies around a prompt-local abstraction. |
+| **Scope** | Double Diamond interview: first make the workflow envelope explicit by confirming work kind (`feature` / `bug` / `upgrade` / `refactor`), audience (technical vs non-technical), depth (shallow vs deep), and implementation target; then surface blind spots, run a viability gate ("should we build this?"), stress-test assumptions, run a future-pressure pass for one-way doors and shared surfaces, and only create an epic/tasks after explicit approval. After scoping, choose execution mode: **task-by-task** (interactive `/flux:work`) or **Ralph mode** (autonomous — runs all tasks + reviews unattended). | Agents start building the moment you describe a feature — they never say "this doesn't make sense" or "have you talked to users?" Without scoping, they miss edge cases, build the wrong thing, or validate bad ideas. The interview catches blind spots before a single line of code is written. The viability gate is the anti-sycophancy mechanism. The future-pressure pass is the anti-slop mechanism — it forces the plan to account for likely next features, failure modes, and reversal cost before the codebase calcifies around a prompt-local abstraction. |
 | **Ubiquitous Language** | *Auto during Scope (conditional):* When ambiguous domain terms are detected during scoping, extracts a DDD-style glossary — picks canonical terms, flags ambiguities, lists aliases to avoid. Writes to `.flux/brain/business/glossary.md`. | Developers and domain experts use different words for the same concept. "Account" means one thing to support and another to engineering. Without a shared glossary, bugs hide in the translation. This catches terminological drift before it becomes architectural drift. |
 | **Design Interface** | *Auto during Scope (conditional):* When scoping identifies a complex module boundary or multiple viable interface approaches, spawns 3+ parallel sub-agents with different design constraints (minimize methods, maximize flexibility, optimize common case). Compares and recommends. Parallel fan-out should follow `flux-parallel-dispatch`. | Your first interface idea is rarely the best. "Design It Twice" (from *A Philosophy of Software Design*) ensures you see radically different approaches before committing to one. The parallel sub-agents prevent anchoring bias — each starts fresh with a different constraint. |
 | **Stress Test** | *Auto during Scope:* spawns two opposing subagents to argue both sides of detected tensions (architecture choices, UX assumptions, deferred authority). Synthesizes a recommendation that transforms the question — not compromise, reconceptualization. | Developers make one-way door decisions on autopilot — auth strategy, data model, API contracts — based on assumptions they haven't examined. "My senior said X" or "users probably want Y" become load-bearing beliefs that are expensive to reverse. The stress test catches these *before* any code is written, when changing direction costs nothing. Inspired by the [Electric Monks](https://github.com/KyleAMathews/hegelian-dialectic-skill) dialectic pattern. |
@@ -511,10 +518,10 @@ fluxctl config edit      # Open .flux/config.json in your editor
 |---------|-------------|-----------------|
 | `/flux:setup` | Initialize Flux in your project | 1. First time using Flux — scaffolds `.flux/`, configures preferences, installs tools |
 | `/flux:prime` | Codebase readiness audit (8 pillars, 48 criteria) | 2. After setup — Flux detects unprimed repos and prompts you. Runs once per repo |
-| `/flux:propose` | Stakeholder feature proposal with engineering pushback | 2.5. A non-technical teammate describes a feature — Flux interviews them, pushes back on complexity/cost, documents the proposal, and creates a PR for engineering handoff. Also detected implicitly during `/flux:scope` |
+| `/flux:propose` | Stakeholder proposal flow with engineering pushback | 2.5. A non-technical teammate describes a feature, bugfix request, or upgrade — Flux interviews them, pushes back on complexity/cost, documents the proposal, and creates a PR for engineering handoff. Also detected implicitly during `/flux:scope` and `/flux:plan` |
 | `/flux:rca` | Root cause analysis for bugs | 2.5. You paste an error or describe a bug — Flux traces backward to the root cause, verifies with adversarial review, writes the fix with regression test, and embeds learnings. Also detected implicitly during `/flux:scope` |
-| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux interviews you, creates an epic with sized tasks |
-| `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — skip the Double Diamond interview, go straight to task creation |
+| `/flux:scope <idea>` | Guided scoping workflow (`--deep`, `--explore N`) | 3. You say "build me a dashboard" — Flux first confirms kind, audience, depth, and target, then interviews you and only creates an epic/tasks after approval |
+| `/flux:plan <idea>` | Create tasks only (skip interview) | 3. You already know exactly what to build — Flux still confirms the workflow envelope and asks whether shallow planning is enough or if you want deep Double Diamond scoping first |
 | `/flux:work <task>` | Execute task with context reload | 4. After scoping — spawns a worker per task, each re-anchors from brain vault before implementing |
 | `/flux:impl-review` | Lightweight per-task review (single model) | 5. Auto-triggered after each task completes inside `/flux:work` — you don't call this manually |
 | `/flux:epic-review <epic>` | Thorough epic review (adversarial + BYORB + browser QA + learning + desloppify) | 6. Auto-triggered when all tasks in an epic are done — runs the full review pipeline before shipping |

@@ -1829,7 +1829,7 @@ def cmd_session_state(args: argparse.Namespace) -> None:
             "task": None,
             "prime": prime_state,
             "architecture": architecture_state,
-            "message": "No open objective. Start a new feature, bug, or refactor scope.",
+            "message": "No open objective. Start a new feature, bug, upgrade, or refactor scope.",
             "next_action": next_action,
             "router": router_for(next_action, "fresh_session_no_objective"),
         }

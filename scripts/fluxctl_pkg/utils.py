@@ -52,7 +52,7 @@ CONFIG_FILE = "config.json"
 
 EPIC_STATUS = ["open", "done"]
 TASK_STATUS = ["todo", "in_progress", "blocked", "done"]
-OBJECTIVE_KINDS = ["feature", "bug", "refactor"]
+OBJECTIVE_KINDS = ["feature", "bug", "upgrade", "refactor"]
 SCOPE_MODES = ["shallow", "deep"]
 TECHNICAL_LEVELS = ["non_technical", "semi_technical", "technical"]
 IMPLEMENTATION_TARGETS = ["self_with_ai", "engineer_handoff"]

@@ -679,6 +679,26 @@ flowchart TD
     expect(session.router.node).toBe('Scope')
   }, SCRIPT_TIMEOUT)
 
+  test('epic create accepts upgrade objectives and preserves workflow metadata', async () => {
+    const tmpRoot = `/tmp/flux-upgrade-objective-${Date.now()}`
+    await $`mkdir -p ${tmpRoot}`.quiet()
+
+    await $`${fluxctl} init --json`.cwd(tmpRoot).quiet()
+    await $`${fluxctl} prime-mark --status done --json`.cwd(tmpRoot).quiet()
+
+    const epicRaw = await $`${fluxctl} epic create --title "Upgrade notifications with digest controls" --kind upgrade --scope-mode shallow --technical-level technical --implementation-target self_with_ai --approve ${CREATE_APPROVAL_PHRASE} --json`
+      .cwd(tmpRoot)
+      .text()
+    const epic = JSON.parse(epicRaw)
+
+    const statusRaw = await $`${fluxctl} scope-status --json`.cwd(tmpRoot).text()
+    const status = JSON.parse(statusRaw)
+    expect(status.objective.id).toBe(epic.id)
+    expect(status.objective.objective_kind).toBe('upgrade')
+    expect(status.objective.scope_mode).toBe('shallow')
+    expect(status.objective.technical_level).toBe('technical')
+  }, SCRIPT_TIMEOUT)
+
   test('agentmap --check reports built-in availability', async () => {
     const output = await $`${fluxctl} agentmap --check --json`
       .cwd(FLUX_ROOT)
