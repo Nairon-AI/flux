@@ -4,6 +4,36 @@ All notable changes to Flux will be documented in this file.
 
 ## [Unreleased]
 
+## [2.38.0] - 2026-03-31
+
+### Highlights
+
+- **Flux now makes planning intent explicit before it starts writing workflow state** — scope and plan flows now force the start-of-work decision into the open: is this a feature, bug, upgrade, or refactor; is the user technical or non-technical; should Flux stay shallow or go deep with Double Diamond; and is the output for self-build or engineer handoff. This closes the gap where the README described a stricter state machine than the live workflow actually enforced. (#138)
+- **Epic and task creation now requires explicit developer approval** — Flux no longer gets to silently persist planning objects once the conversation converges. `fluxctl epic create` and `fluxctl task create` now require an explicit approval phrase via `--approve`, so accidental persistence is blocked even if an agent forgets to ask first. (#138)
+- **Codex-first Flux installs are easier to reason about and safer across worktrees** — Flux now distinguishes repo-local runtime state from host adapters, adds host-aware diagnostics, and keeps secure-skill trust state stable across worktrees. The result is fewer “which version is real?” moments and fewer setup regressions when developers use worktree-heavy flows. (#133, #134)
+
+### Added
+
+- Host-aware Flux diagnostics via `fluxctl env`, `fluxctl doctor`, and `fluxctl version`, so users can see the authoritative runtime version, active host adapter, and install/update guidance for their actual environment. (#133)
+- First-class `upgrade` objective support in Flux workflow metadata and routing/docs. (#138)
+
+### Changed
+
+- `fluxctl epic create` and `fluxctl task create` now require `--approve "I_APPROVE_CREATING_EPICS_AND_TASKS"` for persistence. (#138)
+- Scope and plan flows now document and carry an explicit workflow envelope before deeper planning continues. (#138)
+- Secure skill state is now shared through the git common-dir so worktree creation, deletion, and recreation do not strand `.secureskills` trust state. (#134)
+
+### Improved
+
+- Flux release metadata is synchronized again: package, plugin, marketplace, README badge, and changelog all agree on `2.38.0`. 
+- Codex-primary troubleshooting and upgrade guidance now points at repo-local runtime truth instead of over-indexing on Claude plugin state. (#133)
+
+### PRs
+
+- #133 — [codex] add host-aware Flux diagnostics
+- #134 — [codex] Share secureskills state across worktrees
+- #138 — Require explicit entry gates and approval before Flux creates epics/tasks
+
 ## [2.37.0] - 2026-03-29
 
 ### Highlights

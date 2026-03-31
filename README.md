@@ -3,7 +3,7 @@
 <img src="flux-logo.png" alt="Flux" width="300">
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/CEQMd6fmXk)
-[![Version](https://img.shields.io/badge/version-v2.37.2--dev-green)](https://github.com/Nairon-AI/flux/releases)
+[![Version](https://img.shields.io/badge/version-v2.38.0-green)](https://github.com/Nairon-AI/flux/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Codex CLI](https://img.shields.io/badge/Codex_CLI-Primary-10A37F)](https://github.com/openai/codex)
 
